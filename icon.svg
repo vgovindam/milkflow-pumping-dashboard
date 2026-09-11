@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MilkFlow">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b6ceb"/>
+      <stop offset="1" stop-color="#ef7fae"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="114" fill="url(#g)"/>
+  <path d="M256 118c56 62 92 112 92 152a92 92 0 1 1-184 0c0-40 36-90 92-152Z" fill="#fff" fill-opacity=".96"/>
+  <path d="M214 268c0 28 18 46 42 50" fill="none" stroke="#8b6ceb" stroke-width="17" stroke-linecap="round" stroke-opacity=".55"/>
+</svg>

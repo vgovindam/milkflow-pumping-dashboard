@@ -10,8 +10,10 @@ Production intentionally uses one UI/runtime layer:
 - `styles.css`
 - `app.js`
 - `config.js`
+- `sw.js` (offline cache)
+- `icon.svg`, `icon-*.png`, `favicon.ico` (install icons)
 
-Older app versions, standalone migration scripts, competing CSS layers, and the stale service worker are not loaded in production. Baby Tracker compatibility and diaper normalization are handled directly in `app.js` so there is one source of truth.
+Older app versions, standalone migration scripts and competing CSS layers are not loaded in production. Baby Tracker compatibility and diaper normalization are handled directly in `app.js` so there is one source of truth.
 
 ## Mom
 
@@ -38,13 +40,37 @@ Legacy Baby Tracker values are normalized in the data layer: `dirty` becomes `po
 
 Imported source duplicates are preserved for data safety but flagged exact-source duplicates are excluded from Baby trend calculations.
 
+## Editing and removing entries
+
+Any row in Mom history, Baby history or Growth opens an entry sheet with **Edit** and **Remove**.
+
+Remove is a soft-void: the record keeps its id, stays in local storage and in Firestore with a
+`voidedAt` timestamp, and simply stops counting toward history and totals. A toast offers **Undo**,
+and the entry is still present in any export. Nothing in the app hard-deletes a record.
+
+## Navigation
+
+Screens are real history entries, so the phone/browser Back button walks back through the screens
+you visited instead of leaving the app. Refreshing keeps you on the current screen.
+
+## Offline
+
+`sw.js` caches the app shell with a network-first strategy: the newest deploy always wins when
+online, and the cache is only used as a fallback. The app opens and logs entries with no network;
+those entries sync when the connection returns. The cache version is bumped with the `build` query
+string in `index.html`.
+
 ## Data safety and sync
 
 The app keeps the existing `milkflow-family-v4-state` localStorage key for backward compatibility, so UI upgrades do not reset local history.
 
+If the app is open in more than one tab, each tab listens for the other's writes and merges both
+sides by record id rather than overwriting with its own older in-memory copy. Records carry
+`createdAt` / `editedAt` / `voidedAt` so the newer version of a record wins and no entry is lost.
+
 When signed in, Mom records use `users/{uid}/entries` and Baby records use `users/{uid}/familyEvents`. The app reconciles local and cloud records by stable ID, uploads missing local records, normalizes legacy Baby records, and listens for Firestore changes so devices using the same account stay current.
 
-Import is merge-only and creates a pre-import local snapshot. The stable UI intentionally exposes no delete action.
+Import is merge-only and creates a pre-import local snapshot. The UI exposes no hard delete; removing an entry only sets `voidedAt` and can be undone.
 
 Use **Settings → Check cloud** to compare cloud record counts with the current device. Use **Export** for a private JSON backup.
 
@@ -54,7 +80,10 @@ The tracker layout is informed by current infant-care guidance: feeding history,
 
 The mobile UI uses persistent top-level navigation, large labeled controls, and generous touch targets for frequent handheld use.
 
-Selected interface icons use Lucide-style SVG paths under the ISC License. Larger Mom and Baby hero illustrations are embedded SVG artwork so the app does not depend on third-party image hosting at runtime.
+Interface icons are hand-written SVG paths rendered from one `icon()` map in `app.js`, so the
+sidebar, bottom bar, tiles and rows always use the same symbol for the same action. Wet, poopy and
+mixed diapers each have their own icon and colour. The Baby hero illustration and the app install
+icons are embedded/generated SVG so the app does not depend on third-party image hosting at runtime.
 
 ## Firebase
 

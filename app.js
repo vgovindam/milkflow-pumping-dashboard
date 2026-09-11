@@ -104,53 +104,126 @@ function save(){
   S.version = VERSION;
   S.ui.view = view;
   S.ui.workspace = workspaceOf(view);
-  localStorage.setItem(STATE_KEY,JSON.stringify(S));
+  S.savedAt = Date.now();
+  try{ localStorage.setItem(STATE_KEY,JSON.stringify(S)); }
+  catch(err){ console.error('Local save failed',err); toast('This device is out of storage. Export a backup soon.',6000); }
 }
-function toast(text,ms=2800){ const t=$('toast'); if(!t) return; t.textContent=text; t.classList.add('show'); clearTimeout(t._timer); t._timer=setTimeout(()=>t.classList.remove('show'),ms); }
+// Records carry their own timestamps so two tabs/devices can be merged without losing either side.
+const stampOf = e => Date.parse(e?.voidedAt || e?.editedAt || e?.createdAt || '') || 0;
+// Union two record lists. Returns `changed` so a no-op merge writes nothing - without that,
+// two open tabs would answer each other's storage events forever.
+function unionById(mine,theirs,norm){
+  const m = new Map((mine||[]).map(e => [e.id,e]));
+  let changed = false;
+  for(const raw of (Array.isArray(theirs) ? theirs : [])){
+    const r = norm ? norm(raw) : raw;
+    if(!r?.id) continue;
+    const old = m.get(r.id);
+    if(!old){ m.set(r.id,r); changed = true; }
+    else if(stampOf(r) > stampOf(old)){ m.set(r.id,{...old,...r}); changed = true; }
+  }
+  return {list:[...m.values()], changed};
+}
+// Another tab of the same app wrote to localStorage. Union both sides instead of letting
+// this tab's older in-memory copy overwrite records the other tab just created.
+function adoptExternalState(raw){
+  let p; try{ p = JSON.parse(raw); }catch{ return; }
+  if(!p || typeof p !== 'object') return;
+  const mom = unionById(S.entries, p.entries);
+  const baby = unionById(S.babyEvents, p.babyEvents, normalizeBabyEvent);
+  S.entries = mom.list; S.babyEvents = baby.list;
+  let changed = mom.changed || baby.changed;
+
+  if((p.savedAt||0) > (S.savedAt||0)){
+    const settings = {profile:S.profile, baby:S.baby, schedule:S.schedule, dailyOverrides:S.dailyOverrides, reminders:S.reminders};
+    const merged = {
+      profile:{...S.profile, ...(p.profile||{})},
+      baby:{...S.baby, ...(p.baby||{})},
+      schedule:(Array.isArray(p.schedule) && p.schedule.length) ? p.schedule : S.schedule,
+      dailyOverrides:{...S.dailyOverrides, ...(p.dailyOverrides||{})},
+      reminders:{...S.reminders, ...(p.reminders||{})}
+    };
+    // Compare values, not timestamps: adopting on timestamp alone would also ping-pong.
+    if(JSON.stringify(settings) !== JSON.stringify(merged)){
+      Object.assign(S, merged);
+      changed = true;
+    }
+  }
+  if(!changed) return;
+  save();
+  clearTimeout(renderTimer); renderTimer = setTimeout(render,80);
+}
+window.addEventListener('storage', e => { if(e.key === STATE_KEY && e.newValue) adoptExternalState(e.newValue); });
+function toast(text,ms=2800,action=null){
+  const t=$('toast'); if(!t) return;
+  t.innerHTML=`<span>${esc(text)}</span>`;
+  if(action){ const b=document.createElement('button'); b.type='button'; b.className='toast-action'; b.textContent=action.label; b.addEventListener('click',()=>{ t.classList.remove('show'); action.run(); }); t.appendChild(b); }
+  t.classList.add('show'); clearTimeout(t._timer); t._timer=setTimeout(()=>t.classList.remove('show'),ms);
+}
 function closeOverlays(){ document.body.classList.remove('locked'); $('drawer')?.classList.remove('open'); $('sheet')?.classList.remove('open'); $('scrim')?.classList.remove('open'); }
-function setView(v){
+function closeDialogs(){ document.querySelectorAll('dialog[open]').forEach(d => { try{ d.close(); }catch{} }); }
+function setView(v,{replace=false}={}){
   if(!VIEWS.has(v)) v = S.ui.workspace === 'baby' ? 'baby-home' : 'mom-home';
-  view = v; save(); history.replaceState(null,'',`#${v}`); closeOverlays(); render(); window.scrollTo({top:0,behavior:'auto'});
+  const same = v === view;
+  view = v; save();
+  const url = `#${v}`;
+  // pushState (not replaceState) so the device Back button walks back through screens
+  // instead of leaving the app entirely.
+  if(replace || same) history.replaceState({view:v},'',url); else history.pushState({view:v},'',url);
+  closeOverlays(); closeDialogs(); render();
+  window.scrollTo({top:0,behavior:'auto'});
 }
-window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(VIEWS.has(h)&&h!==view){ view=h; save(); closeOverlays(); render(); } });
+window.addEventListener('popstate',e => {
+  // Back also dismisses anything covering the screen, so it never leaves a stale overlay.
+  closeOverlays(); closeDialogs();
+  const v = e.state?.view || location.hash.slice(1);
+  if(!VIEWS.has(v) || v === view) return;
+  view = v; save(); render(); window.scrollTo({top:0,behavior:'auto'});
+});
 
 function icon(name,cls=''){
   const paths={
-    home:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9 20v-6h6v6"/>',
-    drop:'<path d="M12 3s6 6.2 6 11a6 6 0 0 1-12 0c0-4.8 6-11 6-11Z"/>',
+    home:'<path d="M3 11.4 12 4l9 7.4"/><path d="M5.6 10.3V20h12.8v-9.7"/><path d="M9.4 20v-5.4a2.6 2.6 0 0 1 5.2 0V20"/>',
+    drop:'<path d="M12 3.2c2.8 3 5.6 6.2 5.6 9.4a5.6 5.6 0 1 1-11.2 0c0-3.2 2.8-6.4 5.6-9.4Z"/>',
+    poop:'<path d="M12.4 4.3c1.4.3 2 1.3 1.7 2.3h.5c1.5 0 2.6 1 2.6 2.2 0 .5-.2 1-.5 1.3 1.5.2 2.6 1.2 2.6 2.5 0 .6-.2 1.1-.6 1.5 1.1.4 1.8 1.2 1.8 2.2 0 1.5-1.6 2.7-3.6 2.7H7.1c-2 0-3.6-1.2-3.6-2.7 0-1 .7-1.8 1.8-2.2a2 2 0 0 1-.6-1.5c0-1.3 1.1-2.3 2.6-2.5a1.9 1.9 0 0 1-.5-1.3c0-1.2 1.1-2.2 2.6-2.2h.5c-.4-1.3.7-2.6 2.5-2.3Z"/><path d="M10 13.4h.01M14 13.4h.01"/>',
+    mixed:'<path d="M8 3.6c1.9 2 3.8 4.2 3.8 6.3a3.8 3.8 0 1 1-7.6 0c0-2.1 1.9-4.3 3.8-6.3Z"/><path d="M17.6 10.6c1 .2 1.4 1 1.2 1.7h.3c1.1 0 1.9.7 1.9 1.6 0 .4-.2.7-.4 1 1.1.2 1.9.9 1.9 1.8 0 1.1-1.2 2-2.7 2h-5.6c-1.5 0-2.7-.9-2.7-2 0-.9.8-1.6 1.9-1.8a1.4 1.4 0 0 1-.4-1c0-.9.8-1.6 1.9-1.6h.3c-.3-1 .5-1.9 1.8-1.7Z"/>',
+    nursing:'<path d="M20.8 5.2a5.2 5.2 0 0 0-7.4-.2L12 6.2l-1.4-1.2a5.2 5.2 0 0 0-7.2 7.4L12 21l8.6-8.4a5.2 5.2 0 0 0 .2-7.4Z"/><circle cx="9.4" cy="10.4" r="1.5"/><circle cx="14.6" cy="10.4" r="1.5"/>',
     heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.6a5.5 5.5 0 0 0 0-7.8Z"/>',
-    bottle:'<path d="M9 3h6M10 3v4l-2 3v9a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-9l-2-3V3"/><path d="M8 13h8"/>',
-    diaper:'<path d="M5 7c2.3 1.4 4.6 2.1 7 2.1S16.7 8.4 19 7v8.5c-2.1 2.3-4.5 3.5-7 3.5s-4.9-1.2-7-3.5Z"/><path d="M8 9.1v7.1M16 9.1v7.1"/>',
-    history:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/>',
-    chart:'<path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 3-4 3 2 4-6"/>',
-    snow:'<path d="M12 2v20M4.2 6.5l15.6 9M4.2 17.5l15.6-9"/>',
-    baby:'<circle cx="12" cy="12" r="8"/><path d="M9.5 10h.01M14.5 10h.01M9.5 14c1.6 1.2 3.4 1.2 5 0"/><path d="M8 4.7c1.2-1.9 3.7-2.3 5.3-.8"/>',
-    plus:'<path d="M12 5v14M5 12h14"/>',
-    more:'<circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/>',
+    bottle:'<path d="M9.6 2.8h4.8"/><path d="M10.4 2.8v3.4L8.6 9v10a2.2 2.2 0 0 0 2.2 2.2h2.4a2.2 2.2 0 0 0 2.2-2.2V9l-1.8-2.8V2.8"/><path d="M8.6 12.4h6.8M8.6 16h6.8"/>',
+    diaper:'<path d="M4.6 6.6c2.4 1.5 4.8 2.2 7.4 2.2s5-.7 7.4-2.2v8.2c-2.2 2.6-4.7 3.9-7.4 3.9s-5.2-1.3-7.4-3.9Z"/><path d="M8 8.7v8.1M16 8.7v8.1"/>',
+    history:'<path d="M3.2 12a8.8 8.8 0 1 0 2.9-6.5"/><path d="M3.2 4.2v5h5"/><path d="M12 7.6V12l3.2 2"/>',
+    chart:'<path d="M4 19.2V4.8"/><path d="M4 19.2h15.6"/><path d="m7.4 15.2 3.4-4.4 3 2 4.2-6.2"/>',
+    snow:'<path d="M12 2.4v19.2"/><path d="m4 7 16 10M4 17 20 7"/><path d="m9.2 4.4 2.8 2.6 2.8-2.6M9.2 19.6l2.8-2.6 2.8 2.6"/>',
+    baby:'<circle cx="12" cy="13" r="7.4"/><path d="M9.6 11.6h.01M14.4 11.6h.01"/><path d="M9.8 15.4c1.4 1.2 3 1.2 4.4 0"/><path d="M8.6 6.1C9.8 3.7 13 3.2 14.8 5"/>',
+    plus:'<path d="M12 4.8v14.4M4.8 12h14.4"/>',
+    more:'<circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
     menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
     close:'<path d="m6 6 12 12M18 6 6 18"/>',
-    bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
-    check:'<path d="m5 12 4 4L19 6"/>',
+    bell:'<path d="M18.4 8.4a6.4 6.4 0 1 0-12.8 0c0 6.8-2.8 7-2.8 9.2h18.4c0-2.2-2.8-2.4-2.8-9.2"/><path d="M9.8 21h4.4"/>',
+    check:'<path d="m5 12.4 4.4 4.4L19 6.6"/>',
     settings:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 3.1a7 7 0 0 0-1.7 1l-2.4-1-2 3.4L5.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.3 3.1h5l.3-3.1a7 7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.5c.1-.3.1-.7.1-1Z"/>',
-    steth:'<path d="M6 3v5a4 4 0 0 0 8 0V3"/><path d="M10 12v2a5 5 0 0 0 10 0v-1"/><circle cx="20" cy="10" r="2"/>',
-    growth:'<path d="M4 20V10M10 20V4M16 20v-7M22 20V7"/>',
-    moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>',
+    steth:'<path d="M6 3v5.2a4 4 0 0 0 8 0V3"/><path d="M10 12.2v1.6a5 5 0 0 0 10 0v-1.2"/><circle cx="20" cy="10" r="2.2"/><path d="M6 3H4.4M14 3h1.6"/>',
+    growth:'<path d="M3.4 8.2h17.2a1 1 0 0 1 1 1v5.6a1 1 0 0 1-1 1H3.4a1 1 0 0 1-1-1V9.2a1 1 0 0 1 1-1Z"/><path d="M7 8.2v3.4M11 8.2v4.6M15 8.2v3.4M19 8.2v4.6"/>',
+    moon:'<path d="M20.8 13.4A9 9 0 1 1 10.6 3.2a7 7 0 0 0 10.2 10.2Z"/><path d="M17 3.4v3M15.5 4.9h3"/>',
     shield:'<path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6Z"/><path d="m9 12 2 2 4-4"/>',
-    upload:'<path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M5 3h14"/>',
-    download:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
-    chevron:'<path d="m9 18 6-6-6-6"/>',
-    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-    spark:'<path d="m12 3 1.6 4.1L18 9l-4.4 1.9L12 15l-1.6-4.1L6 9l4.4-1.9Z"/><path d="m19 15 .8 2 2.2 1-.2.1-2 1-.8 1.9-.8-1.9-2.2-1 2.2-1Z"/>'
+    upload:'<path d="M12 20.4V8.6"/><path d="m7.2 13 4.8-4.8L16.8 13"/><path d="M4.6 3.6h14.8"/>',
+    download:'<path d="M12 3.6v11.8"/><path d="m7.2 11 4.8 4.8L16.8 11"/><path d="M4.6 20.4h14.8"/>',
+    chevron:'<path d="m9.4 18 6-6-6-6"/>',
+    clock:'<circle cx="12" cy="12" r="8.8"/><path d="M12 6.8V12l3.4 2.2"/>',
+    spark:'<path d="m12 3 1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7Z"/><path d="m18.6 15.2.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7Z"/>',
+    edit:'<path d="M12.5 5.6H5.2A1.8 1.8 0 0 0 3.4 7.4v11.4a1.8 1.8 0 0 0 1.8 1.8h11.4a1.8 1.8 0 0 0 1.8-1.8v-7.3"/><path d="M17.4 3.6a2.2 2.2 0 0 1 3.1 3.1L12.4 15l-3.6.8.8-3.6Z"/>',
+    trash:'<path d="M3.8 6.4h16.4"/><path d="M8.6 6.4V4.8a1.6 1.6 0 0 1 1.6-1.6h3.6a1.6 1.6 0 0 1 1.6 1.6v1.6"/><path d="M18.4 6.4v13.2a1.6 1.6 0 0 1-1.6 1.6H7.2a1.6 1.6 0 0 1-1.6-1.6V6.4"/><path d="M10.2 11v5.6M13.8 11v5.6"/>',
+    sun:'<circle cx="12" cy="12" r="4.4"/><path d="M12 2.6v2.2M12 19.2v2.2M4.6 12H2.4M21.6 12h-2.2M6.3 6.3 4.8 4.8M19.2 19.2l-1.5-1.5M6.3 17.7l-1.5 1.5M19.2 4.8l-1.5 1.5"/>',
+    timer:'<circle cx="12" cy="13.4" r="7.8"/><path d="M12 9.4v4h3"/><path d="M9.4 2.6h5.2"/>',
+    calendar:'<rect x="3.4" y="5.2" width="17.2" height="15.4" rx="2.4"/><path d="M3.4 10h17.2"/><path d="M8.2 3v4.4M15.8 3v4.4"/>',
+    cloud:'<path d="M17.4 18.6H7a4.4 4.4 0 0 1-.6-8.8 5.8 5.8 0 0 1 11.1 1.2 3.8 3.8 0 0 1-.1 7.6Z"/>',
+    scale:'<path d="M12 3.4a8.6 8.6 0 0 1 8.6 8.6v6a2 2 0 0 1-2 2H5.4a2 2 0 0 1-2-2v-6A8.6 8.6 0 0 1 12 3.4Z"/><path d="M12 12V8.2"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/>'
   };
-  return `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.heart}</svg>`;
+  return `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.heart}</svg>`;
 }
 function babyIllustration(){
   return `<svg class="scene" viewBox="0 0 220 150" aria-hidden="true"><defs><linearGradient id="bgB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8f8ff"/><stop offset="1" stop-color="#eef0ff"/></linearGradient></defs><rect x="10" y="16" width="200" height="122" rx="42" fill="url(#bgB)"/><circle cx="52" cy="46" r="18" fill="#fff6c9"/><circle cx="170" cy="38" r="12" fill="#e8ddff"/><path d="M37 111c17-20 40-30 69-30 31 0 57 11 77 32" fill="none" stroke="#b7e8dc" stroke-width="17" stroke-linecap="round"/><circle cx="111" cy="76" r="33" fill="#fff"/><path d="M96 73h.01M126 73h.01" stroke="#42556f" stroke-width="4" stroke-linecap="round"/><path d="M101 88c7 5 14 5 21 0" fill="none" stroke="#6c86a6" stroke-width="3" stroke-linecap="round"/><path d="M91 52c10-10 28-13 42-3" fill="none" stroke="#7f9bbd" stroke-width="5" stroke-linecap="round"/><path d="M69 41c-7-7-15-5-18 3 7 0 12 3 16 8" fill="#fff"/></svg>`;
 }
-function momIllustration(){
-  return `<svg class="scene" viewBox="0 0 220 150" aria-hidden="true"><defs><linearGradient id="bgM" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0f6"/><stop offset="1" stop-color="#f0eaff"/></linearGradient></defs><rect x="10" y="16" width="200" height="122" rx="42" fill="url(#bgM)"/><circle cx="55" cy="42" r="15" fill="#ffe8b5"/><circle cx="172" cy="45" r="13" fill="#e2d8ff"/><path d="M109 44c18 21 29 38 29 53a29 29 0 1 1-58 0c0-15 11-32 29-53Z" fill="#fff" stroke="#b79be8" stroke-width="4"/><path d="M96 96c6 6 19 6 26 0" fill="none" stroke="#d17aa4" stroke-width="4" stroke-linecap="round"/><path d="M55 116c18-10 36-12 54-7M164 116c-18-10-36-12-54-7" fill="none" stroke="#efb7ce" stroke-width="12" stroke-linecap="round"/></svg>`;
-}
-
 const momEntries = () => S.entries.filter(e => !e.voidedAt);
 const pumps = () => momEntries().filter(e => e.type === 'pump');
 const nurses = () => momEntries().filter(e => e.type === 'nursing');
@@ -161,7 +234,28 @@ const babyOn = (d,t) => babyEvents().filter(e => e.date === d && (!t || e.eventT
 function dateList(n,end=today()){ const out=[], d=new Date(`${end}T12:00:00`); for(let i=n-1;i>=0;i--){ const x=new Date(d); x.setDate(d.getDate()-i); out.push(iso(x)); } return out; }
 function rollingAvg(n=7){ const vals=dateList(n).map(dayTotal).filter(v=>v>0); return vals.length ? Math.round(sum(vals)/vals.length) : 0; }
 function lastPump(){ return pumps().slice().sort(byWhenDesc)[0] || null; }
-function nextPump(){ const d=new Date(), m=d.getHours()*60+d.getMinutes(); return S.schedule.find(t => (+t.slice(0,2)*60 + +t.slice(3)) > m) || S.schedule[0]; }
+const mins = t => t ? (+String(t).slice(0,2)*60 + +String(t).slice(3,5)) : 0;
+const sortedSchedule = () => [...S.schedule].filter(Boolean).sort((a,b) => mins(a)-mins(b));
+function nextPump(){ const d=new Date(), m=d.getHours()*60+d.getMinutes(), s=sortedSchedule(); return s.find(t => mins(t) > m) || s[0] || '--:--'; }
+// Pair each planned slot with the pump actually logged nearest to it (each pump used once)
+// instead of pairing by array position, which marked the 5:40 slot done when the first
+// pump of the day was really the 11:05 one.
+function scheduleSlots(d){
+  const logged = dayP(d).map((e,i) => ({e,i}));
+  const used = new Set();
+  const slots = sortedSchedule().map(t => {
+    let best = null, bestDiff = Infinity;
+    for(const {e,i} of logged){
+      if(used.has(i) || !e.time) continue;
+      const diff = Math.abs(mins(e.time) - mins(t));
+      if(diff < bestDiff){ bestDiff = diff; best = i; }
+    }
+    if(best !== null && bestDiff <= 150){ used.add(best); return {time:t, entry:logged[best].e}; }
+    return {time:t, entry:null};
+  });
+  const extras = logged.filter(({i}) => !used.has(i)).map(({e}) => ({time:e.time, entry:e, extra:true}));
+  return [...slots, ...extras].sort((a,b) => mins(a.entry?.time || a.time) - mins(b.entry?.time || b.time));
+}
 function babyStats(d){
   const diapers = babyOn(d,'diaper').filter(e => !e.exactSourceDuplicate);
   const feeds = babyOn(d,'feeding').filter(e => !e.exactSourceDuplicate);
@@ -188,7 +282,6 @@ function babyStats(d){
     sleepMin: sum(sleep.map(e => +e.durationMinutes || 0))
   };
 }
-function latestBabyDate(){ return babyEvents().slice().sort(byWhenDesc)[0]?.date || today(); }
 function latestGrowth(){ return babyEvents().filter(e => e.eventType === 'growth').sort(byWhenDesc)[0] || null; }
 function feedingPreference(){
   if(['mostly_breastfed','mostly_formula','mixed'].includes(S.baby.feedingPreference)) return S.baby.feedingPreference;
@@ -202,6 +295,37 @@ function feedingPreference(){
   return 'mixed';
 }
 
+// "3h 20m ago" is what a parent actually wants at a glance, not a bare clock time.
+function sinceLabel(date,time){
+  if(!date) return null;
+  const t=new Date(`${date}T${time||'00:00'}:00`);
+  const diff=Date.now()-t.getTime();
+  if(!Number.isFinite(diff)) return null;
+  if(diff < 0) return null;
+  const m=Math.round(diff/60000);
+  if(m < 2) return 'just now';
+  if(m < 60) return `${m}m ago`;
+  const h=Math.floor(m/60);
+  if(h < 24) return m%60 ? `${h}h ${m%60}m ago` : `${h}h ago`;
+  const d=Math.round(h/24);
+  return d <= 1 ? 'yesterday' : `${d} days ago`;
+}
+function untilLabel(t){
+  if(!t || t === '--:--') return '';
+  const d0=new Date(); let diff=mins(t) - (d0.getHours()*60 + d0.getMinutes());
+  if(diff < 0) diff += 1440;
+  if(diff < 2) return 'now';
+  if(diff < 60) return `in ${diff}m`;
+  const h=Math.floor(diff/60);
+  return diff%60 ? `in ${h}h ${diff%60}m` : `in ${h}h`;
+}
+function ring(pct,center,sub,tone='mom'){
+  const r=52, c=2*Math.PI*r, p=Math.max(0,Math.min(1,pct||0));
+  return `<div class="ring ${tone}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="${r}"/><circle class="ring-fg" cx="60" cy="60" r="${r}" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-p)).toFixed(1)}"/></svg><div class="ring-label"><strong>${center}</strong><span>${sub}</span></div></div>`;
+}
+function chip(ic,text,cls=''){ return `<span class="chip ${cls}">${icon(ic)}${text}</span>`; }
+const hoursSince = e => e ? (Date.now() - new Date(`${e.date}T${e.time||'00:00'}:00`).getTime())/3600000 : Infinity;
+const isRecent = (e,maxHours=36) => { const h=hoursSince(e); return Number.isFinite(h) && h >= 0 && h <= maxHours; };
 function metric(label,value,sub,ic,tone='mom'){ return `<article class="metric ${tone}"><div class="metric-icon">${icon(ic)}</div><div><span>${label}</span><strong>${value}</strong><small>${sub}</small></div></article>`; }
 function panel(title,content,action=''){ return `<section class="panel"><div class="panel-head"><h3>${title}</h3>${action}</div>${content}</section>`; }
 function empty(ic,title,sub,action=''){ return `<div class="empty"><div class="empty-icon">${icon(ic)}</div><strong>${title}</strong><span>${sub||''}</span>${action}</div>`; }
@@ -209,20 +333,38 @@ function pills(items,active,attr){ return `<div class="pills">${items.map(([v,l]
 
 function momHome(){
   const d=today(), total=dayTotal(d), count=dayP(d).length, lp=lastPump();
-  return `<section class="hero mom-hero"><div class="hero-copy"><span class="eyebrow">MOM</span><h2>${total?`${total} mL today`:'Ready when you are'}</h2><p>${count} pumps${lp?` · last ${to12(lp.time)}`:''}</p></div><div class="hero-art">${momIllustration()}</div></section>
+  const goal=+S.profile.dailyGoalMl||760, next=nextPump();
+  const since=lp?sinceLabel(lp.date,lp.time):null;
+  const avg=rollingAvg();
+  const pace=avg?Math.round((total/Math.max(avg,1))*100):0;
+  return `<section class="hero mom-hero">
+    ${ring(goal?total/goal:0,`${total}`,`of ${goal} mL`,'mom')}
+    <div class="hero-copy">
+      <span class="eyebrow">TODAY</span>
+      <h2>${total?`${total} mL`:'Ready when you are'}</h2>
+      <p>${count?`${count} ${count===1?'pump':'pumps'} logged`:'No pumps logged yet today'}</p>
+      <div class="chips">${chip('clock',`Next ${to12(next)} · ${untilLabel(next)}`)}${since?chip('history',`Last ${since}`):''}</div>
+    </div>
+  </section>
   <div class="quick-grid mom-grid">
     <button class="quick-tile mom" data-mom="pump"><span class="tile-art">${icon('drop')}</span><strong>Pump</strong><small>Log milk</small></button>
-    <button class="quick-tile mom" data-mom="nursing"><span class="tile-art">${icon('heart')}</span><strong>Nursing</strong><small>Log session</small></button>
-    <button class="quick-tile mom" data-view="mom-history"><span class="tile-art">${icon('history')}</span><strong>History</strong><small>Past entries</small></button>
-    <button class="quick-tile mom" data-view="mom-stash"><span class="tile-art">${icon('snow')}</span><strong>Stash</strong><small>${(+S.profile.stashMl||0).toLocaleString()} mL</small></button>
+    <button class="quick-tile nurse" data-mom="nursing"><span class="tile-art">${icon('nursing')}</span><strong>Nursing</strong><small>Log session</small></button>
+    <button class="quick-tile history" data-view="mom-history"><span class="tile-art">${icon('history')}</span><strong>History</strong><small>Past entries</small></button>
+    <button class="quick-tile stash" data-view="mom-stash"><span class="tile-art">${icon('snow')}</span><strong>Stash</strong><small>${(+S.profile.stashMl||0).toLocaleString()} mL</small></button>
   </div>
-  <div class="metric-grid mom-summary">${metric('Today',`${total} mL`,`${count} pumps`,'drop')}${metric('7-day avg',`${rollingAvg()} mL`,'pumping days','chart')}${metric('Next pump',to12(nextPump()),'planned','clock')}</div>
+  <div class="metric-grid mom-summary">${metric('7-day avg',`${avg} mL`,'per pumping day','chart')}${metric('Today vs avg',count&&avg?`${pace}%`:'—',count&&avg?'of your average':'after your first pump','spark')}${metric('Freezer stash',`${(+S.profile.stashMl||0).toLocaleString()} mL`,'saved milk','snow')}</div>
   ${panel('Pump plan',scheduleStrip(),'<button data-view="settings">Edit</button>')}
   ${panel('Recent',recentMom(5),'<button data-view="mom-history">See all</button>')}`;
 }
-function scheduleStrip(){ const p=dayP(today()); return `<div class="schedule-strip">${S.schedule.map((t,i)=>{ const e=p[i]; return `<div class="schedule-card ${e?'done':''}"><div>${e?icon('check'):icon('clock')}</div><strong>${e?to12(e.time):to12(t)}</strong><small>${e?`${e.amountMl} mL`:'Planned'}</small></div>`; }).join('')}</div>`; }
+function scheduleStrip(){
+  const slots=scheduleSlots(today());
+  return `<div class="schedule-strip">${slots.map(({time,entry,extra})=>{
+    const done=!!entry;
+    return `<div class="schedule-card ${done?'done':''} ${extra?'extra':''}"><div>${done?icon('check'):icon('clock')}</div><strong>${to12(entry?entry.time:time)}</strong><small>${done?`${entry.amountMl||0} mL`:untilLabel(time)||'Planned'}</small>${extra?'<em>Extra</em>':''}</div>`;
+  }).join('')}</div>`;
+}
 function recentMom(n){ const a=momEntries().slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('history','No Mom history yet','Log a pump or import your private backup.','<button class="primary-link" data-import>Import backup</button>'); return `<div class="rows">${a.map(momRow).join('')}</div>`; }
-function momRow(e){ return `<div class="row"><div class="row-icon mom">${icon(e.type==='pump'?'drop':'heart')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}</span></div><div class="row-status">${e.synced?'Saved':'Device'}</div></div>`; }
+function momRow(e){ return `<button type="button" class="row" data-record="mom:${esc(e.id)}"><div class="row-icon mom">${icon(e.type==='pump'?'drop':'nursing')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`; }
 function momHistory(){
   const range=+S.ui.momRange||30, cutoff=dateList(range)[0];
   const a=momEntries().filter(e=>range>=9999||e.date>=cutoff).sort(byWhenDesc);
@@ -230,27 +372,48 @@ function momHistory(){
 }
 function momTrends(){
   const range=+S.ui.trendRange||14, days=dateList(range), vals=days.map(dayTotal), max=Math.max(...vals,1);
-  const bars=days.map((d,i)=>`<div class="bar"><span>${vals[i]||''}</span><i style="height:${Math.max(4,Math.round(vals[i]/max*150))}px"></i><small>${fd(d)}</small></div>`).join('');
+  const bars=days.map((d,i)=>`<div class="bar${vals[i]?'':' bar-empty'}"><span>${vals[i]||''}</span><i style="height:${vals[i]?Math.max(6,Math.round(vals[i]/max*150)):3}px"></i><small>${fd(d)}</small></div>`).join('');
   const sessions=pumps().filter(e=>e.date>=days[0]); const avgSession=sessions.length?Math.round(sum(sessions.map(e=>+e.amountMl||0))/sessions.length):0; const best=sessions.reduce((m,e)=>(+e.amountMl||0)>(+m?.amountMl||0)?e:m,null);
-  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Milk trends</h2></div></div>${pills([[7,'7 days'],[14,'14 days'],[30,'30 days']],range,'data-trend-range')}<div class="metric-grid three">${metric('Daily avg',`${rollingAvg(Math.min(range,7))} mL`,'recent pumping days','chart')}${metric('Avg pump',`${avgSession} mL`,`${sessions.length} sessions`,'drop')}${metric('Best pump',`${best?.amountMl||0} mL`,best?fd(best.date):'—','spark')}</div>${panel('Daily output',`<div class="bars">${bars}</div>`)}`;
+  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Milk trends</h2></div></div>${pills([[7,'7 days'],[14,'14 days'],[30,'30 days']],range,'data-trend-range')}<div class="metric-grid three">${metric('Daily avg',`${rollingAvg(Math.min(range,7))} mL`,'recent pumping days','chart')}${metric('Avg pump',`${avgSession} mL`,`${sessions.length} sessions`,'drop')}${metric('Best pump',`${best?.amountMl||0} mL`,best?fd(best.date):'—','spark')}</div>${panel('Daily output',`<div class="bars-scroll"><div class="bars" style="--n:${days.length}">${bars}</div></div>`)}`;
 }
 function momStash(){ return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Freezer stash</h2></div></div><section class="stash-hero"><div class="stash-art">${icon('snow')}</div><div><strong>${(+S.profile.stashMl||0).toLocaleString()} mL</strong><span>saved milk</span></div></section>${panel('Update stash',`<div class="stash-buttons"><button data-stash="-30">−30</button><button data-stash="30">+30</button><button data-stash="60">+60</button><button data-stash="120">+120</button></div><label class="field"><span>Exact amount (mL)</span><input id="stashExact" type="number" inputmode="numeric" min="0" value="${+S.profile.stashMl||0}"></label>`)}`; }
 
 function babyHome(){
-  const s=babyStats(today()), pref=feedingPreference(), prefLabel=pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed';
-  const last=latestBabyDate();
-  return `<section class="hero baby-hero"><div class="hero-copy"><span class="eyebrow">${esc(S.baby.name)}</span><h2>Baby care</h2><p>${prefLabel}${s.feeds?` · ${s.feeds} feeds today`:last!==today()?` · last log ${fd(last)}`:''}</p></div><div class="hero-art">${babyIllustration()}</div></section>
+  const s=babyStats(today()), pref=feedingPreference();
+  const prefLabel=pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed';
+  const live=babyEvents().filter(e=>!e.exactSourceDuplicate).slice().sort(byWhenDesc);
+  const lastFeed=live.find(e=>e.eventType==='feeding'||e.eventType==='nursing');
+  const lastDiaper=live.find(e=>e.eventType==='diaper');
+  const lastSleep=live.find(e=>e.eventType==='sleep');
+  const feedAgo=lastFeed?sinceLabel(lastFeed.date,lastFeed.time):null;
+  const diaperAgo=lastDiaper?sinceLabel(lastDiaper.date,lastDiaper.time):null;
+  return `<section class="hero baby-hero">
+    <div class="hero-copy">
+      <span class="eyebrow">${esc(S.baby.name)}</span>
+      <h2>${isRecent(lastFeed)?`Fed ${feedAgo}`:'Baby care'}</h2>
+      <p>${prefLabel}${s.feeds?` · ${s.feeds} ${s.feeds===1?'feed':'feeds'} today`:' · nothing logged today'}</p>
+      <div class="chips">${isRecent(lastDiaper)?chip('diaper',`Diaper ${diaperAgo}`):''}${isRecent(lastSleep,18)?chip('moon',`Slept ${sinceLabel(lastSleep.date,lastSleep.time)}`):''}${!isRecent(lastFeed)&&lastFeed?chip('history',`Last feed ${fd(lastFeed.date)}`):''}</div>
+    </div>
+    <div class="hero-art">${babyIllustration()}</div>
+  </section>
   <div class="quick-grid baby-grid" aria-label="Quick baby logging">
     <button class="quick-tile feed" data-feed><span class="tile-art">${icon('bottle')}</span><strong>Feed</strong><small>Nurse or bottle</small></button>
     <button class="quick-tile wet" data-diaper="wet"><span class="tile-art">${icon('drop')}</span><strong>Wet</strong><small>Wet diaper</small></button>
-    <button class="quick-tile poop" data-diaper="poop"><span class="tile-art">${icon('diaper')}</span><strong>Poopy</strong><small>Poopy diaper</small></button>
-    <button class="quick-tile mixed" data-diaper="both"><span class="tile-art">${icon('diaper')}</span><strong>Mixed</strong><small>Wet + poopy</small></button>
+    <button class="quick-tile poop" data-diaper="poop"><span class="tile-art">${icon('poop')}</span><strong>Poopy</strong><small>Poopy diaper</small></button>
+    <button class="quick-tile mixed" data-diaper="both"><span class="tile-art">${icon('mixed')}</span><strong>Mixed</strong><small>Wet + poopy</small></button>
   </div>
+  <div class="more-actions">${['sleep','growth'].map(k=>`<button data-${k}>${icon(k==='sleep'?'moon':'scale')}<span>${k==='sleep'?'Sleep':'Growth'}</span></button>`).join('')}</div>
   ${todaySnapshot(s)}
-  ${panel('Recent care',recentBaby(5),'<button data-view="baby-history">See all</button>')}`;
+  ${panel('Recent care',recentBaby(6),'<button data-view="baby-history">See all</button>')}`;
 }
 function todaySnapshot(s){
-  return `<section class="today-strip"><div><span>Wet</span><strong>${s.wetTotal}</strong><small>${s.mixed?`${s.mixed} mixed`:''}</small></div><div><span>Poopy</span><strong>${s.poopTotal}</strong><small>${s.mixed?`${s.mixed} mixed`:''}</small></div><div><span>Feeds</span><strong>${s.feeds}</strong><small>${s.nursing} nursing</small></div><div><span>Bottle milk</span><strong>${s.bottleOz.toFixed(1)}</strong><small>oz logged</small></div></section>`;
+  const cell=(cls,ic,label,value,sub)=>`<div class="snap ${cls}"><div class="snap-icon">${icon(ic)}</div><span>${label}</span><strong>${value}</strong><small>${sub||''}</small></div>`;
+  return `<section class="today-strip">
+    ${cell('wet','drop','Wet',s.wetTotal,s.mixed?`${s.mixed} mixed`:'today')}
+    ${cell('poop','poop','Poopy',s.poopTotal,s.mixed?`${s.mixed} mixed`:'today')}
+    ${cell('feed','bottle','Feeds',s.feeds,`${s.nursing} nursing`)}
+    ${cell('milk','bottle','Bottle milk',s.bottleOz.toFixed(1),'oz logged')}
+  </section>`;
 }
 function babyLabel(e){
   if(e.eventType==='diaper') return e.subtype==='both'?'Mixed diaper':e.subtype==='poop'?'Poopy diaper':'Wet diaper';
@@ -261,8 +424,8 @@ function babyLabel(e){
   return cap(e.eventType);
 }
 function babyRow(e){
-  const ic=e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':'diaper'):e.eventType==='nursing'?'heart':e.eventType==='growth'?'growth':'moon';
-  return `<div class="row"><div class="row-icon baby ${e.eventType==='diaper'?`sub-${e.subtype}`:''}">${icon(ic)}</div><div class="row-main"><strong>${babyLabel(e)}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.exactSourceDuplicate?' · source duplicate preserved':''}</span></div><div class="row-status">${e.synced?'Saved':'Device'}</div></div>`;
+  const ic=e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':'moon';
+  return `<button type="button" class="row" data-record="baby:${esc(e.id)}"><div class="row-icon baby ${e.eventType==='diaper'?`sub-${esc(e.subtype)}`:`kind-${esc(e.eventType)}`}">${icon(ic)}</div><div class="row-main"><strong>${babyLabel(e)}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.note?` · ${esc(e.note)}`:''}${e.exactSourceDuplicate?' · source duplicate preserved':''}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
 }
 function recentBaby(n){ const a=babyEvents().filter(e=>!e.exactSourceDuplicate).slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('baby','No Baby history yet','Use one of the four buttons above to start.'); return `<div class="rows">${a.map(babyRow).join('')}</div>`; }
 function babyHistory(){
@@ -281,13 +444,17 @@ function babyTrends(){
   const range=+S.ui.trendRange||14, rows=dailyBabyRows(range);
   const totalNursing=sum(rows.map(r=>r.nursing)), totalBreastBottles=sum(rows.map(r=>r.breastMilkBottles)), totalFormula=sum(rows.map(r=>r.formulaBottles));
   return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Daily trends</h2></div></div>${pills([[7,'7 days'],[14,'14 days'],[30,'30 days']],range,'data-trend-range')}
-  <div class="metric-grid baby-summary">${metric('Wet diapers / day',avgFromActive(rows,'wetTotal'),'includes mixed','drop','baby')}${metric('Poopy / day',avgFromActive(rows,'poopTotal'),'includes mixed','diaper','baby')}${metric('Feeds / day',avgFromActive(rows,'feeds'),'nursing + bottles','bottle','baby')}${metric('Bottle milk / day',`${avgFromActive(rows,'bottleOz')} oz`,'logged bottles','bottle','baby')}</div>
+  <div class="metric-grid baby-summary">${metric('Wet diapers / day',avgFromActive(rows,'wetTotal'),'includes mixed','drop','baby')}${metric('Poopy / day',avgFromActive(rows,'poopTotal'),'includes mixed','poop','baby')}${metric('Feeds / day',avgFromActive(rows,'feeds'),'nursing + bottles','bottle','baby')}${metric('Bottle milk / day',`${avgFromActive(rows,'bottleOz')} oz`,'logged bottles','bottle','baby')}</div>
   ${panel('Daily log',babyDailyTable(rows))}
   ${panel('Feeding mix',`<div class="feeding-mix"><div><span>Nursing</span><strong>${totalNursing}</strong></div><div><span>Breast-milk bottles</span><strong>${totalBreastBottles}</strong></div><div><span>Formula bottles</span><strong>${totalFormula}</strong></div></div>`)}`;
 }
 function babyGrowth(){
   const a=babyEvents().filter(e=>e.eventType==='growth').sort(byWhenDesc), g=a[0];
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Growth</h2></div><button class="round-action baby" data-growth>${icon('plus')}<span>Add</span></button></div><div class="metric-grid three">${metric('Weight',g?.weightLb!=null?`${g.weightLb} lb${g.weightOz?` ${g.weightOz} oz`:''}`:'—',g?fd(g.date):'No measurement','growth','baby')}${metric('Length',g?.lengthIn!=null?`${g.lengthIn} in`:'—','latest','growth','baby')}${metric('Head',g?.headIn!=null?`${g.headIn} in`:'—','latest','growth','baby')}</div>${panel('Measurements',a.length?`<div class="rows">${a.map(e=>`<div class="row"><div class="row-icon baby">${icon('growth')}</div><div class="row-main"><strong>${e.weightLb??'—'} lb${e.weightOz?` ${e.weightOz} oz`:''} · ${e.lengthIn??'—'} in</strong><span>${fd(e.date)} · head ${e.headIn??'—'} in</span></div><div class="row-status">${e.synced?'Saved':'Device'}</div></div>`).join('')}</div>`:empty('growth','No measurements yet','Add measurements from pediatric visits.'))}<div class="clinical-note">For children under 2, clinicians generally follow weight, length, weight-for-length and head circumference over time using WHO growth standards.</div>`;
+  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Growth</h2></div><button class="round-action baby" data-growth>${icon('plus')}<span>Add</span></button></div><div class="metric-grid three">${metric('Weight',g?.weightLb!=null?`${g.weightLb} lb${g.weightOz?` ${g.weightOz} oz`:''}`:'—',g?fd(g.date):'No measurement','scale','baby')}${metric('Length',g?.lengthIn!=null?`${g.lengthIn} in`:'—','latest','growth','baby')}${metric('Head',g?.headIn!=null?`${g.headIn} in`:'—','latest','growth','baby')}</div>${panel('Measurements',a.length?`<div class="rows">${a.map(e=>{
+    const parts=[e.weightLb!=null?`${e.weightLb} lb${e.weightOz?` ${e.weightOz} oz`:''}`:null,e.lengthIn!=null?`${e.lengthIn} in long`:null].filter(Boolean);
+    const head=e.headIn!=null?` · head ${e.headIn} in`:'';
+    return `<button type="button" class="row" data-record="baby:${esc(e.id)}"><div class="row-icon baby kind-growth">${icon('scale')}</div><div class="row-main"><strong>${parts.length?parts.join(' · '):'Measurement'}</strong><span>${fd(e.date)}${head}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
+  }).join('')}</div>`:empty('growth','No measurements yet','Add measurements from pediatric visits.'))}<div class="clinical-note">For children under 2, clinicians generally follow weight, length, weight-for-length and head circumference over time using WHO growth standards.</div>`;
 }
 function doctorView(){
   const range=+S.ui.doctorRange||14, rows=dailyBabyRows(range), active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz), g=latestGrowth(), pref=feedingPreference();
@@ -330,7 +497,16 @@ function render(){
   const workspace=workspaceOf(view); S.ui.workspace=workspace; save();
   document.querySelectorAll('[data-workspace]').forEach(b=>b.classList.toggle('active',b.dataset.workspace===workspace));
   document.querySelectorAll('.sidebar [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
-  renderBottomNav(); syncBadge(); bindViewInputs();
+  renderSideNav(); renderBottomNav(); syncBadge(); bindViewInputs();
+}
+const SIDE_NAV=[
+  {label:'MOM',items:[['mom-home','Home','home'],['mom-history','History','history'],['mom-trends','Milk trends','chart'],['mom-stash','Freezer stash','snow']]},
+  {label:'BABY',items:[['baby-home','Home','baby'],['baby-history','History','history'],['baby-trends','Daily trends','chart'],['baby-growth','Growth','scale'],['doctor','Doctor summary','steth']]},
+  {label:'FAMILY',items:[['settings','Settings','settings']]}
+];
+function renderSideNav(){
+  const el=$('sideNav'); if(!el) return;
+  el.innerHTML=SIDE_NAV.map(g=>`<div class="side-label">${g.label}</div><nav>${g.items.map(([v,l,ic])=>`<button data-view="${v}" class="${view===v?'active':''}">${icon(ic)}<span>${l}</span></button>`).join('')}</nav>`).join('');
 }
 function renderBottomNav(){
   const w=workspaceOf(view), nav=$('bottomNav');
@@ -347,26 +523,107 @@ function syncBadge(){
 function openDrawer(){
   const w=workspaceOf(view);
   $('drawerBody').innerHTML = w==='baby' ?
-  `<button data-view="baby-home">${icon('baby')}<span>Baby home</span></button><button data-view="baby-history">${icon('history')}<span>History</span></button><button data-view="baby-trends">${icon('chart')}<span>Daily trends</span></button><button data-view="baby-growth">${icon('growth')}<span>Growth</span></button><button data-view="doctor">${icon('steth')}<span>Doctor summary</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="mom-home">${icon('heart')}<span>Switch to Mom</span></button>` :
-  `<button data-view="mom-home">${icon('heart')}<span>Mom home</span></button><button data-view="mom-history">${icon('history')}<span>History</span></button><button data-view="mom-trends">${icon('chart')}<span>Milk trends</span></button><button data-view="mom-stash">${icon('snow')}<span>Freezer stash</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="baby-home">${icon('baby')}<span>Switch to Baby</span></button>`;
+  `<button data-view="baby-home">${icon('baby')}<span>Baby home</span></button><button data-view="baby-history">${icon('history')}<span>History</span></button><button data-view="baby-trends">${icon('chart')}<span>Daily trends</span></button><button data-view="baby-growth">${icon('scale')}<span>Growth</span></button><button data-view="doctor">${icon('steth')}<span>Doctor summary</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="mom-home">${icon('nursing')}<span>Switch to Mom</span></button>` :
+  `<button data-view="mom-home">${icon('nursing')}<span>Mom home</span></button><button data-view="mom-history">${icon('history')}<span>History</span></button><button data-view="mom-trends">${icon('chart')}<span>Milk trends</span></button><button data-view="mom-stash">${icon('snow')}<span>Freezer stash</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="baby-home">${icon('baby')}<span>Switch to Baby</span></button>`;
   $('drawer').classList.add('open'); $('scrim').classList.add('open'); document.body.classList.add('locked');
 }
 function openSheet(html){ $('sheet').innerHTML=`<div class="sheet-handle"></div>${html}`; $('sheet').classList.add('open'); $('scrim').classList.add('open'); document.body.classList.add('locked'); }
 function addSheet(){
-  if(workspaceOf(view)==='mom') return openSheet(`<div class="sheet-head"><strong>Add Mom care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions two"><button data-mom="pump">${icon('drop')}<strong>Pump</strong><span>Milk output</span></button><button data-mom="nursing">${icon('heart')}<strong>Nursing</strong><span>Breastfeed</span></button></div>`);
-  openSheet(`<div class="sheet-head"><strong>Add Baby care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions"><button data-feed>${icon('bottle')}<strong>Feed</strong><span>Nurse or bottle</span></button><button data-diaper="wet">${icon('drop')}<strong>Wet</strong></button><button data-diaper="poop">${icon('diaper')}<strong>Poopy</strong></button><button data-diaper="both">${icon('diaper')}<strong>Mixed</strong></button><button data-sleep>${icon('moon')}<strong>Sleep</strong></button><button data-growth>${icon('growth')}<strong>Growth</strong></button></div>`);
+  if(workspaceOf(view)==='mom') return openSheet(`<div class="sheet-head"><strong>Add Mom care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions two"><button data-mom="pump">${icon('drop')}<strong>Pump</strong><span>Milk output</span></button><button data-mom="nursing">${icon('nursing')}<strong>Nursing</strong><span>Breastfeed</span></button></div>`);
+  openSheet(`<div class="sheet-head"><strong>Add Baby care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions"><button data-feed>${icon('bottle')}<strong>Feed</strong><span>Nurse or bottle</span></button><button data-diaper="wet">${icon('drop')}<strong>Wet</strong></button><button data-diaper="poop">${icon('poop')}<strong>Poopy</strong></button><button data-diaper="both">${icon('mixed')}<strong>Mixed</strong></button><button data-sleep>${icon('moon')}<strong>Sleep</strong></button><button data-growth>${icon('scale')}<strong>Growth</strong></button></div>`);
 }
 function feedSheet(){
   const pref=feedingPreference();
-  openSheet(`<div class="sheet-head"><strong>How did baby feed?</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions three"><button data-feed-type="nursing">${icon('heart')}<strong>Nursing</strong></button><button data-feed-type="expressed_milk" class="${pref!=='mostly_formula'?'recommended':''}">${icon('bottle')}<strong>Breast milk</strong><span>Bottle</span></button><button data-feed-type="formula" class="${pref==='mostly_formula'?'recommended':''}">${icon('bottle')}<strong>Formula</strong><span>Bottle</span></button></div>`);
+  openSheet(`<div class="sheet-head"><strong>How did baby feed?</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions three"><button data-feed-type="nursing">${icon('nursing')}<strong>Nursing</strong></button><button data-feed-type="expressed_milk" class="${pref!=='mostly_formula'?'recommended':''}">${icon('bottle')}<strong>Breast milk</strong><span>Bottle</span></button><button data-feed-type="formula" class="${pref==='mostly_formula'?'recommended':''}">${icon('bottle')}<strong>Formula</strong><span>Bottle</span></button></div>`);
 }
-function openMomDialog(type){ closeOverlays(); $('momType').value=type; $('momDialogTitle').textContent=type==='pump'?'Pump':'Nursing'; $('momDate').value=today(); $('momTime').value=now(); $('momAmount').value=''; $('momDuration').value=''; $('momNote').value=''; const pump=type==='pump'; $('momAmountWrap').classList.toggle('hidden',!pump); $('momSideWrap').classList.toggle('hidden',pump); $('momAmount').required=pump; $('momDialog').showModal(); }
-function openDiaperDialog(kind){ closeOverlays(); const normalized=normalizeSubtype(kind); $('diaperKind').value=normalized; $('diaperDialogTitle').textContent=normalized==='wet'?'Wet diaper':normalized==='poop'?'Poopy diaper':'Mixed diaper'; $('diaperDate').value=today(); $('diaperTime').value=now(); $('diaperNote').value=''; $('diaperDialog').showModal(); }
-function openFeedDialog(type){ closeOverlays(); $('feedType').value=type; $('feedDialogTitle').textContent=type==='nursing'?'Nursing':type==='formula'?'Formula bottle':'Breast milk bottle'; $('feedDate').value=today(); $('feedTime').value=now(); $('feedAmount').value=''; $('feedDuration').value=''; const nursing=type==='nursing'; $('feedAmountWrap').classList.toggle('hidden',nursing); $('feedNursingWrap').classList.toggle('hidden',!nursing); $('feedSideWrap').classList.toggle('hidden',!nursing); $('feedAmount').required=!nursing; $('feedDuration').required=nursing; $('feedDialog').showModal(); }
-function openGrowthDialog(){ closeOverlays(); $('growthDate').value=today(); $('growthWeightLb').value=''; $('growthWeightOz').value=''; $('growthLength').value=''; $('growthHead').value=''; $('growthNote').value=''; $('growthDialog').showModal(); }
-function openSleepDialog(){ closeOverlays(); $('sleepDate').value=today(); $('sleepTime').value=now(); $('sleepMinutes').value=''; $('sleepDialog').showModal(); }
+function findRecord(kind,id){ return (kind==='mom' ? S.entries : S.babyEvents).find(e => e.id === id) || null; }
+function recordTitle(kind,e){ return kind==='mom' ? (e.type==='pump' ? `${e.amountMl||0} mL pump` : `${e.durationMin||0} min nursing`) : babyLabel(e); }
+function openRecordSheet(kind,id){
+  const e=findRecord(kind,id); if(!e) return;
+  const ic = kind==='mom' ? (e.type==='pump'?'drop':'nursing') : (e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':'moon');
+  openSheet(`<div class="sheet-head"><strong>Entry</strong><button data-close aria-label="Close">${icon('close')}</button></div>
+  <div class="record-card"><div class="record-icon ${kind}">${icon(ic)}</div><div><strong>${esc(recordTitle(kind,e))}</strong><span>${fdl(e.date)} · ${to12(e.time)}</span>${e.note?`<small>${esc(e.note)}</small>`:''}</div></div>
+  <div class="record-actions"><button data-edit-record="${kind}:${esc(e.id)}">${icon('edit')}<span>Edit</span></button><button class="danger" data-void-record="${kind}:${esc(e.id)}">${icon('trash')}<span>Remove</span></button></div>
+  <p class="record-note">Removing hides the entry from history and totals. It is never erased, and you can undo it.</p>`);
+}
+// Soft-void only: the record keeps its id and stays in local + cloud storage, so nothing is
+// ever destroyed and the removal can be undone or reversed from a backup.
+async function voidRecord(kind,id){
+  const e=findRecord(kind,id); if(!e) return;
+  closeOverlays();
+  e.voidedAt=new Date().toISOString(); e.synced=false; save(); render();
+  try{ kind==='mom' ? await pushMom(e) : await pushBabies([e]); }catch{}
+  toast('Entry removed',6000,{label:'Undo',run:()=>restoreRecord(kind,id)});
+}
+async function restoreRecord(kind,id){
+  const e=findRecord(kind,id); if(!e) return;
+  delete e.voidedAt; e.editedAt=new Date().toISOString(); e.synced=false; save(); render();
+  try{ kind==='mom' ? await pushMom(e) : await pushBabies([e]); }catch{}
+  toast('Entry restored');
+}
+let editing=null;
+function editRecord(kind,id){
+  const e=findRecord(kind,id); if(!e) return;
+  closeOverlays();
+  let handled=true;
+  if(kind==='mom'){
+    openMomDialog(e.type,true);
+    $('momDate').value=e.date||today(); $('momTime').value=e.time||now();
+    $('momAmount').value=e.amountMl??''; $('momDuration').value=e.durationMin??'';
+    $('momNote').value=e.note||''; if(e.side) $('momSide').value=e.side;
+  } else if(e.eventType==='diaper'){
+    openDiaperDialog(e.subtype,true);
+    $('diaperDate').value=e.date; $('diaperTime').value=e.time; $('diaperNote').value=e.note||'';
+  } else if(e.eventType==='feeding'||e.eventType==='nursing'){
+    openFeedDialog(e.eventType==='nursing'?'nursing':(e.feedingType||'expressed_milk'),true);
+    $('feedDate').value=e.date; $('feedTime').value=e.time;
+    $('feedAmount').value=e.amountOz??''; $('feedDuration').value=e.durationMinutes??e.totalMinutes??'';
+    if(e.side) $('feedSide').value=e.side;
+  } else if(e.eventType==='growth'){
+    openGrowthDialog(true);
+    $('growthDate').value=e.date; $('growthWeightLb').value=e.weightLb??''; $('growthWeightOz').value=e.weightOz??'';
+    $('growthLength').value=e.lengthIn??''; $('growthHead').value=e.headIn??''; $('growthNote').value=e.note||'';
+  } else if(e.eventType==='sleep'){
+    openSleepDialog(true);
+    $('sleepDate').value=e.date; $('sleepTime').value=e.time; $('sleepMinutes').value=e.durationMinutes??'';
+  } else handled=false;
+  // Set AFTER opening: showDialog may close an already-open dialog, and that fires the
+  // 'close' handler which clears `editing` - an edit would silently become a new record.
+  editing = handled ? {kind,id} : null;
+  if(!handled) toast('That entry type cannot be edited yet.');
+}
+// Dialogs are shared between "add" and "edit"; `editing` decides which one a submit means.
+function commitRecord(list,built){
+  if(editing){
+    const e=findRecord(editing.kind,editing.id);
+    if(e){ Object.assign(e,built,{id:e.id,createdAt:e.createdAt||built.createdAt,editedAt:new Date().toISOString(),synced:false}); editing=null; return e; }
+    editing=null;
+  }
+  list.push(built); return built;
+}
+// showModal() throws if the dialog is already open (double-tap), so always reset first.
+function showDialog(id,isEdit){
+  const d=$(id); if(!d) return;
+  if(d.open){ try{ d.close(); }catch{} }
+  d.classList.toggle('is-edit',!!isEdit);
+  d.querySelectorAll('[data-save-label]').forEach(b => b.textContent = isEdit ? 'Save changes' : b.dataset.saveLabel);
+  try{ d.showModal(); }catch{}
+}
+function openMomDialog(type,isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('momType').value=type; $('momDialogTitle').textContent=(isEdit?'Edit ':'')+(type==='pump'?'Pump':'Nursing'); $('momDate').value=today(); $('momTime').value=now(); $('momAmount').value=''; $('momDuration').value=''; $('momNote').value=''; const pump=type==='pump'; $('momAmountWrap').classList.toggle('hidden',!pump); $('momSideWrap').classList.toggle('hidden',pump); $('momAmount').required=pump; showDialog('momDialog',isEdit); }
+function openDiaperDialog(kind,isEdit=false){ closeOverlays(); if(!isEdit) editing=null; const normalized=normalizeSubtype(kind); $('diaperKind').value=normalized; $('diaperDialogTitle').textContent=(isEdit?'Edit ':'')+(normalized==='wet'?'Wet diaper':normalized==='poop'?'Poopy diaper':'Mixed diaper'); $('diaperDate').value=today(); $('diaperTime').value=now(); $('diaperNote').value=''; showDialog('diaperDialog',isEdit); }
+function openFeedDialog(type,isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('feedType').value=type; $('feedDialogTitle').textContent=(isEdit?'Edit ':'')+(type==='nursing'?'Nursing':type==='formula'?'Formula bottle':'Breast milk bottle'); $('feedDate').value=today(); $('feedTime').value=now(); $('feedAmount').value=''; $('feedDuration').value=''; const nursing=type==='nursing'; $('feedAmountWrap').classList.toggle('hidden',nursing); $('feedNursingWrap').classList.toggle('hidden',!nursing); $('feedSideWrap').classList.toggle('hidden',!nursing); $('feedAmount').required=!nursing; $('feedDuration').required=nursing; showDialog('feedDialog',isEdit); }
+function openGrowthDialog(isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('growthDate').value=today(); $('growthWeightLb').value=''; $('growthWeightOz').value=''; $('growthLength').value=''; $('growthHead').value=''; $('growthNote').value=''; showDialog('growthDialog',isEdit); }
+function openSleepDialog(isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('sleepDate').value=today(); $('sleepTime').value=now(); $('sleepMinutes').value=''; showDialog('sleepDialog',isEdit); }
+// Closing a dialog by any route (Cancel, ×, Esc) must drop the pending edit.
+['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].forEach(id => $(id)?.addEventListener('close',()=>{ editing=null; }));
 
 function bindViewInputs(){
+  // A 30-day chart overflows: the most recent days matter most, so open scrolled to them.
+  document.querySelectorAll('.bars-scroll').forEach(el => { el.scrollLeft = el.scrollWidth; });
+  document.querySelectorAll('.schedule-strip').forEach(el => {
+    const next=el.querySelector('.schedule-card:not(.done)');
+    if(next && el.scrollWidth > el.clientWidth) el.scrollLeft = Math.max(0, next.offsetLeft - 12);
+  });
   $('stashExact')?.addEventListener('change',e=>{ S.profile.stashMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); render(); });
   $('goalMl')?.addEventListener('change',e=>{ S.profile.dailyGoalMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); });
   $('stashMl')?.addEventListener('change',e=>{ S.profile.stashMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); });
@@ -448,7 +705,7 @@ async function reconcile(){
   await pushBabies(S.babyEvents.filter(e=>!remoteBaby.has(e.id)));
   await pushProfile(); S.cloud.lastSync=new Date().toISOString(); save();
 }
-async function pushMom(e){ if(!cloud||!S.cloud.userId) return; await momRef().doc(e.id).set({type:e.type,date:e.date,time:e.time||'',amountMl:e.amountMl??null,durationMin:e.durationMin??null,side:e.side||null,quality:e.quality||null,note:e.note||'',source:e.source||'MilkFlow',updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); e.synced=true; S.cloud.lastSync=new Date().toISOString(); save(); }
+async function pushMom(e){ if(!cloud||!S.cloud.userId) return; await momRef().doc(e.id).set({type:e.type,date:e.date,time:e.time||'',amountMl:e.amountMl??null,durationMin:e.durationMin??null,side:e.side||null,quality:e.quality||null,note:e.note||'',source:e.source||'MilkFlow',createdAt:e.createdAt||null,editedAt:e.editedAt||null,voidedAt:e.voidedAt||null,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); e.synced=true; S.cloud.lastSync=new Date().toISOString(); save(); }
 async function pushBabies(arr){
   if(!cloud||!S.cloud.userId||!arr.length) return;
   for(let i=0;i<arr.length;i+=350){ const part=arr.slice(i,i+350).map(normalizeBabyEvent), batch=cloud.db.batch(); for(const e of part) batch.set(babyRef().doc(e.id),{...e,synced:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); await batch.commit(); part.forEach(e=>e.synced=true); }
@@ -493,6 +750,9 @@ function handleClick(e){
   const route=e.target.closest('[data-view]'); if(route){ setView(route.dataset.view); return; }
   if(e.target.closest('[data-menu]')||e.target.closest('[data-more]')){ openDrawer(); return; }
   if(e.target.closest('[data-add]')){ addSheet(); return; }
+  const rec=e.target.closest('[data-record]'); if(rec){ const [k,...r]=rec.dataset.record.split(':'); openRecordSheet(k,r.join(':')); return; }
+  const er=e.target.closest('[data-edit-record]'); if(er){ const [k,...r]=er.dataset.editRecord.split(':'); editRecord(k,r.join(':')); return; }
+  const vr=e.target.closest('[data-void-record]'); if(vr){ const [k,...r]=vr.dataset.voidRecord.split(':'); voidRecord(k,r.join(':')); return; }
   const mom=e.target.closest('[data-mom]'); if(mom){ openMomDialog(mom.dataset.mom); return; }
   if(e.target.closest('[data-feed]')){ feedSheet(); return; }
   const ft=e.target.closest('[data-feed-type]'); if(ft){ openFeedDialog(ft.dataset.feedType); return; }
@@ -515,14 +775,17 @@ function handleClick(e){
 }
 document.addEventListener('click',handleClick);
 
-$('momForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('momType').value, x={id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',synced:false}; S.entries.push(x); save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); });
-$('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const x=normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'diaper',date:$('diaperDate').value,time:$('diaperTime').value,subtype:$('diaperKind').value,note:$('diaperNote').value.trim(),sourceFile:'MilkFlow',synced:false}); S.babyEvents.push(x); save(); $('diaperDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); });
-$('feedForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('feedType').value, x=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',synced:false}); S.babyEvents.push(x); save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); });
-$('growthForm').addEventListener('submit',async e=>{ e.preventDefault(); const x=normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'growth',date:$('growthDate').value,time:'12:00',weightLb:$('growthWeightLb').value===''?null:+$('growthWeightLb').value,weightOz:$('growthWeightOz').value===''?null:+$('growthWeightOz').value,lengthIn:$('growthLength').value===''?null:+$('growthLength').value,headIn:$('growthHead').value===''?null:+$('growthHead').value,note:$('growthNote').value.trim(),sourceFile:'MilkFlow',synced:false}); S.babyEvents.push(x); save(); $('growthDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} setView('baby-growth'); });
-$('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const x=normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:+$('sleepMinutes').value||0,sourceFile:'MilkFlow',synced:false}); S.babyEvents.push(x); save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); });
+$('momForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('momType').value, wasEdit=!!editing; const x=commitRecord(S.entries,{id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false}); save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved')); });
+$('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'diaper',date:$('diaperDate').value,time:$('diaperTime').value,subtype:$('diaperKind').value,note:$('diaperNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('diaperDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Diaper logged'); });
+$('feedForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('feedType').value, wasEdit=!!editing, stamp=new Date().toISOString(); const built=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}); const x=commitRecord(S.babyEvents,built); save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Feed logged'); });
+$('growthForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'growth',date:$('growthDate').value,time:'12:00',weightLb:$('growthWeightLb').value===''?null:+$('growthWeightLb').value,weightOz:$('growthWeightOz').value===''?null:+$('growthWeightOz').value,lengthIn:$('growthLength').value===''?null:+$('growthLength').value,headIn:$('growthHead').value===''?null:+$('growthHead').value,note:$('growthNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('growthDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} setView('baby-growth'); toast(wasEdit?'Measurement updated':'Measurement saved'); });
+$('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:+$('sleepMinutes').value||0,sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Sleep logged'); });
 $('authForm').addEventListener('submit',async e=>{ e.preventDefault(); if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.signInWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('createAccount').addEventListener('click',async()=>{ if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.createUserWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('importFile').addEventListener('change',e=>{ const f=e.target.files?.[0]; if(f) importBackup(f); e.target.value=''; });
 
-S.babyEvents=S.babyEvents.map(normalizeBabyEvent); save(); render(); initCloud(); tickReminders(); setInterval(tickReminders,60000);
+S.babyEvents=S.babyEvents.map(normalizeBabyEvent); save();
+// Seed the first history entry so Back from the very first screen behaves predictably.
+history.replaceState({view},'',`#${view}`);
+render(); initCloud(); tickReminders(); setInterval(tickReminders,60000);
 })();
