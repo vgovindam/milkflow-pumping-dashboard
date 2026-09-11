@@ -10,19 +10,19 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>MilkFlow Family — Mom & Baby Care</title>
-  <link rel="manifest" href="manifest.webmanifest?v=6" />
+  <link rel="manifest" href="manifest.webmanifest?v=7" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=6" />
-  <link rel="stylesheet" href="family.css?v=6" />
-  <link rel="stylesheet" href="family-friendly.css?v=6" />
+  <link rel="stylesheet" href="styles.css?v=7" />
+  <link rel="stylesheet" href="family.css?v=7" />
+  <link rel="stylesheet" href="family-friendly.css?v=7" />
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="config.js?v=6" defer></script>
-  <script src="app-v4.js?v=6" defer></script>
-  <script src="family-friendly.js?v=6" defer></script>
+  <script src="config.js?v=7" defer></script>
+  <script src="app-v4.js?v=7" defer></script>
+  <script src="family-friendly.js?v=7" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -43,20 +43,83 @@
   </div>
   <nav class="mobile-nav"><button data-view="mom-home" class="active"><span>♥</span>Mom</button><button data-view="today"><span>◷</span>Today</button><button data-view="baby-home"><span>●</span>Baby</button><button data-view="history"><span>≡</span>History</button><button data-view="settings"><span>⚙</span>More</button></nav>
   <button class="fab" id="fabBtn" aria-label="Quick add">＋</button><div class="fab-menu hidden" id="fabMenu"><button data-quick="pump">Pump</button><button data-quick="nursing">Nursing</button><button data-quick="wet">Wet diaper</button><button data-quick="poop">Poop diaper</button><button data-quick="bottle">Bottle</button></div>
-  <dialog id="entryDialog" class="dialog"><form method="dialog" id="entryForm"><div class="dialog-head"><div><span class="eyebrow">MOM</span><h2 id="dialogTitle">Log pump</h2></div><button class="icon-btn" value="cancel" aria-label="Close">×</button></div><input type="hidden" id="entryType" value="pump"/><div class="form-grid"><label>Date<input id="entryDate" type="date" required></label><label>Time<input id="entryTime" type="time" required></label><label class="pump-only">Amount (mL)<input id="entryAmount" type="number" min="0" max="1200" step="1" placeholder="120"></label><label>Duration (min)<input id="entryDuration" type="number" min="0" max="180" step="1" placeholder="30"></label><label class="nurse-only hidden">Side<select id="entrySide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label><label class="pump-only">Pump type<select id="entryQuality"><option value="normal">Regular</option><option value="short">Short / on-the-go</option><option value="power">Power pump</option></select></label></div><label>Notes<textarea id="entryNote" rows="3" placeholder="Optional"></textarea></label><div class="dialog-actions"><button class="btn ghost" value="cancel">Cancel</button><button class="btn primary" value="default">Save</button></div></form></dialog>
-  <dialog id="babyDialog" class="dialog"><form method="dialog" id="babyForm"><div class="dialog-head"><div><span class="eyebrow">BABY</span><h2 id="babyDialogTitle">Log baby care</h2></div><button class="icon-btn" value="cancel" aria-label="Close">×</button></div><input id="babyEventType" type="hidden" value="diaper"/><div class="form-grid"><label>Date<input id="babyDate" type="date" required></label><label>Time<input id="babyTime" type="time" required></label><label id="babySubtypeWrap">Type<select id="babySubtype"><option value="wet">Wet</option><option value="poop">Poop</option><option value="both">Both</option></select></label><label id="babyAmountWrap" class="hidden">Amount (oz)<input id="babyAmount" type="number" min="0" max="20" step="0.1" placeholder="3"></label></div><label>Notes<textarea id="babyNote" rows="3" placeholder="Optional"></textarea></label><div class="dialog-actions"><button class="btn ghost" value="cancel">Cancel</button><button class="btn baby-primary" value="default">Save</button></div></form></dialog>
+
+  <dialog id="entryDialog" class="dialog entry-sheet">
+    <form method="dialog" id="entryForm">
+      <div class="dialog-head sticky-dialog-head">
+        <div><span class="eyebrow">MOM</span><h2 id="dialogTitle">Log pump</h2><p class="dialog-sub">Fast entry — most fields use pickers, not the keyboard.</p></div>
+        <button class="icon-btn close-pill" value="cancel" aria-label="Close">×</button>
+      </div>
+      <input type="hidden" id="entryType" value="pump"/>
+
+      <section class="entry-section">
+        <div class="entry-section-title"><span>1</span><div><strong>When?</strong><small>Defaults to right now</small></div></div>
+        <div class="picker-grid two">
+          <label class="picker-field"><span>Date</span><input id="entryDate" type="date" required></label>
+          <label class="picker-field"><span>Time</span><input id="entryTime" type="time" required></label>
+        </div>
+      </section>
+
+      <section class="entry-section pump-only">
+        <div class="entry-section-title"><span>2</span><div><strong>How much?</strong><small>Choose the closest amount</small></div></div>
+        <label class="picker-field big-picker"><span>Pumped milk</span><select id="entryAmount" required><option value="">Select amount</option><option value="30">30 mL</option><option value="45">45 mL</option><option value="60">60 mL</option><option value="75">75 mL</option><option value="90">90 mL</option><option value="100">100 mL</option><option value="110">110 mL</option><option value="115">115 mL</option><option value="120">120 mL</option><option value="125">125 mL</option><option value="130">130 mL</option><option value="140">140 mL</option><option value="150">150 mL</option><option value="160">160 mL</option><option value="165">165 mL</option><option value="170">170 mL</option><option value="180">180 mL</option><option value="190">190 mL</option><option value="200">200 mL</option><option value="215">215 mL</option><option value="225">225 mL</option><option value="240">240 mL</option><option value="270">270 mL</option><option value="300">300 mL</option></select></label>
+      </section>
+
+      <section class="entry-section">
+        <div class="entry-section-title"><span class="pump-only">3</span><span class="nurse-only hidden">2</span><div><strong>Details</strong><small>Optional — skip anything you don't need</small></div></div>
+        <div class="picker-grid two">
+          <label class="picker-field"><span>Duration</span><select id="entryDuration"><option value="">Not tracked</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="25">25 min</option><option value="30" selected>30 min</option><option value="35">35 min</option><option value="40">40 min</option><option value="45">45 min</option><option value="50">50 min</option><option value="60">60 min</option></select></label>
+          <label class="picker-field nurse-only hidden"><span>Breast</span><select id="entrySide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label>
+          <label class="picker-field pump-only"><span>Pump type</span><select id="entryQuality"><option value="normal">Regular</option><option value="short">Short / on-the-go</option><option value="power">Power pump</option></select></label>
+        </div>
+        <details class="optional-note"><summary>＋ Add a note</summary><textarea id="entryNote" rows="2" placeholder="Anything worth remembering?"></textarea></details>
+      </section>
+
+      <div class="dialog-actions sticky-save"><button class="btn ghost" value="cancel">Cancel</button><button class="btn primary save-large" value="default">Save</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="babyDialog" class="dialog entry-sheet baby-sheet">
+    <form method="dialog" id="babyForm">
+      <div class="dialog-head sticky-dialog-head">
+        <div><span class="eyebrow">BABY</span><h2 id="babyDialogTitle">Log baby care</h2><p class="dialog-sub">A few taps and you’re done.</p></div>
+        <button class="icon-btn close-pill" value="cancel" aria-label="Close">×</button>
+      </div>
+      <input id="babyEventType" type="hidden" value="diaper"/>
+
+      <section class="entry-section">
+        <div class="entry-section-title"><span>1</span><div><strong>When?</strong><small>Defaults to right now</small></div></div>
+        <div class="picker-grid two">
+          <label class="picker-field"><span>Date</span><input id="babyDate" type="date" required></label>
+          <label class="picker-field"><span>Time</span><input id="babyTime" type="time" required></label>
+        </div>
+      </section>
+
+      <section class="entry-section">
+        <div class="entry-section-title"><span>2</span><div><strong>What happened?</strong><small>Use the picker — no typing needed</small></div></div>
+        <div class="picker-grid two">
+          <label id="babySubtypeWrap" class="picker-field big-picker"><span>Type</span><select id="babySubtype"><option value="wet">Wet diaper</option><option value="poop">Poopy diaper</option><option value="both">Wet + poopy</option></select></label>
+          <label id="babyAmountWrap" class="picker-field big-picker hidden"><span>Bottle amount</span><select id="babyAmount"><option value="">Select amount</option><option value="1">1 oz</option><option value="1.5">1.5 oz</option><option value="2">2 oz</option><option value="2.5">2.5 oz</option><option value="3" selected>3 oz</option><option value="3.5">3.5 oz</option><option value="4">4 oz</option><option value="4.5">4.5 oz</option><option value="5">5 oz</option><option value="5.5">5.5 oz</option><option value="6">6 oz</option></select></label>
+        </div>
+        <details class="optional-note"><summary>＋ Add a note</summary><textarea id="babyNote" rows="2" placeholder="Optional detail"></textarea></details>
+      </section>
+
+      <div class="dialog-actions sticky-save"><button class="btn ghost" value="cancel">Cancel</button><button class="btn baby-primary save-large" value="default">Save</button></div>
+    </form>
+  </dialog>
+
   <dialog id="authDialog" class="dialog small-dialog"><form method="dialog" id="authForm"><div class="dialog-head"><div><span class="eyebrow">FAMILY ACCOUNT</span><h2>Sign in to MilkFlow</h2></div><button class="icon-btn" value="cancel" aria-label="Close">×</button></div><div class="auth-helper"><strong>Already have a MilkFlow account?</strong> Enter the same email and password and tap <strong>Sign in</strong>.<br><br><strong>First time?</strong> Tap <strong>Create family account</strong> once, then use that same login on each family device.</div><label>Email<input id="authEmail" type="email" autocomplete="email" required></label><label>Password<input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></label><div class="auth-actions"><button type="button" class="btn ghost" id="signUpBtn">Create family account</button><button class="btn primary" value="default">Sign in</button></div></form></dialog>
   <input type="file" id="importFile" accept="application/json,.json" class="hidden"/>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', async () => {
-        const seen = localStorage.getItem('milkflow-sw-v6');
+        const seen = localStorage.getItem('milkflow-sw-v7');
         if (!seen) {
           const regs = await navigator.serviceWorker.getRegistrations();
           await Promise.all(regs.map(r => r.unregister()));
-          localStorage.setItem('milkflow-sw-v6','1');
-          navigator.serviceWorker.register('./sw.js?v=6').catch(()=>{});
+          localStorage.setItem('milkflow-sw-v7','1');
+          navigator.serviceWorker.register('./sw.js?v=7').catch(()=>{});
         }
       });
     }
