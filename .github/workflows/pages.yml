@@ -24,15 +24,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Validate app JavaScript
-        run: node --check app-v7.js
+        run: node --check app.js
       - name: Verify production files
         run: |
           test -f index.html
-          test -f app-v7.js
-          test -f app-v7.css
+          test -f app.js
+          test -f styles.css
           test -f config.js
-          grep -q 'app-v7.js' index.html
-          grep -q 'app-v7.css' index.html
+          grep -q 'app.js' index.html
+          grep -q 'styles.css' index.html
+          ! grep -q 'app-v7.js' index.html
+          ! grep -q 'data-migration-v7.js' index.html
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
