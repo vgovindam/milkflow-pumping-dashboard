@@ -24,14 +24,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Validate app JavaScript
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check app-reliability.js
+          node --check smart-pumping.js
+          node --check pump-insights.js
+          node --check ai-coach-client.js
       - name: Verify production files
         run: |
           test -f index.html
           test -f app.js
+          test -f app-reliability.js
+          test -f smart-pumping.js
+          test -f pump-insights.js
+          test -f ai-coach-client.js
           test -f styles.css
           test -f config.js
           grep -q 'app.js' index.html
+          grep -q 'app-reliability.js' index.html
+          grep -q 'smart-pumping.js' index.html
+          grep -q 'pump-insights.js' index.html
+          grep -q 'ai-coach-client.js' index.html
           grep -q 'styles.css' index.html
           ! grep -q 'app-v7.js' index.html
           ! grep -q 'data-migration-v7.js' index.html
