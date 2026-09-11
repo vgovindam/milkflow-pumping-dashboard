@@ -1,14 +1,112 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f5fa"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>MilkFlow Family</title><link rel="manifest" href="manifest.webmanifest?v=12"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="app-v6.css?v=12">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script><script src="config.js?v=12" defer></script><script src="app-v6.js?v=12" defer></script></head><body>
-<div class="app-shell"><aside class="sidebar" id="sidebar"><div class="brand"><div class="brand-mark"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></div><div><strong>MilkFlow</strong><small>Family care</small></div></div><div class="workspace-switch"><button data-workspace="mom">Mom</button><button data-workspace="baby">Baby</button></div><div class="nav-section">MOM</div><nav class="nav"><button class="nav-item" data-view="mom-home">♥ Home</button><button class="nav-item" data-view="today">◷ Today</button><button class="nav-item" data-view="history">≡ History</button><button class="nav-item" data-view="trends">⌁ Trends</button><button class="nav-item" data-view="stash">❄ Stash</button></nav><div class="nav-section">BABY</div><nav class="nav"><button class="nav-item" data-view="baby-home">● Home</button><button class="nav-item" data-view="baby-history">≡ History</button><button class="nav-item" data-view="doctor">✚ Doctor summary</button></nav><div class="nav-section">FAMILY</div><nav class="nav"><button class="nav-item" data-view="settings">⚙ Settings</button></nav><div class="sidebar-bottom"><div class="sync-card"><div class="sync-dot"></div><div><strong id="syncTitle">On this device</strong><span id="syncSubtitle">Sign in to sync</span></div></div></div></aside>
-<main class="main"><header class="topbar"><button class="icon-btn" data-menu aria-label="Open menu"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><div class="topbar-title"><h1 id="viewTitle">Mom</h1></div><span class="cloud-badge off" id="cloudBadge">Device</span><div class="mobile-workspace"><button data-workspace="mom">Mom</button><button data-workspace="baby">Baby</button></div><div class="top-actions" id="topActions"></div></header><section class="content" id="content"></section></main></div>
-<div class="scrim" id="scrim"></div>
-<nav class="mobile-nav"><button data-mobile-tab="home"></button><button data-mobile-tab="history"></button><button class="add-tab" data-mobile-tab="add"></button><button data-mobile-tab="insights"></button><button data-mobile-tab="more"></button></nav>
-<div class="bottom-sheet" id="quickSheet"></div><div class="bottom-sheet" id="moreSheet"></div>
-<dialog id="entryDialog" class="dialog"><form id="entryForm"><div class="dialog-head"><h2 id="dialogTitle">Pump</h2><button type="button" class="icon-btn" onclick="document.getElementById('entryDialog').close()">×</button></div><input type="hidden" id="entryType" value="pump"><section class="entry-section"><div class="entry-section-title">Date & time</div><div class="picker-grid two"><label class="picker-field"><span>Date</span><input id="entryDate" type="date" required></label><label class="picker-field"><span>Time</span><input id="entryTime" type="time" required></label></div></section><section class="entry-section pump-only"><div class="entry-section-title">Milk</div><label class="picker-field"><span>Amount (mL)</span><input id="entryAmount" type="number" inputmode="decimal" min="0" max="1200" step="1" required></label></section><section class="entry-section"><div class="entry-section-title">Details</div><div class="picker-grid two"><label class="picker-field"><span>Minutes</span><input id="entryDuration" type="number" inputmode="numeric" min="0" max="180" step="1"></label><label class="picker-field nurse-only hidden"><span>Side</span><select id="entrySide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label><label class="picker-field pump-only"><span>Type</span><select id="entryQuality"><option value="normal">Regular</option><option value="short">Short</option><option value="power">Power pump</option></select></label></div><details class="optional-note"><summary>Add note</summary><textarea id="entryNote" rows="2"></textarea></details></section><div class="dialog-actions"><button type="button" class="btn ghost" onclick="document.getElementById('entryDialog').close()">Cancel</button><button class="btn primary">Save</button></div></form></dialog>
-<dialog id="babyDialog" class="dialog"><form id="babyForm"><div class="dialog-head"><h2 id="babyDialogTitle">Baby care</h2><button type="button" class="icon-btn" onclick="document.getElementById('babyDialog').close()">×</button></div><input type="hidden" id="babyEventType" value="diaper"><section class="entry-section"><div class="entry-section-title">Date & time</div><div class="picker-grid two"><label class="picker-field"><span>Date</span><input id="babyDate" type="date" required></label><label class="picker-field"><span>Time</span><input id="babyTime" type="time" required></label></div></section><section class="entry-section"><div class="entry-section-title">Details</div><div class="picker-grid two"><label class="picker-field"><span>Type</span><select id="babySubtype"><option value="wet">Wet</option><option value="poop">Poop</option><option value="both">Wet + poop</option></select></label><label class="picker-field hidden" id="babyAmountWrap"><span>Bottle (oz)</span><input id="babyAmount" type="number" inputmode="decimal" min="0" max="20" step="0.1"></label></div><details class="optional-note"><summary>Add note</summary><textarea id="babyNote" rows="2"></textarea></details></section><div class="dialog-actions"><button type="button" class="btn ghost" onclick="document.getElementById('babyDialog').close()">Cancel</button><button class="btn primary">Save</button></div></form></dialog>
-<dialog id="authDialog" class="dialog small-dialog"><form id="authForm"><div class="dialog-head"><h2>Family sign in</h2><button type="button" class="icon-btn" onclick="document.getElementById('authDialog').close()">×</button></div><div class="auth-helper">Use the same family account on every device.</div><label>Email<input id="authEmail" type="email" autocomplete="email" required></label><label>Password<input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></label><div class="auth-actions"><button type="button" class="btn ghost" id="signUpBtn">Create account</button><button class="btn primary">Sign in</button></div></form></dialog>
-<input type="file" id="importFile" accept="application/json,.json" class="hidden"><div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script>if('serviceWorker'in navigator){window.addEventListener('load',async()=>{const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));navigator.serviceWorker.register('./sw.js?v=12').catch(()=>{});});}</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f7f6fb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>MilkFlow Family</title>
+  <link rel="manifest" href="manifest.webmanifest?v=13">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app-v7.css?v=13">
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+  <script src="config.js?v=13" defer></script>
+  <script src="app-v7.js?v=13" defer></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-logo"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></div><div><strong>MilkFlow</strong><span>Family care</span></div></div>
+    <div class="workspace"><button data-workspace="mom">Mom</button><button data-workspace="baby">Baby</button></div>
+    <div class="side-label">MOM</div>
+    <nav><button data-view="mom-home"><span>♥</span>Home</button><button data-view="mom-history"><span>≡</span>History</button><button data-view="mom-trends"><span>⌁</span>Trends</button><button data-view="mom-stash"><span>❄</span>Stash</button></nav>
+    <div class="side-label">BABY</div>
+    <nav><button data-view="baby-home"><span>●</span>Home</button><button data-view="baby-history"><span>≡</span>History</button><button data-view="baby-trends"><span>⌁</span>Trends</button><button data-view="baby-growth"><span>↗</span>Growth</button><button data-view="doctor"><span>✚</span>Doctor summary</button></nav>
+    <div class="side-label">FAMILY</div>
+    <nav><button data-view="settings"><span>⚙</span>Settings</button></nav>
+    <div class="side-status"><strong id="syncTitle">On this device</strong><span id="syncSubtitle">Sign in to sync across devices</span></div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <button class="menu-btn" data-menu aria-label="Open menu"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="title-wrap"><h1 id="pageTitle">Mom</h1></div>
+      <div class="mobile-workspace"><button data-workspace="mom">Mom</button><button data-workspace="baby">Baby</button></div>
+      <div id="syncBadge" class="sync-badge"><span>Device</span></div>
+    </header>
+    <section id="view" class="view"></section>
+  </main>
+</div>
+
+<nav id="bottomNav" class="bottom-nav" aria-label="Primary navigation"></nav>
+<div id="scrim" class="scrim"></div>
+<aside id="drawer" class="drawer"><div class="drawer-head"><strong>MilkFlow</strong><button data-close aria-label="Close menu"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div id="drawerBody" class="drawer-body"></div></aside>
+<div id="sheet" class="sheet"></div>
+
+<dialog id="momDialog" class="dialog">
+  <form id="momForm">
+    <div class="dialog-head"><h2 id="momDialogTitle">Pump</h2><button type="button" onclick="document.getElementById('momDialog').close()" aria-label="Close">×</button></div>
+    <input id="momType" type="hidden" value="pump">
+    <section class="form-section"><div class="form-section-title">When</div><div class="form-grid"><label class="field"><span>Date</span><input id="momDate" type="date" required></label><label class="field"><span>Time</span><input id="momTime" type="time" required></label></div></section>
+    <section class="form-section"><div class="form-section-title">Details</div><div class="form-grid"><label id="momAmountWrap" class="field"><span>Milk (mL)</span><input id="momAmount" type="number" inputmode="decimal" min="0" step="1"></label><label class="field"><span>Minutes</span><input id="momDuration" type="number" inputmode="numeric" min="0" step="1"></label><label id="momSideWrap" class="field hidden"><span>Side</span><select id="momSide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label></div><details class="optional"><summary>Add note</summary><textarea id="momNote" rows="2"></textarea></details></section>
+    <div class="form-actions"><button type="button" onclick="document.getElementById('momDialog').close()">Cancel</button><button class="save">Save</button></div>
+  </form>
+</dialog>
+
+<dialog id="diaperDialog" class="dialog baby-dialog">
+  <form id="diaperForm">
+    <div class="dialog-head"><h2 id="diaperDialogTitle">Diaper</h2><button type="button" onclick="document.getElementById('diaperDialog').close()" aria-label="Close">×</button></div>
+    <input id="diaperKind" type="hidden" value="wet">
+    <section class="form-section"><div class="form-section-title">When</div><div class="form-grid"><label class="field"><span>Date</span><input id="diaperDate" type="date" required></label><label class="field"><span>Time</span><input id="diaperTime" type="time" required></label></div><details class="optional"><summary>Add note</summary><textarea id="diaperNote" rows="2"></textarea></details></section>
+    <div class="form-actions"><button type="button" onclick="document.getElementById('diaperDialog').close()">Cancel</button><button class="save">Save</button></div>
+  </form>
+</dialog>
+
+<dialog id="feedDialog" class="dialog baby-dialog">
+  <form id="feedForm">
+    <div class="dialog-head"><h2 id="feedDialogTitle">Feed</h2><button type="button" onclick="document.getElementById('feedDialog').close()" aria-label="Close">×</button></div>
+    <input id="feedType" type="hidden" value="nursing">
+    <section class="form-section"><div class="form-section-title">When</div><div class="form-grid"><label class="field"><span>Date</span><input id="feedDate" type="date" required></label><label class="field"><span>Time</span><input id="feedTime" type="time" required></label></div></section>
+    <section class="form-section"><div class="form-section-title">Feed</div><div class="form-grid"><label id="feedAmountWrap" class="field hidden"><span>Amount (oz)</span><input id="feedAmount" type="number" inputmode="decimal" min="0" step="0.1"></label><label id="feedNursingWrap" class="field"><span>Minutes</span><input id="feedDuration" type="number" inputmode="numeric" min="0" step="1"></label><label class="field" id="feedSideWrap"><span>Side</span><select id="feedSide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label></div></section>
+    <div class="form-actions"><button type="button" onclick="document.getElementById('feedDialog').close()">Cancel</button><button class="save">Save</button></div>
+  </form>
+</dialog>
+
+<dialog id="growthDialog" class="dialog baby-dialog">
+  <form id="growthForm">
+    <div class="dialog-head"><h2>Growth</h2><button type="button" onclick="document.getElementById('growthDialog').close()" aria-label="Close">×</button></div>
+    <section class="form-section"><div class="form-section-title">Measurement</div><div class="form-grid"><label class="field"><span>Date</span><input id="growthDate" type="date" required></label><label class="field"><span>Weight lb</span><input id="growthWeightLb" type="number" inputmode="decimal" min="0" step="0.1"></label><label class="field"><span>Weight oz</span><input id="growthWeightOz" type="number" inputmode="decimal" min="0" max="15.9" step="0.1"></label><label class="field"><span>Length (in)</span><input id="growthLength" type="number" inputmode="decimal" min="0" step="0.1"></label><label class="field"><span>Head (in)</span><input id="growthHead" type="number" inputmode="decimal" min="0" step="0.1"></label></div><details class="optional"><summary>Add note</summary><textarea id="growthNote" rows="2"></textarea></details></section>
+    <div class="form-actions"><button type="button" onclick="document.getElementById('growthDialog').close()">Cancel</button><button class="save">Save</button></div>
+  </form>
+</dialog>
+
+<dialog id="sleepDialog" class="dialog baby-dialog">
+  <form id="sleepForm">
+    <div class="dialog-head"><h2>Sleep</h2><button type="button" onclick="document.getElementById('sleepDialog').close()" aria-label="Close">×</button></div>
+    <section class="form-section"><div class="form-grid"><label class="field"><span>Date</span><input id="sleepDate" type="date" required></label><label class="field"><span>Start</span><input id="sleepTime" type="time" required></label><label class="field"><span>Minutes</span><input id="sleepMinutes" type="number" inputmode="numeric" min="0" step="1" required></label></div></section>
+    <div class="form-actions"><button type="button" onclick="document.getElementById('sleepDialog').close()">Cancel</button><button class="save">Save</button></div>
+  </form>
+</dialog>
+
+<dialog id="authDialog" class="dialog">
+  <form id="authForm">
+    <div class="dialog-head"><h2>Family account</h2><button type="button" onclick="document.getElementById('authDialog').close()" aria-label="Close">×</button></div>
+    <div class="auth-helper">Use the same account on every family device. Signing in never erases the data already saved on this device.</div>
+    <div class="auth-fields"><label class="field"><span>Email</span><input id="authEmail" type="email" autocomplete="email" required></label><label class="field"><span>Password</span><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></label></div>
+    <div class="auth-actions"><button type="button" id="createAccount">Create account</button><button class="save">Sign in</button></div>
+  </form>
+</dialog>
+
+<input id="importFile" type="file" accept="application/json,.json" class="hidden">
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))).catch(()=>{}));
+  }
+</script>
+</body>
+</html>
