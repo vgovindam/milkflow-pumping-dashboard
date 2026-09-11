@@ -7,17 +7,16 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>MilkFlow Family</title>
-  <link rel="manifest" href="manifest.webmanifest?v=14">
+  <link rel="manifest" href="manifest.webmanifest?build=stable8">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app-v7.css?v=14">
+  <link rel="stylesheet" href="styles.css?build=stable8">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="config.js?v=14" defer></script>
-  <script src="data-migration-v7.js?v=14" defer></script>
-  <script src="app-v7.js?v=14" defer></script>
+  <script src="config.js?build=stable8" defer></script>
+  <script src="app.js?build=stable8" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -27,11 +26,12 @@
     <div class="side-label">MOM</div>
     <nav><button data-view="mom-home"><span>♥</span>Home</button><button data-view="mom-history"><span>≡</span>History</button><button data-view="mom-trends"><span>⌁</span>Trends</button><button data-view="mom-stash"><span>❄</span>Stash</button></nav>
     <div class="side-label">BABY</div>
-    <nav><button data-view="baby-home"><span>●</span>Home</button><button data-view="baby-history"><span>≡</span>History</button><button data-view="baby-trends"><span>⌁</span>Trends</button><button data-view="baby-growth"><span>↗</span>Growth</button><button data-view="doctor"><span>✚</span>Doctor summary</button></nav>
+    <nav><button data-view="baby-home"><span>●</span>Home</button><button data-view="baby-history"><span>≡</span>History</button><button data-view="baby-trends"><span>⌁</span>Trends</button><button data-view="baby-growth"><span>↗</span>Growth</button></nav>
     <div class="side-label">FAMILY</div>
     <nav><button data-view="settings"><span>⚙</span>Settings</button></nav>
     <div class="side-status"><strong id="syncTitle">On this device</strong><span id="syncSubtitle">Sign in to sync across devices</span></div>
   </aside>
+
   <main class="main">
     <header class="topbar">
       <button class="menu-btn" data-menu aria-label="Open menu"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
@@ -45,7 +45,7 @@
 
 <nav id="bottomNav" class="bottom-nav" aria-label="Primary navigation"></nav>
 <div id="scrim" class="scrim"></div>
-<aside id="drawer" class="drawer"><div class="drawer-head"><strong>MilkFlow</strong><button data-close aria-label="Close menu"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div id="drawerBody" class="drawer-body"></div></aside>
+<aside id="drawer" class="drawer" aria-label="More navigation"><div class="drawer-head"><strong>MilkFlow</strong><button data-close aria-label="Close menu"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div id="drawerBody" class="drawer-body"></div></aside>
 <div id="sheet" class="sheet"></div>
 
 <dialog id="momDialog" class="dialog">
@@ -96,7 +96,7 @@
 <dialog id="authDialog" class="dialog">
   <form id="authForm">
     <div class="dialog-head"><h2>Family account</h2><button type="button" onclick="document.getElementById('authDialog').close()" aria-label="Close">×</button></div>
-    <div class="auth-helper">Use the same account on every family device. Signing in never erases the data already saved on this device.</div>
+    <div class="auth-helper">Use one family account on every device. Signing in merges cloud and device history; it does not erase local records.</div>
     <div class="auth-fields"><label class="field"><span>Email</span><input id="authEmail" type="email" autocomplete="email" required></label><label class="field"><span>Password</span><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></label></div>
     <div class="auth-actions"><button type="button" id="createAccount">Create account</button><button class="save">Sign in</button></div>
   </form>
