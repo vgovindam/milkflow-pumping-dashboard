@@ -4,55 +4,57 @@ MilkFlow is a mobile-first Mom + Baby care tracker with private Firebase synchro
 
 ## Current architecture
 
-The production app intentionally has one UI/runtime layer:
+Production intentionally uses one UI/runtime layer:
 
 - `index.html`
-- `app-v7.css`
-- `app-v7.js`
+- `styles.css`
+- `app.js`
 - `config.js`
 
-Legacy JavaScript/CSS layers and the stale service worker were removed so there are no competing “last rule wins” overrides in production.
+Older app versions, standalone migration scripts, competing CSS layers, and the stale service worker are not loaded in production. Baby Tracker compatibility and diaper normalization are handled directly in `app.js` so there is one source of truth.
 
 ## Mom
 
 - Pump logging in mL
-- Nursing logging kept separate from pumped output
-- Daily schedule and reminders
-- Pump history and 7/14/30-day trends
+- Nursing kept separate from pumped output
+- Pump schedule and reminders
+- Pump history and trends
 - Freezer stash
 - Private import/export
 
 ## Baby
 
-The home screen is optimized for repeated one-handed use with four large actions: Feed, Wet, Poopy, and Mixed.
+Baby Home is optimized for repeated one-handed use with four large actions: Feed, Wet, Poopy, and Mixed.
 
 - Nursing, expressed-breast-milk bottles, and formula bottles
-- Wet / poopy / mixed diapers
+- Wet-only, poopy-only, and mixed diapers
 - Sleep
-- Growth measurements: weight, length, head circumference
+- Growth: weight, length, head circumference
 - Filterable history
-- Feeding + diaper trends
-- Doctor summary available from the More/hamburger menu
+- Daily care trends with clear Bottle milk (oz) labeling
+- Doctor summary in the More/hamburger menu
 
-Imported source duplicates are preserved for audit/data safety but flagged duplicate rows are excluded from Baby trend counts.
+Legacy Baby Tracker values are normalized in the data layer: `dirty` becomes `poop`, and `mixed` becomes `both`. The same record IDs are retained. Existing Firestore diaper records are repaired in place after sign-in rather than duplicated or deleted.
+
+Imported source duplicates are preserved for data safety but flagged exact-source duplicates are excluded from Baby trend calculations.
 
 ## Data safety and sync
 
 The app keeps the existing `milkflow-family-v4-state` localStorage key for backward compatibility, so UI upgrades do not reset local history.
 
-When signed in, Mom records use `users/{uid}/entries` and Baby records use `users/{uid}/familyEvents`. The app reconciles local and cloud IDs, uploads missing local records, and listens for Firestore changes so devices using the same account stay current.
+When signed in, Mom records use `users/{uid}/entries` and Baby records use `users/{uid}/familyEvents`. The app reconciles local and cloud records by stable ID, uploads missing local records, normalizes legacy Baby records, and listens for Firestore changes so devices using the same account stay current.
 
-Import is merge-only. It creates a pre-import local snapshot and does not delete existing records. The UI intentionally exposes no delete action in this stable version.
+Import is merge-only and creates a pre-import local snapshot. The stable UI intentionally exposes no delete action.
 
-Use **Settings → Check cloud** to compare the current cloud record counts with the device. Use **Export** for a private JSON backup.
+Use **Settings → Check cloud** to compare cloud record counts with the current device. Use **Export** for a private JSON backup.
 
 ## Clinical design references
 
-The tracker layout is informed by current CDC/AAP-aligned infant care guidance: feeding frequency, wet/dirty diaper history, and growth-over-time are useful context for infant follow-up. U.S. clinicians use WHO growth standards from birth to age 2. Doctor Summary is a logging summary, not a diagnosis.
+The tracker layout is informed by current infant-care guidance: feeding history, diaper output, and growth over time are useful context for pediatric follow-up. For children from birth to age 2, U.S. clinicians commonly use WHO growth standards. Doctor Summary is a log summary, not a diagnosis.
 
-The interface follows Apple mobile usability guidance: persistent top-level navigation, large labeled controls, and touch targets designed for frequent handheld use.
+The mobile UI uses persistent top-level navigation, large labeled controls, and generous touch targets for frequent handheld use.
 
-Icons are based on selected Lucide SVG paths, released under the ISC License.
+Selected interface icons use Lucide-style SVG paths under the ISC License. Larger Mom and Baby hero illustrations are embedded SVG artwork so the app does not depend on third-party image hosting at runtime.
 
 ## Firebase
 
