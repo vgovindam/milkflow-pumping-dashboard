@@ -59,7 +59,8 @@ function setCors(req,res){
 async function authenticate(req){
   const value=String(req.headers.authorization||'');
   if(!value.startsWith('Bearer '))throw Object.assign(new Error('Missing sign-in token'),{status:401});
-  return admin.auth().verifyIdToken(value.slice(7));
+  try{return await admin.auth().verifyIdToken(value.slice(7))}
+  catch{throw Object.assign(new Error('Invalid sign-in token'),{status:401})}
 }
 
 function cutoffISO(days=45){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-days);return d.toISOString().slice(0,10)}
@@ -133,7 +134,8 @@ exports.pumpCoachAI=onRequest({region:'us-central1',secrets:[OPENAI_API_KEY],tim
     const decoded=await authenticate(req), uid=decoded.uid;
     const client=req.body?.context&&typeof req.body.context==='object'?req.body.context:{};
     client.reason=req.body?.reason||client.reason||'update';
-    const cloud=await loadCloud(uid);
+    let cloud={entries:[],profile:{},coach:{},coachDays:[]};
+    try{cloud=await loadCloud(uid)}catch(err){console.warn('Cloud context unavailable; using current device context',err?.message||err)}
     const context=buildContext({client,cloudEntries:cloud.entries,cloudProfile:cloud.profile,cloudCoach:cloud.coach,cloudCoachDays:cloud.coachDays});
     const fallback=fallbackAdvice(context);
     let source='rules',model=null,responseId=null,result=fallback;
@@ -153,7 +155,7 @@ exports.pumpCoachAI=onRequest({region:'us-central1',secrets:[OPENAI_API_KEY],tim
     },{merge:true}).catch(err=>console.warn('AI coach state save skipped',err?.message||err));
     return res.status(200).json(payload);
   }catch(err){
-    const status=err?.status||401;
+    const status=err?.status||500;
     console.error('pumpCoachAI request rejected',err?.message||err);
     return res.status(status).json({ok:false,error:status===401?'Please sign in again.':'AI coach request could not be processed.'});
   }
