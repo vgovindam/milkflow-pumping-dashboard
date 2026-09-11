@@ -30,6 +30,8 @@ jobs:
           node --check smart-pumping.js
           node --check pump-insights.js
           node --check ai-coach-client.js
+          node --check functions/index.js
+          node --check functions/pump-context.js
       - name: Verify production files
         run: |
           test -f index.html
@@ -38,6 +40,9 @@ jobs:
           test -f smart-pumping.js
           test -f pump-insights.js
           test -f ai-coach-client.js
+          test -f functions/index.js
+          test -f functions/pump-context.js
+          test -f functions/package.json
           test -f styles.css
           test -f config.js
           grep -q 'app.js' index.html
