@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>MilkFlow Family</title>
-  <link rel="manifest" href="manifest.webmanifest?build=stable15">
+  <link rel="manifest" href="manifest.webmanifest?build=stable16">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167.png">
@@ -18,14 +18,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?build=stable15">
+  <link rel="stylesheet" href="styles.css?build=stable16">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="config.js?build=stable15" defer></script>
-  <script src="app.js?build=stable15" defer></script>
-  <script src="smart-pumping.js?build=stable15" defer></script>
-  <script src="pump-insights.js?build=stable15" defer></script>
+  <script src="config.js?build=stable16" defer></script>
+  <script src="app.js?build=stable16" defer></script>
+  <script src="app-reliability.js?build=stable16" defer></script>
+  <script src="smart-pumping.js?build=stable16" defer></script>
+  <script src="pump-insights.js?build=stable16" defer></script>
+  <script src="ai-coach-client.js?build=stable16" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -84,20 +86,14 @@
 <input id="photoFile" type="file" accept="image/*" class="hidden">
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script>
-  // Network-first service worker: the newest deploy always wins, the cache is only a
-  // fallback for offline logging. Never unregister on every load - that killed the cache.
+  // The installed/bookmarked app must never reload itself while someone is typing.
+  // sw.js is network-first, so a newly activated worker is adopted without forcing the
+  // current screen to refresh; the new shell is used on the next natural navigation/open.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      // Only reload when an OLD worker is replaced. On a first visit clients.claim() also
-      // fires controllerchange, and reloading there would look like a random refresh.
-      const hadController = !!navigator.serviceWorker.controller;
-      let reloading = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!hadController || reloading) return;
-        reloading = true;
-        location.reload();
-      });
-      navigator.serviceWorker.register('./sw.js?build=stable15', { updateViaCache: 'none' }).catch(err => console.warn('SW registration skipped', err));
+      navigator.serviceWorker.register('./sw.js?build=stable16', { updateViaCache: 'none' })
+        .then(reg => reg.update().catch(() => {}))
+        .catch(err => console.warn('SW registration skipped', err));
     });
   }
 </script>
