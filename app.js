@@ -28,7 +28,7 @@ const DEFAULTS = {
   dailyOverrides: {},
   reminders: { enabled: false, leadMin: 10, lastSentKey: null, feedEnabled: false, feedGapMin: 180, feedLastKey: null },
   last: { bottleOz: null, pumpMl: null, pumpMin: null, nursingMin: null, sleepMin: null },
-  cloud: { enabled: false, userId: null, email: null, lastSync: null, lastVerified: null, momCount: null, babyCount: null },
+  cloud: { enabled: false, userId: null, email: null, lastSync: null, lastVerified: null, momCount: null, babyCount: null, lastError: null, lastErrorAt: null },
   ui: { workspace: 'mom', view: 'mom-home', theme: 'auto', momRange: 30, babyRange: 30, babyFilter: 'all', trendRange: 14, doctorRange: 14, reviewDate: '', historyMode: 'day' }
 };
 
@@ -272,18 +272,29 @@ function glyph(name,cls=''){
     // bottle with cap, shoulders and a milk line
     bottle: duo('M19.6 11.2h8.8v3.9l3.4 4.3a6.4 6.4 0 0 1 1.4 4v14.2a5.2 5.2 0 0 1-5.2 5.2h-8a5.2 5.2 0 0 1-5.2-5.2V23.4a6.4 6.4 0 0 1 1.4-4l3.4-4.3Z',
       '<rect class="g-line-f" x="18.4" y="4.4" width="11.2" height="6.6" rx="3.3"/><path class="g-hi" d="M18.8 26.2h7M18.8 31h4.6"/>'),
-    // mother and baby held together inside a heart
-    nursing: duo('M41.2 11.4a9.1 9.1 0 0 0-13.3-.4L24 14.9l-3.9-3.9a9.1 9.1 0 1 0-12.9 12.9L24 41.6l16.8-16.7a9.1 9.1 0 0 0 .4-13.5Z',
-      '<circle class="g-line-f" cx="18.8" cy="21.4" r="3"/><circle class="g-line-f" cx="28.4" cy="23.6" r="2.2"/>'),
-    // pump: flange over a collection bottle
-    pump: duo('M20 22.6h8v2.8l2.6 3.2a5 5 0 0 1 1.1 3.1v6.6a4.4 4.4 0 0 1-4.4 4.4h-6.6a4.4 4.4 0 0 1-4.4-4.4v-6.6a5 5 0 0 1 1.1-3.1l2.6-3.2Z',
-      '<path class="g-fill" d="M24 4.6a10.4 10.4 0 0 1 10.4 10.4c0 3.6-2.6 5.6-5.2 6.6H18.8c-2.6-1-5.2-3-5.2-6.6A10.4 10.4 0 0 1 24 4.6Z"/><path class="g-line" d="M24 4.6a10.4 10.4 0 0 1 10.4 10.4c0 3.6-2.6 5.6-5.2 6.6H18.8c-2.6-1-5.2-3-5.2-6.6A10.4 10.4 0 0 1 24 4.6Z"/><circle class="g-line-f" cx="24" cy="14.6" r="2.4"/>'),
+    // a parent cradling a baby: large figure, small figure nestled at the chest
+    nursing: '<circle class="g-fill" cx="16.6" cy="12.4" r="6.6"/><circle class="g-line" cx="16.6" cy="12.4" r="6.6"/>'
+      + '<path class="g-fill" d="M5.4 43.2c0-8.4 5-14 11.2-14 3.2 0 6 1.5 8 4"/>'
+      + '<path class="g-line" d="M5.4 43.2c0-8.4 5-14 11.2-14 3.2 0 6 1.5 8 4"/>'
+      + '<circle class="g-fill" cx="31.4" cy="25.4" r="5.2"/><circle class="g-line" cx="31.4" cy="25.4" r="5.2"/>'
+      + '<path class="g-fill" d="M22.6 43.2c0-5.6 3.9-9.4 8.8-9.4s8.8 3.8 8.8 9.4Z"/>'
+      + '<path class="g-line" d="M22.6 43.2c0-5.6 3.9-9.4 8.8-9.4s8.8 3.8 8.8 9.4"/>'
+      + '<path class="g-hi" d="M24.2 33.6c-2.4-1.6-4.2-2-6.4-1.8"/>',
+    // pump: a funnel flange narrowing into a collection bottle, with a falling drop
+    pump: '<path class="g-fill" d="M10.6 7.2h26.8a2 2 0 0 1 1.9 2.7l-5.2 12.5a3 3 0 0 0-.2 1.1v1.1H18.1v-1.1a3 3 0 0 0-.2-1.1L12.7 9.9a2 2 0 0 1 1.9-2.7Z"/>'
+      + '<path class="g-line" d="M10.6 7.2h26.8a2 2 0 0 1 1.9 2.7l-5.2 12.5a3 3 0 0 0-.2 1.1v1.1H18.1v-1.1a3 3 0 0 0-.2-1.1L12.7 9.9a2 2 0 0 1 1.9-2.7Z"/>'
+      + '<path class="g-fill" d="M19.4 27.4h9.2a4.4 4.4 0 0 1 4.4 4.4v7a4.4 4.4 0 0 1-4.4 4.4h-9.2a4.4 4.4 0 0 1-4.4-4.4v-7a4.4 4.4 0 0 1 4.4-4.4Z"/>'
+      + '<path class="g-line" d="M19.4 27.4h9.2a4.4 4.4 0 0 1 4.4 4.4v7a4.4 4.4 0 0 1-4.4 4.4h-9.2a4.4 4.4 0 0 1-4.4-4.4v-7a4.4 4.4 0 0 1 4.4-4.4Z"/>'
+      + '<path class="g-line-f" d="M24 12.4c1.5 1.9 2.7 3.6 2.7 4.9a2.7 2.7 0 1 1-5.4 0c0-1.3 1.2-3 2.7-4.9Z"/>'
+      + '<path class="g-line-f" d="M15 36.4h18v2.4a4.4 4.4 0 0 1-4.4 4.4h-9.2a4.4 4.4 0 0 1-4.4-4.4Z" opacity=".38"/>',
     // crescent with two small stars
     moon: duo('M40.4 27.8A16.6 16.6 0 1 1 21.4 8.2a12.9 12.9 0 0 0 19 19.6Z',
       '<path class="g-line-f" d="m35.6 6.4 1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2ZM42 16.6l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7Z"/>'),
-    // baby scale with a dial
-    scale: duo('M12.6 9.4h22.8a5.4 5.4 0 0 1 5.4 5.4v18.4a5.4 5.4 0 0 1-5.4 5.4H12.6a5.4 5.4 0 0 1-5.4-5.4V14.8a5.4 5.4 0 0 1 5.4-5.4Z',
-      '<path class="g-hi" d="M24 18.6v5.6"/><circle class="g-line-f" cx="24" cy="26.6" r="2.4"/>')
+    // baby scale: a curved weighing tray on a plinth with a readout
+    scale: '<path class="g-fill" d="M8.4 20.4h31.2a3 3 0 0 1 3 3.3l-1.3 11.6a4 4 0 0 1-4 3.5H10.7a4 4 0 0 1-4-3.5L5.4 23.7a3 3 0 0 1 3-3.3Z"/>'
+      + '<path class="g-line" d="M8.4 20.4h31.2a3 3 0 0 1 3 3.3l-1.3 11.6a4 4 0 0 1-4 3.5H10.7a4 4 0 0 1-4-3.5L5.4 23.7a3 3 0 0 1 3-3.3Z"/>'
+      + '<path class="g-line" d="M13.6 20.4c0-5.8 4.6-10 10.4-10s10.4 4.2 10.4 10"/>'
+      + '<path class="g-line-f" d="M18.6 27.6h10.8a1.7 1.7 0 0 1 0 3.4H18.6a1.7 1.7 0 0 1 0-3.4Z"/>'
   };
   return `<svg class="gly ${cls}" viewBox="0 0 48 48" aria-hidden="true">${P[name]||P.drop}</svg>`;
 }
@@ -1181,13 +1192,20 @@ function renderBottomNav(){
   const home=w==='baby'?'baby-home':'mom-home', history=w==='baby'?'baby-history':'mom-history', trends=w==='baby'?'baby-trends':'mom-trends';
   nav.innerHTML=`<button data-view="${home}" class="${view===home?'active':''}">${icon('home')}<span>Home</span></button><button data-view="${history}" class="${view===history?'active':''}">${icon('history')}<span>History</span></button><button class="add-tab" data-add>${icon('plus')}<span>Add</span></button><button data-view="${trends}" class="${view===trends?'active':''}">${icon('chart')}<span>Trends</span></button><button data-view="more" class="${['more','settings','doctor','baby-growth','development','mom-stash'].includes(view)||view.startsWith('set-')?'active':''}">${icon('more')}<span>More</span></button>`;
 }
+// Sync lives quietly at the foot of the page - it matters when it breaks, not while it works.
 function syncBadge(){
-  const b=$('syncBadge'), t=$('syncTitle'), sub=$('syncSubtitle');
-  if(b){
-    b.innerHTML = S.cloud.enabled ? icon('cloud') : icon('shield');
-    b.className = `sync-badge ${S.cloud.enabled?'on':''}`;
-    b.setAttribute('aria-label', S.cloud.enabled ? 'Synced to your family account' : 'Saved on this device only');
-    b.title = b.getAttribute('aria-label');
+  const f=$('syncFoot'), t=$('syncTitle'), sub=$('syncSubtitle');
+  if(f){
+    const st = syncState();
+    const when = S.cloud.lastSync ? sinceLabel(iso(new Date(S.cloud.lastSync)), hhmm(new Date(S.cloud.lastSync))) : null;
+    const copy = st==='error' ? esc(S.cloud.lastError)
+      : st==='synced' ? `Synced to ${esc(S.cloud.email||'your family account')}${when?` · ${when}`:''}`
+      : 'Saved on this device. Sign in to sync across phones.';
+    f.className = `sync-foot ${st}`;
+    f.innerHTML = `<button type="button" data-view="set-account">
+      <span class="sf-mark">${icon(st==='error'?'bell':st==='synced'?'cloud':'shield')}</span>
+      <span class="sf-copy"><strong>${st==='error'?'Sync problem':st==='synced'?'Synced':'On this device'}</strong><small>${copy}</small></span>
+      <span class="sf-go">${icon('chevron')}</span></button>`;
   }
   if(t) t.textContent=S.cloud.enabled?'Family account connected':'On this device';
   if(sub) sub.textContent=S.cloud.enabled?(S.cloud.email||'Family account'):'Sign in to sync across devices';
@@ -1254,7 +1272,10 @@ function settingsView(){
   ])}`;
 }
 function setAccount(){
+  const err = S.cloud.lastError;
   return `${subHead('Family account','One account on every device keeps Mom and Baby history in sync.')}
+  ${err?`<section class="alert"><div class="alert-mark">${icon('bell')}</div><div><strong>Sync problem</strong><span>${esc(err)}</span>${S.cloud.lastErrorAt?`<small>Last seen ${new Date(S.cloud.lastErrorAt).toLocaleString()}</small>`:''}</div></section>
+  <div class="alert-actions"><button data-cloud-check>${icon('cloud')} Retry now</button><button data-signout>Sign out and back in</button></div>`:''}
   ${dataStatus()}
   ${S.cloud.enabled
     ? panel('Signed in',`<div class="setting-row"><div><strong>${esc(S.cloud.email||'Signed in')}</strong><span>New records sync automatically to every device using this account.</span></div><div class="setting-actions"><button data-cloud-check>Check cloud</button><button data-signout>Sign out</button></div></div>`)
@@ -1678,11 +1699,29 @@ async function initCloud(){
     try{ await cloud.db.enablePersistence({synchronizeTabs:true}); }catch{}
     cloud.auth.onAuthStateChanged(async user=>{
       stopRealtime(); S.cloud.userId=user?.uid||null; S.cloud.email=user?.email||null; S.cloud.enabled=!!user; save(); syncBadge();
-      if(user){ try{ await reconcile(); startRealtime(); await verifyCloud(true); }catch(err){ console.error(err); toast('Cloud sync needs attention.'); } }
+      if(user){ try{ await reconcile(); startRealtime(); await verifyCloud(true); clearCloudError(); }catch(err){ noteCloudError(err,'signin'); toast('Sync needs attention — see Settings.',4500); } }
       render();
     });
-  }catch(err){ console.error(err); toast('Cloud connection needs attention.'); }
+  }catch(err){ noteCloudError(err,'init'); toast('Cloud connection needs attention.'); }
 }
+// Sync problems used to vanish into console.error plus a vague toast. Keep the real
+// reason so the footer and the account page can say what happened and what to do.
+function noteCloudError(err,context){
+  const code = err?.code || '';
+  const friendly =
+    code.includes('permission-denied') ? 'Your account does not have access to this data. Sign out and sign in again.' :
+    code.includes('unauthenticated') || code.includes('user-token-expired') || code.includes('user-disabled') ? 'Your session expired. Sign in again to resume syncing.' :
+    code.includes('unavailable') || code.includes('network') ? 'No connection to the cloud. Entries are safe on this device and will sync when you are back online.' :
+    code.includes('quota') || code.includes('resource-exhausted') ? 'The cloud is temporarily rate-limited. It will retry shortly.' :
+    (err?.message || 'Sync could not finish.');
+  S.cloud.lastError = friendly;
+  S.cloud.lastErrorAt = new Date().toISOString();
+  console.error(`[sync:${context}]`, err);
+  save();
+}
+function clearCloudError(){ if(S.cloud.lastError){ S.cloud.lastError=null; S.cloud.lastErrorAt=null; save(); } }
+const syncState = () => !S.cloud.enabled ? 'device' : S.cloud.lastError ? 'error' : 'synced';
+
 const userRef=()=>cloud?.db.collection('users').doc(S.cloud.userId);
 const momRef=()=>userRef().collection('entries');
 const babyRef=()=>userRef().collection('familyEvents');
@@ -1729,14 +1768,14 @@ function startRealtime(){
     });
     if(changed){ S[key]=[...current.values()]; save(); clearTimeout(renderTimer); renderTimer=setTimeout(render,120); }
   };
-  unsubscribers.push(momRef().onSnapshot(s=>mergeSnapshot(s,'entries'),e=>console.warn('Mom realtime',e)));
-  unsubscribers.push(babyRef().onSnapshot(s=>mergeSnapshot(s,'babyEvents'),e=>console.warn('Baby realtime',e)));
+  unsubscribers.push(momRef().onSnapshot(s=>mergeSnapshot(s,'entries'),e=>{ noteCloudError(e,'mom-stream'); render(); }));
+  unsubscribers.push(babyRef().onSnapshot(s=>mergeSnapshot(s,'babyEvents'),e=>{ noteCloudError(e,'baby-stream'); render(); }));
   unsubscribers.push(profileRef().onSnapshot(d=>{ if(!d.exists)return; const p=d.data(); S.profile={...S.profile,...(p.profile||{})}; S.baby={...S.baby,...(p.baby||{})}; if(Array.isArray(p.schedule))S.schedule=p.schedule; S.dailyOverrides={...S.dailyOverrides,...(p.dailyOverrides||{})}; save(); clearTimeout(renderTimer); renderTimer=setTimeout(render,120); },e=>console.warn('Profile realtime',e)));
 }
 function stopRealtime(){ unsubscribers.forEach(fn=>{try{fn();}catch{}}); unsubscribers=[]; }
 async function verifyCloud(quiet=false){
   if(!cloud||!S.cloud.userId){ if(!quiet)toast('Sign in first.'); return null; }
-  try{ const [m,b]=await Promise.all([momRef().get(),babyRef().get()]); S.cloud.momCount=m.size; S.cloud.babyCount=b.size; S.cloud.lastVerified=new Date().toISOString(); save(); if(!quiet)toast(`Cloud: ${m.size} Mom · ${b.size} Baby`,3500); return {mom:m.size,baby:b.size}; }catch(err){ console.error(err); if(!quiet)toast('Cloud check failed. Try again.'); return null; }
+  try{ const [m,b]=await Promise.all([momRef().get(),babyRef().get()]); S.cloud.momCount=m.size; S.cloud.babyCount=b.size; S.cloud.lastVerified=new Date().toISOString(); clearCloudError(); save(); if(!quiet)toast(`Cloud: ${m.size} Mom · ${b.size} Baby`,3500); return {mom:m.size,baby:b.size}; }catch(err){ noteCloudError(err,'verify'); if(!quiet)toast('Cloud check failed — see Settings.'); return null; }
 }
 
 async function toggleReminders(){

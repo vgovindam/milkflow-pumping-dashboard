@@ -98,6 +98,23 @@ The journey needs a date of birth, set in **Settings → Baby profile** along wi
 and a photo. Photos are centre-cropped and downscaled to 320px JPEG before storage so the synced
 profile document stays small.
 
+## Install on a phone
+
+The app is a PWA, so it installs from the browser with no App Store step.
+
+**iPhone / iPad (Safari):** open the site in **Safari**, tap **Share**, choose **Add to Home
+Screen**, then **Add**. It launches full-screen with its own icon and works offline.
+
+**Important on iOS:** a Home Screen web app gets its **own storage**, separate from Safari. Data
+logged in Safari does not automatically appear in the installed app. Sign in to the family account
+first (Settings → Family account) so history syncs through Firestore, or export a backup in Safari
+and import it once installed.
+
+**Android (Chrome):** the browser offers *Install app*, or Menu → *Add to Home screen*.
+
+The apple-touch-icon is deliberately full-bleed and opaque, because iOS composites transparency
+onto black and applies its own rounded mask.
+
 ## Appearance
 
 Three themes — **Automatic**, Light and Dark, in Settings → Appearance. Automatic follows the
@@ -165,6 +182,17 @@ Refreshing keeps you on the current screen.
 online, and the cache is only used as a fallback. The app opens and logs entries with no network;
 those entries sync when the connection returns. The cache version is bumped with the `build` query
 string in `index.html`.
+
+## Sync status and errors
+
+Sync status sits in a quiet footer at the bottom of the page rather than in the nav bar, because it
+only matters when something is wrong. It has three states: *On this device*, *Synced*, and
+*Sync problem*, the last of which turns red and names the actual cause.
+
+Firestore and auth failures are classified into plain language — expired session, permission
+denied, offline, rate-limited — stored on `cloud.lastError`, and shown on Settings → Family account
+with **Retry now** and **Sign out and back in**. Previously these only reached `console.error` and a
+generic toast.
 
 ## Data safety and sync
 

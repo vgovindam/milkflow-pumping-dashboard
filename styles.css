@@ -33,7 +33,8 @@
 
   --good:#177053;
   --good-soft:#e6f7f0;
-  --danger:#c7455c;
+  --danger:#b23b51;
+  --danger-solid:#b23b51;
   --danger-soft:#fdecef;
 
   /* surfaces that change between themes */
@@ -108,7 +109,7 @@
   --growth:#2e1a25; --growth-ink:#eb93b6;
 
   --good:#4fca9f; --good-soft:#12291f;
-  --danger:#f0788c; --danger-soft:#2e161c;
+  --danger:#f0788c; --danger-soft:#2e161c; --danger-solid:#a8364b;
 
   --sidebar-bg:#12141b; --sidebar-ink:#9aa2b6; --sidebar-hover:#20242f; --sidebar-chip:#1b1f29;
   --chip-bg:rgba(255,255,255,.06);
@@ -183,10 +184,24 @@ button{cursor:pointer;font-family:inherit}
 .title-wrap{display:none}
 .title-wrap h1{margin:0;font:800 23px var(--display);letter-spacing:-.015em}
 .mobile-workspace{display:none}
-.sync-badge{margin-left:auto;display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--muted);padding:0;flex:0 0 auto}
-.sync-badge:hover{background:var(--surface-2)}
-.sync-badge.on{background:var(--good-soft);color:var(--good);border-color:var(--good-soft)}
-.sync-badge .ico{width:18px;height:18px}
+/* Sync status footer: out of the nav bar entirely, since it is only interesting when
+   something is wrong. It shouts only in the error state. */
+.sync-foot{max-width:1180px;margin:0 auto;padding:0 24px 26px}
+.sync-foot button{width:100%;display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:12px 14px;text-align:left}
+.sync-foot button:hover{background:var(--surface-2)}
+.sf-mark{width:32px;height:32px;flex:0 0 auto;border-radius:10px;display:grid;place-items:center;background:var(--surface-2);color:var(--muted)}
+.sf-mark .ico{width:17px;height:17px}
+.sf-copy{flex:1;min-width:0}
+.sf-copy strong{display:block;font-size:12.5px;font-weight:800}
+.sf-copy small{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;line-height:1.4}
+.sf-go{color:var(--muted);display:grid;place-items:center}
+.sf-go .ico{width:16px;height:16px}
+.sync-foot.synced .sf-mark{background:var(--good-soft);color:var(--good)}
+.sync-foot.error button{border-color:var(--danger);background:var(--danger-soft)}
+.sync-foot.error .sf-mark{background:var(--danger-solid);color:#fff}
+.sync-foot.error .sf-copy strong{color:var(--danger)}
+
+
 .view{max-width:1180px;margin:auto;padding:18px 24px 72px}
 
 /* ----------------------------------------------------------------- hero -- */
@@ -612,6 +627,17 @@ button{cursor:pointer;font-family:inherit}
 .qa-grid small{font-size:9.5px;color:var(--muted);margin-top:3px;font-weight:700}
 .clinical-note{font-size:10.5px;line-height:1.55;color:var(--muted);background:var(--surface-2);border:1px solid var(--line-soft);border-radius:13px;padding:12px;margin-top:10px;font-weight:600}
 
+.alert{display:flex;gap:13px;align-items:flex-start;background:var(--danger-soft);border:1px solid var(--danger);border-radius:var(--radius-md);padding:15px;margin-bottom:12px}
+.alert-mark{width:34px;height:34px;flex:0 0 auto;border-radius:11px;background:var(--danger-solid);color:#fff;display:grid;place-items:center}
+.alert-mark .ico{width:18px;height:18px}
+.alert strong,.alert span,.alert small{display:block}
+.alert strong{font-size:14px;font-weight:800;color:var(--danger)}
+.alert span{font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.5;font-weight:600}
+.alert small{font-size:10.5px;color:var(--muted);margin-top:6px;font-weight:600}
+.alert-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
+.alert-actions button{border:1px solid var(--line);background:var(--surface);border-radius:13px;min-height:48px;font-weight:800;font-size:12.5px;color:var(--ink-2);display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.alert-actions .ico{width:16px;height:16px}
+
 /* ------------------------------------------------------------- settings -- */
 .data-status{display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);padding:16px;margin-bottom:16px}
 .data-status.good{background:var(--good-soft);border-color:var(--good-soft)}
@@ -818,18 +844,18 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
   .main{min-height:100vh}
   /* iOS large-title behaviour: the nav bar carries Back + status, the page carries the
      title. Showing both meant every screen printed its name twice. */
-  .topbar{height:auto;min-height:60px;padding:9px 14px;display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"back spacer sync" "switch switch switch";gap:8px 10px}
+  .topbar{height:auto;min-height:56px;padding:9px 14px;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"back spacer" "switch switch";gap:8px 10px}
   .back-btn{grid-area:back}
-  .sync-badge{grid-area:sync}
   /* A sub-page belongs to one side of the app, so the Mom/Baby switch is hidden there. */
   body[data-depth="0"] .mobile-workspace{grid-area:switch;display:grid}
   body:not([data-depth="0"]) .mobile-workspace{display:none}
-  body:not([data-depth="0"]) .topbar{grid-template-areas:"back spacer sync"}
+  body:not([data-depth="0"]) .topbar{grid-template-areas:"back spacer"}
   .sync-badge{grid-area:sync;margin-left:0}
   .mobile-workspace{grid-template-columns:1fr 1fr;gap:5px;padding:4px;background:var(--line-soft);border-radius:14px}
   .mobile-workspace button{border:0;background:transparent;border-radius:10px;min-height:40px;font-weight:900;color:var(--muted)}
   .mobile-workspace button.active{background:var(--surface);color:var(--ink);box-shadow:0 3px 10px rgba(30,34,48,.07)}
-  .view{padding:14px 13px 28px}
+  .view{padding:14px 13px 20px}
+  .sync-foot{padding:0 13px 24px}
 
   .hero{padding:18px;border-radius:22px;gap:16px}
   .hero h2{font-size:24px}
@@ -947,7 +973,7 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
 }
 
 @media print{
-  .sidebar,.topbar,.bottom-nav,.round-action,.pills,.sheet,.scrim,.toast,.more-actions,.feed-cta,.orb-row,.pill-row,.act-add,.day-strip{display:none!important}
+  .sidebar,.topbar,.bottom-nav,.round-action,.pills,.sheet,.sync-foot,.scrim,.toast,.more-actions,.feed-cta,.orb-row,.pill-row,.act-add,.day-strip{display:none!important}
   .shell{display:block}
   .view{max-width:none;padding:0}
   .panel,.metric,.doctor-summary-card,.qa-grid>div{box-shadow:none;break-inside:avoid}
