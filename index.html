@@ -10,51 +10,53 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>MilkFlow Family — Mom & Baby Care</title>
-  <link rel="manifest" href="manifest.webmanifest?v=5" />
+  <link rel="manifest" href="manifest.webmanifest?v=6" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=5" />
-  <link rel="stylesheet" href="family.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="family.css?v=6" />
+  <link rel="stylesheet" href="family-friendly.css?v=6" />
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="config.js?v=5" defer></script>
-  <script src="app-v4.js?v=5" defer></script>
+  <script src="config.js?v=6" defer></script>
+  <script src="app-v4.js?v=6" defer></script>
+  <script src="family-friendly.js?v=6" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
-      <div class="brand"><div class="brand-mark">M</div><div><strong>MilkFlow Family</strong><span>Mom first. Baby connected.</span></div></div>
+      <div class="brand"><div class="brand-mark">M</div><div><strong>MilkFlow Family</strong><span>One place for Mom and Baby</span></div></div>
       <div class="workspace-switch"><button class="workspace-btn active" data-workspace="mom">Mom</button><button class="workspace-btn" data-workspace="baby">Baby</button></div>
-      <div class="nav-section">MOM CARE</div>
-      <nav class="nav"><button class="nav-item active" data-view="mom-home"><span>✦</span>Mom home</button><button class="nav-item" data-view="today"><span>◷</span>Today</button><button class="nav-item" data-view="history"><span>≡</span>Pumping history</button><button class="nav-item" data-view="trends"><span>⌁</span>Trends</button><button class="nav-item" data-view="stash"><span>◇</span>Stash & runway</button></nav>
-      <div class="nav-section">BABY CARE</div>
-      <nav class="nav"><button class="nav-item" data-view="baby-home"><span>☁</span>Baby dashboard</button><button class="nav-item" data-view="baby-timeline"><span>⌁</span>Baby timeline</button></nav>
-      <div class="nav-section">SYSTEM</div><nav class="nav"><button class="nav-item" data-view="settings"><span>⚙</span>Settings & import</button></nav>
-      <div class="sidebar-bottom"><div class="sync-card"><div class="sync-dot"></div><div><strong id="syncTitle">Local-first</strong><span id="syncSubtitle">Saved on this device</span></div></div></div>
+      <div class="nav-section">MOM</div>
+      <nav class="nav"><button class="nav-item active" data-view="mom-home"><span>♥</span>Mom</button><button class="nav-item" data-view="today"><span>◷</span>Today</button><button class="nav-item" data-view="history"><span>≡</span>Pump history</button><button class="nav-item" data-view="trends"><span>⌁</span>Milk trends</button><button class="nav-item" data-view="stash"><span>◇</span>Freezer stash</button></nav>
+      <div class="nav-section">BABY</div>
+      <nav class="nav"><button class="nav-item" data-view="baby-home"><span>●</span>Baby</button><button class="nav-item" data-view="baby-timeline"><span>⌁</span>Baby history</button></nav>
+      <div class="nav-section">FAMILY</div><nav class="nav"><button class="nav-item" data-view="settings"><span>⚙</span>Family settings</button></nav>
+      <div class="sidebar-bottom"><div class="sync-card"><div class="sync-dot"></div><div><strong id="syncTitle">Saved on this device</strong><span id="syncSubtitle">Sign in to share across family devices</span></div></div></div>
     </aside>
     <main class="main">
-      <header class="topbar"><button class="icon-btn mobile-only" id="menuBtn">☰</button><div class="topbar-title"><span class="eyebrow" id="viewEyebrow">MOM COMMAND CENTER</span><h1 id="viewTitle">Mom home</h1></div><div class="top-actions"><span class="cloud-badge off" id="cloudBadge">Local</span><button class="btn ghost" id="quickNurseBtn">♡ Nursing</button><button class="btn primary" id="quickPumpBtn">＋ Pump</button></div></header>
+      <header class="topbar"><button class="icon-btn mobile-only" id="menuBtn">☰</button><div class="topbar-title"><span class="eyebrow" id="viewEyebrow">MOM CARE</span><h1 id="viewTitle">Mom</h1></div><div class="top-actions"><span class="cloud-badge off" id="cloudBadge">This device</span><button class="btn ghost" id="quickNurseBtn">♡ Nursing</button><button class="btn primary" id="quickPumpBtn">＋ Pump</button></div></header>
       <section class="content" id="content"></section>
     </main>
   </div>
-  <nav class="mobile-nav"><button data-view="mom-home" class="active"><span>✦</span>Mom</button><button data-view="today"><span>◷</span>Today</button><button data-view="baby-home"><span>☁</span>Baby</button><button data-view="history"><span>≡</span>History</button><button data-view="settings"><span>⚙</span>More</button></nav>
-  <button class="fab" id="fabBtn">＋</button><div class="fab-menu hidden" id="fabMenu"><button data-quick="pump">Pump</button><button data-quick="nursing">Nursing</button><button data-quick="wet">Wet diaper</button><button data-quick="poop">Poop diaper</button><button data-quick="bottle">Bottle</button></div>
-  <dialog id="entryDialog" class="dialog"><form method="dialog" id="entryForm"><div class="dialog-head"><div><span class="eyebrow">NEW MOM ENTRY</span><h2 id="dialogTitle">Log pump</h2></div><button class="icon-btn" value="cancel">×</button></div><input type="hidden" id="entryType" value="pump"/><div class="form-grid"><label>Date<input id="entryDate" type="date" required></label><label>Time<input id="entryTime" type="time" required></label><label class="pump-only">Amount (mL)<input id="entryAmount" type="number" min="0" max="1200" step="1" placeholder="120"></label><label>Duration (min)<input id="entryDuration" type="number" min="0" max="180" step="1" placeholder="30"></label><label class="nurse-only hidden">Side<select id="entrySide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label><label class="pump-only">Session quality<select id="entryQuality"><option value="normal">Normal</option><option value="short">Short / on-the-go</option><option value="power">Power pump</option></select></label></div><label>Note<textarea id="entryNote" rows="3"></textarea></label><div class="dialog-actions"><button class="btn ghost" value="cancel">Cancel</button><button class="btn primary" value="default">Save</button></div></form></dialog>
-  <dialog id="babyDialog" class="dialog"><form method="dialog" id="babyForm"><div class="dialog-head"><div><span class="eyebrow">BABY QUICK LOG</span><h2 id="babyDialogTitle">Log baby event</h2></div><button class="icon-btn" value="cancel">×</button></div><input id="babyEventType" type="hidden" value="diaper"/><div class="form-grid"><label>Date<input id="babyDate" type="date" required></label><label>Time<input id="babyTime" type="time" required></label><label id="babySubtypeWrap">Type<select id="babySubtype"><option value="wet">Wet</option><option value="poop">Poop</option><option value="both">Both</option></select></label><label id="babyAmountWrap" class="hidden">Amount (oz)<input id="babyAmount" type="number" min="0" max="20" step="0.1" placeholder="3"></label></div><label>Note<textarea id="babyNote" rows="3"></textarea></label><div class="dialog-actions"><button class="btn ghost" value="cancel">Cancel</button><button class="btn baby-primary" value="default">Save baby event</button></div></form></dialog>
-  <dialog id="authDialog" class="dialog small-dialog"><form method="dialog" id="authForm"><div class="dialog-head"><div><span class="eyebrow">PRIVATE CLOUD</span><h2>Sign in to sync</h2></div><button class="icon-btn" value="cancel">×</button></div><label>Email<input id="authEmail" type="email" required></label><label>Password<input id="authPassword" type="password" minlength="6" required></label><div class="auth-actions"><button type="button" class="btn ghost" id="signUpBtn">Create account</button><button class="btn primary" value="default">Sign in</button></div></form></dialog>
+  <nav class="mobile-nav"><button data-view="mom-home" class="active"><span>♥</span>Mom</button><button data-view="today"><span>◷</span>Today</button><button data-view="baby-home"><span>●</span>Baby</button><button data-view="history"><span>≡</span>History</button><button data-view="settings"><span>⚙</span>More</button></nav>
+  <button class="fab" id="fabBtn" aria-label="Quick add">＋</button><div class="fab-menu hidden" id="fabMenu"><button data-quick="pump">Pump</button><button data-quick="nursing">Nursing</button><button data-quick="wet">Wet diaper</button><button data-quick="poop">Poop diaper</button><button data-quick="bottle">Bottle</button></div>
+  <dialog id="entryDialog" class="dialog"><form method="dialog" id="entryForm"><div class="dialog-head"><div><span class="eyebrow">MOM</span><h2 id="dialogTitle">Log pump</h2></div><button class="icon-btn" value="cancel" aria-label="Close">×</button></div><input type="hidden" id="entryType" value="pump"/><div class="form-grid"><label>Date<input id="entryDate" type="date" required></label><label>Time<input id="entryTime" type="time" required></label><label class="pump-only">Amount (mL)<input id="entryAmount" type="number" min="0" max="1200" step="1" placeholder="120"></label><label>Duration (min)<input id="entryDuration" type="number" min="0" max="180" step="1" placeholder="30"></label><label class="nurse-only hidden">Side<select id="entrySide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label><label class="pump-only">Pump type<select id="entryQuality"><option value="normal">Regular</option><option value="short">Short / on-the-go</option><option value="power">Power pump</option></select></label></div><label>Notes<textarea id="entryNote" rows="3" placeholder="Optional"></textarea></label><div class="dialog-actions"><button class="btn ghost" value="cancel">Cancel</button><button class="btn primary" value="default">Save</button></div></form></dialog>
+  <dialog id="babyDialog" class="dialog"><form method="dialog" id="babyForm"><div class="dialog-head"><div><span class="eyebrow">BABY</span><h2 id="babyDialogTitle">Log baby care</h2></div><button class="icon-btn" value="cancel" aria-label="Close">×</button></div><input id="babyEventType" type="hidden" value="diaper"/><div class="form-grid"><label>Date<input id="babyDate" type="date" required></label><label>Time<input id="babyTime" type="time" required></label><label id="babySubtypeWrap">Type<select id="babySubtype"><option value="wet">Wet</option><option value="poop">Poop</option><option value="both">Both</option></select></label><label id="babyAmountWrap" class="hidden">Amount (oz)<input id="babyAmount" type="number" min="0" max="20" step="0.1" placeholder="3"></label></div><label>Notes<textarea id="babyNote" rows="3" placeholder="Optional"></textarea></label><div class="dialog-actions"><button class="btn ghost" value="cancel">Cancel</button><button class="btn baby-primary" value="default">Save</button></div></form></dialog>
+  <dialog id="authDialog" class="dialog small-dialog"><form method="dialog" id="authForm"><div class="dialog-head"><div><span class="eyebrow">FAMILY ACCOUNT</span><h2>Sign in to MilkFlow</h2></div><button class="icon-btn" value="cancel" aria-label="Close">×</button></div><div class="auth-helper"><strong>Already have a MilkFlow account?</strong> Enter the same email and password and tap <strong>Sign in</strong>.<br><br><strong>First time?</strong> Tap <strong>Create family account</strong> once, then use that same login on each family device.</div><label>Email<input id="authEmail" type="email" autocomplete="email" required></label><label>Password<input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></label><div class="auth-actions"><button type="button" class="btn ghost" id="signUpBtn">Create family account</button><button class="btn primary" value="default">Sign in</button></div></form></dialog>
   <input type="file" id="importFile" accept="application/json,.json" class="hidden"/>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', async () => {
-        const seen = localStorage.getItem('milkflow-sw-v5');
+        const seen = localStorage.getItem('milkflow-sw-v6');
         if (!seen) {
           const regs = await navigator.serviceWorker.getRegistrations();
           await Promise.all(regs.map(r => r.unregister()));
-          localStorage.setItem('milkflow-sw-v5','1');
-          navigator.serviceWorker.register('./sw.js?v=5').catch(()=>{});
+          localStorage.setItem('milkflow-sw-v6','1');
+          navigator.serviceWorker.register('./sw.js?v=6').catch(()=>{});
         }
       });
     }
