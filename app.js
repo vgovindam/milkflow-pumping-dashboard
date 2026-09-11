@@ -89,6 +89,7 @@ function readState(){
 }
 
 const S = readState();
+let dataVersion = 0;
 let cloud = null;
 let unsubscribers = [];
 let renderTimer = null;
@@ -105,6 +106,7 @@ function save(){
   S.ui.view = view;
   S.ui.workspace = workspaceOf(view);
   S.savedAt = Date.now();
+  dataVersion++;
   try{ localStorage.setItem(STATE_KEY,JSON.stringify(S)); }
   catch(err){ console.error('Local save failed',err); toast('This device is out of storage. Export a backup soon.',6000); }
 }
@@ -227,11 +229,49 @@ function babyIllustration(){
 const momEntries = () => S.entries.filter(e => !e.voidedAt);
 const pumps = () => momEntries().filter(e => e.type === 'pump');
 const nurses = () => momEntries().filter(e => e.type === 'nursing');
-const babyEvents = () => S.babyEvents.filter(e => !e.voidedAt).map(normalizeBabyEvent);
+let _babyCache = null, _babyCacheV = -1;
+const babyEvents = () => {
+  if(_babyCacheV === dataVersion && _babyCache) return _babyCache;
+  _babyCacheV = dataVersion;
+  _babyCache = S.babyEvents.filter(e => !e.voidedAt).map(normalizeBabyEvent);
+  return _babyCache;
+};
+let _byDate = null, _byDateV = -1;
+function babyByDate(){
+  if(_byDateV === dataVersion && _byDate) return _byDate;
+  _byDateV = dataVersion;
+  _byDate = new Map();
+  for(const e of babyEvents()){
+    if(!_byDate.has(e.date)) _byDate.set(e.date,[]);
+    _byDate.get(e.date).push(e);
+  }
+  return _byDate;
+}
 const dayP = d => pumps().filter(e => e.date === d).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-const dayTotal = d => Number.isFinite(+S.dailyOverrides?.[d]) ? +S.dailyOverrides[d] : sum(dayP(d).map(e => +e.amountMl || 0));
-const babyOn = (d,t) => babyEvents().filter(e => e.date === d && (!t || e.eventType === t));
+const dayLogged = d => sum(dayP(d).map(e => +e.amountMl || 0));
+const dayOverride = d => { const v = +S.dailyOverrides?.[d]; return Number.isFinite(v) ? v : null; };
+// A confirmed daily total covers sessions that were never logged individually, so it acts as a
+// floor - not a replacement. Taking the override verbatim hid logged pumps once the logged
+// sessions for that day added up to more than the confirmed figure.
+const dayTotal = d => { const o = dayOverride(d), l = dayLogged(d); return o === null ? l : Math.max(o, l); };
+const dayAdjusted = d => { const o = dayOverride(d); return o !== null && o > dayLogged(d); };
+const babyOn = (d,t) => { const a = babyByDate().get(d) || []; return t ? a.filter(e => e.eventType === t) : a; };
 function dateList(n,end=today()){ const out=[], d=new Date(`${end}T12:00:00`); for(let i=n-1;i>=0;i--){ const x=new Date(d); x.setDate(d.getDate()-i); out.push(iso(x)); } return out; }
+const daysBetween = (a,b) => Math.round((new Date(`${b}T12:00:00`) - new Date(`${a}T12:00:00`))/86400000);
+function earliestDate(scope){
+  const src = scope === 'baby' ? babyEvents().map(e => e.date)
+            : scope === 'mom' ? [...momEntries().map(e => e.date), ...Object.keys(S.dailyOverrides||{})]
+            : [...momEntries().map(e => e.date), ...babyEvents().map(e => e.date)];
+  const ds = src.filter(Boolean).sort();
+  return ds[0] || today();
+}
+// `range` 9999 means "all recorded history" - without it, anything older than 30 days was
+// simply unreachable from Trends and the Doctor summary even though History still listed it.
+function rangeDays(range,scope){
+  if(+range < 9999) return +range;
+  return Math.max(1, Math.min(daysBetween(earliestDate(scope), today()) + 1, 400));
+}
+const RANGE_PILLS = [[7,'7 days'],[14,'14 days'],[30,'30 days'],[90,'90 days'],[9999,'All']];
 function rollingAvg(n=7){ const vals=dateList(n).map(dayTotal).filter(v=>v>0); return vals.length ? Math.round(sum(vals)/vals.length) : 0; }
 function lastPump(){ return pumps().slice().sort(byWhenDesc)[0] || null; }
 const mins = t => t ? (+String(t).slice(0,2)*60 + +String(t).slice(3,5)) : 0;
@@ -326,6 +366,97 @@ function ring(pct,center,sub,tone='mom'){
 function chip(ic,text,cls=''){ return `<span class="chip ${cls}">${icon(ic)}${text}</span>`; }
 const hoursSince = e => e ? (Date.now() - new Date(`${e.date}T${e.time||'00:00'}:00`).getTime())/3600000 : Infinity;
 const isRecent = (e,maxHours=36) => { const h=hoursSince(e); return Number.isFinite(h) && h >= 0 && h <= maxHours; };
+// ---------------------------------------------------------------- charts --
+// All charts are inline SVG/CSS with no dependencies. Geometry lives in the SVG;
+// every label is HTML, so text stays crisp at any container width. Lines use
+// vector-effect="non-scaling-stroke" so stretching never distorts stroke weight.
+
+// Long ranges are aggregated into weeks so a 90-day or All view stays readable.
+function bucketDays(days,maxBars=45){
+  if(days.length <= maxBars) return days.map(d => ({days:[d], label:fd(d), short:fd(d)}));
+  const size = Math.ceil(days.length / maxBars), out = [];
+  for(let i = 0; i < days.length; i += size){
+    const chunk = days.slice(i, i+size);
+    out.push({days:chunk, label:`${fd(chunk[0])} – ${fd(chunk[chunk.length-1])}`, short:fd(chunk[0])});
+  }
+  return out;
+}
+const avg = a => a.length ? sum(a)/a.length : 0;
+
+// Vertical bars. `segments` turns each bar into a stack (diaper types).
+function barChart(buckets,{value,segments=null,color='var(--mom)',format=v=>Math.round(v),emptyLabel='No data yet'}){
+  const vals = buckets.map(value);
+  const max = Math.max(...vals, 1);
+  if(!vals.some(v => v > 0)) return `<div class="chart-empty">${emptyLabel}</div>`;
+  const bars = buckets.map((b,i) => {
+    const v = vals[i], h = v ? Math.max(4, Math.round(v/max*100)) : 2;
+    const stack = segments
+      ? segments.map(sg => { const sv = sg.value(b); return sv ? `<i class="seg" style="flex:${sv};background:${sg.color}" title="${esc(sg.label)}"></i>` : ''; }).join('')
+      : `<i class="seg" style="flex:1;background:${color}"></i>`;
+    return `<div class="cbar ${v?'':'is-empty'}"><span class="cbar-v">${v?format(v):''}</span><div class="cbar-track"><div class="cbar-fill" style="height:${h}%">${stack}</div></div><small>${b.short}</small></div>`;
+  }).join('');
+  return `<div class="chart-scroll"><div class="cbars" style="--n:${buckets.length}">${bars}</div></div>`;
+}
+
+// Smoothed area + line. Returns HTML label rail + SVG geometry.
+function areaChart(buckets,{value,color='var(--mom)',format=v=>Math.round(v),unit='',emptyLabel='No data yet'}){
+  let vals = buckets.map(value);
+  if(!vals.some(v => v > 0)) return `<div class="chart-empty">${emptyLabel}</div>`;
+  // Trim empty runs at each end so the line starts at the first real day instead of
+  // climbing out of a flat zero. Interior zeros are kept - those are real days.
+  let lo = vals.findIndex(v => v > 0);
+  let hi = vals.length - 1; while(hi > lo && !vals[hi]) hi--;
+  buckets = buckets.slice(lo, hi+1); vals = vals.slice(lo, hi+1);
+  const n = vals.length, max = Math.max(...vals, 1), W = 100, H = 100;
+  const x = i => n === 1 ? W/2 : (i/(n-1))*W;
+  const y = v => H - (v/max)*(H-6) - 3;
+  const pts = vals.map((v,i) => [x(i), y(v)]);
+  const line = pts.map(([px,py],i) => `${i?'L':'M'}${px.toFixed(2)} ${py.toFixed(2)}`).join(' ');
+  const area = `${line} L${W} ${H} L0 ${H} Z`;
+  const id = `g${Math.random().toString(36).slice(2,8)}`;
+  const dots = pts.map(([px,py],i) => (i === pts.length-1) ? `<circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="2.4" fill="${color}" vector-effect="non-scaling-stroke"/>` : '').join('');
+  return `<div class="chart-area">
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".28"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+      <path d="${area}" fill="url(#${id})"/>
+      <path d="${line}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      ${dots}
+    </svg>
+    <div class="chart-rail"><span>${format(vals[0])}${unit}</span><span class="peak">peak ${format(max)}${unit}</span><span>${format(vals[n-1])}${unit}</span></div>
+    <div class="chart-rail dim"><span>${buckets[0].short}</span><span>${buckets[n-1].short}</span></div>
+  </div>`;
+}
+
+// Proportional donut for a small set of categories.
+function donut(segments,centerLabel,centerSub){
+  const total = sum(segments.map(s => s.value));
+  if(!total) return `<div class="chart-empty">No data yet</div>`;
+  const R = 42, C = 2*Math.PI*R;
+  let offset = 0;
+  const rings = segments.filter(s => s.value > 0).map(s => {
+    const len = (s.value/total)*C;
+    const el = `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${s.color}" stroke-width="15" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" stroke-linecap="butt"/>`;
+    offset += len; return el;
+  }).join('');
+  const legend = segments.map(s => `<div><i style="background:${s.color}"></i><span>${esc(s.label)}</span><strong>${s.value}</strong><small>${total?Math.round(s.value/total*100):0}%</small></div>`).join('');
+  return `<div class="donut-wrap"><div class="donut"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--line-soft)" stroke-width="15"/>${rings}</svg><div class="donut-center"><strong>${centerLabel}</strong><span>${centerSub}</span></div></div><div class="donut-legend">${legend}</div></div>`;
+}
+
+// Horizontal distribution bars (e.g. output by time of day).
+function hBars(items,{format=v=>Math.round(v),unit=''}={}){
+  const max = Math.max(...items.map(i => i.value), 1);
+  if(!items.some(i => i.value > 0)) return `<div class="chart-empty">No data yet</div>`;
+  return `<div class="hbars">${items.map(i => `<div class="hbar"><span class="hbar-label">${icon(i.icon)}${esc(i.label)}</span><div class="hbar-track"><div class="hbar-fill" style="width:${Math.max(2,Math.round(i.value/max*100))}%;background:${i.color}"></div></div><b>${format(i.value)}${unit}</b><small>${esc(i.sub||'')}</small></div>`).join('')}</div>`;
+}
+
+// Direction badge comparing the latest window with the one before it.
+function trendBadge(recent,previous,{unit='',goodIsUp=true}={}){
+  if(!previous) return '';
+  const delta = recent - previous, pct = Math.round(delta/previous*100);
+  if(!Number.isFinite(pct) || Math.abs(pct) < 3) return `<span class="delta flat">Steady</span>`;
+  const up = delta > 0, good = up === goodIsUp;
+  return `<span class="delta ${good?'up':'down'}">${up?'▲':'▼'} ${Math.abs(pct)}%<em>vs previous</em></span>`;
+}
 function metric(label,value,sub,ic,tone='mom'){ return `<article class="metric ${tone}"><div class="metric-icon">${icon(ic)}</div><div><span>${label}</span><strong>${value}</strong><small>${sub}</small></div></article>`; }
 function panel(title,content,action=''){ return `<section class="panel"><div class="panel-head"><h3>${title}</h3>${action}</div>${content}</section>`; }
 function empty(ic,title,sub,action=''){ return `<div class="empty"><div class="empty-icon">${icon(ic)}</div><strong>${title}</strong><span>${sub||''}</span>${action}</div>`; }
@@ -366,54 +497,158 @@ function scheduleStrip(){
 function recentMom(n){ const a=momEntries().slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('history','No Mom history yet','Log a pump or import your private backup.','<button class="primary-link" data-import>Import backup</button>'); return `<div class="rows">${a.map(momRow).join('')}</div>`; }
 function momRow(e){ return `<button type="button" class="row" data-record="mom:${esc(e.id)}"><div class="row-icon mom">${icon(e.type==='pump'?'drop':'nursing')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`; }
 function momHistory(){
-  const range=+S.ui.momRange||30, cutoff=dateList(range)[0];
-  const a=momEntries().filter(e=>range>=9999||e.date>=cutoff).sort(byWhenDesc);
-  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>History</h2></div><button class="round-action" data-mom="pump">${icon('plus')}<span>Pump</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[9999,'All']],range,'data-mom-range')}${panel('',a.length?`<div class="rows">${a.map(momRow).join('')}</div>`:empty('history','No Mom records here','Try a wider date range.'))}`;
+  const range=S.ui.momRange ?? 30, all=+range>=9999, cutoff=all?'':dateList(rangeDays(range,'mom'))[0];
+  const a=momEntries().filter(e=>all||e.date>=cutoff).sort(byWhenDesc);
+  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>History</h2></div><button class="round-action" data-mom="pump">${icon('plus')}<span>Pump</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-mom-range')}${panel('',a.length?`<div class="rows">${a.map(momRow).join('')}</div>`:empty('history','No Mom records here','Try a wider date range.'))}`;
 }
+const TIME_BANDS = [
+  {key:'morning', label:'Morning', sub:'5am – 11am', from:5*60, to:11*60, color:'var(--mom)', icon:'sun'},
+  {key:'midday',  label:'Midday',  sub:'11am – 5pm', from:11*60, to:17*60, color:'var(--mom-2)', icon:'clock'},
+  {key:'evening', label:'Evening', sub:'5pm – 10pm', from:17*60, to:22*60, color:'#e08bbe', icon:'clock'},
+  {key:'night',   label:'Night',   sub:'10pm – 5am', from:22*60, to:5*60, color:'#7d8ad6', icon:'moon'}
+];
+const inBand = (t,b) => { const m = mins(t); return b.from < b.to ? (m >= b.from && m < b.to) : (m >= b.from || m < b.to); };
+
 function momTrends(){
-  const range=+S.ui.trendRange||14, days=dateList(range), vals=days.map(dayTotal), max=Math.max(...vals,1);
-  const bars=days.map((d,i)=>`<div class="bar${vals[i]?'':' bar-empty'}"><span>${vals[i]||''}</span><i style="height:${vals[i]?Math.max(6,Math.round(vals[i]/max*150)):3}px"></i><small>${fd(d)}</small></div>`).join('');
-  const sessions=pumps().filter(e=>e.date>=days[0]); const avgSession=sessions.length?Math.round(sum(sessions.map(e=>+e.amountMl||0))/sessions.length):0; const best=sessions.reduce((m,e)=>(+e.amountMl||0)>(+m?.amountMl||0)?e:m,null);
-  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Milk trends</h2></div></div>${pills([[7,'7 days'],[14,'14 days'],[30,'30 days']],range,'data-trend-range')}<div class="metric-grid three">${metric('Daily avg',`${rollingAvg(Math.min(range,7))} mL`,'recent pumping days','chart')}${metric('Avg pump',`${avgSession} mL`,`${sessions.length} sessions`,'drop')}${metric('Best pump',`${best?.amountMl||0} mL`,best?fd(best.date):'—','spark')}</div>${panel('Daily output',`<div class="bars-scroll"><div class="bars" style="--n:${days.length}">${bars}</div></div>`)}`;
+  const range = S.ui.trendRange ?? 14, days = dateList(rangeDays(range,'mom'));
+  const buckets = bucketDays(days);
+  const vals = days.map(dayTotal);
+  const sessions = pumps().filter(e => e.date >= days[0]);
+  const avgSession = sessions.length ? Math.round(sum(sessions.map(e => +e.amountMl||0))/sessions.length) : 0;
+  const best = sessions.reduce((m,e) => (+e.amountMl||0) > (+m?.amountMl||0) ? e : m, null);
+  const activeDays = days.filter(d => dayTotal(d) > 0);
+  const perDay = activeDays.length ? Math.round(sum(activeDays.map(dayTotal))/activeDays.length) : 0;
+  const sessionsPerDay = activeDays.length ? (sessions.length/activeDays.length).toFixed(1) : '0.0';
+
+  // Latest half of the window against the half before it.
+  const half = Math.floor(days.length/2);
+  const recentAvg = avg(days.slice(half).map(dayTotal).filter(v => v > 0));
+  const priorAvg = avg(days.slice(0,half).map(dayTotal).filter(v => v > 0));
+
+  const bandTotals = TIME_BANDS.map(b => {
+    const inB = sessions.filter(e => e.time && inBand(e.time,b));
+    return {...b, value: sum(inB.map(e => +e.amountMl||0)), count: inB.length};
+  });
+  const topBand = bandTotals.slice().sort((a,b) => b.value-a.value)[0];
+  const adjustedDays = days.filter(dayAdjusted).length;
+
+  // 7-day rolling average, so the supply direction is readable through daily noise.
+  const rollingBy = new Map(days.map((d,i) => { const w = days.slice(Math.max(0,i-6), i+1).map(dayTotal).filter(v => v > 0); return [d, w.length ? Math.round(sum(w)/w.length) : 0]; }));
+
+  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Milk trends</h2></div></div>
+  ${pills(RANGE_PILLS,range,'data-trend-range')}
+  <div class="metric-grid">${metric('Per pumping day',`${perDay} mL`,`${activeDays.length} active days`,'chart')}${metric('Avg pump',`${avgSession} mL`,`${sessions.length} sessions`,'drop')}${metric('Best pump',`${best?.amountMl||0} mL`,best?fd(best.date):'—','spark')}${metric('Pumps / day',sessionsPerDay,'on active days','timer')}</div>
+  ${panel(`Daily output${adjustedDays?' ':''}`,barChart(buckets,{value:b => Math.round(avg(b.days.map(dayTotal))), color:'var(--mom)', emptyLabel:'No pumping logged in this range'}) + (adjustedDays?`<p class="chart-note">${adjustedDays} day${adjustedDays>1?'s':''} use a confirmed daily total that is higher than the sessions logged individually.</p>`:''),
+    `<span class="panel-note">${days.length} days</span>`)}
+  ${panel('Supply direction',areaChart(buckets,{value:b => Math.round(avg(b.days.map(d => rollingBy.get(d) || 0))), color:'var(--mom)', unit:' mL', emptyLabel:'Needs a few more days'}),trendBadge(recentAvg,priorAvg,{goodIsUp:true}))}
+  ${panel('When you produce most',hBars(bandTotals.map(b => ({...b, sub:`${b.count} ${b.count===1?'pump':'pumps'}`})),{unit:' mL'}) + (topBand&&topBand.value?`<p class="chart-note">Strongest window: <strong>${topBand.label.toLowerCase()}</strong> (${topBand.sub}).</p>`:''))}
+  ${panel('Recent sessions',recentMom(6),'<button data-view="mom-history">See all</button>')}`;
 }
 function momStash(){ return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Freezer stash</h2></div></div><section class="stash-hero"><div class="stash-art">${icon('snow')}</div><div><strong>${(+S.profile.stashMl||0).toLocaleString()} mL</strong><span>saved milk</span></div></section>${panel('Update stash',`<div class="stash-buttons"><button data-stash="-30">−30</button><button data-stash="30">+30</button><button data-stash="60">+60</button><button data-stash="120">+120</button></div><label class="field"><span>Exact amount (mL)</span><input id="stashExact" type="number" inputmode="numeric" min="0" value="${+S.profile.stashMl||0}"></label>`)}`; }
 
-function babyHome(){
-  const s=babyStats(today()), pref=feedingPreference();
-  const prefLabel=pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed';
-  const live=babyEvents().filter(e=>!e.exactSourceDuplicate).slice().sort(byWhenDesc);
-  const lastFeed=live.find(e=>e.eventType==='feeding'||e.eventType==='nursing');
-  const lastDiaper=live.find(e=>e.eventType==='diaper');
-  const lastSleep=live.find(e=>e.eventType==='sleep');
-  const feedAgo=lastFeed?sinceLabel(lastFeed.date,lastFeed.time):null;
-  const diaperAgo=lastDiaper?sinceLabel(lastDiaper.date,lastDiaper.time):null;
-  return `<section class="hero baby-hero">
-    <div class="hero-copy">
-      <span class="eyebrow">${esc(S.baby.name)}</span>
-      <h2>${isRecent(lastFeed)?`Fed ${feedAgo}`:'Baby care'}</h2>
-      <p>${prefLabel}${s.feeds?` · ${s.feeds} ${s.feeds===1?'feed':'feeds'} today`:' · nothing logged today'}</p>
-      <div class="chips">${isRecent(lastDiaper)?chip('diaper',`Diaper ${diaperAgo}`):''}${isRecent(lastSleep,18)?chip('moon',`Slept ${sinceLabel(lastSleep.date,lastSleep.time)}`):''}${!isRecent(lastFeed)&&lastFeed?chip('history',`Last feed ${fd(lastFeed.date)}`):''}</div>
+const BABY_EVENT_TONE = {
+  diaper_wet:{color:'var(--wet-ink)', label:'Wet'},
+  diaper_poop:{color:'var(--poop-ink)', label:'Poopy'},
+  diaper_both:{color:'var(--mixed-ink)', label:'Mixed'},
+  feeding:{color:'var(--feed-ink)', label:'Bottle'},
+  nursing:{color:'var(--growth-ink)', label:'Nursing'},
+  sleep:{color:'var(--sleep-ink)', label:'Sleep'},
+  growth:{color:'var(--growth-ink)', label:'Growth'}
+};
+const toneKey = e => e.eventType === 'diaper' ? `diaper_${e.subtype||'wet'}` : e.eventType;
+const toneOf = e => BABY_EVENT_TONE[toneKey(e)] || {color:'var(--baby)', label:cap(e.eventType)};
+
+// A ring measured against this baby's own recent average - never an invented clinical target.
+function statRing(value,average,label,sub,color){
+  const base = Math.max(average, value, 1);
+  const pct = Math.max(0, Math.min(1, value/base));
+  const r = 26, c = 2*Math.PI*r;
+  return `<div class="stat-ring" style="--c:${color}">
+    <div class="stat-ring-dial">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" class="sr-bg"/><circle cx="32" cy="32" r="${r}" class="sr-fg" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-pct)).toFixed(1)}"/></svg>
+      <b>${value}</b>
     </div>
-    <div class="hero-art">${babyIllustration()}</div>
-  </section>
-  <div class="quick-grid baby-grid" aria-label="Quick baby logging">
-    <button class="quick-tile feed" data-feed><span class="tile-art">${icon('bottle')}</span><strong>Feed</strong><small>Nurse or bottle</small></button>
-    <button class="quick-tile wet" data-diaper="wet"><span class="tile-art">${icon('drop')}</span><strong>Wet</strong><small>Wet diaper</small></button>
-    <button class="quick-tile poop" data-diaper="poop"><span class="tile-art">${icon('poop')}</span><strong>Poopy</strong><small>Poopy diaper</small></button>
-    <button class="quick-tile mixed" data-diaper="both"><span class="tile-art">${icon('mixed')}</span><strong>Mixed</strong><small>Wet + poopy</small></button>
-  </div>
-  <div class="more-actions">${['sleep','growth'].map(k=>`<button data-${k}>${icon(k==='sleep'?'moon':'scale')}<span>${k==='sleep'?'Sleep':'Growth'}</span></button>`).join('')}</div>
-  ${todaySnapshot(s)}
-  ${panel('Recent care',recentBaby(6),'<button data-view="baby-history">See all</button>')}`;
+    <span>${label}</span><small>${sub}</small>
+  </div>`;
 }
-function todaySnapshot(s){
-  const cell=(cls,ic,label,value,sub)=>`<div class="snap ${cls}"><div class="snap-icon">${icon(ic)}</div><span>${label}</span><strong>${value}</strong><small>${sub||''}</small></div>`;
-  return `<section class="today-strip">
-    ${cell('wet','drop','Wet',s.wetTotal,s.mixed?`${s.mixed} mixed`:'today')}
-    ${cell('poop','poop','Poopy',s.poopTotal,s.mixed?`${s.mixed} mixed`:'today')}
-    ${cell('feed','bottle','Feeds',s.feeds,`${s.nursing} nursing`)}
-    ${cell('milk','bottle','Bottle milk',s.bottleOz.toFixed(1),'oz logged')}
+
+// Today's events laid along a 24-hour track: clustering and gaps are visible at a glance.
+function dayTimeline(){
+  const evs = babyOn(today()).filter(e => !e.exactSourceDuplicate && e.time).sort((a,b) => mins(a.time)-mins(b.time));
+  const d = new Date(), nowPct = ((d.getHours()*60 + d.getMinutes())/1440)*100;
+  const dots = evs.map(e => {
+    const t = toneOf(e);
+    return `<button type="button" class="tl-dot" data-record="baby:${esc(e.id)}" style="left:${(mins(e.time)/1440*100).toFixed(2)}%;--c:${t.color}" aria-label="${esc(t.label)} at ${to12(e.time)}"></button>`;
+  }).join('');
+  const ticks = [0,6,12,18,24].map(h => `<span style="left:${(h/24*100).toFixed(2)}%">${h===0?'12a':h===12?'12p':h>12?`${h-12}p`:`${h}a`}</span>`).join('');
+  return `<section class="timeline-card">
+    <div class="timeline-head"><strong>Today's rhythm</strong><span>${evs.length} ${evs.length===1?'entry':'entries'}</span></div>
+    <div class="timeline-track">
+      <div class="tl-now" style="left:${nowPct.toFixed(2)}%"></div>
+      ${dots || '<span class="tl-empty" data-label="Nothing logged yet today"></span>'}
+    </div>
+    <div class="tl-ticks">${ticks}</div>
   </section>`;
+}
+
+function babyHome(){
+  const t = today(), s = babyStats(t), pref = feedingPreference();
+  const prefLabel = pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed';
+  const live = babyEvents().filter(e => !e.exactSourceDuplicate).slice().sort(byWhenDesc);
+  const lastFeed = live.find(e => e.eventType==='feeding' || e.eventType==='nursing');
+  const lastDiaper = live.find(e => e.eventType==='diaper');
+  const lastSleep = live.find(e => e.eventType==='sleep');
+
+  // seven-day averages give each ring an honest baseline
+  const week = dateList(8).slice(0,7).map(babyStats);
+  const wk = k => week.length ? sum(week.map(r => r[k]))/week.length : 0;
+
+  const feedAgo = lastFeed ? sinceLabel(lastFeed.date,lastFeed.time) : null;
+  const hero = isRecent(lastFeed)
+    ? `<h2>Fed <em>${feedAgo}</em></h2>`
+    : `<h2>${esc(S.baby.name)}</h2>`;
+
+  return `<section class="baby-stage">
+    <div class="stage-glow" aria-hidden="true"></div>
+    <div class="stage-body">
+      <div class="stage-avatar">${babyIllustration()}</div>
+      <div class="stage-copy">
+        <span class="eyebrow">${esc(S.baby.name)}</span>
+        ${hero}
+        <p>${prefLabel}${s.feeds?` · ${s.feeds} ${s.feeds===1?'feed':'feeds'} today`:' · nothing logged today'}</p>
+        <div class="chips">${isRecent(lastDiaper)?chip('diaper',`Diaper ${sinceLabel(lastDiaper.date,lastDiaper.time)}`):''}${isRecent(lastSleep,18)?chip('moon',`Slept ${sinceLabel(lastSleep.date,lastSleep.time)}`):''}</div>
+      </div>
+    </div>
+  </section>
+
+  <button class="feed-cta" data-feed>
+    <span class="cta-medallion">${icon('bottle')}</span>
+    <span class="cta-copy"><strong>Log a feed</strong><small>${lastFeed?`Last ${feedAgo}`:'Nurse, breast milk or formula'}</small></span>
+    <span class="cta-go">${icon('chevron')}</span>
+  </button>
+
+  <div class="orb-row" aria-label="Quick diaper logging">
+    <button class="orb wet" data-diaper="wet"><span class="orb-face">${icon('drop')}</span><strong>Wet</strong></button>
+    <button class="orb poop" data-diaper="poop"><span class="orb-face">${icon('poop')}</span><strong>Poopy</strong></button>
+    <button class="orb mixed" data-diaper="both"><span class="orb-face">${icon('mixed')}</span><strong>Mixed</strong></button>
+  </div>
+
+  <div class="pill-row">
+    <button data-sleep>${icon('moon')}<span>Sleep</span></button>
+    <button data-growth>${icon('scale')}<span>Growth</span></button>
+    <button data-view="baby-trends">${icon('chart')}<span>Trends</span></button>
+  </div>
+
+  ${dayTimeline()}
+
+  <section class="ring-row">
+    ${statRing(s.wetTotal, wk('wetTotal'), 'Wet', `avg ${wk('wetTotal').toFixed(1)}`, 'var(--wet-ink)')}
+    ${statRing(s.poopTotal, wk('poopTotal'), 'Poopy', `avg ${wk('poopTotal').toFixed(1)}`, 'var(--poop-ink)')}
+    ${statRing(s.feeds, wk('feeds'), 'Feeds', `avg ${wk('feeds').toFixed(1)}`, 'var(--feed-ink)')}
+    ${statRing(+s.bottleOz.toFixed(1), wk('bottleOz'), 'Bottle oz', `avg ${wk('bottleOz').toFixed(1)}`, 'var(--baby)')}
+  </section>
+
+  ${panel('Recent care',recentBaby(6),'<button data-view="baby-history">See all</button>')}`;
 }
 function babyLabel(e){
   if(e.eventType==='diaper') return e.subtype==='both'?'Mixed diaper':e.subtype==='poop'?'Poopy diaper':'Wet diaper';
@@ -429,24 +664,65 @@ function babyRow(e){
 }
 function recentBaby(n){ const a=babyEvents().filter(e=>!e.exactSourceDuplicate).slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('baby','No Baby history yet','Use one of the four buttons above to start.'); return `<div class="rows">${a.map(babyRow).join('')}</div>`; }
 function babyHistory(){
-  const range=+S.ui.babyRange||30, filter=S.ui.babyFilter||'all', cutoff=dateList(range)[0];
+  const range=S.ui.babyRange ?? 30, all=+range>=9999, filter=S.ui.babyFilter||'all', cutoff=all?'':dateList(rangeDays(range,'baby'))[0];
   const matches=e=>filter==='all'||(filter==='feed'&&(e.eventType==='feeding'||e.eventType==='nursing'))||e.eventType===filter;
-  const a=babyEvents().filter(e=>(range>=9999||e.date>=cutoff)&&matches(e)).sort(byWhenDesc);
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>History</h2></div><button class="round-action baby" data-add>${icon('plus')}<span>Add</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[9999,'All']],range,'data-baby-range')}${pills([['all','All'],['diaper','Diapers'],['feed','Feeds'],['sleep','Sleep'],['growth','Growth']],filter,'data-baby-filter')}${panel('',a.length?`<div class="rows">${a.map(babyRow).join('')}</div>`:empty('history','No matching records','Try another filter or date range.'))}`;
+  const a=babyEvents().filter(e=>(all||e.date>=cutoff)&&matches(e)).sort(byWhenDesc);
+  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>History</h2></div><button class="round-action baby" data-add>${icon('plus')}<span>Add</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-baby-range')}${pills([['all','All'],['diaper','Diapers'],['feed','Feeds'],['sleep','Sleep'],['growth','Growth']],filter,'data-baby-filter')}${panel('',a.length?`<div class="rows">${a.map(babyRow).join('')}</div>`:empty('history','No matching records','Try another filter or date range.'))}`;
 }
-function dailyBabyRows(range){ return dateList(range).map(d=>({d,...babyStats(d)})); }
+function dailyBabyRows(n){ return dateList(n).map(d=>({d,...babyStats(d)})); }
 function avgFromActive(rows,key){ const active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz); return active.length ? (sum(active.map(r=>r[key]))/active.length).toFixed(1) : '0.0'; }
 function babyDailyTable(rows){
   const body=rows.slice().reverse().map(r=>`<div class="daily-row"><div class="daily-date"><strong>${fdl(r.d)}</strong><small>${r.diapers} diapers · ${r.feeds} feeds</small></div><div class="daily-cell wet"><span>Wet only</span><b>${r.wetOnly}</b></div><div class="daily-cell poop"><span>Poopy only</span><b>${r.poopOnly}</b></div><div class="daily-cell mixed"><span>Mixed</span><b>${r.mixed}</b></div><div class="daily-cell feeds"><span>Feeds</span><b>${r.feeds}</b></div><div class="daily-cell milk"><span>Bottle milk</span><b>${r.bottleOz.toFixed(1)} <small>oz</small></b></div></div>`).join('');
   return `<div class="daily-table"><div class="daily-row daily-head"><div>Date</div><div>Wet only</div><div>Poopy only</div><div>Mixed</div><div>Feeds</div><div>Bottle milk</div></div>${body}</div>`;
 }
 function babyTrends(){
-  const range=+S.ui.trendRange||14, rows=dailyBabyRows(range);
-  const totalNursing=sum(rows.map(r=>r.nursing)), totalBreastBottles=sum(rows.map(r=>r.breastMilkBottles)), totalFormula=sum(rows.map(r=>r.formulaBottles));
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Daily trends</h2></div></div>${pills([[7,'7 days'],[14,'14 days'],[30,'30 days']],range,'data-trend-range')}
-  <div class="metric-grid baby-summary">${metric('Wet diapers / day',avgFromActive(rows,'wetTotal'),'includes mixed','drop','baby')}${metric('Poopy / day',avgFromActive(rows,'poopTotal'),'includes mixed','poop','baby')}${metric('Feeds / day',avgFromActive(rows,'feeds'),'nursing + bottles','bottle','baby')}${metric('Bottle milk / day',`${avgFromActive(rows,'bottleOz')} oz`,'logged bottles','bottle','baby')}</div>
-  ${panel('Daily log',babyDailyTable(rows))}
-  ${panel('Feeding mix',`<div class="feeding-mix"><div><span>Nursing</span><strong>${totalNursing}</strong></div><div><span>Breast-milk bottles</span><strong>${totalBreastBottles}</strong></div><div><span>Formula bottles</span><strong>${totalFormula}</strong></div></div>`)}`;
+  const range = S.ui.trendRange ?? 14, n = rangeDays(range,'baby'), days = dateList(n);
+  const rows = dailyBabyRows(n);
+  const byDate = new Map(rows.map(r => [r.d,r]));
+  const buckets = bucketDays(days);
+  const stat = k => b => avg(b.days.map(d => byDate.get(d)?.[k] || 0));
+
+  const active = rows.filter(r => r.diapers || r.feeds || r.bottleOz);
+  const totalNursing = sum(rows.map(r => r.nursing));
+  const totalBreast = sum(rows.map(r => r.breastMilkBottles));
+  const totalFormula = sum(rows.map(r => r.formulaBottles));
+  const totalSleep = sum(rows.map(r => r.sleepMin));
+
+  const half = Math.floor(rows.length/2);
+  const recentFeeds = avg(rows.slice(half).filter(r => r.feeds).map(r => r.feeds));
+  const priorFeeds = avg(rows.slice(0,half).filter(r => r.feeds).map(r => r.feeds));
+  const recentOz = avg(rows.slice(half).filter(r => r.bottleOz).map(r => r.bottleOz));
+  const priorOz = avg(rows.slice(0,half).filter(r => r.bottleOz).map(r => r.bottleOz));
+
+  return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Daily trends</h2></div></div>
+  ${pills(RANGE_PILLS,range,'data-trend-range')}
+  <div class="metric-grid baby-summary">${metric('Wet / day',avgFromActive(rows,'wetTotal'),'includes mixed','drop','baby')}${metric('Poopy / day',avgFromActive(rows,'poopTotal'),'includes mixed','poop','baby')}${metric('Feeds / day',avgFromActive(rows,'feeds'),'nursing + bottles','bottle','baby')}${metric('Bottle milk / day',`${avgFromActive(rows,'bottleOz')} oz`,'logged bottles','bottle','baby')}</div>
+
+  ${panel('Diapers per day',barChart(buckets,{
+    value: b => avg(b.days.map(d => byDate.get(d)?.diapers || 0)),
+    segments: [
+      {label:'Wet only', color:'var(--wet-ink)', value: stat('wetOnly')},
+      {label:'Poopy only', color:'var(--poop-ink)', value: stat('poopOnly')},
+      {label:'Mixed', color:'var(--mixed-ink)', value: stat('mixed')}
+    ],
+    format: v => v.toFixed(v < 10 ? 1 : 0),
+    emptyLabel:'No diapers logged in this range'
+  }) + `<div class="chart-legend"><span><i style="background:var(--wet-ink)"></i>Wet only</span><span><i style="background:var(--poop-ink)"></i>Poopy only</span><span><i style="background:var(--mixed-ink)"></i>Mixed</span></div>`,
+    `<span class="panel-note">${active.length} active days</span>`)}
+
+  ${panel('Feeds per day',areaChart(buckets,{value:stat('feeds'), color:'var(--feed-ink)', format:v => v.toFixed(1), emptyLabel:'No feeds logged in this range'}),trendBadge(recentFeeds,priorFeeds,{goodIsUp:true}))}
+
+  ${panel('Bottle milk per day',areaChart(buckets,{value:stat('bottleOz'), color:'var(--baby)', format:v => v.toFixed(1), unit:' oz', emptyLabel:'No bottles logged in this range'}),trendBadge(recentOz,priorOz,{goodIsUp:true}))}
+
+  ${panel('Feeding mix',donut([
+      {label:'Nursing', value:totalNursing, color:'var(--growth-ink)'},
+      {label:'Breast-milk bottles', value:totalBreast, color:'var(--feed-ink)'},
+      {label:'Formula bottles', value:totalFormula, color:'var(--baby)'}
+    ], totalNursing+totalBreast+totalFormula, 'feeds'))}
+
+  ${totalSleep ? panel('Sleep logged',areaChart(buckets,{value:b => avg(b.days.map(d => (byDate.get(d)?.sleepMin || 0)/60)), color:'var(--sleep-ink)', format:v => v.toFixed(1), unit:' hr', emptyLabel:'No sleep logged'}),'') : ''}
+
+  ${panel('Daily log',babyDailyTable(rows.slice(-14)) + (rows.length>14?`<p class="chart-note">Showing the most recent 14 of ${rows.length} days. <strong>Doctor summary</strong> lists the full range, and History lists every entry.</p>`:''),`<span class="panel-note">${Math.min(rows.length,14)} days</span>`)}`;
 }
 function babyGrowth(){
   const a=babyEvents().filter(e=>e.eventType==='growth').sort(byWhenDesc), g=a[0];
@@ -457,10 +733,10 @@ function babyGrowth(){
   }).join('')}</div>`:empty('growth','No measurements yet','Add measurements from pediatric visits.'))}<div class="clinical-note">For children under 2, clinicians generally follow weight, length, weight-for-length and head circumference over time using WHO growth standards.</div>`;
 }
 function doctorView(){
-  const range=+S.ui.doctorRange||14, rows=dailyBabyRows(range), active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz), g=latestGrowth(), pref=feedingPreference();
+  const range=S.ui.doctorRange ?? 14, n=rangeDays(range,'baby'), rows=dailyBabyRows(n), active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz), g=latestGrowth(), pref=feedingPreference();
   const totalNursing=sum(active.map(r=>r.nursing)), totalBottles=sum(active.map(r=>r.bottles));
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Doctor summary</h2></div><button class="round-action baby" data-print>${icon('steth')}<span>Print</span></button></div>${pills([[7,'7 days'],[14,'14 days'],[30,'30 days']],range,'data-doctor-range')}
-  <section class="doctor-summary-card"><div>${icon('steth')}</div><div><strong>${esc(S.baby.name)} · ${range}-day snapshot</strong><span>Quick answers from logged care</span></div></section>
+  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Doctor summary</h2></div><button class="round-action baby" data-print>${icon('steth')}<span>Print</span></button></div>${pills(RANGE_PILLS,range,'data-doctor-range')}
+  <section class="doctor-summary-card"><div>${icon('steth')}</div><div><strong>${esc(S.baby.name)} · ${n}-day snapshot</strong><span>Quick answers from logged care</span></div></section>
   <div class="qa-grid"><div><span>Feeding pattern</span><strong>${pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed'}</strong></div><div><span>Wet diapers</span><strong>${avgFromActive(rows,'wetTotal')} / day</strong><small>includes mixed</small></div><div><span>Poopy diapers</span><strong>${avgFromActive(rows,'poopTotal')} / day</strong><small>includes mixed</small></div><div><span>Mixed diapers</span><strong>${avgFromActive(rows,'mixed')} / day</strong></div><div><span>Feeds</span><strong>${avgFromActive(rows,'feeds')} / day</strong><small>${totalNursing} nursing · ${totalBottles} bottles</small></div><div><span>Latest growth</span><strong>${g?`${g.weightLb??'—'} lb · ${g.lengthIn??'—'} in`:'Not logged'}</strong></div></div>
   ${panel('Daily review',babyDailyTable(rows))}
   <div class="clinical-note">This is a log summary, not a diagnosis. Around and after 6 weeks, stool frequency can vary widely, so your pediatrician may look at feeding, wet diapers, growth and the overall pattern together.</div>`;
@@ -619,7 +895,7 @@ function openSleepDialog(isEdit=false){ closeOverlays(); if(!isEdit) editing=nul
 
 function bindViewInputs(){
   // A 30-day chart overflows: the most recent days matter most, so open scrolled to them.
-  document.querySelectorAll('.bars-scroll').forEach(el => { el.scrollLeft = el.scrollWidth; });
+  document.querySelectorAll('.chart-scroll').forEach(el => { el.scrollLeft = el.scrollWidth; });
   document.querySelectorAll('.schedule-strip').forEach(el => {
     const next=el.querySelector('.schedule-card:not(.done)');
     if(next && el.scrollWidth > el.clientWidth) el.scrollLeft = Math.max(0, next.offsetLeft - 12);

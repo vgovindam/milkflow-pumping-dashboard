@@ -26,7 +26,10 @@ Older app versions, standalone migration scripts and competing CSS layers are no
 
 ## Baby
 
-Baby Home is optimized for repeated one-handed use with four large actions: Feed, Wet, Poopy, and Mixed.
+Baby Home is optimized for repeated one-handed use: a wide **Log a feed** action, three large
+circular diaper orbs (Wet / Poopy / Mixed), pill shortcuts for Sleep, Growth and Trends, a
+24-hour **Today's rhythm** track where each logged entry is a tappable dot, and dial rings that
+compare today against this baby's own 7-day average rather than any invented clinical target.
 
 - Nursing, expressed-breast-milk bottles, and formula bottles
 - Wet-only, poopy-only, and mixed diapers
@@ -47,6 +50,20 @@ Any row in Mom history, Baby history or Growth opens an entry sheet with **Edit*
 Remove is a soft-void: the record keeps its id, stays in local storage and in Firestore with a
 `voidedAt` timestamp, and simply stops counting toward history and totals. A toast offers **Undo**,
 and the entry is still present in any export. Nothing in the app hard-deletes a record.
+
+## Trends
+
+Both Trends views and the Doctor summary offer 7 / 14 / 30 / 90 days and **All**, where All spans
+from the first recorded entry. Ranges longer than 45 days are aggregated into even buckets so the
+charts stay readable.
+
+Mom: daily output, a 7-day rolling average with a direction badge, and an output-by-time-of-day
+breakdown (morning / midday / evening / night). Baby: stacked diaper composition, feeds per day,
+bottle volume, a feeding-mix donut, and sleep when logged. Charts are inline SVG/CSS with no
+third-party library.
+
+A confirmed daily total (`dailyOverrides`) acts as a **floor**, not a replacement: the day shows
+`max(confirmed, logged)`, so sessions logged after the total was confirmed are never hidden.
 
 ## Navigation
 
