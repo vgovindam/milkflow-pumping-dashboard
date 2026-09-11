@@ -1,0 +1,9 @@
+{
+  "name":"MilkFlow Family",
+  "short_name":"MilkFlow",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#f7f8fc",
+  "theme_color":"#fff7fb",
+  "description":"Mom-first pumping and baby-care dashboard"
+}
