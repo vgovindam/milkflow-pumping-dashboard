@@ -72,14 +72,16 @@ async function loadCloud(uid){
     root.collection('private').doc('pumpCoach').get(),
     root.collection('pumpCoachDays').where('date','>=',cutoff).get()
   ]);
-  const profile=profileDoc.exists?(profileDoc.data()||{}):{};
+  const raw=profileDoc.exists?(profileDoc.data()||{}):{};
+  const familyProfile=raw.profile||{};
+  const baby=raw.baby||{};
   return {
     entries:entrySnap.docs.map(d=>({id:d.id,...d.data()})),
     profile:{
-      dailyGoalMl:profile.dailyGoalMl??null,
-      schedule:Array.isArray(profile.schedule)?profile.schedule:[],
-      babyBirthDate:profile.baby?.birthDate||profile.babyBirthDate||null,
-      dailyOverrides:profile.dailyOverrides||{}
+      dailyGoalMl:familyProfile.dailyGoalMl??raw.dailyGoalMl??null,
+      schedule:Array.isArray(raw.schedule)?raw.schedule:[],
+      babyBirthDate:baby.birthDate||raw.babyBirthDate||null,
+      dailyOverrides:raw.dailyOverrides||{}
     },
     coach:coachDoc.exists?(coachDoc.data()||{}):{},
     coachDays:coachDaysSnap.docs.map(d=>({date:d.id,...d.data()}))
