@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>MilkFlow Family</title>
-  <link rel="manifest" href="manifest.webmanifest?build=stable13">
+  <link rel="manifest" href="manifest.webmanifest?build=stable14">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167.png">
@@ -18,12 +18,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?build=stable13">
+  <link rel="stylesheet" href="styles.css?build=stable14">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="config.js?build=stable13" defer></script>
-  <script src="app.js?build=stable13" defer></script>
+  <script src="config.js?build=stable14" defer></script>
+  <script src="app.js?build=stable14" defer></script>
+  <script src="smart-pumping.js?build=stable14" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -95,7 +96,7 @@
         reloading = true;
         location.reload();
       });
-      navigator.serviceWorker.register('./sw.js?build=stable13', { updateViaCache: 'none' }).catch(err => console.warn('SW registration skipped', err));
+      navigator.serviceWorker.register('./sw.js?build=stable14', { updateViaCache: 'none' }).catch(err => console.warn('SW registration skipped', err));
     });
   }
 </script>
