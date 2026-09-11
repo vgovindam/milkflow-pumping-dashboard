@@ -1,5 +1,5 @@
-const CACHE='milkflow-family-v6';
-const ASSETS=['./?v=6','./index.html?v=6','./styles.css?v=6','./family.css?v=6','./family-friendly.css?v=6','./app-v4.js?v=6','./family-friendly.js?v=6','./config.js?v=6','./manifest.webmanifest?v=6'];
+const CACHE='milkflow-family-v7';
+const ASSETS=['./?v=7','./index.html?v=7','./styles.css?v=7','./family.css?v=7','./family-friendly.css?v=7','./app-v4.js?v=7','./family-friendly.js?v=7','./config.js?v=7','./manifest.webmanifest?v=7'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).catch(()=>{}));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==self.location.origin)return;e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});return r;}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./?v=6'))));});
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==self.location.origin)return;e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});return r;}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./?v=7'))));});
