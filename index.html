@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f6f7fb" />
+  <title>MilkFlow — Pumping & Nursing Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.min.js" defer></script>
+  <script src="config.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">M</div>
+        <div><strong>MilkFlow</strong><span>Pumping intelligence</span></div>
+      </div>
+      <nav class="nav" aria-label="Primary">
+        <button class="nav-item active" data-view="overview"><span>◫</span>Overview</button>
+        <button class="nav-item" data-view="sessions"><span>◷</span>Sessions</button>
+        <button class="nav-item" data-view="trends"><span>⌁</span>Trends</button>
+        <button class="nav-item" data-view="stash"><span>◇</span>Stash & Runway</button>
+        <button class="nav-item" data-view="nursing"><span>♡</span>Nursing</button>
+        <button class="nav-item" data-view="schedule"><span>◴</span>Schedule</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sync-card" id="syncCard">
+          <div class="sync-dot"></div>
+          <div><strong id="syncTitle">Local-first</strong><span id="syncSubtitle">Your entries are saved on this device</span></div>
+        </div>
+        <button class="nav-item" data-view="settings"><span>⚙</span>Settings</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="menuBtn" aria-label="Open menu">☰</button>
+        <div class="topbar-title"><span class="eyebrow" id="viewEyebrow">DAILY COMMAND CENTER</span><h1 id="viewTitle">Overview</h1></div>
+        <div class="top-actions">
+          <div class="date-pill" id="todayLabel"></div>
+          <button class="btn ghost" id="quickNurseBtn">♡ Log nursing</button>
+          <button class="btn primary" id="quickPumpBtn">＋ Log pump</button>
+        </div>
+      </header>
+
+      <section class="content" id="content"></section>
+    </main>
+  </div>
+
+  <dialog id="entryDialog" class="dialog">
+    <form method="dialog" id="entryForm">
+      <div class="dialog-head">
+        <div><span class="eyebrow" id="dialogEyebrow">NEW ENTRY</span><h2 id="dialogTitle">Log pump</h2></div>
+        <button class="icon-btn" value="cancel" aria-label="Close">×</button>
+      </div>
+      <input type="hidden" id="entryType" value="pump" />
+      <div class="form-grid">
+        <label>Date<input id="entryDate" type="date" required></label>
+        <label>Time<input id="entryTime" type="time" required></label>
+        <label class="pump-only">Amount (mL)<input id="entryAmount" type="number" min="0" max="1000" step="1" placeholder="120"></label>
+        <label>Duration (min)<input id="entryDuration" type="number" min="0" max="180" step="1" placeholder="30"></label>
+        <label class="nurse-only hidden">Side<select id="entrySide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label>
+        <label class="pump-only">Session quality<select id="entryQuality"><option value="normal">Normal</option><option value="short">Short / on-the-go</option><option value="power">Power pump</option></select></label>
+      </div>
+      <label>Note<textarea id="entryNote" rows="3" placeholder="Optional note"></textarea></label>
+      <div class="dialog-actions"><button class="btn ghost" value="cancel">Cancel</button><button class="btn primary" id="saveEntryBtn" value="default">Save entry</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="stashDialog" class="dialog small-dialog">
+    <form method="dialog" id="stashForm">
+      <div class="dialog-head"><div><span class="eyebrow">STASH UPDATE</span><h2>Update freezer stash</h2></div><button class="icon-btn" value="cancel">×</button></div>
+      <label>Current stash (mL)<input id="stashAmount" type="number" min="0" step="1" required></label>
+      <div class="dialog-actions"><button class="btn ghost" value="cancel">Cancel</button><button class="btn primary" value="default">Save stash</button></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
