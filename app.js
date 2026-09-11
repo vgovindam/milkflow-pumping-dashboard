@@ -4,7 +4,7 @@
 const STATE_KEY = 'milkflow-family-v4-state';
 const SNAPSHOT_KEY = 'milkflow-family-pre-import-backup';
 const VERSION = 8;
-const VIEWS = new Set(['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','settings']);
+const VIEWS = new Set(['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','baby-day','development','doctor','settings']);
 const DEFAULTS = {
   version: VERSION,
   profile: { dailyGoalMl: 760, stashMl: 0, momName: '' },
@@ -13,9 +13,9 @@ const DEFAULTS = {
   entries: [],
   babyEvents: [],
   dailyOverrides: {},
-  reminders: { enabled: false, leadMin: 10, lastSentKey: null },
+  reminders: { enabled: false, leadMin: 10, lastSentKey: null, feedEnabled: false, feedGapMin: 180, feedLastKey: null },
   cloud: { enabled: false, userId: null, email: null, lastSync: null, lastVerified: null, momCount: null, babyCount: null },
-  ui: { workspace: 'mom', view: 'mom-home', momRange: 30, babyRange: 30, babyFilter: 'all', trendRange: 14, doctorRange: 14 }
+  ui: { workspace: 'mom', view: 'mom-home', momRange: 30, babyRange: 30, babyFilter: 'all', trendRange: 14, doctorRange: 14, reviewDate: '', reviewFilter: 'all' }
 };
 
 const $ = id => document.getElementById(id);
@@ -704,19 +704,137 @@ function dayTimeline(){
   </section>`;
 }
 
+const hhmm = d => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+const fmtGap = m => m >= 60 ? (m%60 ? `${Math.floor(m/60)}h ${m%60}m` : `${Math.floor(m/60)}h`) : `${m}m`;
+// Next feed is derived from the last one plus the chosen gap - there is no fixed clock
+// schedule for a baby, unlike the Mom pump plan.
+function nextFeedDue(last){
+  if(!S.reminders.feedEnabled || !last || !last.date || !last.time) return null;
+  const gap = +S.reminders.feedGapMin || 180;
+  const due = new Date(new Date(`${last.date}T${last.time}:00`).getTime() + gap*60000);
+  if(!Number.isFinite(due.getTime())) return null;
+  const diff = Math.round((due.getTime() - Date.now())/60000);
+  return diff <= 0
+    ? {overdue:true, due, label:`Due ${fmtGap(Math.abs(diff))} ago`}
+    : {overdue:false, due, label:`Next ${to12(hhmm(due))}`};
+}
+
+// ---------------------------------------------------------- activity feed --
+// Per-activity detail line, e.g. "Nursing, right · 12 min" or "3.5 oz formula".
+function activityDetail(e){
+  if(!e) return '';
+  if(e.eventType === 'nursing'){ const m = e.durationMinutes ?? e.totalMinutes; return `Nursing${e.side?`, ${cap(e.side)}`:''}${m?` · ${m} min`:''}`; }
+  if(e.eventType === 'feeding') return `${(+e.amountOz||0).toFixed(1)} oz ${e.feedingType==='formula'?'formula':'breast milk'}`;
+  if(e.eventType === 'diaper') return e.subtype==='both'?'Mixed':e.subtype==='poop'?'Poopy':'Wet';
+  if(e.eventType === 'sleep'){ const m = +e.durationMinutes||0; return m>=60?`Slept ${Math.floor(m/60)} hr ${m%60} min`:`Slept ${m} min`; }
+  if(e.eventType === 'growth') return 'Growth measurement';
+  if(e.eventType === 'milestone') return e.milestoneText || 'Milestone';
+  return cap(e.eventType);
+}
+function dayRollup(st,kind){
+  if(kind === 'feed'){
+    const bits = [];
+    if(st.nursing) bits.push(`nursing ${st.nursing}`);
+    if(st.breastMilkBottles) bits.push(`breast milk ${st.breastMilkOz.toFixed(1)} oz`);
+    if(st.formulaBottles) bits.push(`formula ${st.formulaOz.toFixed(1)} oz`);
+    return st.feeds ? `Fed ${st.feeds} ${st.feeds===1?'time':'times'}${bits.length?`: ${bits.join(', ')}`:''}` : 'Nothing logged today';
+  }
+  if(kind === 'diaper'){
+    const bits = [];
+    if(st.wetOnly) bits.push(`wet ${st.wetOnly}`);
+    if(st.poopOnly) bits.push(`poopy ${st.poopOnly}`);
+    if(st.mixed) bits.push(`mixed ${st.mixed}`);
+    return st.diapers ? `${st.diapers} ${st.diapers===1?'change':'changes'}${bits.length?`: ${bits.join(', ')}`:''}` : 'Nothing logged today';
+  }
+  const m = st.sleepMin;
+  return m ? `${Math.floor(m/60)} hr ${m%60} min today` : 'Nothing logged today';
+}
+// The three rows a parent checks first: how long since, what it was, and today's total.
+function activityStrip(){
+  const st = babyStats(today());
+  const live = babyEvents().filter(e => !e.exactSourceDuplicate).slice().sort(byWhenDesc);
+  const rows = [
+    {kind:'feed',   label:'Feed',   icon:'bottle', color:'var(--feed-ink)',  bg:'var(--feed)',  find:e => e.eventType==='feeding'||e.eventType==='nursing', act:'data-feed'},
+    {kind:'diaper', label:'Diaper', icon:'diaper', color:'var(--wet-ink)',   bg:'var(--wet)',   find:e => e.eventType==='diaper', act:'data-diaper="wet"'},
+    {kind:'sleep',  label:'Sleep',  icon:'moon',   color:'var(--sleep-ink)', bg:'var(--sleep)', find:e => e.eventType==='sleep', act:'data-sleep'}
+  ].map(r => {
+    const last = live.find(r.find);
+    const ago = last ? sinceLabel(last.date,last.time) : null;
+    const due = r.kind === 'feed' ? nextFeedDue(last) : null;
+    return `<div class="act-row" style="--c:${r.color};--bg:${r.bg}">
+      <button type="button" class="act-main" ${last?`data-record="baby:${esc(last.id)}"`:r.act}>
+        <span class="act-icon">${icon(r.icon)}</span>
+        <span class="act-body">
+          <span class="act-when">${ago?esc(ago):`No ${r.label.toLowerCase()} logged yet`}</span>
+          <strong>${last?esc(activityDetail(last)):`Tap + to log a ${r.label.toLowerCase()}`}</strong>
+          <small>${esc(dayRollup(st,r.kind))}</small>
+        </span>
+      </button>
+      <button type="button" class="act-add" ${r.act} aria-label="Log ${esc(r.label)}">${icon('plus')}</button>
+      ${due?`<span class="act-due ${due.overdue?'due':''}">${icon('bell')}${esc(due.label)}</span>`:''}
+    </div>`;
+  }).join('');
+  return `<section class="act-strip">${rows}</section>`;
+}
+
+// ------------------------------------------------------------- day review --
+function reviewStats(d){
+  const st = babyStats(d);
+  const nursingMin = sum(babyOn(d,'nursing').filter(e => !e.exactSourceDuplicate).map(e => +(e.durationMinutes ?? e.totalMinutes) || 0));
+  const line = (cls,label,value) => `<div class="stat-line ${cls}"><span>${label}</span><b>${value}</b></div>`;
+  return `<section class="review-stats">
+    ${line('feed','Nursing', st.nursing ? `${nursingMin} min · ${st.nursing}×` : '—')}
+    ${line('feed','Bottle', st.bottles ? `${st.bottleOz.toFixed(2)} oz (breast ${st.breastMilkOz.toFixed(2)}, formula ${st.formulaOz.toFixed(2)})` : '—')}
+    ${line('diaper','Diapers', st.diapers ? `${st.diapers}× — wet ${st.wetOnly}, poopy ${st.poopOnly}, mixed ${st.mixed}` : '—')}
+    ${line('sleep','Sleep', st.sleepMin ? `${Math.floor(st.sleepMin/60)} hr ${st.sleepMin%60} min · ${babyOn(d,'sleep').length}×` : '—')}
+  </section>`;
+}
+const REVIEW_FILTERS = [['all','All'],['feed','Feeds'],['diaper','Diapers'],['sleep','Sleep'],['growth','Growth'],['milestone','Milestones']];
+function dayReview(){
+  const sel = S.ui.reviewDate && babyByDate().has(S.ui.reviewDate) || S.ui.reviewDate === today() ? S.ui.reviewDate : today();
+  const strip = dateList(7).map(d => {
+    const dt = new Date(`${d}T12:00:00`);
+    const isToday = d === today();
+    return `<button type="button" class="day-chip ${d===sel?'sel':''} ${isToday?'today':''}" data-review-date="${d}">
+      <b>${isToday?'Today':dt.getDate()}</b><span>${isToday?fd(d):new Intl.DateTimeFormat('en-US',{weekday:'short'}).format(dt)}</span></button>`;
+  }).join('');
+
+  const filter = S.ui.reviewFilter || 'all';
+  const matches = e => filter==='all' || (filter==='feed' && (e.eventType==='feeding'||e.eventType==='nursing')) || e.eventType===filter;
+  const evs = babyOn(sel).filter(e => !e.exactSourceDuplicate && matches(e))
+    .sort((a,b) => (a.time||'').localeCompare(b.time||''));
+
+  const list = evs.length ? evs.map(e => {
+    const t = toneOf(e);
+    const ic = e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':e.eventType==='milestone'?'spark':'moon';
+    return `<button type="button" class="rev-row" data-record="baby:${esc(e.id)}" style="--c:${t.color}">
+      <span class="rev-time">${to12(e.time)}</span>
+      <span class="rev-icon">${icon(ic)}</span>
+      <span class="rev-body"><strong>${esc(activityDetail(e))}</strong>${e.note?`<small>${esc(e.note)}</small>`:''}</span>
+      <span class="rev-go">${icon('chevron')}</span>
+    </button>`;
+  }).join('') : empty('history','Nothing here',`No ${filter==='all'?'entries':REVIEW_FILTERS.find(f=>f[0]===filter)[1].toLowerCase()} logged on ${fd(sel)}.`);
+
+  return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Day review</h2></div><button class="round-action baby" data-add>${icon('plus')}<span>Add</span></button></div>
+  <div class="day-strip">${strip}</div>
+  <div class="review-head"><strong>${fdl(sel)}</strong><span>${evs.length} ${evs.length===1?'entry':'entries'}</span></div>
+  ${reviewStats(sel)}
+  ${pills(REVIEW_FILTERS,filter,'data-review-filter')}
+  <section class="rev-list">${list}</section>`;
+}
+
 function babyHome(){
   const t = today(), s = babyStats(t), pref = feedingPreference();
   const prefLabel = pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed';
   const live = babyEvents().filter(e => !e.exactSourceDuplicate).slice().sort(byWhenDesc);
   const lastFeed = live.find(e => e.eventType==='feeding' || e.eventType==='nursing');
-  const lastDiaper = live.find(e => e.eventType==='diaper');
-  const lastSleep = live.find(e => e.eventType==='sleep');
 
   // seven-day averages give each ring an honest baseline
   const week = dateList(8).slice(0,7).map(babyStats);
   const wk = k => week.length ? sum(week.map(r => r[k]))/week.length : 0;
 
   const feedAgo = lastFeed ? sinceLabel(lastFeed.date,lastFeed.time) : null;
+  const stageTag = ageMonths() !== null ? (currentStage()?.tag || '') : '';
   const hero = isRecent(lastFeed)
     ? `<h2>Fed <em>${feedAgo}</em></h2>`
     : `<h2>${esc(S.baby.name)}</h2>`;
@@ -729,10 +847,12 @@ function babyHome(){
         <span class="eyebrow">${greeting()}${ageLabel()?` · ${esc(ageLabel())}`:''}</span>
         ${hero}
         <p>${prefLabel}${s.feeds?` · ${s.feeds} ${s.feeds===1?'feed':'feeds'} today`:' · nothing logged today'}</p>
-        <div class="chips">${isRecent(lastDiaper)?chip('diaper',`Diaper ${sinceLabel(lastDiaper.date,lastDiaper.time)}`):''}${isRecent(lastSleep,18)?chip('moon',`Slept ${sinceLabel(lastSleep.date,lastSleep.time)}`):''}</div>
+        <div class="chips">${stageTag?chip('spark',esc(stageTag)):''}${!isRecent(lastFeed)&&lastFeed?chip('history',`Last feed ${fd(lastFeed.date)}`):''}</div>
       </div>
     </div>
   </section>
+
+  ${activityStrip()}
 
   <button class="feed-cta" data-feed>
     <span class="cta-medallion">${icon('bottle')}</span>
@@ -749,6 +869,7 @@ function babyHome(){
   <div class="pill-row">
     <button data-sleep>${icon('moon')}<span>Sleep</span></button>
     <button data-growth>${icon('scale')}<span>Growth</span></button>
+    <button data-view="baby-day">${icon('calendar')}<span>Day review</span></button>
     <button data-view="baby-trends">${icon('chart')}<span>Trends</span></button>
   </div>
 
@@ -761,7 +882,7 @@ function babyHome(){
     ${statRing(+s.bottleOz.toFixed(1), wk('bottleOz'), 'Bottle oz', `avg ${wk('bottleOz').toFixed(1)}`, 'var(--baby)')}
   </section>
 
-  ${panel('Recent care',recentBaby(6),'<button data-view="baby-history">See all</button>')}`;
+  ${panel('Recent care',recentBaby(5),'<button data-view="baby-day">Day review</button>')}`;
 }
 function babyLabel(e){
   if(e.eventType==='diaper') return e.subtype==='both'?'Mixed diaper':e.subtype==='poop'?'Poopy diaper':'Wet diaper';
@@ -808,7 +929,7 @@ function babyTrends(){
   const recentOz = avg(rows.slice(half).filter(r => r.bottleOz).map(r => r.bottleOz));
   const priorOz = avg(rows.slice(0,half).filter(r => r.bottleOz).map(r => r.bottleOz));
 
-  return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Daily trends</h2></div></div>
+  return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Daily trends</h2></div><button class="round-action baby" data-view="baby-day">${icon('calendar')}<span>Day review</span></button></div>
   ${pills(RANGE_PILLS,range,'data-trend-range')}
   <div class="metric-grid baby-summary">${metric('Wet / day',avgFromActive(rows,'wetTotal'),'includes mixed','drop','baby')}${metric('Poopy / day',avgFromActive(rows,'poopTotal'),'includes mixed','poop','baby')}${metric('Feeds / day',avgFromActive(rows,'feeds'),'nursing + bottles','bottle','baby')}${metric('Bottle milk / day',`${avgFromActive(rows,'bottleOz')} oz`,'logged bottles','bottle','baby')}</div>
 
@@ -938,15 +1059,18 @@ function settingsView(){
   <div class="settings-grid"><label class="field"><span>Baby's name</span><input id="babyName" type="text" maxlength="40" value="${esc(S.baby.name)}"></label><label class="field"><span>Date of birth</span><input id="babyBirth" type="date" max="${today()}" value="${esc(S.baby.birthDate||'')}"></label><label class="field"><span>Your name</span><input id="momName" type="text" maxlength="40" placeholder="Used for the greeting" value="${esc(S.profile.momName||'')}"></label></div>${S.baby.birthDate?`<p class="chart-note">${esc(S.baby.name)} is <strong>${esc(ageLabel()||'')}</strong>. Development follows this date.</p>`:'<p class="chart-note">Add a date of birth to unlock the development timeline.</p>'}`)}
   ${panel('Baby feeding',`<label class="field"><span>Usual feeding</span><select id="feedingPreference"><option value="auto" ${S.baby.feedingPreference==='auto'?'selected':''}>Choose from recent history</option><option value="mostly_breastfed" ${S.baby.feedingPreference==='mostly_breastfed'?'selected':''}>Mostly breastfed</option><option value="mostly_formula" ${S.baby.feedingPreference==='mostly_formula'?'selected':''}>Mostly formula</option><option value="mixed" ${S.baby.feedingPreference==='mixed'?'selected':''}>Mixed feeding</option></select></label>`)}
   ${panel('Mom pumping',`<div class="settings-grid"><label class="field"><span>Daily goal (mL)</span><input id="goalMl" type="number" inputmode="numeric" min="0" value="${+S.profile.dailyGoalMl||760}"></label><label class="field"><span>Freezer stash (mL)</span><input id="stashMl" type="number" inputmode="numeric" min="0" value="${+S.profile.stashMl||0}"></label>${S.schedule.map((t,i)=>`<label class="field"><span>Pump ${i+1}</span><input data-schedule="${i}" type="time" value="${t}"></label>`).join('')}</div>`)}
-  ${panel('Pump reminders',`<div class="setting-row"><div><strong>${S.reminders.enabled?'Reminders on':'Reminders off'}</strong><span>${notificationStatus()}</span></div><button data-reminders>${S.reminders.enabled?'Turn off':'Turn on'}</button></div>`)}`;
+  ${panel('Pump reminders',`<div class="setting-row"><div><strong>${S.reminders.enabled?'Reminders on':'Reminders off'}</strong><span>${notificationStatus()}</span></div><button data-reminders>${S.reminders.enabled?'Turn off':'Turn on'}</button></div>`)}
+  ${panel('Feed reminders',`<div class="setting-row"><div><strong>${S.reminders.feedEnabled?'Feed reminders on':'Feed reminders off'}</strong><span>Nudges you when ${esc(S.baby.name)} is due, based on the last feed plus your chosen gap.</span></div><button data-feed-reminders>${S.reminders.feedEnabled?'Turn off':'Turn on'}</button></div>
+  ${S.reminders.feedEnabled?`<label class="field" style="margin-top:12px"><span>Remind me this long after a feed</span><select id="feedGap">${[120,150,180,210,240,300].map(m=>`<option value="${m}" ${(+S.reminders.feedGapMin||180)===m?'selected':''}>${fmtGap(m)}</option>`).join('')}</select></label>`:''}
+  <p class="chart-note">A browser cannot wake a closed app. These arrive while MilkFlow is open in a tab or installed and running — treat them as a nudge, not an alarm clock. ${esc(notificationStatus())}</p>`)}`;
 }
 
 const renderers={
   'mom-home':momHome,'mom-history':momHistory,'mom-trends':momTrends,'mom-stash':momStash,
-  'baby-home':babyHome,'baby-history':babyHistory,'baby-trends':babyTrends,'baby-growth':babyGrowth,
+  'baby-home':babyHome,'baby-history':babyHistory,'baby-trends':babyTrends,'baby-growth':babyGrowth,'baby-day':dayReview,
   development:developmentView,doctor:doctorView,settings:settingsView
 };
-const titles={'mom-home':'Mom','mom-history':'Mom history','mom-trends':'Milk trends','mom-stash':'Stash','baby-home':'Baby','baby-history':'Baby history','baby-trends':'Daily trends','baby-growth':'Growth',development:'Development',doctor:'Doctor summary',settings:'Settings'};
+const titles={'mom-home':'Mom','mom-history':'Mom history','mom-trends':'Milk trends','mom-stash':'Stash','baby-home':'Baby','baby-history':'Baby history','baby-trends':'Daily trends','baby-growth':'Growth','baby-day':'Day review',development:'Development',doctor:'Doctor summary',settings:'Settings'};
 function render(){
   applyDayPart();
   $('pageTitle').textContent=titles[view]||'MilkFlow';
@@ -958,7 +1082,7 @@ function render(){
 }
 const SIDE_NAV=[
   {label:'MOM',items:[['mom-home','Home','home'],['mom-history','History','history'],['mom-trends','Milk trends','chart'],['mom-stash','Freezer stash','snow']]},
-  {label:'BABY',items:[['baby-home','Home','baby'],['baby-history','History','history'],['baby-trends','Daily trends','chart'],['baby-growth','Growth','scale'],['development','Development','spark'],['doctor','Doctor summary','steth']]},
+  {label:'BABY',items:[['baby-home','Home','baby'],['baby-history','History','history'],['baby-trends','Daily trends','chart'],['baby-day','Day review','calendar'],['baby-growth','Growth','scale'],['development','Development','spark'],['doctor','Doctor summary','steth']]},
   {label:'FAMILY',items:[['settings','Settings','settings']]}
 ];
 function renderSideNav(){
@@ -968,7 +1092,7 @@ function renderSideNav(){
 function renderBottomNav(){
   const w=workspaceOf(view), nav=$('bottomNav');
   const home=w==='baby'?'baby-home':'mom-home', history=w==='baby'?'baby-history':'mom-history', trends=w==='baby'?'baby-trends':'mom-trends';
-  nav.innerHTML=`<button data-view="${home}" class="${view===home?'active':''}">${icon('home')}<span>Home</span></button><button data-view="${history}" class="${view===history?'active':''}">${icon('history')}<span>History</span></button><button class="add-tab" data-add>${icon('plus')}<span>Add</span></button><button data-view="${trends}" class="${view===trends?'active':''}">${icon('chart')}<span>Trends</span></button><button data-more class="${['settings','doctor','baby-growth','development','mom-stash'].includes(view)?'active':''}">${icon('more')}<span>More</span></button>`;
+  nav.innerHTML=`<button data-view="${home}" class="${view===home?'active':''}">${icon('home')}<span>Home</span></button><button data-view="${history}" class="${view===history?'active':''}">${icon('history')}<span>History</span></button><button class="add-tab" data-add>${icon('plus')}<span>Add</span></button><button data-view="${trends}" class="${view===trends?'active':''}">${icon('chart')}<span>Trends</span></button><button data-more class="${['settings','doctor','baby-growth','baby-day','development','mom-stash'].includes(view)?'active':''}">${icon('more')}<span>More</span></button>`;
 }
 function syncBadge(){
   const b=$('syncBadge'), t=$('syncTitle'), sub=$('syncSubtitle');
@@ -980,7 +1104,7 @@ function syncBadge(){
 function openDrawer(){
   const w=workspaceOf(view);
   $('drawerBody').innerHTML = w==='baby' ?
-  `<button data-view="baby-home">${icon('baby')}<span>Baby home</span></button><button data-view="baby-history">${icon('history')}<span>History</span></button><button data-view="baby-trends">${icon('chart')}<span>Daily trends</span></button><button data-view="baby-growth">${icon('scale')}<span>Growth</span></button><button data-view="development">${icon('spark')}<span>Development</span></button><button data-view="doctor">${icon('steth')}<span>Doctor summary</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="mom-home">${icon('nursing')}<span>Switch to Mom</span></button>` :
+  `<button data-view="baby-home">${icon('baby')}<span>Baby home</span></button><button data-view="baby-history">${icon('history')}<span>History</span></button><button data-view="baby-trends">${icon('chart')}<span>Daily trends</span></button><button data-view="baby-day">${icon('calendar')}<span>Day review</span></button><button data-view="baby-growth">${icon('scale')}<span>Growth</span></button><button data-view="development">${icon('spark')}<span>Development</span></button><button data-view="doctor">${icon('steth')}<span>Doctor summary</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="mom-home">${icon('nursing')}<span>Switch to Mom</span></button>` :
   `<button data-view="mom-home">${icon('nursing')}<span>Mom home</span></button><button data-view="mom-history">${icon('history')}<span>History</span></button><button data-view="mom-trends">${icon('chart')}<span>Milk trends</span></button><button data-view="mom-stash">${icon('snow')}<span>Freezer stash</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="baby-home">${icon('baby')}<span>Switch to Baby</span></button>`;
   $('drawer').classList.add('open'); $('scrim').classList.add('open'); document.body.classList.add('locked');
 }
@@ -1078,6 +1202,11 @@ function openSleepDialog(isEdit=false){ closeOverlays(); if(!isEdit) editing=nul
 function bindViewInputs(){
   // A 30-day chart overflows: the most recent days matter most, so open scrolled to them.
   document.querySelectorAll('.chart-scroll').forEach(el => { el.scrollLeft = el.scrollWidth; });
+  // The day strip runs oldest-to-newest; open on the selected day, which is usually Today.
+  document.querySelectorAll('.day-strip').forEach(el => {
+    const sel = el.querySelector('.day-chip.sel');
+    if(sel && el.scrollWidth > el.clientWidth) el.scrollLeft = Math.max(0, sel.offsetLeft - el.clientWidth + sel.offsetWidth + 12);
+  });
   document.querySelectorAll('.schedule-strip').forEach(el => {
     const next=el.querySelector('.schedule-card:not(.done)');
     if(next && el.scrollWidth > el.clientWidth) el.scrollLeft = Math.max(0, next.offsetLeft - 12);
@@ -1089,6 +1218,7 @@ function bindViewInputs(){
   $('babyName')?.addEventListener('change',e=>{ const v=e.target.value.trim(); if(v){ S.baby.name=v; save(); pushProfile().catch(()=>{}); render(); } });
   $('babyBirth')?.addEventListener('change',e=>{ S.baby.birthDate=e.target.value||''; save(); pushProfile().catch(()=>{}); render(); });
   $('momName')?.addEventListener('change',e=>{ S.profile.momName=e.target.value.trim(); save(); pushProfile().catch(()=>{}); render(); });
+  $('feedGap')?.addEventListener('change',e=>{ S.reminders.feedGapMin=+e.target.value||180; S.reminders.feedLastKey=null; save(); pushProfile().catch(()=>{}); render(); });
   document.querySelectorAll('[data-schedule]').forEach(x=>x.addEventListener('change',()=>{ S.schedule[+x.dataset.schedule]=x.value; save(); pushProfile().catch(()=>{}); }));
 }
 
@@ -1249,8 +1379,33 @@ async function toggleReminders(){
   S.reminders.enabled=turningOn; save(); try{ await pushProfile(); }catch{} render(); toast(turningOn?'Pump reminders are on.':'Pump reminders are off.');
 }
 function tickReminders(){
+  feedReminderTick();
   if(!S.reminders.enabled) return; const d=new Date(), m=d.getHours()*60+d.getMinutes(), dt=today();
   S.schedule.forEach((t,i)=>{ const target=+t.slice(0,2)*60 + +t.slice(3)-(+S.reminders.leadMin||0), key=`${dt}-${i}-${target}`; if(Math.abs(m-target)<=1&&S.reminders.lastSentKey!==key&&dayP(dt).length<=i){ toast(`Pump ${i+1} is coming up · ${to12(t)}`,7000); if('Notification'in window&&Notification.permission==='granted'){ try{ new Notification('Pump reminder',{body:`Pump ${i+1} · ${to12(t)}`}); }catch{} } S.reminders.lastSentKey=key; save(); } });
+}
+
+// Fires once per due feed while the app is open. Browsers cannot wake a closed page,
+// so this is a prompt, never an alarm clock - the Settings copy says so plainly.
+function feedReminderTick(){
+  if(!S.reminders.feedEnabled) return;
+  const last = babyEvents().filter(e => !e.exactSourceDuplicate && (e.eventType==='feeding'||e.eventType==='nursing')).sort(byWhenDesc)[0];
+  const due = nextFeedDue(last);
+  if(!due || !due.overdue) return;
+  const key = `${last.id}-${S.reminders.feedGapMin}`;
+  if(S.reminders.feedLastKey === key) return;
+  S.reminders.feedLastKey = key; save();
+  const msg = `${S.baby.name} is due for a feed`;
+  toast(msg, 8000, {label:'Log', run:()=>feedSheet()});
+  if('Notification' in window && Notification.permission === 'granted'){
+    try{ new Notification('Feed reminder',{body:`${msg} · last feed ${sinceLabel(last.date,last.time)||''}`,tag:'milkflow-feed'}); }catch{}
+  }
+}
+async function toggleFeedReminders(){
+  const on = !S.reminders.feedEnabled;
+  if(on && 'Notification' in window && Notification.permission === 'default'){ try{ await Notification.requestPermission(); }catch{} }
+  S.reminders.feedEnabled = on; S.reminders.feedLastKey = null; save();
+  try{ await pushProfile(); }catch{}
+  render(); toast(on ? 'Feed reminders are on while the app is open.' : 'Feed reminders are off.');
 }
 
 function handleClick(e){
@@ -1259,6 +1414,8 @@ function handleClick(e){
   const route=e.target.closest('[data-view]'); if(route){ setView(route.dataset.view); return; }
   if(e.target.closest('[data-menu]')||e.target.closest('[data-more]')){ openDrawer(); return; }
   if(e.target.closest('[data-add]')){ addSheet(); return; }
+  const rd=e.target.closest('[data-review-date]'); if(rd){ S.ui.reviewDate=rd.dataset.reviewDate; save(); render(); return; }
+  const rf=e.target.closest('[data-review-filter]'); if(rf){ S.ui.reviewFilter=rf.dataset.reviewFilter; save(); render(); return; }
   const stg=e.target.closest('[data-stage]'); if(stg){ selectedStage=+stg.dataset.stage; render(); return; }
   const ms=e.target.closest('[data-milestone]'); if(ms){ toggleMilestone(ms.dataset.milestone,ms.dataset.msText,ms.dataset.msGroup,+ms.dataset.msMonth); return; }
   if(e.target.closest('[data-photo]')){ $('photoFile').click(); return; }
@@ -1276,6 +1433,7 @@ function handleClick(e){
   if(e.target.closest('[data-export]')){ exportBackup(); return; }
   if(e.target.closest('[data-cloud-check]')){ verifyCloud().then(render); return; }
   if(e.target.closest('[data-reminders]')){ toggleReminders(); return; }
+  if(e.target.closest('[data-feed-reminders]')){ toggleFeedReminders(); return; }
   if(e.target.closest('[data-auth]')){ $('authDialog').showModal(); return; }
   if(e.target.closest('[data-signout]')){ cloud?.auth.signOut(); return; }
   if(e.target.closest('[data-print]')){ window.print(); return; }

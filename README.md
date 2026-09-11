@@ -51,6 +51,27 @@ Remove is a soft-void: the record keeps its id, stays in local storage and in Fi
 `voidedAt` timestamp, and simply stops counting toward history and totals. A toast offers **Undo**,
 and the entry is still present in any export. Nothing in the app hard-deletes a record.
 
+## Activity timeline
+
+Baby Home leads with three live activity rows — Feed, Diaper, Sleep — each showing how long since
+the last one, what it was, and the day's roll-up, with a one-tap add button. Tapping a row opens
+that entry.
+
+**Day review** (`#baby-day`, in the Baby nav and linked from Daily trends) is the per-day timeline:
+a scrollable date strip, a statistics block for the selected day (nursing minutes and count, bottle
+volume split into breast milk and formula, diapers broken down by type, sleep total and count),
+filter tabs, and the day's entries in chronological order. Every row opens the record sheet.
+
+## Feed reminders
+
+**Settings → Feed reminders** nudges you when the baby is due, based on the last feed plus a chosen
+gap (2–5 hours). A due chip appears on the feed row, and an in-app toast with a **Log** shortcut
+fires once per due feed, plus a system notification when permission is granted.
+
+This is a **nudge, not an alarm clock**. A browser cannot wake a closed page, so reminders only
+arrive while MilkFlow is open or installed and running. Genuine background alarms would need
+Firebase Cloud Messaging with a push handler and server-side scheduling.
+
 ## Development
 
 A visual milestone journey across the first two years. The track shows every checklist band,
@@ -120,6 +141,10 @@ Use **Settings → Check cloud** to compare cloud record counts with the current
 The tracker layout is informed by current infant-care guidance: feeding history, diaper output, and growth over time are useful context for pediatric follow-up. For children from birth to age 2, U.S. clinicians commonly use WHO growth standards. Doctor Summary is a log summary, not a diagnosis.
 
 The mobile UI uses persistent top-level navigation, large labeled controls, and generous touch targets for frequent handheld use.
+
+Type is **Fraunces** (variable, optical-sized) for headlines and figures against **Plus Jakarta
+Sans** for dense UI text. Control labels stay in the sans so they read as things to tap; counts and
+volumes use tabular figures so columns line up.
 
 Interface icons are hand-written SVG paths rendered from one `icon()` map in `app.js`, so the
 sidebar, bottom bar, tiles and rows always use the same symbol for the same action. Wet, poopy and
