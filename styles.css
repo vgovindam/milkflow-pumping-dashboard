@@ -95,14 +95,18 @@ button{cursor:pointer;font-family:inherit}
 .side-status span{font-size:9px;color:#99a0b5;margin-top:3px;line-height:1.45}
 
 .main{min-width:0}
-.topbar{height:74px;position:sticky;top:0;z-index:25;background:rgba(255,255,255,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:11px 24px;gap:12px}
-.menu-btn{display:none;border:0;background:#f2f3f7;border-radius:12px;width:44px;height:44px;place-items:center;color:var(--ink-2)}
+.topbar{height:56px;position:sticky;top:0;z-index:25;background:rgba(255,255,255,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:11px 24px;gap:12px}
+.back-btn{display:none;border:0;background:transparent;align-items:center;gap:2px;padding:0 8px 0 0;height:44px;color:var(--accent,var(--mom));font-weight:700;font-size:14px;max-width:44vw}
+.back-btn.show{display:inline-flex}
+.back-btn .ico{width:22px;height:22px;flex:0 0 auto}
+.back-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.title-wrap{display:none}
 .title-wrap h1{margin:0;font:700 23px var(--display);letter-spacing:-.015em}
 .mobile-workspace{display:none}
 .sync-badge{margin-left:auto;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:99px;font-size:10px;font-weight:900;background:#f0f1f6;color:#6f7688;letter-spacing:.03em}
 .sync-badge.on{background:var(--good-soft);color:var(--good)}
 .sync-badge .ico{width:15px;height:15px}
-.view{max-width:1180px;margin:auto;padding:22px 24px 72px}
+.view{max-width:1180px;margin:auto;padding:18px 24px 72px}
 
 /* ----------------------------------------------------------------- hero -- */
 .hero{position:relative;overflow:hidden;border-radius:var(--radius-lg);padding:24px 26px;display:flex;align-items:center;gap:24px;margin-bottom:16px;border:1px solid var(--line);box-shadow:var(--shadow-soft)}
@@ -131,6 +135,7 @@ button{cursor:pointer;font-family:inherit}
 
 /* ---------------------------------------------------------- quick tiles -- */
 .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.quick-grid.two{grid-template-columns:repeat(2,1fr);max-width:560px}
 .quick-tile{border:0;border-radius:var(--radius-md);min-height:132px;padding:16px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;box-shadow:var(--shadow-tile);transition:transform .12s ease,box-shadow .12s ease}
 .quick-tile:active{transform:scale(.975)}
 .quick-tile .tile-art{position:absolute;right:14px;top:13px;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:rgba(255,255,255,.8)}
@@ -524,16 +529,6 @@ button{cursor:pointer;font-family:inherit}
 .scrim{position:fixed;inset:0;background:rgba(20,23,35,.4);opacity:0;pointer-events:none;transition:opacity .18s;z-index:60;backdrop-filter:blur(2px)}
 .scrim.open{opacity:1;pointer-events:auto}
 
-.drawer{position:fixed;right:0;top:0;height:100dvh;width:min(340px,88vw);background:var(--surface);z-index:70;transform:translateX(102%);transition:transform .22s ease;box-shadow:-18px 0 42px rgba(24,28,42,.16);padding:16px;overflow-y:auto}
-.drawer.open{transform:translateX(0)}
-.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 14px}
-.drawer-head strong{font:800 20px var(--display)}
-.drawer-head button,.sheet-head button{border:0;background:#f2f3f7;border-radius:12px;width:42px;height:42px;display:grid;place-items:center;color:var(--ink-2)}
-.drawer-body{display:grid;gap:4px}
-.drawer-body button{border:0;background:var(--surface);border-radius:13px;min-height:54px;display:flex;align-items:center;gap:12px;padding:0 12px;font-weight:800;text-align:left;font-size:14px;color:var(--ink)}
-.drawer-body button .ico{width:21px;height:21px;color:var(--muted)}
-.drawer-body button:hover{background:var(--surface-2)}
-.drawer-body hr{border:0;border-top:1px solid var(--line);width:100%;margin:8px 0}
 
 .sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,105%);width:min(650px,100%);background:var(--surface);z-index:75;border-radius:26px 26px 0 0;padding:10px 16px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -20px 44px rgba(24,28,42,.18);transition:transform .24s ease}
 .sheet.open{transform:translate(-50%,0)}
@@ -565,6 +560,52 @@ button{cursor:pointer;font-family:inherit}
 .record-actions button .ico{width:19px;height:19px}
 .record-actions button.danger{color:var(--danger);border-color:#f4d6dc;background:var(--danger-soft)}
 .record-note{font-size:10.5px;color:var(--muted);text-align:center;margin:12px 4px 2px;line-height:1.5;font-weight:600}
+
+/* --------------------------------------------------------- grouped list -- */
+/* One pattern for More and Settings: coloured icon tile, label, chevron. The colour is
+   the tab's identity, applied in small doses rather than across whole surfaces. */
+.grp{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:18px;box-shadow:var(--shadow-soft)}
+.grp-title{font-size:10.5px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:0 6px 8px;margin-top:2px}
+.grp-row{display:flex;align-items:center;gap:13px;width:100%;border:0;background:transparent;padding:12px 14px;text-align:left;border-bottom:1px solid var(--line-soft);transition:background .12s}
+.grp-row:last-child{border-bottom:0}
+.grp-row:hover{background:var(--surface-2)}
+.grp-row:active{background:var(--line-soft)}
+.grp-icon{width:34px;height:34px;flex:0 0 auto;border-radius:10px;display:grid;place-items:center;color:#fff;box-shadow:0 2px 6px rgba(24,28,42,.16)}
+.grp-icon .ico{width:19px;height:19px;stroke-width:2}
+.grp-label{flex:1;min-width:0}
+.grp-label strong{display:block;font-size:14.5px;font-weight:700;color:var(--ink)}
+.grp-label small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grp-value{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.grp-go{color:#c3c8d4;display:grid;place-items:center;flex:0 0 auto}
+.grp-go .ico{width:17px;height:17px;stroke-width:2.4}
+.page-intro{margin:-6px 2px 16px;font-size:12.5px;color:var(--muted);line-height:1.55;font-weight:600}
+.about-list{display:grid;gap:2px}
+.about-list>div{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+.about-list>div:last-child{border-bottom:0}
+.about-list span{font-size:12px;color:var(--muted);font-weight:600}
+.about-list b{font-size:12.5px;font-weight:800}
+
+/* segmented control */
+.segmented{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;padding:3px;background:var(--line-soft);border-radius:13px;margin-bottom:14px}
+.segmented button{border:0;background:transparent;border-radius:10px;min-height:38px;font-weight:700;font-size:13px;color:var(--ink-2);transition:background .16s,color .16s,box-shadow .16s}
+.segmented button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(28,34,52,.12)}
+
+/* ------------------------------------------------------------ transitions -- */
+/* Push/pop the way a native stack does: forward slides in from the trailing edge,
+   back from the leading edge, sideways tab changes cross-fade. */
+@keyframes navForward{from{opacity:0;transform:translate3d(22px,0,0)}to{opacity:1;transform:none}}
+@keyframes navBack{from{opacity:0;transform:translate3d(-22px,0,0)}to{opacity:1;transform:none}}
+@keyframes navSwap{from{opacity:0;transform:translate3d(0,6px,0)}to{opacity:1;transform:none}}
+.view.nav-forward{animation:navForward .26s cubic-bezier(.32,.72,0,1)}
+.view.nav-back{animation:navBack .26s cubic-bezier(.32,.72,0,1)}
+.view.nav-swap{animation:navSwap .2s ease-out}
+
+/* per-section accent, used by the back button and active tab */
+body[data-screen^="mom"]{--accent:var(--mom)}
+body[data-screen^="baby"]{--accent:var(--baby-ink)}
+body[data-screen="development"]{--accent:#b8802c}
+body[data-screen="doctor"]{--accent:var(--feed-ink)}
+body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{--accent:#5b6272}
 
 /* -------------------------------------------------------------- dialogs -- */
 .dialog{border:0;border-radius:var(--radius-lg);padding:0;width:min(620px,96vw);max-height:92dvh;box-shadow:var(--shadow);background:var(--surface)}
@@ -608,12 +649,17 @@ button{cursor:pointer;font-family:inherit}
   .shell{display:block}
   .sidebar{display:none}
   .main{min-height:100vh}
-  .topbar{height:auto;min-height:76px;padding:10px 14px;display:grid;grid-template-columns:44px 1fr auto;grid-template-areas:"menu title sync" "switch switch switch";gap:8px 10px}
-  .menu-btn{display:grid;grid-area:menu}
-  .title-wrap{grid-area:title;align-self:center}
-  .title-wrap h1{font-size:20px}
+  /* iOS large-title behaviour: the nav bar carries Back + status, the page carries the
+     title. Showing both meant every screen printed its name twice. */
+  .topbar{height:auto;min-height:60px;padding:9px 14px;display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"back spacer sync" "switch switch switch";gap:8px 10px}
+  .back-btn{grid-area:back}
+  .sync-badge{grid-area:sync}
+  /* A sub-page belongs to one side of the app, so the Mom/Baby switch is hidden there. */
+  body[data-depth="0"] .mobile-workspace{grid-area:switch;display:grid}
+  body:not([data-depth="0"]) .mobile-workspace{display:none}
+  body:not([data-depth="0"]) .topbar{grid-template-areas:"back spacer sync"}
   .sync-badge{grid-area:sync;margin-left:0}
-  .mobile-workspace{grid-area:switch;display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px;background:#eef0f5;border-radius:14px}
+  .mobile-workspace{grid-template-columns:1fr 1fr;gap:5px;padding:4px;background:#eef0f5;border-radius:14px}
   .mobile-workspace button{border:0;background:transparent;border-radius:10px;min-height:40px;font-weight:900;color:#737a89}
   .mobile-workspace button.active{background:#fff;color:var(--ink);box-shadow:0 3px 10px rgba(30,34,48,.07)}
   .view{padding:14px 13px 28px}
@@ -627,7 +673,7 @@ button{cursor:pointer;font-family:inherit}
   .quick-tile .tile-art{width:48px;height:48px;right:12px;top:12px}
   .quick-tile .tile-art .ico{width:27px;height:27px}
   .quick-tile strong{font-size:17px}
-  .orb-row,.pill-row,.feed-cta{max-width:none}
+  .orb-row,.pill-row,.feed-cta,.quick-grid.two{max-width:none}
   .act-main{padding:11px 6px 11px 11px;gap:11px}
   .act-icon{width:40px;height:40px}
   .act-body strong{font-size:14px}
@@ -689,7 +735,7 @@ button{cursor:pointer;font-family:inherit}
   .bottom-nav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:55;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px 5px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -10px 28px rgba(30,34,48,.08)}
   .bottom-nav button{border:0;background:transparent;min-height:62px;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#7a8291;font-size:10px;font-weight:900}
   .bottom-nav button .ico{width:25px;height:25px}
-  .bottom-nav button.active{color:var(--mom);background:var(--mom-soft)}
+  .bottom-nav button.active{color:var(--accent,var(--mom));background:color-mix(in srgb,var(--accent,var(--mom)) 12%,transparent)}
   .bottom-nav .add-tab{position:relative;top:-16px}
   .bottom-nav .add-tab .ico{width:29px;height:29px;background:linear-gradient(135deg,var(--mom),var(--mom-2));color:#fff;border-radius:50%;padding:12px;box-sizing:content-box;box-shadow:0 10px 22px rgba(122,86,214,.3)}
   .bottom-nav .add-tab span{margin-top:-2px}
@@ -731,7 +777,7 @@ button{cursor:pointer;font-family:inherit}
 }
 
 @media print{
-  .sidebar,.topbar,.bottom-nav,.round-action,.pills,.drawer,.sheet,.scrim,.toast,.more-actions,.feed-cta,.orb-row,.pill-row,.act-add,.day-strip{display:none!important}
+  .sidebar,.topbar,.bottom-nav,.round-action,.pills,.sheet,.scrim,.toast,.more-actions,.feed-cta,.orb-row,.pill-row,.act-add,.day-strip{display:none!important}
   .shell{display:block}
   .view{max-width:none;padding:0}
   .panel,.metric,.doctor-summary-card,.qa-grid>div{box-shadow:none;break-inside:avoid}

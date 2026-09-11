@@ -112,8 +112,32 @@ A confirmed daily total (`dailyOverrides`) acts as a **floor**, not a replacemen
 
 ## Navigation
 
-Screens are real history entries, so the phone/browser Back button walks back through the screens
-you visited instead of leaving the app. Refreshing keeps you on the current screen.
+One hierarchy, one Back button. Five tabs — Home, History, Add, Trends, More — and everything
+else is *pushed* from a single parent, so there is exactly one route to each screen:
+
+```
+Home  History  (+)  Trends  More
+                              ├── Growth / Development / Doctor summary   (baby)
+                              ├── Freezer stash                           (mom)
+                              └── Settings
+                                    ├── Family account
+                                    ├── Baby profile
+                                    ├── Pumping
+                                    ├── Reminders
+                                    ├── Backup & data
+                                    └── About
+```
+
+Going deeper slides in from the trailing edge, Back slides the other way, switching tabs
+cross-fades; `prefers-reduced-motion` turns all of it off. The in-app Back is a real history pop,
+so the device Back button never walks forward through screens you already left.
+
+The nav bar carries Back and sync status; the page carries its own large title. Sub-pages hide the
+Mom/Baby switch, because a sub-page belongs to one side of the app.
+
+
+
+Refreshing keeps you on the current screen.
 
 ## Offline
 
