@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#f6f7fb" />
+  <meta name="theme-color" content="#f4f6fb" />
   <title>MilkFlow — Pumping & Nursing Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
   <script src="config.js" defer></script>
-  <script src="firebase-bridge.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -23,12 +22,20 @@
         <div class="brand-mark" aria-hidden="true">M</div>
         <div><strong>MilkFlow</strong><span>Pumping intelligence</span></div>
       </div>
+      <div class="nav-section">HOME</div>
       <nav class="nav" aria-label="Primary">
         <button class="nav-item active" data-view="overview"><span>◫</span>Overview</button>
-        <button class="nav-item" data-view="sessions"><span>◷</span>Sessions</button>
+        <button class="nav-item" data-view="today"><span>◷</span>Today</button>
+      </nav>
+      <div class="nav-section">TRACK & ANALYZE</div>
+      <nav class="nav" aria-label="Tracking">
+        <button class="nav-item" data-view="history"><span>≡</span>History</button>
         <button class="nav-item" data-view="trends"><span>⌁</span>Trends</button>
         <button class="nav-item" data-view="stash"><span>◇</span>Stash & Runway</button>
         <button class="nav-item" data-view="nursing"><span>♡</span>Nursing</button>
+      </nav>
+      <div class="nav-section">PLAN</div>
+      <nav class="nav" aria-label="Planning">
         <button class="nav-item" data-view="schedule"><span>◴</span>Schedule</button>
       </nav>
       <div class="sidebar-bottom">
@@ -45,15 +52,24 @@
         <button class="icon-btn mobile-only" id="menuBtn" aria-label="Open menu">☰</button>
         <div class="topbar-title"><span class="eyebrow" id="viewEyebrow">DAILY COMMAND CENTER</span><h1 id="viewTitle">Overview</h1></div>
         <div class="top-actions">
+          <span class="cloud-badge off" id="cloudBadge">Local</span>
           <div class="date-pill" id="todayLabel"></div>
           <button class="btn ghost" id="quickNurseBtn">♡ Log nursing</button>
           <button class="btn primary" id="quickPumpBtn">＋ Log pump</button>
         </div>
       </header>
-
       <section class="content" id="content"></section>
     </main>
   </div>
+
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <button data-view="overview" class="active"><span>◫</span>Overview</button>
+    <button data-view="today"><span>◷</span>Today</button>
+    <button data-view="history"><span>≡</span>History</button>
+    <button data-view="trends"><span>⌁</span>Trends</button>
+    <button data-view="stash"><span>◇</span>Stash</button>
+    <button data-view="settings"><span>⚙</span>More</button>
+  </nav>
 
   <dialog id="entryDialog" class="dialog">
     <form method="dialog" id="entryForm">
@@ -77,7 +93,7 @@
 
   <dialog id="stashDialog" class="dialog small-dialog">
     <form method="dialog" id="stashForm">
-      <div class="dialog-head"><div><span class="eyebrow">STASH UPDATE</span><h2>Update freezer stash</h2></div><button class="icon-btn" value="cancel">×</button></div>
+      <div class="dialog-head"><div><span class="eyebrow">STASH UPDATE</span><h2>Set freezer stash</h2></div><button class="icon-btn" value="cancel">×</button></div>
       <label>Current stash (mL)<input id="stashAmount" type="number" min="0" step="1" required></label>
       <div class="dialog-actions"><button class="btn ghost" value="cancel">Cancel</button><button class="btn primary" value="default">Save stash</button></div>
     </form>
