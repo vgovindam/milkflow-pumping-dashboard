@@ -2,7 +2,7 @@
 // Strategy: network-first for the app shell so a new deploy is always picked up on the next
 // online load, with the cache used only as an offline fallback. Firebase traffic is never
 // intercepted - Firestore manages its own offline persistence.
-const VERSION = 'milkflow-stable19';
+const VERSION = 'milkflow-stable20';
 const SHELL = [
   './', './index.html', './styles.css', './app.js', './app-reliability.js', './smart-pumping.js', './pump-home-controls.js', './pump-insights.js', './ai-coach-client.js', './app-update-notice.js', './config.js',
   './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'
