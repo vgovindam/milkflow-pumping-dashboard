@@ -98,6 +98,18 @@ The journey needs a date of birth, set in **Settings → Baby profile** along wi
 and a photo. Photos are centre-cropped and downscaled to 320px JPEG before storage so the synced
 profile document stays small.
 
+## Appearance
+
+Three themes — **Automatic**, Light and Dark, in Settings → Appearance. Automatic follows the
+clock: the app turns dark for the night period, which is when most feeds get logged, and also
+follows the device's own dark setting.
+
+Every surface, tint and tile gradient is a token, so the two themes stay in step rather than
+drifting. Buttons that carry white labels use fixed dark gradients in both themes, because the
+accent colours lighten for dark mode and would wash the label out.
+
+Both themes are checked against WCAG AA (4.5:1 for small text, 3:1 for large) across every view.
+
 ## Time of day
 
 The app tints itself across four day parts (morning, afternoon, evening, night) and greets you on

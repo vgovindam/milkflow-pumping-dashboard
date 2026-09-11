@@ -7,19 +7,19 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>MilkFlow Family</title>
-  <link rel="manifest" href="manifest.webmanifest?build=stable11">
+  <link rel="manifest" href="manifest.webmanifest?build=stable12">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-180.png">
   <meta name="apple-mobile-web-app-title" content="MilkFlow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?build=stable11">
+  <link rel="stylesheet" href="styles.css?build=stable12">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="config.js?build=stable11" defer></script>
-  <script src="app.js?build=stable11" defer></script>
+  <script src="config.js?build=stable12" defer></script>
+  <script src="app.js?build=stable12" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -35,7 +35,7 @@
       <button class="back-btn" data-back aria-label="Back"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 18-6-6 6-6"/></svg><span id="backLabel"></span></button>
       <div class="title-wrap"><h1 id="pageTitle">Mom</h1></div>
       <div class="mobile-workspace"><button data-workspace="mom">Mom</button><button data-workspace="baby">Baby</button></div>
-      <div id="syncBadge" class="sync-badge"><span>Device</span></div>
+      <button id="syncBadge" class="sync-badge" data-view="set-account" aria-label="Sync status"></button>
     </header>
     <section id="view" class="view"></section>
   </main>
@@ -91,7 +91,7 @@
         reloading = true;
         location.reload();
       });
-      navigator.serviceWorker.register('./sw.js?build=stable11', { updateViaCache: 'none' }).catch(err => console.warn('SW registration skipped', err));
+      navigator.serviceWorker.register('./sw.js?build=stable12', { updateViaCache: 'none' }).catch(err => console.warn('SW registration skipped', err));
     });
   }
 </script>

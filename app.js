@@ -8,14 +8,14 @@ const VIEWS = new Set([
   'mom-home','mom-history','mom-trends','mom-stash',
   'baby-home','baby-history','baby-trends','baby-growth',
   'development','doctor','more','settings',
-  'set-account','set-baby','set-pumping','set-reminders','set-data','set-about'
+  'set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about'
 ]);
 // One navigation hierarchy. Tabs sit at depth 0; everything else is pushed from a single
 // parent, which is what gives the app a real Back button instead of two drawers.
 const PARENT = {
   'mom-stash':'more','baby-growth':'more','development':'more','doctor':'more','settings':'more',
   'set-account':'settings','set-baby':'settings','set-pumping':'settings',
-  'set-reminders':'settings','set-data':'settings','set-about':'settings'
+  'set-reminders':'settings','set-data':'settings','set-appearance':'settings','set-about':'settings'
 };
 const depthOf = v => { let d=0, c=v; while(PARENT[c]){ c=PARENT[c]; d++; } return d; };
 const DEFAULTS = {
@@ -29,7 +29,7 @@ const DEFAULTS = {
   reminders: { enabled: false, leadMin: 10, lastSentKey: null, feedEnabled: false, feedGapMin: 180, feedLastKey: null },
   last: { bottleOz: null, pumpMl: null, pumpMin: null, nursingMin: null, sleepMin: null },
   cloud: { enabled: false, userId: null, email: null, lastSync: null, lastVerified: null, momCount: null, babyCount: null },
-  ui: { workspace: 'mom', view: 'mom-home', momRange: 30, babyRange: 30, babyFilter: 'all', trendRange: 14, doctorRange: 14, reviewDate: '', historyMode: 'day' }
+  ui: { workspace: 'mom', view: 'mom-home', theme: 'auto', momRange: 30, babyRange: 30, babyFilter: 'all', trendRange: 14, doctorRange: 14, reviewDate: '', historyMode: 'day' }
 };
 
 const $ = id => document.getElementById(id);
@@ -435,11 +435,24 @@ function dayPart(){
   const h = new Date().getHours();
   return DAY_PARTS.find(p => p.from < p.to ? (h >= p.from && h < p.to) : (h >= p.from || h < p.to)) || DAY_PARTS[0];
 }
+// "auto" follows the day: the app goes dark for the night period, or whenever the device
+// asks for dark. Night feeds are the reason this exists, not decoration.
+function resolveTheme(){
+  const pref = S.ui.theme || 'auto';
+  if(pref === 'light' || pref === 'dark') return pref;
+  if(dayPart().key === 'night') return 'dark';
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 function applyDayPart(){
-  const p = dayPart();
-  if(document.documentElement.dataset.daypart !== p.key) document.documentElement.dataset.daypart = p.key;
+  const p = dayPart(), theme = resolveTheme(), root = document.documentElement;
+  if(root.dataset.daypart !== p.key) root.dataset.daypart = p.key;
+  if(root.dataset.theme !== theme){
+    root.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0e1016' : '#f4f4f9');
+  }
   return p;
 }
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{ if((S.ui.theme||'auto')==='auto') applyDayPart(); });
 function greeting(name){
   const p = dayPart(), g = p.greet;
   const ic = p.key === 'night' ? 'moon' : p.key === 'evening' ? 'moon' : 'sun';
@@ -914,7 +927,7 @@ function babyHome(){
     ${statRing(s.wetTotal, wk('wetTotal'), 'Wet', `avg ${wk('wetTotal').toFixed(1)}`, 'var(--wet-ink)')}
     ${statRing(s.poopTotal, wk('poopTotal'), 'Poopy', `avg ${wk('poopTotal').toFixed(1)}`, 'var(--poop-ink)')}
     ${statRing(s.feeds, wk('feeds'), 'Feeds', `avg ${wk('feeds').toFixed(1)}`, 'var(--feed-ink)')}
-    ${statRing(+s.bottleOz.toFixed(1), wk('bottleOz'), 'Bottle oz', `avg ${wk('bottleOz').toFixed(1)}`, 'var(--baby)')}
+    ${statRing(+s.bottleOz.toFixed(1), wk('bottleOz'), 'Bottle oz', `avg ${wk('bottleOz').toFixed(1)}`, 'var(--baby-ink)')}
   </section>
 
   ${panel('Recent care',recentBaby(5),'<button data-view="baby-history">See all</button>')}`;
@@ -1128,10 +1141,10 @@ const renderers={
   'baby-home':babyHome,'baby-history':babyHistory,'baby-trends':babyTrends,'baby-growth':babyGrowth,
   development:developmentView,doctor:doctorView,more:moreView,settings:settingsView,
   'set-account':setAccount,'set-baby':setBaby,'set-pumping':setPumping,
-  'set-reminders':setReminders,'set-data':setData,'set-about':setAbout
+  'set-reminders':setReminders,'set-data':setData,'set-appearance':setAppearance,'set-about':setAbout
 };
 const titles={'mom-home':'Mom','mom-history':'Mom history','mom-trends':'Milk trends','mom-stash':'Stash','baby-home':'Baby','baby-history':'Baby history','baby-trends':'Daily trends','baby-growth':'Growth',development:'Development',doctor:'Doctor summary',more:'More',settings:'Settings',
-  'set-account':'Family account','set-baby':'Baby profile','set-pumping':'Pumping','set-reminders':'Reminders','set-data':'Backup & data','set-about':'About'};
+  'set-account':'Family account','set-baby':'Baby profile','set-pumping':'Pumping','set-reminders':'Reminders','set-data':'Backup & data','set-appearance':'Appearance','set-about':'About'};
 function render(dir='none'){
   applyDayPart();
   const el=$('view');
@@ -1170,7 +1183,12 @@ function renderBottomNav(){
 }
 function syncBadge(){
   const b=$('syncBadge'), t=$('syncTitle'), sub=$('syncSubtitle');
-  if(b){ b.innerHTML=S.cloud.enabled?`${icon('check')}<span>Cloud</span>`:`${icon('shield')}<span>Device</span>`; b.className=`sync-badge ${S.cloud.enabled?'on':''}`; }
+  if(b){
+    b.innerHTML = S.cloud.enabled ? icon('cloud') : icon('shield');
+    b.className = `sync-badge ${S.cloud.enabled?'on':''}`;
+    b.setAttribute('aria-label', S.cloud.enabled ? 'Synced to your family account' : 'Saved on this device only');
+    b.title = b.getAttribute('aria-label');
+  }
   if(t) t.textContent=S.cloud.enabled?'Family account connected':'On this device';
   if(sub) sub.textContent=S.cloud.enabled?(S.cloud.email||'Family account'):'Sign in to sync across devices';
 }
@@ -1230,6 +1248,7 @@ function settingsView(){
     listRow({view:'set-reminders', label:'Reminders', sub:remindersSummary(), icon:'bell', color:TILE.red})
   ])}
   ${group('',[
+    listRow({view:'set-appearance', label:'Appearance', sub:`${cap(S.ui.theme||'auto')} · ${cap(resolveTheme())} now`, icon:'sun', color:TILE.amber}),
     listRow({view:'set-data', label:'Backup & data', sub:'Import, export, cloud check', icon:'download', color:TILE.indigo}),
     listRow({view:'set-about', label:'About MilkFlow', sub:'Version and privacy', icon:'shield', color:TILE.slate})
   ])}`;
@@ -1270,6 +1289,18 @@ function setData(){
   ${panel('Private backup',`<div class="setting-row"><div><strong>Export a backup</strong><span>Downloads every Mom and Baby record, your profile and settings as a private JSON file.</span></div><button data-export>${icon('download')} Export</button></div>`)}
   ${panel('Restore or merge',`<div class="setting-row"><div><strong>Import a file</strong><span>Import merges by record ID and never deletes existing history. A snapshot of this device is taken first.</span></div><button data-import>${icon('upload')} Import</button></div>`)}
   ${S.cloud.enabled?panel('Cloud check',`<div class="setting-row"><div><strong>Compare with the cloud</strong><span>${localMom} Mom · ${localBaby} Baby on this device${S.cloud.momCount!=null?` · ${S.cloud.momCount} Mom · ${S.cloud.babyCount} Baby online`:''}</span></div><button data-cloud-check>Check cloud</button></div>`):''}`;
+}
+function setAppearance(){
+  const cur = S.ui.theme || 'auto';
+  const opt = (v,label,sub) => `<button type="button" class="theme-opt ${cur===v?'on':''}" data-theme-pick="${v}">
+    <span class="theme-swatch ${v}"><i></i><i></i><i></i></span><strong>${label}</strong><small>${sub}</small></button>`;
+  return `${subHead('Appearance')}
+  ${panel('Theme',`<div class="theme-grid">
+    ${opt('auto','Automatic','Light through the day, dark at night')}
+    ${opt('light','Light','Always light')}
+    ${opt('dark','Dark','Always dark')}
+  </div><p class="chart-note">Automatic follows the clock — the app turns dark during the night period, which is when most feeds get logged. It also follows your device if that is set to dark.</p>`)}
+  ${panel('Right now',`<div class="about-list"><div><span>Time of day</span><b>${cap(dayPart().key)}</b></div><div><span>Theme in use</span><b>${cap(resolveTheme())}</b></div></div>`)}`;
 }
 function setAbout(){
   return `${subHead('About MilkFlow')}
@@ -1755,6 +1786,7 @@ function handleClick(e){
   const ms=e.target.closest('[data-milestone]'); if(ms){ toggleMilestone(ms.dataset.milestone,ms.dataset.msText,ms.dataset.msGroup,+ms.dataset.msMonth); return; }
   const pick=e.target.closest('[data-pick]'); if(pick){ const [id,v]=pick.dataset.pick.split(':'); pickChoice(id,v); if(id==='diaperKind'){ const t=$('diaperDialog')?.querySelector('h2'); if(t) t.textContent=(editing?'Edit ':'')+(v==='wet'?'Wet diaper':v==='poop'?'Poopy diaper':'Mixed diaper'); } return; }
   const dis=e.target.closest('[data-dismiss]'); if(dis){ $(dis.dataset.dismiss)?.close(); return; }
+  const tp=e.target.closest('[data-theme-pick]'); if(tp){ S.ui.theme=tp.dataset.themePick; save(); applyDayPart(); render(); return; }
   const bump=e.target.closest('[data-bump]'); if(bump){ const [id,d]=bump.dataset.bump.split(':'); bumpStepper(id,+d); return; }
   const pre=e.target.closest('[data-preset]'); if(pre){ const [id,v]=pre.dataset.preset.split(':'); const el=$(id); if(el){ el.value=v; el.dispatchEvent(new Event('input',{bubbles:true})); } return; }
   const wq=e.target.closest('[data-when]'); if(wq){ const [tid,m]=wq.dataset.when.split(':'); setWhen(tid,+m); return; }
@@ -1801,6 +1833,10 @@ $('photoFile')?.addEventListener('change',e=>{ const f=e.target.files?.[0]; if(f
 S.babyEvents=S.babyEvents.map(normalizeBabyEvent); save();
 // Seed the first history entry so Back from the very first screen behaves predictably.
 applyDayPart();
+if('scrollRestoration' in history) history.scrollRestoration = 'manual';
 history.replaceState({view},'',`#${view}`);
-render(); initCloud(); tickReminders(); setInterval(tickReminders,60000);
+render(); window.scrollTo(0,0);
+// a late font/layout pass can nudge the offset, so settle it once more after paint
+requestAnimationFrame(() => window.scrollTo(0,0));
+initCloud(); tickReminders(); setInterval(tickReminders,60000);
 })();
