@@ -7,19 +7,19 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>MilkFlow Family</title>
-  <link rel="manifest" href="manifest.webmanifest?build=stable10">
+  <link rel="manifest" href="manifest.webmanifest?build=stable11">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-180.png">
   <meta name="apple-mobile-web-app-title" content="MilkFlow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?build=stable10">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?build=stable11">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="config.js?build=stable10" defer></script>
-  <script src="app.js?build=stable10" defer></script>
+  <script src="config.js?build=stable11" defer></script>
+  <script src="app.js?build=stable11" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -46,48 +46,23 @@
 <div id="sheet" class="sheet"></div>
 
 <dialog id="momDialog" class="dialog">
-  <form id="momForm">
-    <div class="dialog-head"><h2 id="momDialogTitle">Pump</h2><button type="button" onclick="document.getElementById('momDialog').close()" aria-label="Close">×</button></div>
-    <input id="momType" type="hidden" value="pump">
-    <section class="form-section"><div class="form-section-title">When</div><div class="form-grid"><label class="field"><span>Date</span><input id="momDate" type="date" required></label><label class="field"><span>Time</span><input id="momTime" type="time" required></label></div></section>
-    <section class="form-section"><div class="form-section-title">Details</div><div class="form-grid"><label id="momAmountWrap" class="field"><span>Milk (mL)</span><input id="momAmount" type="number" inputmode="decimal" min="0" step="1"></label><label class="field"><span>Minutes</span><input id="momDuration" type="number" inputmode="numeric" min="0" step="1"></label><label id="momSideWrap" class="field hidden"><span>Side</span><select id="momSide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label></div><details class="optional"><summary>Add note</summary><textarea id="momNote" rows="2"></textarea></details></section>
-    <div class="form-actions"><button type="button" onclick="document.getElementById('momDialog').close()">Cancel</button><button class="save" data-save-label="Save">Save</button></div>
-  </form>
+  <form id="momForm"><div class="dialog-body" id="momFormBody"></div></form>
 </dialog>
 
 <dialog id="diaperDialog" class="dialog baby-dialog">
-  <form id="diaperForm">
-    <div class="dialog-head"><h2 id="diaperDialogTitle">Diaper</h2><button type="button" onclick="document.getElementById('diaperDialog').close()" aria-label="Close">×</button></div>
-    <input id="diaperKind" type="hidden" value="wet">
-    <section class="form-section"><div class="form-section-title">When</div><div class="form-grid"><label class="field"><span>Date</span><input id="diaperDate" type="date" required></label><label class="field"><span>Time</span><input id="diaperTime" type="time" required></label></div><details class="optional"><summary>Add note</summary><textarea id="diaperNote" rows="2"></textarea></details></section>
-    <div class="form-actions"><button type="button" onclick="document.getElementById('diaperDialog').close()">Cancel</button><button class="save" data-save-label="Save">Save</button></div>
-  </form>
+  <form id="diaperForm"><div class="dialog-body" id="diaperFormBody"></div></form>
 </dialog>
 
 <dialog id="feedDialog" class="dialog baby-dialog">
-  <form id="feedForm">
-    <div class="dialog-head"><h2 id="feedDialogTitle">Feed</h2><button type="button" onclick="document.getElementById('feedDialog').close()" aria-label="Close">×</button></div>
-    <input id="feedType" type="hidden" value="nursing">
-    <section class="form-section"><div class="form-section-title">When</div><div class="form-grid"><label class="field"><span>Date</span><input id="feedDate" type="date" required></label><label class="field"><span>Time</span><input id="feedTime" type="time" required></label></div></section>
-    <section class="form-section"><div class="form-section-title">Feed</div><div class="form-grid"><label id="feedAmountWrap" class="field hidden"><span>Amount (oz)</span><input id="feedAmount" type="number" inputmode="decimal" min="0" step="0.1"></label><label id="feedNursingWrap" class="field"><span>Minutes</span><input id="feedDuration" type="number" inputmode="numeric" min="0" step="1"></label><label class="field" id="feedSideWrap"><span>Side</span><select id="feedSide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label></div></section>
-    <div class="form-actions"><button type="button" onclick="document.getElementById('feedDialog').close()">Cancel</button><button class="save" data-save-label="Save">Save</button></div>
-  </form>
+  <form id="feedForm"><div class="dialog-body" id="feedFormBody"></div></form>
 </dialog>
 
 <dialog id="growthDialog" class="dialog baby-dialog">
-  <form id="growthForm">
-    <div class="dialog-head"><h2>Growth</h2><button type="button" onclick="document.getElementById('growthDialog').close()" aria-label="Close">×</button></div>
-    <section class="form-section"><div class="form-section-title">Measurement</div><div class="form-grid"><label class="field"><span>Date</span><input id="growthDate" type="date" required></label><label class="field"><span>Weight lb</span><input id="growthWeightLb" type="number" inputmode="decimal" min="0" step="0.1"></label><label class="field"><span>Weight oz</span><input id="growthWeightOz" type="number" inputmode="decimal" min="0" max="15.9" step="0.1"></label><label class="field"><span>Length (in)</span><input id="growthLength" type="number" inputmode="decimal" min="0" step="0.1"></label><label class="field"><span>Head (in)</span><input id="growthHead" type="number" inputmode="decimal" min="0" step="0.1"></label></div><details class="optional"><summary>Add note</summary><textarea id="growthNote" rows="2"></textarea></details></section>
-    <div class="form-actions"><button type="button" onclick="document.getElementById('growthDialog').close()">Cancel</button><button class="save" data-save-label="Save">Save</button></div>
-  </form>
+  <form id="growthForm"><div class="dialog-body" id="growthFormBody"></div></form>
 </dialog>
 
 <dialog id="sleepDialog" class="dialog baby-dialog">
-  <form id="sleepForm">
-    <div class="dialog-head"><h2>Sleep</h2><button type="button" onclick="document.getElementById('sleepDialog').close()" aria-label="Close">×</button></div>
-    <section class="form-section"><div class="form-grid"><label class="field"><span>Date</span><input id="sleepDate" type="date" required></label><label class="field"><span>Start</span><input id="sleepTime" type="time" required></label><label class="field"><span>Minutes</span><input id="sleepMinutes" type="number" inputmode="numeric" min="0" step="1" required></label></div></section>
-    <div class="form-actions"><button type="button" onclick="document.getElementById('sleepDialog').close()">Cancel</button><button class="save" data-save-label="Save">Save</button></div>
-  </form>
+  <form id="sleepForm"><div class="dialog-body" id="sleepFormBody"></div></form>
 </dialog>
 
 <dialog id="authDialog" class="dialog">
@@ -116,7 +91,7 @@
         reloading = true;
         location.reload();
       });
-      navigator.serviceWorker.register('./sw.js?build=stable10', { updateViaCache: 'none' }).catch(err => console.warn('SW registration skipped', err));
+      navigator.serviceWorker.register('./sw.js?build=stable11', { updateViaCache: 'none' }).catch(err => console.warn('SW registration skipped', err));
     });
   }
 </script>

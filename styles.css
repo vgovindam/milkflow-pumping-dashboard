@@ -44,10 +44,10 @@
   --shadow-soft:0 6px 18px rgba(26,30,48,.055);
   --shadow-tile:0 8px 20px rgba(26,30,48,.07);
 
-  /* Fraunces (variable, optical-sized) carries the headline voice; Plus Jakarta Sans
-     keeps the dense UI text neutral and legible at small sizes. */
+  /* Bricolage Grotesque is a contemporary variable grotesque - modern rather than the
+     old-style serif it replaces - paired with Plus Jakarta Sans for dense UI text. */
   --font:"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  --display:"Fraunces","Iowan Old Style",Georgia,serif;
+  --display:"Bricolage Grotesque","Plus Jakarta Sans",system-ui,sans-serif;
 }
 
 /* Time-of-day tint. Only ambient surfaces change - ink, lines and accents stay put,
@@ -60,8 +60,8 @@
 
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:var(--font);color:var(--ink);background:var(--bg);-webkit-text-size-adjust:100%;font-optical-sizing:auto}
-/* Every headline set in Fraunces gets a slightly tighter fit and soft optical size. */
-h1,h2,h3,.ring-label strong,.stat-ring-dial b,.donut-center strong,.snap strong{font-optical-sizing:auto;letter-spacing:-.015em}
+/* Every display headline gets optical sizing and a slightly tighter fit. */
+h1,h2,h3,.ring-label strong,.stat-ring-dial b,.donut-center strong{font-optical-sizing:auto;letter-spacing:-.02em}
 /* Counts and volumes line up column to column. */
 .metric strong,.ring-label strong,.stat-ring-dial b,.donut-center strong,.daily-cell b,.cbar-v,.chart-rail,.qa-grid strong,.stash-hero strong,.donut-legend strong,.donut-legend small,.hbar b,.tl-ticks span,.stat-line b{font-variant-numeric:tabular-nums}
 body.locked{overflow:hidden}
@@ -101,7 +101,7 @@ button{cursor:pointer;font-family:inherit}
 .back-btn .ico{width:22px;height:22px;flex:0 0 auto}
 .back-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .title-wrap{display:none}
-.title-wrap h1{margin:0;font:700 23px var(--display);letter-spacing:-.015em}
+.title-wrap h1{margin:0;font:800 23px var(--display);letter-spacing:-.015em}
 .mobile-workspace{display:none}
 .sync-badge{margin-left:auto;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:99px;font-size:10px;font-weight:900;background:#f0f1f6;color:#6f7688;letter-spacing:.03em}
 .sync-badge.on{background:var(--good-soft);color:var(--good)}
@@ -113,10 +113,18 @@ button{cursor:pointer;font-family:inherit}
 .mom-hero{background:linear-gradient(135deg,#fff 0%,var(--mom-hero-b) 46%,#f1ebff 100%)}
 .hero-copy{position:relative;z-index:2;min-width:0;flex:1}
 .eyebrow{display:block;font-size:10px;font-weight:900;letter-spacing:.14em;color:#8b91a3;margin-bottom:6px}
-.hero h2{font:700 31px var(--display);margin:0 0 6px;line-height:1.12;letter-spacing:-.01em}
+.eyebrow:has(.greet){letter-spacing:0;margin-bottom:8px}
+.hero h2{font:800 31px var(--display);margin:0 0 6px;line-height:1.12;letter-spacing:-.01em}
 .hero p{margin:0;color:var(--ink-2);font-size:13px;font-weight:600}
 .scene{width:100%;height:100%;display:block}
 
+.greet{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;letter-spacing:.01em;text-transform:none;color:var(--ink-2)}
+.greet-mark{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto}
+.greet-mark .ico{width:14px;height:14px;stroke-width:2.2}
+.greet-mark.morning{background:#fdeccb;color:#b7791f}
+.greet-mark.afternoon{background:#d9eefb;color:#2b7fa8}
+.greet-mark.evening{background:#fadfd2;color:#b4603c}
+.greet-mark.night{background:#dfe1f7;color:#4b52a8}
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
 .chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:99px;padding:6px 11px;font-size:11px;font-weight:800;color:var(--ink-2)}
 .chip .ico{width:14px;height:14px;opacity:.75}
@@ -132,6 +140,28 @@ button{cursor:pointer;font-family:inherit}
 .ring-label{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:1px}
 .ring-label strong{font:800 26px var(--display);letter-spacing:-.02em;line-height:1}
 .ring-label span{font-size:9px;font-weight:800;color:var(--muted)}
+
+/* ----------------------------------------------------------- care glyphs -- */
+/* Two-tone: a soft wash of the action's colour plus a crisp outline of the same
+   colour, so every glyph inherits its surface and the set stays one family. */
+.gly{width:26px;height:26px;display:block;flex:0 0 auto;color:inherit}
+.gly .g-fill{fill:currentColor;opacity:.22}
+.gly .g-line{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.gly .g-line-f{fill:currentColor;stroke:none}
+.gly .g-hi{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;opacity:.5}
+.gly ellipse.g-hi{fill:currentColor;stroke:none;opacity:.34}
+
+/* sizes per surface */
+.orb-face .gly{width:46%;height:46%}
+.cta-medallion .gly{width:30px;height:30px}
+.tile-art .gly{width:31px;height:31px}
+.act-icon .gly{width:25px;height:25px}
+.row-icon .gly{width:24px;height:24px}
+.rev-icon .gly{width:21px;height:21px}
+.rev-icon .gly .g-line,.act-icon .gly .g-line{stroke-width:2.6}
+.record-icon .gly{width:27px;height:27px}
+.sheet-actions button .gly{width:30px;height:30px;margin-bottom:auto;color:var(--baby)}
+.choice-row.big .gly{width:32px;height:32px}
 
 /* ---------------------------------------------------------- quick tiles -- */
 .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
@@ -163,7 +193,7 @@ button{cursor:pointer;font-family:inherit}
 .stage-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .stage-avatar .scene{width:132%;height:132%}
 .stage-copy{min-width:0;flex:1}
-.stage-copy h2{font:700 28px var(--display);margin:0 0 6px;line-height:1.1;letter-spacing:-.02em}
+.stage-copy h2{font:800 28px var(--display);margin:0 0 6px;line-height:1.1;letter-spacing:-.02em}
 .stage-copy h2 em{font-style:normal;background:linear-gradient(100deg,var(--baby),var(--baby-2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .stage-copy p{margin:0;font-size:12.5px;color:var(--ink-2);font-weight:600}
 
@@ -190,13 +220,13 @@ button{cursor:pointer;font-family:inherit}
 /* ------------------------------------------------------------ day review -- */
 .day-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
 .day-chip{flex:0 0 auto;min-width:56px;border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:9px 12px;display:grid;gap:2px;justify-items:center;color:var(--ink-2)}
-.day-chip b{font:700 18px var(--display);line-height:1;font-variant-numeric:tabular-nums}
+.day-chip b{font:800 18px var(--display);line-height:1;font-variant-numeric:tabular-nums}
 .day-chip span{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 .day-chip.today b{font-size:13px}
 .day-chip.sel{background:var(--ink);border-color:var(--ink);color:#fff}
 .day-chip.sel span{color:rgba(255,255,255,.72)}
 .review-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
-.review-head strong{font:700 18px var(--display)}
+.review-head strong{font:800 18px var(--display)}
 .review-head span{font-size:10.5px;color:var(--muted);font-weight:800}
 .review-stats{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px 16px;margin-bottom:14px;box-shadow:var(--shadow-soft)}
 .stat-line{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
@@ -345,7 +375,7 @@ button{cursor:pointer;font-family:inherit}
 
 /* ------------------------------------------------------------ page head -- */
 .page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.page-head h2{margin:0;font:700 29px var(--display);letter-spacing:-.02em}
+.page-head h2{margin:0;font:800 30px var(--display);letter-spacing:-.02em}
 .round-action{border:0;border-radius:14px;background:linear-gradient(135deg,var(--mom),var(--mom-2));color:#fff;min-height:46px;padding:0 15px;display:flex;align-items:center;gap:7px;font-weight:900;font-size:13px;box-shadow:0 8px 18px rgba(122,86,214,.26)}
 .round-action.baby{background:linear-gradient(135deg,var(--baby),var(--baby-2));box-shadow:0 8px 18px rgba(47,151,201,.26)}
 .round-action .ico{width:19px;height:19px}
@@ -612,22 +642,66 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
 .dialog::backdrop{background:rgba(18,21,32,.48);backdrop-filter:blur(2px)}
 .dialog form{max-height:92dvh;overflow:auto}
 .dialog-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:3}
-.dialog-head h2{font:700 23px var(--display);margin:0}
-.dialog-head button{border:0;background:#f1f3f7;width:42px;height:42px;border-radius:12px;font-size:24px;color:var(--ink-2);line-height:1}
+.dialog-head h2{font:800 23px var(--display);margin:0}
+.dialog-head button{border:0;background:#f1f3f7;width:42px;height:42px;border-radius:13px;color:var(--ink-2);display:grid;place-items:center}
+.dialog-head button .ico{width:20px;height:20px;stroke-width:2.4}
 .form-section{padding:18px 20px;border-bottom:7px solid var(--surface-2)}
+.form-section:last-of-type{border-bottom:0}
 .form-section-title{font:800 13.5px var(--font);margin-bottom:11px;color:var(--ink-2)}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .optional{margin-top:12px}
 .optional summary{font-size:11.5px;font-weight:900;color:var(--muted);cursor:pointer;padding:6px 0}
 .optional textarea{width:100%;margin-top:8px;border:1px solid var(--line);border-radius:13px;padding:11px;font-size:16px;background:var(--surface-2)}
-.form-actions{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom));display:grid;grid-template-columns:.7fr 1.3fr;gap:9px}
-.form-actions button{min-height:52px;border:1px solid var(--line);background:var(--surface);border-radius:13px;font-weight:900;color:var(--ink-2)}
+.form-actions{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom));display:grid;grid-template-columns:.62fr 1.38fr;gap:10px}
+.form-actions button{min-height:56px;border:1px solid var(--line);background:var(--surface);border-radius:16px;font-weight:800;font-size:15px;color:var(--ink-2)}
 .form-actions .save,.auth-actions .save{background:linear-gradient(135deg,var(--mom),var(--mom-2));color:#fff;border:0;box-shadow:0 8px 18px rgba(122,86,214,.26)}
-.baby-dialog .form-actions .save{background:linear-gradient(135deg,var(--baby),var(--baby-2));box-shadow:0 8px 18px rgba(47,151,201,.26)}
+.form-actions .save.baby,.baby-dialog .form-actions .save{background:linear-gradient(135deg,var(--baby),var(--baby-2));box-shadow:0 8px 18px rgba(47,151,201,.26)}
 .auth-helper{padding:16px 20px 8px;color:var(--muted);font-size:11.5px;line-height:1.55;font-weight:600}
 .auth-fields{padding:8px 20px;display:grid;gap:11px}
 .auth-actions{padding:12px 20px 18px;display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .auth-actions button{min-height:50px;border:1px solid var(--line);background:var(--surface);border-radius:13px;font-weight:900;color:var(--ink-2)}
+
+/* ---------------------------------------------------------- number entry -- */
+/* The value is the hero of the screen: large, typable, with thumb-sized keys either
+   side and presets drawn from what this family actually logs. */
+.dialog-body{display:contents}
+.stepper{display:grid;grid-template-columns:64px minmax(0,1fr) 64px;align-items:center;gap:12px;margin:2px 0 4px}
+.step-key{width:64px;height:64px;border:0;border-radius:22px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2);display:grid;place-items:center;transition:transform .1s,background .15s}
+.step-key .ico{width:26px;height:26px;stroke-width:2.6}
+.step-key:active{transform:scale(.92);background:var(--line-soft)}
+.stepper.mom .step-key{color:var(--mom);background:var(--mom-soft);border-color:#e6dcfb}
+.stepper.baby .step-key{color:var(--baby-ink);background:var(--baby-soft);border-color:#d8eefa}
+.step-value{display:flex;align-items:baseline;justify-content:center;gap:6px;min-width:0}
+.step-value input{width:100%;max-width:190px;border:0;background:transparent;text-align:center;font:800 clamp(40px,13vw,54px)/1 var(--display);letter-spacing:-.03em;color:var(--ink);padding:0;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.step-value input::-webkit-outer-spin-button,.step-value input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.step-value input:focus{outline:none}
+.step-value input::placeholder{color:#cdd2dd}
+.step-value span{font-size:15px;font-weight:800;color:var(--muted);flex:0 0 auto}
+.preset-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;justify-content:center}
+.preset-row button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:10px 16px;font-weight:800;font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.preset-row button em{font-style:normal;font-size:11px;color:var(--muted);margin-left:3px}
+.preset-row button:active{background:var(--line-soft)}
+.dual-stepper{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dual-stepper .stepper{grid-template-columns:44px minmax(0,1fr) 44px;gap:6px}
+.dual-stepper .step-key{width:44px;height:44px;border-radius:15px}
+.dual-stepper .step-key .ico{width:19px;height:19px}
+.dual-stepper .step-value input{font-size:clamp(26px,8vw,34px)}
+.dual-stepper .step-value span{font-size:12px}
+
+/* segmented choices (side, diaper kind) */
+.choice-row{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px}
+.choice-row button{border:1px solid var(--line);background:var(--surface);border-radius:15px;min-height:56px;font-weight:800;font-size:14.5px;color:var(--ink-2);transition:.14s}
+.choice-row button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.choice-row.big button{display:grid;place-items:center;gap:6px;min-height:92px;font-size:13px}
+.choice-row.big .ico{width:30px;height:30px}
+.choice-row.big button.on{background:var(--ink);color:#fff}
+
+/* quick "when" */
+.when-row{display:grid;gap:10px}
+.when-quick{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:7px}
+.when-quick button{border:1px solid var(--line);background:var(--surface);border-radius:13px;min-height:46px;font-weight:800;font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.when-quick button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.when-exact summary{text-align:center}
 
 /* ---------------------------------------------------------------- toast -- */
 .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:#222534;color:#fff;border-radius:14px;padding:12px 14px;font-size:12px;font-weight:800;z-index:100;transition:opacity .18s,transform .18s;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;max-width:min(440px,92vw)}

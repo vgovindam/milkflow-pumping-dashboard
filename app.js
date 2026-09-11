@@ -27,6 +27,7 @@ const DEFAULTS = {
   babyEvents: [],
   dailyOverrides: {},
   reminders: { enabled: false, leadMin: 10, lastSentKey: null, feedEnabled: false, feedGapMin: 180, feedLastKey: null },
+  last: { bottleOz: null, pumpMl: null, pumpMin: null, nursingMin: null, sleepMin: null },
   cloud: { enabled: false, userId: null, email: null, lastSync: null, lastVerified: null, momCount: null, babyCount: null },
   ui: { workspace: 'mom', view: 'mom-home', momRange: 30, babyRange: 30, babyFilter: 'all', trendRange: 14, doctorRange: 14, reviewDate: '', historyMode: 'day' }
 };
@@ -226,6 +227,7 @@ function icon(name,cls=''){
     snow:'<path d="M12 2.4v19.2"/><path d="m4 7 16 10M4 17 20 7"/><path d="m9.2 4.4 2.8 2.6 2.8-2.6M9.2 19.6l2.8-2.6 2.8 2.6"/>',
     baby:'<circle cx="12" cy="13" r="7.4"/><path d="M9.6 11.6h.01M14.4 11.6h.01"/><path d="M9.8 15.4c1.4 1.2 3 1.2 4.4 0"/><path d="M8.6 6.1C9.8 3.7 13 3.2 14.8 5"/>',
     plus:'<path d="M12 4.8v14.4M4.8 12h14.4"/>',
+    minus:'<path d="M4.8 12h14.4"/>',
     more:'<circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
     menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
     close:'<path d="m6 6 12 12M18 6 6 18"/>',
@@ -251,6 +253,44 @@ function icon(name,cls=''){
   };
   return `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.heart}</svg>`;
 }
+// Two-tone care glyphs for the large surfaces: a soft fill plus a crisp outline, all in
+// currentColor, so every action keeps one identity across orbs, tiles, rows and sheets.
+// Small chrome (nav bar, chips, chevrons) keeps the lighter line icons above.
+function glyph(name,cls=''){
+  const duo = (d,extra='') =>
+    `<path class="g-fill" d="${d}"/><path class="g-line" d="${d}"/>${extra}`;
+  const P = {
+    // a full teardrop with a highlight
+    drop: duo('M24 5.4c2.3 2.8 13.6 17 13.6 24.6a13.6 13.6 0 1 1-27.2 0C10.4 22.4 21.7 8.2 24 5.4Z',
+      '<ellipse class="g-hi" cx="18.4" cy="29.6" rx="3.1" ry="4" transform="rotate(-18 18.4 29.6)"/>'),
+    // three soft mounds, no cartoon face
+    poop: duo('M26.9 8.6c2.9.6 4.1 3 3.3 5h.9c3.2 0 5.6 2.1 5.6 4.8 0 1-.3 2-1 2.7 3.1.5 5.4 2.6 5.4 5.2 0 1.2-.5 2.3-1.2 3.1 2.3.8 3.8 2.5 3.8 4.5 0 3.2-3.3 5.7-7.5 5.7H11.8c-4.2 0-7.5-2.5-7.5-5.7 0-2 1.5-3.7 3.8-4.5a4.3 4.3 0 0 1-1.2-3.1c0-2.6 2.3-4.7 5.4-5.2a4 4 0 0 1-1-2.7c0-2.7 2.4-4.8 5.6-4.8h.9c-.8-2.7 1.4-5.5 5.3-5h3.8Z',
+      '<path class="g-hi" d="M16.6 31.4h3M28.4 31.4h3"/>'),
+    // wet + poopy together: a drop leaning on a mound
+    mixed: duo('M16.4 4.8c1.7 2.1 9.4 11.9 9.4 17.1a9.4 9.4 0 1 1-18.8 0C7 16.7 14.7 6.9 16.4 4.8Z',
+      '<path class="g-fill" d="M35.1 20.4c2.1.4 2.9 2.1 2.4 3.6h.7c2.3 0 4 1.5 4 3.5 0 .7-.2 1.4-.7 1.9 2.2.4 3.9 1.9 3.9 3.7 0 2.3-2.4 4.1-5.4 4.1H26.6c-3 0-5.4-1.8-5.4-4.1 0-1.8 1.7-3.3 3.9-3.7a2.9 2.9 0 0 1-.7-1.9c0-2 1.7-3.5 4-3.5h.7c-.5-2 1-3.9 3.8-3.6Z"/><path class="g-line" d="M35.1 20.4c2.1.4 2.9 2.1 2.4 3.6h.7c2.3 0 4 1.5 4 3.5 0 .7-.2 1.4-.7 1.9 2.2.4 3.9 1.9 3.9 3.7 0 2.3-2.4 4.1-5.4 4.1H26.6c-3 0-5.4-1.8-5.4-4.1 0-1.8 1.7-3.3 3.9-3.7a2.9 2.9 0 0 1-.7-1.9c0-2 1.7-3.5 4-3.5h.7c-.5-2 1-3.9 3.8-3.6Z"/>'),
+    // bottle with cap, shoulders and a milk line
+    bottle: duo('M19.6 11.2h8.8v3.9l3.4 4.3a6.4 6.4 0 0 1 1.4 4v14.2a5.2 5.2 0 0 1-5.2 5.2h-8a5.2 5.2 0 0 1-5.2-5.2V23.4a6.4 6.4 0 0 1 1.4-4l3.4-4.3Z',
+      '<rect class="g-line-f" x="18.4" y="4.4" width="11.2" height="6.6" rx="3.3"/><path class="g-hi" d="M18.8 26.2h7M18.8 31h4.6"/>'),
+    // mother and baby held together inside a heart
+    nursing: duo('M41.2 11.4a9.1 9.1 0 0 0-13.3-.4L24 14.9l-3.9-3.9a9.1 9.1 0 1 0-12.9 12.9L24 41.6l16.8-16.7a9.1 9.1 0 0 0 .4-13.5Z',
+      '<circle class="g-line-f" cx="18.8" cy="21.4" r="3"/><circle class="g-line-f" cx="28.4" cy="23.6" r="2.2"/>'),
+    // pump: flange over a collection bottle
+    pump: duo('M20 22.6h8v2.8l2.6 3.2a5 5 0 0 1 1.1 3.1v6.6a4.4 4.4 0 0 1-4.4 4.4h-6.6a4.4 4.4 0 0 1-4.4-4.4v-6.6a5 5 0 0 1 1.1-3.1l2.6-3.2Z',
+      '<path class="g-fill" d="M24 4.6a10.4 10.4 0 0 1 10.4 10.4c0 3.6-2.6 5.6-5.2 6.6H18.8c-2.6-1-5.2-3-5.2-6.6A10.4 10.4 0 0 1 24 4.6Z"/><path class="g-line" d="M24 4.6a10.4 10.4 0 0 1 10.4 10.4c0 3.6-2.6 5.6-5.2 6.6H18.8c-2.6-1-5.2-3-5.2-6.6A10.4 10.4 0 0 1 24 4.6Z"/><circle class="g-line-f" cx="24" cy="14.6" r="2.4"/>'),
+    // crescent with two small stars
+    moon: duo('M40.4 27.8A16.6 16.6 0 1 1 21.4 8.2a12.9 12.9 0 0 0 19 19.6Z',
+      '<path class="g-line-f" d="m35.6 6.4 1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2ZM42 16.6l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7Z"/>'),
+    // baby scale with a dial
+    scale: duo('M12.6 9.4h22.8a5.4 5.4 0 0 1 5.4 5.4v18.4a5.4 5.4 0 0 1-5.4 5.4H12.6a5.4 5.4 0 0 1-5.4-5.4V14.8a5.4 5.4 0 0 1 5.4-5.4Z',
+      '<path class="g-hi" d="M24 18.6v5.6"/><circle class="g-line-f" cx="24" cy="26.6" r="2.4"/>')
+  };
+  return `<svg class="gly ${cls}" viewBox="0 0 48 48" aria-hidden="true">${P[name]||P.drop}</svg>`;
+}
+const GLYPHS = new Set(['drop','poop','mixed','bottle','nursing','pump','moon','scale']);
+// Large surfaces use the glyph when one exists, otherwise fall back to the line icon.
+const bigIcon = (name,cls='') => GLYPHS.has(name) ? glyph(name,cls) : icon(name,cls);
+
 function babyIllustration(){
   return `<svg class="scene" viewBox="0 0 220 150" aria-hidden="true"><defs><linearGradient id="bgB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8f8ff"/><stop offset="1" stop-color="#eef0ff"/></linearGradient></defs><rect x="10" y="16" width="200" height="122" rx="42" fill="url(#bgB)"/><circle cx="52" cy="46" r="18" fill="#fff6c9"/><circle cx="170" cy="38" r="12" fill="#e8ddff"/><path d="M37 111c17-20 40-30 69-30 31 0 57 11 77 32" fill="none" stroke="#b7e8dc" stroke-width="17" stroke-linecap="round"/><circle cx="111" cy="76" r="33" fill="#fff"/><path d="M96 73h.01M126 73h.01" stroke="#42556f" stroke-width="4" stroke-linecap="round"/><path d="M101 88c7 5 14 5 21 0" fill="none" stroke="#6c86a6" stroke-width="3" stroke-linecap="round"/><path d="M91 52c10-10 28-13 42-3" fill="none" stroke="#7f9bbd" stroke-width="5" stroke-linecap="round"/><path d="M69 41c-7-7-15-5-18 3 7 0 12 3 16 8" fill="#fff"/></svg>`;
 }
@@ -401,8 +441,9 @@ function applyDayPart(){
   return p;
 }
 function greeting(name){
-  const g = dayPart().greet;
-  return name ? `${g}, ${esc(name)}` : g;
+  const p = dayPart(), g = p.greet;
+  const ic = p.key === 'night' ? 'moon' : p.key === 'evening' ? 'moon' : 'sun';
+  return `<span class="greet"><span class="greet-mark ${p.key}">${icon(ic)}</span>${name ? `${g}, ${esc(name)}` : g}</span>`;
 }
 
 function sinceLabel(date,time){
@@ -547,8 +588,8 @@ function momHome(){
     </div>
   </section>
   <div class="quick-grid mom-grid two">
-    <button class="quick-tile mom" data-mom="pump"><span class="tile-art">${icon('drop')}</span><strong>Pump</strong><small>Log milk</small></button>
-    <button class="quick-tile nurse" data-mom="nursing"><span class="tile-art">${icon('nursing')}</span><strong>Nursing</strong><small>Log session</small></button>
+    <button class="quick-tile mom" data-mom="pump"><span class="tile-art">${glyph('pump')}</span><strong>Pump</strong><small>Log milk</small></button>
+    <button class="quick-tile nurse" data-mom="nursing"><span class="tile-art">${glyph('nursing')}</span><strong>Nursing</strong><small>Log session</small></button>
   </div>
   <div class="metric-grid mom-summary">${metric('7-day avg',`${avg} mL`,'per pumping day','chart')}${metric('Today vs avg',count&&avg?`${pace}%`:'—',count&&avg?'of your average':'after your first pump','spark')}${metric('Freezer stash',`${(+S.profile.stashMl||0).toLocaleString()} mL`,'saved milk','snow')}</div>
   ${panel('Pump plan',scheduleStrip(),'<button data-view="set-pumping">Edit</button>')}
@@ -562,7 +603,7 @@ function scheduleStrip(){
   }).join('')}</div>`;
 }
 function recentMom(n){ const a=momEntries().slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('history','No Mom history yet','Log a pump or import your private backup.','<button class="primary-link" data-import>Import backup</button>'); return `<div class="rows">${a.map(momRow).join('')}</div>`; }
-function momRow(e){ return `<button type="button" class="row" data-record="mom:${esc(e.id)}"><div class="row-icon mom">${icon(e.type==='pump'?'drop':'nursing')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`; }
+function momRow(e){ return `<button type="button" class="row" data-record="mom:${esc(e.id)}"><div class="row-icon mom">${bigIcon(e.type==='pump'?'pump':'nursing')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`; }
 function momHistory(){
   const range=S.ui.momRange ?? 30, all=+range>=9999, cutoff=all?'':dateList(rangeDays(range,'mom'))[0];
   const a=momEntries().filter(e=>all||e.date>=cutoff).sort(byWhenDesc);
@@ -780,16 +821,17 @@ function activityStrip(){
   const st = babyStats(today());
   const live = babyEvents().filter(e => !e.exactSourceDuplicate).slice().sort(byWhenDesc);
   const rows = [
-    {kind:'feed',   label:'Feed',   icon:'bottle', color:'var(--feed-ink)',  bg:'var(--feed)',  find:e => e.eventType==='feeding'||e.eventType==='nursing', act:'data-feed'},
-    {kind:'diaper', label:'Diaper', icon:'diaper', color:'var(--wet-ink)',   bg:'var(--wet)',   find:e => e.eventType==='diaper', act:'data-diaper="wet"'},
+    {kind:'feed',   label:'Feed',   icon:'bottle', color:'var(--feed-ink)',  bg:'var(--feed)',  find:e => e.eventType==='feeding'||e.eventType==='nursing', act:'data-feed', glyphOf:e => e?.eventType==='nursing'?'nursing':'bottle'},
+    {kind:'diaper', label:'Diaper', icon:'diaper', color:'var(--wet-ink)',   bg:'var(--wet)',   find:e => e.eventType==='diaper', act:'data-diaper="wet"', glyphOf:e => e?.subtype==='poop'?'poop':e?.subtype==='both'?'mixed':'drop'},
     {kind:'sleep',  label:'Sleep',  icon:'moon',   color:'var(--sleep-ink)', bg:'var(--sleep)', find:e => e.eventType==='sleep', act:'data-sleep'}
   ].map(r => {
     const last = live.find(r.find);
     const ago = last ? sinceLabel(last.date,last.time) : null;
     const due = r.kind === 'feed' ? nextFeedDue(last) : null;
-    return `<div class="act-row" style="--c:${r.color};--bg:${r.bg}">
+    const tone = r.kind==='diaper' && last ? toneOf(last).color : r.color;
+    return `<div class="act-row" style="--c:${tone};--bg:${r.bg}">
       <button type="button" class="act-main" ${last?`data-record="baby:${esc(last.id)}"`:r.act}>
-        <span class="act-icon">${icon(r.icon)}</span>
+        <span class="act-icon">${bigIcon(r.glyphOf?r.glyphOf(last):r.icon)}</span>
         <span class="act-body">
           <span class="act-when">${ago?esc(ago):`No ${r.label.toLowerCase()} logged yet`}</span>
           <strong>${last?esc(activityDetail(last)):`Tap + to log a ${r.label.toLowerCase()}`}</strong>
@@ -848,15 +890,15 @@ function babyHome(){
   ${activityStrip()}
 
   <button class="feed-cta" data-feed>
-    <span class="cta-medallion">${icon('bottle')}</span>
+    <span class="cta-medallion">${glyph('bottle')}</span>
     <span class="cta-copy"><strong>Log a feed</strong><small>${lastFeed?`Last ${feedAgo}`:'Nurse, breast milk or formula'}</small></span>
     <span class="cta-go">${icon('chevron')}</span>
   </button>
 
   <div class="orb-row" aria-label="Quick diaper logging">
-    <button class="orb wet" data-diaper="wet"><span class="orb-face">${icon('drop')}</span><strong>Wet</strong></button>
-    <button class="orb poop" data-diaper="poop"><span class="orb-face">${icon('poop')}</span><strong>Poopy</strong></button>
-    <button class="orb mixed" data-diaper="both"><span class="orb-face">${icon('mixed')}</span><strong>Mixed</strong></button>
+    <button class="orb wet" data-diaper="wet"><span class="orb-face">${glyph('drop')}</span><strong>Wet</strong></button>
+    <button class="orb poop" data-diaper="poop"><span class="orb-face">${glyph('poop')}</span><strong>Poopy</strong></button>
+    <button class="orb mixed" data-diaper="both"><span class="orb-face">${glyph('mixed')}</span><strong>Mixed</strong></button>
   </div>
 
   <div class="pill-row">
@@ -888,7 +930,7 @@ function babyLabel(e){
 }
 function babyRow(e){
   const ic=e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':e.eventType==='milestone'?'spark':'moon';
-  return `<button type="button" class="row" data-record="baby:${esc(e.id)}"><div class="row-icon baby ${e.eventType==='diaper'?`sub-${esc(e.subtype)}`:`kind-${esc(e.eventType)}`}">${icon(ic)}</div><div class="row-main"><strong>${babyLabel(e)}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.note?` · ${esc(e.note)}`:''}${e.exactSourceDuplicate?' · source duplicate preserved':''}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
+  return `<button type="button" class="row" data-record="baby:${esc(e.id)}"><div class="row-icon baby ${e.eventType==='diaper'?`sub-${esc(e.subtype)}`:`kind-${esc(e.eventType)}`}">${bigIcon(ic)}</div><div class="row-main"><strong>${babyLabel(e)}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.note?` · ${esc(e.note)}`:''}${e.exactSourceDuplicate?' · source duplicate preserved':''}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
 }
 function recentBaby(n){ const a=babyEvents().filter(e=>!e.exactSourceDuplicate).slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('baby','No Baby history yet','Use one of the four buttons above to start.'); return `<div class="rows">${a.map(babyRow).join('')}</div>`; }
 function babyHistory(){
@@ -932,7 +974,7 @@ function revRow(e){
   const ic = e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':e.eventType==='milestone'?'spark':'moon';
   return `<button type="button" class="rev-row" data-record="baby:${esc(e.id)}" style="--c:${t.color}">
     <span class="rev-time">${to12(e.time)}</span>
-    <span class="rev-icon">${icon(ic)}</span>
+    <span class="rev-icon">${bigIcon(ic)}</span>
     <span class="rev-body"><strong>${esc(activityDetail(e))}</strong>${e.note?`<small>${esc(e.note)}</small>`:''}</span>
     <span class="rev-go">${icon('chevron')}</span>
   </button>`;
@@ -1238,12 +1280,12 @@ function setAbout(){
 
 function openSheet(html){ $('sheet').innerHTML=`<div class="sheet-handle"></div>${html}`; $('sheet').classList.add('open'); $('scrim').classList.add('open'); document.body.classList.add('locked'); }
 function addSheet(){
-  if(workspaceOf(view)==='mom') return openSheet(`<div class="sheet-head"><strong>Add Mom care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions two"><button data-mom="pump">${icon('drop')}<strong>Pump</strong><span>Milk output</span></button><button data-mom="nursing">${icon('nursing')}<strong>Nursing</strong><span>Breastfeed</span></button></div>`);
-  openSheet(`<div class="sheet-head"><strong>Add Baby care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions"><button data-feed>${icon('bottle')}<strong>Feed</strong><span>Nurse or bottle</span></button><button data-diaper="wet">${icon('drop')}<strong>Wet</strong></button><button data-diaper="poop">${icon('poop')}<strong>Poopy</strong></button><button data-diaper="both">${icon('mixed')}<strong>Mixed</strong></button><button data-sleep>${icon('moon')}<strong>Sleep</strong></button><button data-growth>${icon('scale')}<strong>Growth</strong></button></div>`);
+  if(workspaceOf(view)==='mom') return openSheet(`<div class="sheet-head"><strong>Add Mom care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions two"><button data-mom="pump">${glyph('pump')}<strong>Pump</strong><span>Milk output</span></button><button data-mom="nursing">${glyph('nursing')}<strong>Nursing</strong><span>Breastfeed</span></button></div>`);
+  openSheet(`<div class="sheet-head"><strong>Add Baby care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions"><button data-feed>${glyph('bottle')}<strong>Feed</strong><span>Nurse or bottle</span></button><button data-diaper="wet">${glyph('drop')}<strong>Wet</strong></button><button data-diaper="poop">${glyph('poop')}<strong>Poopy</strong></button><button data-diaper="both">${glyph('mixed')}<strong>Mixed</strong></button><button data-sleep>${glyph('moon')}<strong>Sleep</strong></button><button data-growth>${glyph('scale')}<strong>Growth</strong></button></div>`);
 }
 function feedSheet(){
   const pref=feedingPreference();
-  openSheet(`<div class="sheet-head"><strong>How did baby feed?</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions three"><button data-feed-type="nursing">${icon('nursing')}<strong>Nursing</strong></button><button data-feed-type="expressed_milk" class="${pref!=='mostly_formula'?'recommended':''}">${icon('bottle')}<strong>Breast milk</strong><span>Bottle</span></button><button data-feed-type="formula" class="${pref==='mostly_formula'?'recommended':''}">${icon('bottle')}<strong>Formula</strong><span>Bottle</span></button></div>`);
+  openSheet(`<div class="sheet-head"><strong>How did baby feed?</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions three"><button data-feed-type="nursing">${glyph('nursing')}<strong>Nursing</strong></button><button data-feed-type="expressed_milk" class="${pref!=='mostly_formula'?'recommended':''}">${glyph('bottle')}<strong>Breast milk</strong><span>Bottle</span></button><button data-feed-type="formula" class="${pref==='mostly_formula'?'recommended':''}">${glyph('bottle')}<strong>Formula</strong><span>Bottle</span></button></div>`);
 }
 function findRecord(kind,id){ return (kind==='mom' ? S.entries : S.babyEvents).find(e => e.id === id) || null; }
 function recordTitle(kind,e){ return kind==='mom' ? (e.type==='pump' ? `${e.amountMl||0} mL pump` : `${e.durationMin||0} min nursing`) : babyLabel(e); }
@@ -1251,7 +1293,7 @@ function openRecordSheet(kind,id){
   const e=findRecord(kind,id); if(!e) return;
   const ic = kind==='mom' ? (e.type==='pump'?'drop':'nursing') : (e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':'moon');
   openSheet(`<div class="sheet-head"><strong>Entry</strong><button data-close aria-label="Close">${icon('close')}</button></div>
-  <div class="record-card"><div class="record-icon ${kind}">${icon(ic)}</div><div><strong>${esc(recordTitle(kind,e))}</strong><span>${fdl(e.date)} · ${to12(e.time)}</span>${e.note?`<small>${esc(e.note)}</small>`:''}</div></div>
+  <div class="record-card"><div class="record-icon ${kind}">${bigIcon(ic)}</div><div><strong>${esc(recordTitle(kind,e))}</strong><span>${fdl(e.date)} · ${to12(e.time)}</span>${e.note?`<small>${esc(e.note)}</small>`:''}</div></div>
   <div class="record-actions"><button data-edit-record="${kind}:${esc(e.id)}">${icon('edit')}<span>Edit</span></button><button class="danger" data-void-record="${kind}:${esc(e.id)}">${icon('trash')}<span>Remove</span></button></div>
   <p class="record-note">Removing hides the entry from history and totals. It is never erased, and you can undo it.</p>`);
 }
@@ -1319,11 +1361,176 @@ function showDialog(id,isEdit){
   d.querySelectorAll('[data-save-label]').forEach(b => b.textContent = isEdit ? 'Save changes' : b.dataset.saveLabel);
   try{ d.showModal(); }catch{}
 }
-function openMomDialog(type,isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('momType').value=type; $('momDialogTitle').textContent=(isEdit?'Edit ':'')+(type==='pump'?'Pump':'Nursing'); $('momDate').value=today(); $('momTime').value=now(); $('momAmount').value=''; $('momDuration').value=''; $('momNote').value=''; const pump=type==='pump'; $('momAmountWrap').classList.toggle('hidden',!pump); $('momSideWrap').classList.toggle('hidden',pump); $('momAmount').required=pump; showDialog('momDialog',isEdit); }
-function openDiaperDialog(kind,isEdit=false){ closeOverlays(); if(!isEdit) editing=null; const normalized=normalizeSubtype(kind); $('diaperKind').value=normalized; $('diaperDialogTitle').textContent=(isEdit?'Edit ':'')+(normalized==='wet'?'Wet diaper':normalized==='poop'?'Poopy diaper':'Mixed diaper'); $('diaperDate').value=today(); $('diaperTime').value=now(); $('diaperNote').value=''; showDialog('diaperDialog',isEdit); }
-function openFeedDialog(type,isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('feedType').value=type; $('feedDialogTitle').textContent=(isEdit?'Edit ':'')+(type==='nursing'?'Nursing':type==='formula'?'Formula bottle':'Breast milk bottle'); $('feedDate').value=today(); $('feedTime').value=now(); $('feedAmount').value=''; $('feedDuration').value=''; const nursing=type==='nursing'; $('feedAmountWrap').classList.toggle('hidden',nursing); $('feedNursingWrap').classList.toggle('hidden',!nursing); $('feedSideWrap').classList.toggle('hidden',!nursing); $('feedAmount').required=!nursing; $('feedDuration').required=nursing; showDialog('feedDialog',isEdit); }
-function openGrowthDialog(isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('growthDate').value=today(); $('growthWeightLb').value=''; $('growthWeightOz').value=''; $('growthLength').value=''; $('growthHead').value=''; $('growthNote').value=''; showDialog('growthDialog',isEdit); }
-function openSleepDialog(isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('sleepDate').value=today(); $('sleepTime').value=now(); $('sleepMinutes').value=''; showDialog('sleepDialog',isEdit); }
+// --------------------------------------------------------- number entry ----
+// A big readable value, chunky +/- keys and presets taken from what this family has
+// actually logged. Typing still works - the value itself is the input.
+function stepper(id,{value='',unit,step,min=0,max=9999,decimals=0,presets=[],tone='mom'}){
+  const chips = presets.length
+    ? `<div class="preset-row">${presets.map(p => `<button type="button" data-preset="${id}:${p}">${p}${unit?`<em>${esc(unit)}</em>`:''}</button>`).join('')}</div>`
+    : '';
+  return `<div class="stepper ${tone}" data-stepper="${id}" data-step="${step}" data-min="${min}" data-max="${max}" data-dec="${decimals}">
+    <button type="button" class="step-key" data-bump="${id}:-1" aria-label="Less">${icon('minus')}</button>
+    <label class="step-value">
+      <input id="${id}" type="number" inputmode="decimal" step="${step}" min="${min}" max="${max}" value="${value}" placeholder="0">
+      ${unit?`<span>${esc(unit)}</span>`:''}
+    </label>
+    <button type="button" class="step-key" data-bump="${id}:1" aria-label="More">${icon('plus')}</button>
+  </div>${chips}`;
+}
+// Most-used recent values, rounded to the field's step, newest first.
+function commonValues(getter,step,limit=4){
+  const vals = getter().filter(v => Number.isFinite(v) && v > 0);
+  const tally = new Map();
+  for(const v of vals){ const k = Math.round(v/step)*step; tally.set(k,(tally.get(k)||0)+1); }
+  return [...tally.entries()].sort((a,b) => b[1]-a[1] || b[0]-a[0]).slice(0,limit)
+    .map(([v]) => +v.toFixed(step < 1 ? 1 : 0)).sort((a,b) => a-b);
+}
+const recentBottleOz = () => babyEvents().filter(e => e.eventType==='feeding').sort(byWhenDesc).slice(0,60).map(e => +e.amountOz);
+const recentNursingMin = () => babyEvents().filter(e => e.eventType==='nursing').sort(byWhenDesc).slice(0,40).map(e => +(e.durationMinutes ?? e.totalMinutes));
+const recentSleepMin = () => babyEvents().filter(e => e.eventType==='sleep').sort(byWhenDesc).slice(0,40).map(e => +e.durationMinutes);
+const recentPumpMl = () => pumps().sort(byWhenDesc).slice(0,40).map(e => +e.amountMl);
+const recentPumpMin = () => pumps().sort(byWhenDesc).slice(0,40).map(e => +e.durationMin);
+
+// "When" without a fiddly time picker: tap back in steps, or open the real fields.
+function whenRow(dateId,timeId){
+  return `<div class="when-row">
+    <div class="when-quick">
+      <button type="button" data-when="${timeId}:0">Now</button>
+      <button type="button" data-when="${timeId}:15">15m ago</button>
+      <button type="button" data-when="${timeId}:30">30m ago</button>
+      <button type="button" data-when="${timeId}:60">1h ago</button>
+    </div>
+    <details class="optional when-exact"><summary>Change date or time</summary>
+      <div class="form-grid"><label class="field"><span>Date</span><input id="${dateId}" type="date" required></label><label class="field"><span>Time</span><input id="${timeId}" type="time" required></label></div>
+    </details>
+  </div>`;
+}
+function bumpStepper(id,dir){
+  const el = $(id); if(!el) return;
+  const box = el.closest('[data-stepper]');
+  const step = +box.dataset.step || 1, min = +box.dataset.min, max = +box.dataset.max, dec = +box.dataset.dec;
+  const next = Math.min(max, Math.max(min, (+el.value || 0) + dir*step));
+  el.value = dec ? next.toFixed(dec) : String(Math.round(next));
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+}
+function setWhen(timeId,minsAgo){
+  const d = new Date(Date.now() - minsAgo*60000);
+  const t = $(timeId); if(t) t.value = hhmm(d);
+  const dateEl = $(timeId.replace('Time','Date')); if(dateEl) dateEl.value = iso(d);
+  document.querySelectorAll(`[data-when^="${timeId}:"]`).forEach(b => b.classList.toggle('on', b.dataset.when === `${timeId}:${minsAgo}`));
+}
+
+function dialogHead(title,id){ return `<div class="dialog-head"><h2>${esc(title)}</h2><button type="button" data-dismiss="${id}" aria-label="Close">${icon('close')}</button></div>`; }
+function dialogActions(id,saveLabel='Save',tone=''){
+  return `<div class="form-actions"><button type="button" data-dismiss="${id}">Cancel</button><button class="save ${tone}" data-save-label="${esc(saveLabel)}">${esc(saveLabel)}</button></div>`;
+}
+function showDialog(id,isEdit){
+  const d=$(id); if(!d) return;
+  if(d.open){ try{ d.close(); }catch{} }
+  d.classList.toggle('is-edit',!!isEdit);
+  d.querySelectorAll('[data-save-label]').forEach(b => b.textContent = isEdit ? 'Save changes' : b.dataset.saveLabel);
+  try{ d.showModal(); }catch{}
+}
+
+function openMomDialog(type,isEdit=false){
+  closeOverlays(); if(!isEdit) editing=null;
+  const pump = type === 'pump';
+  $('momFormBody').innerHTML =
+    `<input id="momType" type="hidden" value="${esc(type)}">` +
+    dialogHead((isEdit?'Edit ':'')+(pump?'Pump':'Nursing'),'momDialog') +
+    `<section class="form-section"><div class="form-section-title">${pump?'How much milk?':'How long?'}</div>
+      ${pump
+        ? stepper('momAmount',{unit:'mL',step:10,max:2000,presets:commonValues(recentPumpMl,10),tone:'mom'})
+        : stepper('momDuration',{unit:'min',step:1,max:240,presets:commonValues(recentNursingMin,1),tone:'mom'})}
+    </section>
+    <section class="form-section"><div class="form-section-title">When</div>${whenRow('momDate','momTime')}</section>
+    <section class="form-section"><div class="form-section-title">Details</div>
+      ${pump ? stepper('momDuration',{unit:'min',step:5,max:240,presets:commonValues(recentPumpMin,5,3),tone:'mom'}) : ''}
+      ${!pump ? `<div class="choice-row" data-choice="momSide">${['left','both','right'].map(v=>`<button type="button" data-pick="momSide:${v}">${cap(v)}</button>`).join('')}</div><input id="momSide" type="hidden" value="right">` : ''}
+      <details class="optional"><summary>Add a note</summary><textarea id="momNote" rows="2" placeholder="Anything worth remembering"></textarea></details>
+    </section>` +
+    dialogActions('momDialog');
+  setWhen('momTime',0);
+  if(!pump) pickChoice('momSide', S.last.nursingSide || 'right');
+  if(pump && S.last.pumpMin) $('momDuration').value = S.last.pumpMin;
+  if($('momAmount')) $('momAmount').required = pump;
+  if($('momDuration') && !pump) $('momDuration').required = true;
+  showDialog('momDialog',isEdit);
+}
+function openDiaperDialog(kind,isEdit=false){
+  closeOverlays(); if(!isEdit) editing=null;
+  const k = normalizeSubtype(kind);
+  const label = k==='wet'?'Wet diaper':k==='poop'?'Poopy diaper':'Mixed diaper';
+  $('diaperFormBody').innerHTML =
+    `<input id="diaperKind" type="hidden" value="${esc(k)}">` +
+    dialogHead((isEdit?'Edit ':'')+label,'diaperDialog') +
+    `<section class="form-section"><div class="form-section-title">Kind</div>
+      <div class="choice-row big" data-choice="diaperKind">${[['wet','Wet','drop'],['poop','Poopy','poop'],['both','Mixed','mixed']].map(([v,l,ic])=>`<button type="button" data-pick="diaperKind:${v}">${glyph(ic)}<span>${l}</span></button>`).join('')}</div>
+    </section>
+    <section class="form-section"><div class="form-section-title">When</div>${whenRow('diaperDate','diaperTime')}
+      <details class="optional"><summary>Add a note</summary><textarea id="diaperNote" rows="2" placeholder="Colour, rash, anything unusual"></textarea></details>
+    </section>` +
+    dialogActions('diaperDialog','Save','baby');
+  setWhen('diaperTime',0); pickChoice('diaperKind',k);
+  showDialog('diaperDialog',isEdit);
+}
+function openFeedDialog(type,isEdit=false){
+  closeOverlays(); if(!isEdit) editing=null;
+  const nursing = type === 'nursing';
+  const title = nursing?'Nursing':type==='formula'?'Formula bottle':'Breast-milk bottle';
+  $('feedFormBody').innerHTML =
+    `<input id="feedType" type="hidden" value="${esc(type)}">` +
+    dialogHead((isEdit?'Edit ':'')+title,'feedDialog') +
+    `<section class="form-section"><div class="form-section-title">${nursing?'How long?':'How much?'}</div>
+      ${nursing
+        ? stepper('feedDuration',{unit:'min',step:1,max:180,presets:commonValues(recentNursingMin,1),tone:'baby'})
+        : stepper('feedAmount',{unit:'oz',step:0.5,max:20,decimals:1,presets:commonValues(recentBottleOz,0.5),tone:'baby'})}
+    </section>
+    ${nursing?`<section class="form-section"><div class="form-section-title">Side</div>
+      <div class="choice-row" data-choice="feedSide">${['left','both','right'].map(v=>`<button type="button" data-pick="feedSide:${v}">${cap(v)}</button>`).join('')}</div><input id="feedSide" type="hidden" value="right">
+    </section>`:''}
+    <section class="form-section"><div class="form-section-title">When</div>${whenRow('feedDate','feedTime')}</section>` +
+    dialogActions('feedDialog','Save','baby');
+  setWhen('feedTime',0);
+  if(nursing) pickChoice('feedSide', S.last.nursingSide || 'right');
+  else if(S.last.bottleOz) $('feedAmount').value = S.last.bottleOz;
+  showDialog('feedDialog',isEdit);
+}
+function openSleepDialog(isEdit=false){
+  closeOverlays(); if(!isEdit) editing=null;
+  $('sleepFormBody').innerHTML =
+    dialogHead((isEdit?'Edit ':'')+'Sleep','sleepDialog') +
+    `<section class="form-section"><div class="form-section-title">How long did ${esc(S.baby.name)} sleep?</div>
+      ${stepper('sleepMinutes',{unit:'min',step:15,max:960,presets:commonValues(recentSleepMin,15),tone:'baby'})}
+    </section>
+    <section class="form-section"><div class="form-section-title">Started</div>${whenRow('sleepDate','sleepTime')}</section>` +
+    dialogActions('sleepDialog','Save','baby');
+  setWhen('sleepTime',0);
+  if(S.last.sleepMin) $('sleepMinutes').value = S.last.sleepMin;
+  showDialog('sleepDialog',isEdit);
+}
+function openGrowthDialog(isEdit=false){
+  closeOverlays(); if(!isEdit) editing=null;
+  $('growthFormBody').innerHTML =
+    dialogHead((isEdit?'Edit ':'')+'Growth','growthDialog') +
+    `<section class="form-section"><div class="form-section-title">Weight</div>
+      <div class="dual-stepper">${stepper('growthWeightLb',{unit:'lb',step:1,max:120,tone:'baby'})}${stepper('growthWeightOz',{unit:'oz',step:1,max:15,tone:'baby'})}</div>
+    </section>
+    <section class="form-section"><div class="form-section-title">Length and head</div>
+      <div class="dual-stepper">${stepper('growthLength',{unit:'in',step:0.5,max:60,decimals:1,tone:'baby'})}${stepper('growthHead',{unit:'in',step:0.5,max:40,decimals:1,tone:'baby'})}</div>
+    </section>
+    <section class="form-section"><div class="form-section-title">When</div>
+      <label class="field"><span>Date</span><input id="growthDate" type="date" max="${today()}" required></label>
+      <details class="optional"><summary>Add a note</summary><textarea id="growthNote" rows="2" placeholder="From the pediatric visit"></textarea></details>
+    </section>` +
+    dialogActions('growthDialog','Save','baby');
+  $('growthDate').value = today();
+  showDialog('growthDialog',isEdit);
+}
+function pickChoice(id,value){
+  const el=$(id); if(el) el.value=value;
+  document.querySelectorAll(`[data-pick^="${id}:"]`).forEach(b => b.classList.toggle('on', b.dataset.pick === `${id}:${value}`));
+}
 // Closing a dialog by any route (Cancel, ×, Esc) must drop the pending edit.
 ['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].forEach(id => $(id)?.addEventListener('close',()=>{ editing=null; }));
 
@@ -1546,6 +1753,11 @@ function handleClick(e){
   const rd=e.target.closest('[data-review-date]'); if(rd){ S.ui.reviewDate=rd.dataset.reviewDate; save(); render(); return; }
   const stg=e.target.closest('[data-stage]'); if(stg){ selectedStage=+stg.dataset.stage; render(); return; }
   const ms=e.target.closest('[data-milestone]'); if(ms){ toggleMilestone(ms.dataset.milestone,ms.dataset.msText,ms.dataset.msGroup,+ms.dataset.msMonth); return; }
+  const pick=e.target.closest('[data-pick]'); if(pick){ const [id,v]=pick.dataset.pick.split(':'); pickChoice(id,v); if(id==='diaperKind'){ const t=$('diaperDialog')?.querySelector('h2'); if(t) t.textContent=(editing?'Edit ':'')+(v==='wet'?'Wet diaper':v==='poop'?'Poopy diaper':'Mixed diaper'); } return; }
+  const dis=e.target.closest('[data-dismiss]'); if(dis){ $(dis.dataset.dismiss)?.close(); return; }
+  const bump=e.target.closest('[data-bump]'); if(bump){ const [id,d]=bump.dataset.bump.split(':'); bumpStepper(id,+d); return; }
+  const pre=e.target.closest('[data-preset]'); if(pre){ const [id,v]=pre.dataset.preset.split(':'); const el=$(id); if(el){ el.value=v; el.dispatchEvent(new Event('input',{bubbles:true})); } return; }
+  const wq=e.target.closest('[data-when]'); if(wq){ const [tid,m]=wq.dataset.when.split(':'); setWhen(tid,+m); return; }
   if(e.target.closest('[data-photo]')){ $('photoFile').click(); return; }
   if(e.target.closest('[data-photo-clear]')){ S.baby.photo=''; save(); pushProfile().catch(()=>{}); render(); toast('Photo removed'); return; }
   const rec=e.target.closest('[data-record]'); if(rec){ const [k,...r]=rec.dataset.record.split(':'); openRecordSheet(k,r.join(':')); return; }
@@ -1574,11 +1786,13 @@ function handleClick(e){
 }
 document.addEventListener('click',handleClick);
 
-$('momForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('momType').value, wasEdit=!!editing; const x=commitRecord(S.entries,{id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false}); save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved')); });
+$('momForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('momType').value, wasEdit=!!editing;
+  if(type==='pump'){ S.last.pumpMl=+$('momAmount').value||null; S.last.pumpMin=+$('momDuration').value||null; } else { S.last.nursingMin=+$('momDuration').value||null; S.last.nursingSide=$('momSide')?.value||null; } const x=commitRecord(S.entries,{id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false}); save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved')); });
 $('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'diaper',date:$('diaperDate').value,time:$('diaperTime').value,subtype:$('diaperKind').value,note:$('diaperNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('diaperDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Diaper logged'); });
-$('feedForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('feedType').value, wasEdit=!!editing, stamp=new Date().toISOString(); const built=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}); const x=commitRecord(S.babyEvents,built); save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Feed logged'); });
+$('feedForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('feedType').value, wasEdit=!!editing, stamp=new Date().toISOString();
+  if(type==='nursing'){ S.last.nursingMin=+$('feedDuration').value||null; S.last.nursingSide=$('feedSide')?.value||null; } else { S.last.bottleOz=+$('feedAmount').value||null; } const built=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}); const x=commitRecord(S.babyEvents,built); save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Feed logged'); });
 $('growthForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'growth',date:$('growthDate').value,time:'12:00',weightLb:$('growthWeightLb').value===''?null:+$('growthWeightLb').value,weightOz:$('growthWeightOz').value===''?null:+$('growthWeightOz').value,lengthIn:$('growthLength').value===''?null:+$('growthLength').value,headIn:$('growthHead').value===''?null:+$('growthHead').value,note:$('growthNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('growthDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} setView('baby-growth'); toast(wasEdit?'Measurement updated':'Measurement saved'); });
-$('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:+$('sleepMinutes').value||0,sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Sleep logged'); });
+$('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; S.last.sleepMin=+$('sleepMinutes').value||null; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:+$('sleepMinutes').value||0,sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Sleep logged'); });
 $('authForm').addEventListener('submit',async e=>{ e.preventDefault(); if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.signInWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('createAccount').addEventListener('click',async()=>{ if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.createUserWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('importFile').addEventListener('change',e=>{ const f=e.target.files?.[0]; if(f) importBackup(f); e.target.value=''; });

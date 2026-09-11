@@ -72,6 +72,14 @@ This is a **nudge, not an alarm clock**. A browser cannot wake a closed page, so
 arrive while MilkFlow is open or installed and running. Genuine background alarms would need
 Firebase Cloud Messaging with a push handler and server-side scheduling.
 
+## Entering data
+
+Every log sheet is built around one big, typable number with thumb-sized +/− keys either side,
+plus preset chips **generated from what this family has actually logged** rather than invented
+defaults, and a Now / 15m / 30m / 1h row instead of a time picker (the exact date and time stay one
+tap away). The app remembers the last bottle, pump, nursing, side and sleep values and offers them
+as the starting point.
+
 ## Development
 
 A visual milestone journey across the first two years. The track shows every checklist band,
@@ -166,9 +174,14 @@ The tracker layout is informed by current infant-care guidance: feeding history,
 
 The mobile UI uses persistent top-level navigation, large labeled controls, and generous touch targets for frequent handheld use.
 
-Type is **Fraunces** (variable, optical-sized) for headlines and figures against **Plus Jakarta
-Sans** for dense UI text. Control labels stay in the sans so they read as things to tap; counts and
-volumes use tabular figures so columns line up.
+Type is **Bricolage Grotesque** (variable, optical-sized) for headlines and figures against **Plus
+Jakarta Sans** for dense UI text. Control labels stay in the sans so they read as things to tap;
+counts and volumes use tabular figures so columns line up.
+
+Care actions use two-tone **glyphs** on the large surfaces — a soft wash of the action's colour
+plus a crisp outline of the same colour — so Wet, Poopy, Mixed, Bottle, Nursing, Pump, Sleep and
+Growth each read as their own picture while staying one family. Small chrome (nav bar, chips,
+chevrons) keeps the lighter line icons.
 
 Interface icons are hand-written SVG paths rendered from one `icon()` map in `app.js`, so the
 sidebar, bottom bar, tiles and rows always use the same symbol for the same action. Wet, poopy and
