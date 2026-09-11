@@ -4,11 +4,11 @@
 const STATE_KEY = 'milkflow-family-v4-state';
 const SNAPSHOT_KEY = 'milkflow-family-pre-import-backup';
 const VERSION = 8;
-const VIEWS = new Set(['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','doctor','settings']);
+const VIEWS = new Set(['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','settings']);
 const DEFAULTS = {
   version: VERSION,
-  profile: { dailyGoalMl: 760, stashMl: 0 },
-  baby: { id: 'saahas-2026', name: 'Saahas', feedingPreference: 'auto' },
+  profile: { dailyGoalMl: 760, stashMl: 0, momName: '' },
+  baby: { id: 'saahas-2026', name: 'Saahas', feedingPreference: 'auto', birthDate: '', photo: '' },
   schedule: ['05:40','11:05','14:35','17:45','20:45','23:35'],
   entries: [],
   babyEvents: [],
@@ -100,7 +100,7 @@ let view = (() => {
   return S.ui.workspace === 'baby' ? 'baby-home' : 'mom-home';
 })();
 
-function workspaceOf(v){ return v.startsWith('baby') || v === 'doctor' ? 'baby' : 'mom'; }
+function workspaceOf(v){ return v.startsWith('baby') || v === 'doctor' || v === 'development' ? 'baby' : 'mom'; }
 function save(){
   S.version = VERSION;
   S.ui.view = view;
@@ -336,6 +336,47 @@ function feedingPreference(){
 }
 
 // "3h 20m ago" is what a parent actually wants at a glance, not a bare clock time.
+const birthDate = () => S.baby.birthDate || '';
+const ageDays = () => { const b = birthDate(); if(!b) return null; const d = daysBetween(b, today()); return Number.isFinite(d) && d >= 0 ? d : null; };
+const ageWeeks = () => { const d = ageDays(); return d === null ? null : Math.floor(d/7); };
+// Calendar months, so "4 months" lines up with how milestone guidance is written.
+function ageMonths(){
+  const b = birthDate(); if(!b) return null;
+  const bd = new Date(`${b}T12:00:00`), nd = new Date(`${today()}T12:00:00`);
+  let m = (nd.getFullYear()-bd.getFullYear())*12 + (nd.getMonth()-bd.getMonth());
+  if(nd.getDate() < bd.getDate()) m--;
+  return m < 0 ? null : m;
+}
+function ageLabel(){
+  const d = ageDays(); if(d === null) return null;
+  if(d < 14) return `${d} ${d===1?'day':'days'} old`;
+  if(d < 70) { const w = Math.floor(d/7); return `${w} weeks old`; }
+  const m = ageMonths(), rem = Math.floor((d - m*30.44)/7);
+  if(m < 24) return rem > 0 ? `${m} months ${rem}w` : `${m} months old`;
+  return `${Math.floor(m/12)}y ${m%12}m old`;
+}
+
+// Four gentle day parts: tints the app and drives the greeting on every load.
+const DAY_PARTS = [
+  {key:'morning',   from:5,  to:12, greet:'Good morning'},
+  {key:'afternoon', from:12, to:17, greet:'Good afternoon'},
+  {key:'evening',   from:17, to:21, greet:'Good evening'},
+  {key:'night',     from:21, to:5,  greet:'Good night'}
+];
+function dayPart(){
+  const h = new Date().getHours();
+  return DAY_PARTS.find(p => p.from < p.to ? (h >= p.from && h < p.to) : (h >= p.from || h < p.to)) || DAY_PARTS[0];
+}
+function applyDayPart(){
+  const p = dayPart();
+  if(document.documentElement.dataset.daypart !== p.key) document.documentElement.dataset.daypart = p.key;
+  return p;
+}
+function greeting(name){
+  const g = dayPart().greet;
+  return name ? `${g}, ${esc(name)}` : g;
+}
+
 function sinceLabel(date,time){
   if(!date) return null;
   const t=new Date(`${date}T${time||'00:00'}:00`);
@@ -471,8 +512,8 @@ function momHome(){
   return `<section class="hero mom-hero">
     ${ring(goal?total/goal:0,`${total}`,`of ${goal} mL`,'mom')}
     <div class="hero-copy">
-      <span class="eyebrow">TODAY</span>
-      <h2>${total?`${total} mL`:'Ready when you are'}</h2>
+      <span class="eyebrow">${greeting(S.profile.momName)}</span>
+      <h2>${total?`${total} mL today`:'Ready when you are'}</h2>
       <p>${count?`${count} ${count===1?'pump':'pumps'} logged`:'No pumps logged yet today'}</p>
       <div class="chips">${chip('clock',`Next ${to12(next)} · ${untilLabel(next)}`)}${since?chip('history',`Last ${since}`):''}</div>
     </div>
@@ -546,6 +587,77 @@ function momTrends(){
 }
 function momStash(){ return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Freezer stash</h2></div></div><section class="stash-hero"><div class="stash-art">${icon('snow')}</div><div><strong>${(+S.profile.stashMl||0).toLocaleString()} mL</strong><span>saved milk</span></div></section>${panel('Update stash',`<div class="stash-buttons"><button data-stash="-30">−30</button><button data-stash="30">+30</button><button data-stash="60">+60</button><button data-stash="120">+120</button></div><label class="field"><span>Exact amount (mL)</span><input id="stashExact" type="number" inputmode="numeric" min="0" value="${+S.profile.stashMl||0}"></label>`)}`; }
 
+// ---------------------------------------------------- development stages --
+// Source: CDC "Learn the Signs. Act Early." milestone checklists (2022 revision).
+// US federal government work, public domain. These describe what MOST children
+// (about 75%) can do by each age - they are not a test and not a diagnosis.
+// Deliberately NOT the Wonder Weeks "leap" schedule, which is proprietary and
+// whose developmental claims are not clinically established.
+const MILESTONES = [
+  {m:2, label:'2 months', tag:'First smiles', groups:{
+    social:['Calms down when spoken to or picked up','Looks at your face','Seems happy to see you when you walk up','Smiles when you talk to or smile at them'],
+    language:['Makes sounds other than crying','Reacts to loud sounds'],
+    cognitive:['Watches you as you move','Looks at a toy for several seconds'],
+    movement:['Holds head up when on tummy','Moves both arms and both legs','Opens hands briefly']}},
+  {m:4, label:'4 months', tag:'Cooing and reaching', groups:{
+    social:['Smiles on their own to get your attention','Chuckles when you try to make them laugh','Looks at you, moves, or makes sounds to get or keep your attention'],
+    language:['Makes cooing sounds like "oooo" and "aahh"','Makes sounds back when you talk to them','Turns head towards the sound of your voice'],
+    cognitive:['Opens mouth when they see the breast or bottle if hungry','Looks at their hands with interest'],
+    movement:['Holds head steady without support when you are holding them','Holds a toy when you put it in their hand','Uses their arm to swing at toys','Brings hands to mouth','Pushes up onto elbows or forearms when on tummy']}},
+  {m:6, label:'6 months', tag:'Rolling and laughing', groups:{
+    social:['Knows familiar people','Likes to look at themselves in a mirror','Laughs'],
+    language:['Takes turns making sounds with you','Blows raspberries','Makes squealing noises'],
+    cognitive:['Puts things in their mouth to explore them','Reaches to grab a toy they want','Closes lips to show they do not want more food'],
+    movement:['Rolls from tummy to back','Pushes up with straight arms when on tummy','Leans on hands to support themselves when sitting']}},
+  {m:9, label:'9 months', tag:'Sitting and babbling', groups:{
+    social:['Is shy, clingy, or fearful around strangers','Shows several facial expressions','Looks when you call their name','Reacts when you leave','Smiles or laughs during peek-a-boo'],
+    language:['Makes different sounds like "mamamama" and "bababababa"','Lifts arms up to be picked up'],
+    cognitive:['Looks for objects when dropped out of sight','Bangs two things together'],
+    movement:['Gets to a sitting position by themselves','Moves things from one hand to the other','Uses fingers to rake food towards themselves','Sits without support']}},
+  {m:12, label:'12 months', tag:'First words and steps', groups:{
+    social:['Plays games with you, like pat-a-cake'],
+    language:['Waves bye-bye','Calls a parent "mama" or "dada" or another special name','Understands "no"'],
+    cognitive:['Puts something in a container','Looks for things they see you hide'],
+    movement:['Pulls up to stand','Walks holding on to furniture','Drinks from a cup without a lid as you hold it','Picks things up between thumb and pointer finger']}},
+  {m:15, label:'15 months', tag:'Walking and copying', groups:{
+    social:['Copies other children while playing','Shows you an object they like','Claps when excited','Hugs a stuffed doll or toy','Shows you affection'],
+    language:['Tries to say one or two words besides "mama" or "dada"','Looks at a familiar object when you name it','Follows directions given with both a gesture and words','Points to ask for something'],
+    cognitive:['Tries to use things the right way','Stacks at least two small objects'],
+    movement:['Takes a few steps on their own','Uses fingers to feed themselves']}},
+  {m:18, label:'18 months', tag:'Exploring on their own', groups:{
+    social:['Moves away from you but looks to make sure you are close by','Points to show you something interesting','Puts hands out for you to wash them','Looks at a few pages in a book with you','Helps you dress them'],
+    language:['Tries to say three or more words besides "mama" or "dada"','Follows one-step directions without a gesture'],
+    cognitive:['Copies you doing chores','Plays with toys in a simple way'],
+    movement:['Walks without holding on','Scribbles','Drinks from a cup without a lid and may spill','Feeds themselves with fingers','Tries to use a spoon','Climbs on and off a couch or chair without help']}},
+  {m:24, label:'2 years', tag:'Two-word phrases', groups:{
+    social:['Notices when others are hurt or upset','Looks at your face to see how to react in a new situation'],
+    language:['Points to things in a book when you ask','Says at least two words together, like "more milk"','Points to at least two body parts','Uses more gestures than just waving and pointing'],
+    cognitive:['Holds something in one hand while using the other','Tries to use switches, knobs, or buttons','Plays with more than one toy at the same time'],
+    movement:['Kicks a ball','Runs','Walks up a few stairs with or without help','Eats with a spoon']}}
+];
+const MILESTONE_GROUPS = {
+  social:{label:'Social & emotional', icon:'nursing', color:'var(--growth-ink)'},
+  language:{label:'Language', icon:'bell', color:'var(--feed-ink)'},
+  cognitive:{label:'Learning & thinking', icon:'spark', color:'var(--mixed-ink)'},
+  movement:{label:'Movement', icon:'growth', color:'var(--wet-ink)'}
+};
+const milestoneId = (m,group,i) => `ms-${m}-${group}-${i}`;
+const milestoneTotal = st => Object.values(st.groups).reduce((a,g) => a+g.length, 0);
+// Marked milestones are ordinary baby events, so they land in History, sync and export.
+function markedMilestones(){
+  const set = new Map();
+  for(const e of babyEvents()) if(e.eventType === 'milestone' && e.milestoneId) set.set(e.milestoneId, e);
+  return set;
+}
+function currentStage(){
+  const m = ageMonths();
+  if(m === null) return null;
+  let stage = MILESTONES[0];
+  for(const st of MILESTONES) if(m >= st.m) stage = st;
+  // before 2 months the first checklist is still the one ahead of them
+  return m < MILESTONES[0].m ? MILESTONES[0] : stage;
+}
+
 const BABY_EVENT_TONE = {
   diaper_wet:{color:'var(--wet-ink)', label:'Wet'},
   diaper_poop:{color:'var(--poop-ink)', label:'Poopy'},
@@ -553,7 +665,8 @@ const BABY_EVENT_TONE = {
   feeding:{color:'var(--feed-ink)', label:'Bottle'},
   nursing:{color:'var(--growth-ink)', label:'Nursing'},
   sleep:{color:'var(--sleep-ink)', label:'Sleep'},
-  growth:{color:'var(--growth-ink)', label:'Growth'}
+  growth:{color:'var(--growth-ink)', label:'Growth'},
+  milestone:{color:'var(--mixed-ink)', label:'Milestone'}
 };
 const toneKey = e => e.eventType === 'diaper' ? `diaper_${e.subtype||'wet'}` : e.eventType;
 const toneOf = e => BABY_EVENT_TONE[toneKey(e)] || {color:'var(--baby)', label:cap(e.eventType)};
@@ -574,7 +687,7 @@ function statRing(value,average,label,sub,color){
 
 // Today's events laid along a 24-hour track: clustering and gaps are visible at a glance.
 function dayTimeline(){
-  const evs = babyOn(today()).filter(e => !e.exactSourceDuplicate && e.time).sort((a,b) => mins(a.time)-mins(b.time));
+  const evs = babyOn(today()).filter(e => !e.exactSourceDuplicate && e.time && e.eventType !== 'milestone' && e.eventType !== 'growth').sort((a,b) => mins(a.time)-mins(b.time));
   const d = new Date(), nowPct = ((d.getHours()*60 + d.getMinutes())/1440)*100;
   const dots = evs.map(e => {
     const t = toneOf(e);
@@ -611,9 +724,9 @@ function babyHome(){
   return `<section class="baby-stage">
     <div class="stage-glow" aria-hidden="true"></div>
     <div class="stage-body">
-      <div class="stage-avatar">${babyIllustration()}</div>
+      <div class="stage-avatar">${S.baby.photo?`<img src="${esc(S.baby.photo)}" alt="${esc(S.baby.name)}">`:babyIllustration()}</div>
       <div class="stage-copy">
-        <span class="eyebrow">${esc(S.baby.name)}</span>
+        <span class="eyebrow">${greeting()}${ageLabel()?` · ${esc(ageLabel())}`:''}</span>
         ${hero}
         <p>${prefLabel}${s.feeds?` · ${s.feeds} ${s.feeds===1?'feed':'feeds'} today`:' · nothing logged today'}</p>
         <div class="chips">${isRecent(lastDiaper)?chip('diaper',`Diaper ${sinceLabel(lastDiaper.date,lastDiaper.time)}`):''}${isRecent(lastSleep,18)?chip('moon',`Slept ${sinceLabel(lastSleep.date,lastSleep.time)}`):''}</div>
@@ -656,10 +769,11 @@ function babyLabel(e){
   if(e.eventType==='nursing') return `${e.durationMinutes??e.totalMinutes??0} min nursing`;
   if(e.eventType==='sleep') return `${Math.round((+e.durationMinutes||0)/6)/10} hr sleep`;
   if(e.eventType==='growth') return 'Growth measurement';
+  if(e.eventType==='milestone') return e.milestoneText || 'Milestone';
   return cap(e.eventType);
 }
 function babyRow(e){
-  const ic=e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':'moon';
+  const ic=e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':e.eventType==='milestone'?'spark':'moon';
   return `<button type="button" class="row" data-record="baby:${esc(e.id)}"><div class="row-icon baby ${e.eventType==='diaper'?`sub-${esc(e.subtype)}`:`kind-${esc(e.eventType)}`}">${icon(ic)}</div><div class="row-main"><strong>${babyLabel(e)}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.note?` · ${esc(e.note)}`:''}${e.exactSourceDuplicate?' · source duplicate preserved':''}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
 }
 function recentBaby(n){ const a=babyEvents().filter(e=>!e.exactSourceDuplicate).slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('baby','No Baby history yet','Use one of the four buttons above to start.'); return `<div class="rows">${a.map(babyRow).join('')}</div>`; }
@@ -667,7 +781,7 @@ function babyHistory(){
   const range=S.ui.babyRange ?? 30, all=+range>=9999, filter=S.ui.babyFilter||'all', cutoff=all?'':dateList(rangeDays(range,'baby'))[0];
   const matches=e=>filter==='all'||(filter==='feed'&&(e.eventType==='feeding'||e.eventType==='nursing'))||e.eventType===filter;
   const a=babyEvents().filter(e=>(all||e.date>=cutoff)&&matches(e)).sort(byWhenDesc);
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>History</h2></div><button class="round-action baby" data-add>${icon('plus')}<span>Add</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-baby-range')}${pills([['all','All'],['diaper','Diapers'],['feed','Feeds'],['sleep','Sleep'],['growth','Growth']],filter,'data-baby-filter')}${panel('',a.length?`<div class="rows">${a.map(babyRow).join('')}</div>`:empty('history','No matching records','Try another filter or date range.'))}`;
+  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>History</h2></div><button class="round-action baby" data-add>${icon('plus')}<span>Add</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-baby-range')}${pills([['all','All'],['diaper','Diapers'],['feed','Feeds'],['sleep','Sleep'],['growth','Growth'],['milestone','Milestones']],filter,'data-baby-filter')}${panel('',a.length?`<div class="rows">${a.map(babyRow).join('')}</div>`:empty('history','No matching records','Try another filter or date range.'))}`;
 }
 function dailyBabyRows(n){ return dateList(n).map(d=>({d,...babyStats(d)})); }
 function avgFromActive(rows,key){ const active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz); return active.length ? (sum(active.map(r=>r[key]))/active.length).toFixed(1) : '0.0'; }
@@ -732,6 +846,67 @@ function babyGrowth(){
     return `<button type="button" class="row" data-record="baby:${esc(e.id)}"><div class="row-icon baby kind-growth">${icon('scale')}</div><div class="row-main"><strong>${parts.length?parts.join(' · '):'Measurement'}</strong><span>${fd(e.date)}${head}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
   }).join('')}</div>`:empty('growth','No measurements yet','Add measurements from pediatric visits.'))}<div class="clinical-note">For children under 2, clinicians generally follow weight, length, weight-for-length and head circumference over time using WHO growth standards.</div>`;
 }
+function developmentView(){
+  const born = birthDate();
+  if(!born) return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Development</h2></div></div>
+    ${empty('spark','Add a date of birth','The development timeline follows your baby\'s age, so it needs a birthday to line up.','<button class="primary-link" data-view="settings">Open settings</button>')}`;
+
+  const months = ageMonths(), marked = markedMilestones();
+  const stage = currentStage();
+  const stageId = selectedStage ?? stage.m;
+  const shown = MILESTONES.find(x => x.m === +stageId) || stage;
+  const span = MILESTONES[MILESTONES.length-1].m;
+
+  // journey track: one band per checklist, positioned by age
+  const bands = MILESTONES.map((st,i) => {
+    const next = MILESTONES[i+1]?.m ?? span+6;
+    const left = (st.m/(span+6))*100, width = ((next-st.m)/(span+6))*100;
+    const done = Object.entries(st.groups).reduce((a,[g,items]) => a + items.filter((_,j) => marked.has(milestoneId(st.m,g,j))).length, 0);
+    const total = milestoneTotal(st);
+    const state = months >= next ? 'past' : months >= st.m ? 'now' : 'ahead';
+    return `<button type="button" class="band ${state} ${+stageId===st.m?'sel':''}" data-stage="${st.m}" style="left:${left.toFixed(2)}%;width:${width.toFixed(2)}%" aria-label="${esc(st.label)}">
+      <span class="band-fill" style="width:${total?Math.round(done/total*100):0}%"></span><em>${st.label.replace(' months','m').replace(' years','y').replace('2 years','2y')}</em></button>`;
+  }).join('');
+  const agePct = months === null ? 0 : Math.max(0, Math.min(100, (months/(span+6))*100));
+
+  const stageDone = Object.entries(shown.groups).reduce((a,[g,items]) => a + items.filter((_,j) => marked.has(milestoneId(shown.m,g,j))).length, 0);
+  const stageTotal = milestoneTotal(shown);
+
+  const groups = Object.entries(shown.groups).map(([g,items]) => {
+    const meta = MILESTONE_GROUPS[g];
+    return `<section class="ms-group" style="--c:${meta.color}">
+      <div class="ms-group-head">${icon(meta.icon)}<strong>${meta.label}</strong></div>
+      ${items.map((text,j) => {
+        const id = milestoneId(shown.m,g,j), on = marked.has(id);
+        return `<button type="button" class="ms-item ${on?'on':''}" data-milestone="${id}" data-ms-text="${esc(text)}" data-ms-group="${g}" data-ms-month="${shown.m}">
+          <span class="ms-check">${on?icon('check'):''}</span><span>${esc(text)}</span></button>`;
+      }).join('')}
+    </section>`;
+  }).join('');
+
+  const isCurrent = shown.m === stage.m;
+  return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Development</h2></div><span class="age-badge">${esc(ageLabel()||'')}</span></div>
+
+  <section class="journey">
+    <div class="journey-head"><strong>Milestone journey</strong><span>${months!==null?`${months} month${months===1?'':'s'}`:''}</span></div>
+    <div class="journey-track">${bands}<div class="journey-now" style="left:${agePct.toFixed(2)}%"></div></div>
+    <div class="journey-legend"><span><i class="k-past"></i>Passed</span><span><i class="k-now"></i>Now</span><span><i class="k-ahead"></i>Ahead</span></div>
+  </section>
+
+  <section class="stage-card ${isCurrent?'is-now':''}">
+    <div class="stage-ring">${ring(stageTotal?stageDone/stageTotal:0,`${stageDone}`,`of ${stageTotal}`,'baby')}</div>
+    <div>
+      <span class="eyebrow">${isCurrent?'WHERE YOU ARE':'CHECKLIST'}</span>
+      <strong>${esc(shown.label)} · ${esc(shown.tag)}</strong>
+      <p>Most children can do these by ${esc(shown.label)}. Tap anything you have seen — it saves to history.</p>
+    </div>
+  </section>
+
+  ${groups}
+
+  <div class="clinical-note">Milestones are from the CDC “Learn the Signs. Act Early.” checklists and describe what about 75% of children can do by each age. Babies develop at their own pace, so this is a conversation starter, not a test or a diagnosis. Share concerns with your pediatrician — acting early makes a real difference.</div>`;
+}
+
 function doctorView(){
   const range=S.ui.doctorRange ?? 14, n=rangeDays(range,'baby'), rows=dailyBabyRows(n), active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz), g=latestGrowth(), pref=feedingPreference();
   const totalNursing=sum(active.map(r=>r.nursing)), totalBottles=sum(active.map(r=>r.bottles));
@@ -756,6 +931,11 @@ function settingsView(){
   return `<div class="page-head"><div><span class="eyebrow">FAMILY</span><h2>Settings</h2></div></div>${dataStatus()}
   ${panel('Family account',S.cloud.enabled?`<div class="setting-row"><div><strong>${esc(S.cloud.email||'Signed in')}</strong><span>Use this same account on every device. New records sync automatically.</span></div><div class="setting-actions"><button data-cloud-check>Check cloud</button><button data-signout>Sign out</button></div></div>`:`<div class="setting-row"><div><strong>Not signed in</strong><span>Sign in with one family account to see the same Mom and Baby history on every device.</span></div><button class="primary-link" data-auth>Sign in</button></div>`)}
   ${panel('Backup & restore',`<div class="setting-row"><div><strong>Private family backup</strong><span>Import merges by record ID and does not delete existing history.</span></div><div class="setting-actions"><button data-import>${icon('upload')} Import</button><button data-export>${icon('download')} Export</button></div></div>`)}
+  ${panel('Baby profile',`<div class="profile-row">
+    <div class="profile-photo">${S.baby.photo?`<img src="${esc(S.baby.photo)}" alt="">`:babyIllustration()}</div>
+    <div class="profile-photo-actions"><button data-photo>${icon('upload')} ${S.baby.photo?'Change photo':'Add photo'}</button>${S.baby.photo?'<button data-photo-clear>Remove</button>':''}<small>Stored with your family account and shown on Baby home.</small></div>
+  </div>
+  <div class="settings-grid"><label class="field"><span>Baby's name</span><input id="babyName" type="text" maxlength="40" value="${esc(S.baby.name)}"></label><label class="field"><span>Date of birth</span><input id="babyBirth" type="date" max="${today()}" value="${esc(S.baby.birthDate||'')}"></label><label class="field"><span>Your name</span><input id="momName" type="text" maxlength="40" placeholder="Used for the greeting" value="${esc(S.profile.momName||'')}"></label></div>${S.baby.birthDate?`<p class="chart-note">${esc(S.baby.name)} is <strong>${esc(ageLabel()||'')}</strong>. Development follows this date.</p>`:'<p class="chart-note">Add a date of birth to unlock the development timeline.</p>'}`)}
   ${panel('Baby feeding',`<label class="field"><span>Usual feeding</span><select id="feedingPreference"><option value="auto" ${S.baby.feedingPreference==='auto'?'selected':''}>Choose from recent history</option><option value="mostly_breastfed" ${S.baby.feedingPreference==='mostly_breastfed'?'selected':''}>Mostly breastfed</option><option value="mostly_formula" ${S.baby.feedingPreference==='mostly_formula'?'selected':''}>Mostly formula</option><option value="mixed" ${S.baby.feedingPreference==='mixed'?'selected':''}>Mixed feeding</option></select></label>`)}
   ${panel('Mom pumping',`<div class="settings-grid"><label class="field"><span>Daily goal (mL)</span><input id="goalMl" type="number" inputmode="numeric" min="0" value="${+S.profile.dailyGoalMl||760}"></label><label class="field"><span>Freezer stash (mL)</span><input id="stashMl" type="number" inputmode="numeric" min="0" value="${+S.profile.stashMl||0}"></label>${S.schedule.map((t,i)=>`<label class="field"><span>Pump ${i+1}</span><input data-schedule="${i}" type="time" value="${t}"></label>`).join('')}</div>`)}
   ${panel('Pump reminders',`<div class="setting-row"><div><strong>${S.reminders.enabled?'Reminders on':'Reminders off'}</strong><span>${notificationStatus()}</span></div><button data-reminders>${S.reminders.enabled?'Turn off':'Turn on'}</button></div>`)}`;
@@ -764,10 +944,11 @@ function settingsView(){
 const renderers={
   'mom-home':momHome,'mom-history':momHistory,'mom-trends':momTrends,'mom-stash':momStash,
   'baby-home':babyHome,'baby-history':babyHistory,'baby-trends':babyTrends,'baby-growth':babyGrowth,
-  doctor:doctorView,settings:settingsView
+  development:developmentView,doctor:doctorView,settings:settingsView
 };
-const titles={'mom-home':'Mom','mom-history':'Mom history','mom-trends':'Milk trends','mom-stash':'Stash','baby-home':'Baby','baby-history':'Baby history','baby-trends':'Daily trends','baby-growth':'Growth',doctor:'Doctor summary',settings:'Settings'};
+const titles={'mom-home':'Mom','mom-history':'Mom history','mom-trends':'Milk trends','mom-stash':'Stash','baby-home':'Baby','baby-history':'Baby history','baby-trends':'Daily trends','baby-growth':'Growth',development:'Development',doctor:'Doctor summary',settings:'Settings'};
 function render(){
+  applyDayPart();
   $('pageTitle').textContent=titles[view]||'MilkFlow';
   $('view').innerHTML=(renderers[view]||momHome)();
   const workspace=workspaceOf(view); S.ui.workspace=workspace; save();
@@ -777,7 +958,7 @@ function render(){
 }
 const SIDE_NAV=[
   {label:'MOM',items:[['mom-home','Home','home'],['mom-history','History','history'],['mom-trends','Milk trends','chart'],['mom-stash','Freezer stash','snow']]},
-  {label:'BABY',items:[['baby-home','Home','baby'],['baby-history','History','history'],['baby-trends','Daily trends','chart'],['baby-growth','Growth','scale'],['doctor','Doctor summary','steth']]},
+  {label:'BABY',items:[['baby-home','Home','baby'],['baby-history','History','history'],['baby-trends','Daily trends','chart'],['baby-growth','Growth','scale'],['development','Development','spark'],['doctor','Doctor summary','steth']]},
   {label:'FAMILY',items:[['settings','Settings','settings']]}
 ];
 function renderSideNav(){
@@ -787,7 +968,7 @@ function renderSideNav(){
 function renderBottomNav(){
   const w=workspaceOf(view), nav=$('bottomNav');
   const home=w==='baby'?'baby-home':'mom-home', history=w==='baby'?'baby-history':'mom-history', trends=w==='baby'?'baby-trends':'mom-trends';
-  nav.innerHTML=`<button data-view="${home}" class="${view===home?'active':''}">${icon('home')}<span>Home</span></button><button data-view="${history}" class="${view===history?'active':''}">${icon('history')}<span>History</span></button><button class="add-tab" data-add>${icon('plus')}<span>Add</span></button><button data-view="${trends}" class="${view===trends?'active':''}">${icon('chart')}<span>Trends</span></button><button data-more class="${['settings','doctor','baby-growth','mom-stash'].includes(view)?'active':''}">${icon('more')}<span>More</span></button>`;
+  nav.innerHTML=`<button data-view="${home}" class="${view===home?'active':''}">${icon('home')}<span>Home</span></button><button data-view="${history}" class="${view===history?'active':''}">${icon('history')}<span>History</span></button><button class="add-tab" data-add>${icon('plus')}<span>Add</span></button><button data-view="${trends}" class="${view===trends?'active':''}">${icon('chart')}<span>Trends</span></button><button data-more class="${['settings','doctor','baby-growth','development','mom-stash'].includes(view)?'active':''}">${icon('more')}<span>More</span></button>`;
 }
 function syncBadge(){
   const b=$('syncBadge'), t=$('syncTitle'), sub=$('syncSubtitle');
@@ -799,7 +980,7 @@ function syncBadge(){
 function openDrawer(){
   const w=workspaceOf(view);
   $('drawerBody').innerHTML = w==='baby' ?
-  `<button data-view="baby-home">${icon('baby')}<span>Baby home</span></button><button data-view="baby-history">${icon('history')}<span>History</span></button><button data-view="baby-trends">${icon('chart')}<span>Daily trends</span></button><button data-view="baby-growth">${icon('scale')}<span>Growth</span></button><button data-view="doctor">${icon('steth')}<span>Doctor summary</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="mom-home">${icon('nursing')}<span>Switch to Mom</span></button>` :
+  `<button data-view="baby-home">${icon('baby')}<span>Baby home</span></button><button data-view="baby-history">${icon('history')}<span>History</span></button><button data-view="baby-trends">${icon('chart')}<span>Daily trends</span></button><button data-view="baby-growth">${icon('scale')}<span>Growth</span></button><button data-view="development">${icon('spark')}<span>Development</span></button><button data-view="doctor">${icon('steth')}<span>Doctor summary</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="mom-home">${icon('nursing')}<span>Switch to Mom</span></button>` :
   `<button data-view="mom-home">${icon('nursing')}<span>Mom home</span></button><button data-view="mom-history">${icon('history')}<span>History</span></button><button data-view="mom-trends">${icon('chart')}<span>Milk trends</span></button><button data-view="mom-stash">${icon('snow')}<span>Freezer stash</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="baby-home">${icon('baby')}<span>Switch to Baby</span></button>`;
   $('drawer').classList.add('open'); $('scrim').classList.add('open'); document.body.classList.add('locked');
 }
@@ -838,6 +1019,7 @@ async function restoreRecord(kind,id){
   toast('Entry restored');
 }
 let editing=null;
+let selectedStage=null;
 function editRecord(kind,id){
   const e=findRecord(kind,id); if(!e) return;
   closeOverlays();
@@ -904,7 +1086,54 @@ function bindViewInputs(){
   $('goalMl')?.addEventListener('change',e=>{ S.profile.dailyGoalMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); });
   $('stashMl')?.addEventListener('change',e=>{ S.profile.stashMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); });
   $('feedingPreference')?.addEventListener('change',e=>{ S.baby.feedingPreference=e.target.value; save(); pushProfile().catch(()=>{}); render(); });
+  $('babyName')?.addEventListener('change',e=>{ const v=e.target.value.trim(); if(v){ S.baby.name=v; save(); pushProfile().catch(()=>{}); render(); } });
+  $('babyBirth')?.addEventListener('change',e=>{ S.baby.birthDate=e.target.value||''; save(); pushProfile().catch(()=>{}); render(); });
+  $('momName')?.addEventListener('change',e=>{ S.profile.momName=e.target.value.trim(); save(); pushProfile().catch(()=>{}); render(); });
   document.querySelectorAll('[data-schedule]').forEach(x=>x.addEventListener('change',()=>{ S.schedule[+x.dataset.schedule]=x.value; save(); pushProfile().catch(()=>{}); }));
+}
+
+// A marked milestone is a normal baby event, so it appears in History, syncs and exports.
+async function toggleMilestone(id,text,group,month){
+  const existing = S.babyEvents.find(e => e.milestoneId === id && !e.voidedAt);
+  if(existing){
+    existing.voidedAt = new Date().toISOString(); existing.synced = false; save(); render();
+    try{ await pushBabies([existing]); }catch{}
+    toast('Milestone cleared',5000,{label:'Undo',run:()=>{ delete existing.voidedAt; existing.editedAt=new Date().toISOString(); save(); render(); pushBabies([existing]).catch(()=>{}); }});
+    return;
+  }
+  // restore a previously cleared one rather than creating a duplicate
+  const prior = S.babyEvents.find(e => e.milestoneId === id);
+  if(prior){ delete prior.voidedAt; prior.editedAt=new Date().toISOString(); prior.synced=false; save(); render(); try{ await pushBabies([prior]); }catch{} toast('Milestone noted'); return; }
+  const x = normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'milestone',date:today(),time:now(),
+    milestoneId:id,milestoneText:text,milestoneGroup:group,milestoneMonth:month,note:'',sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false});
+  S.babyEvents.push(x); save(); render();
+  try{ await pushBabies([x]); }catch{ toast('Saved on this device. Cloud will retry.'); }
+  toast('Milestone noted');
+}
+
+// Photos are downscaled before storing so the profile document stays small.
+function readPhoto(file){
+  if(!file) return;
+  if(!/^image\//.test(file.type)) return toast('That file is not an image.');
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const size = 320, c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      const side = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, size, size);
+      try{
+        S.baby.photo = c.toDataURL('image/jpeg', 0.82);
+        save(); pushProfile().catch(()=>{}); render(); toast('Photo updated');
+      }catch(err){ console.error(err); toast('That photo could not be saved.'); }
+    };
+    img.onerror = () => toast('That image could not be read.');
+    img.src = reader.result;
+  };
+  reader.onerror = () => toast('That image could not be read.');
+  reader.readAsDataURL(file);
 }
 
 function snapshot(){ try{ localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(S)); }catch{} }
@@ -917,20 +1146,24 @@ function mergeBaby(current,incoming){
 }
 async function importBackup(file){
   let d; try{ d=JSON.parse(await file.text()); }catch{ return toast('That file could not be read.'); }
-  let mom=[],baby=[],profile=null,schedule=null,overrides={};
+  let mom=[],baby=[],profile=null,schedule=null,overrides={},babyProfile=null;
   if(d.schema_version==='milkflow-family-bundle-2'){
     mom=Array.isArray(d.mom?.entries)?d.mom.entries:[];
     baby=Array.isArray(d.baby?.events)?d.baby.events.map(mapBaby):[];
     profile=d.mom?.profile||null; schedule=d.mom?.schedule||null; overrides=d.mom?.dailyOverrides||{};
+    // The baby profile (name, date of birth, photo) was exported but never restored.
+    babyProfile=d.baby?.profile||null;
   }else if(Array.isArray(d.events)){
     baby=d.events.filter(x=>x.owner_scope==='baby'&&String(x.date||'').startsWith('2026-')).map(mapBaby);
   }else if(Array.isArray(d.entries)){
     mom=d.entries; profile=d.profile||null; schedule=d.schedule||null; overrides=d.dailyOverrides||{};
   }
-  if(!mom.length&&!baby.length) return toast('No compatible family records found.');
+  if(!mom.length&&!baby.length&&!babyProfile&&!profile) return toast('No compatible family records found.');
   snapshot(); const beforeMom=momEntries().length, beforeBaby=babyEvents().length;
   S.entries=mergeMom(S.entries,mom); S.babyEvents=mergeBaby(S.babyEvents,baby);
-  if(profile) S.profile={...S.profile,...profile}; if(Array.isArray(schedule)&&schedule.length) S.schedule=schedule; S.dailyOverrides={...S.dailyOverrides,...overrides};
+  if(profile) S.profile={...S.profile,...profile};
+  if(babyProfile) S.baby={...S.baby,...babyProfile};
+  if(Array.isArray(schedule)&&schedule.length) S.schedule=schedule; S.dailyOverrides={...S.dailyOverrides,...overrides};
   save(); const addedMom=momEntries().length-beforeMom, addedBaby=babyEvents().length-beforeBaby;
   toast(`Added ${addedMom} Mom · ${addedBaby} Baby records`,4000);
   if(S.cloud.enabled){ try{ await reconcile(); await verifyCloud(true); toast('Family history saved to cloud.',3500); }catch(err){ console.error(err); toast('Saved on this device. Cloud will retry.',4000); } }
@@ -1026,6 +1259,10 @@ function handleClick(e){
   const route=e.target.closest('[data-view]'); if(route){ setView(route.dataset.view); return; }
   if(e.target.closest('[data-menu]')||e.target.closest('[data-more]')){ openDrawer(); return; }
   if(e.target.closest('[data-add]')){ addSheet(); return; }
+  const stg=e.target.closest('[data-stage]'); if(stg){ selectedStage=+stg.dataset.stage; render(); return; }
+  const ms=e.target.closest('[data-milestone]'); if(ms){ toggleMilestone(ms.dataset.milestone,ms.dataset.msText,ms.dataset.msGroup,+ms.dataset.msMonth); return; }
+  if(e.target.closest('[data-photo]')){ $('photoFile').click(); return; }
+  if(e.target.closest('[data-photo-clear]')){ S.baby.photo=''; save(); pushProfile().catch(()=>{}); render(); toast('Photo removed'); return; }
   const rec=e.target.closest('[data-record]'); if(rec){ const [k,...r]=rec.dataset.record.split(':'); openRecordSheet(k,r.join(':')); return; }
   const er=e.target.closest('[data-edit-record]'); if(er){ const [k,...r]=er.dataset.editRecord.split(':'); editRecord(k,r.join(':')); return; }
   const vr=e.target.closest('[data-void-record]'); if(vr){ const [k,...r]=vr.dataset.voidRecord.split(':'); voidRecord(k,r.join(':')); return; }
@@ -1059,9 +1296,11 @@ $('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const wa
 $('authForm').addEventListener('submit',async e=>{ e.preventDefault(); if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.signInWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('createAccount').addEventListener('click',async()=>{ if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.createUserWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('importFile').addEventListener('change',e=>{ const f=e.target.files?.[0]; if(f) importBackup(f); e.target.value=''; });
+$('photoFile')?.addEventListener('change',e=>{ const f=e.target.files?.[0]; if(f) readPhoto(f); e.target.value=''; });
 
 S.babyEvents=S.babyEvents.map(normalizeBabyEvent); save();
 // Seed the first history entry so Back from the very first screen behaves predictably.
+applyDayPart();
 history.replaceState({view},'',`#${view}`);
 render(); initCloud(); tickReminders(); setInterval(tickReminders,60000);
 })();

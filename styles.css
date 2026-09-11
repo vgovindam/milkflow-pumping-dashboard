@@ -48,6 +48,14 @@
   --display:"Plus Jakarta Sans","Nunito Sans",system-ui,sans-serif;
 }
 
+/* Time-of-day tint. Only ambient surfaces change - ink, lines and accents stay put,
+   so text contrast is identical at every hour. */
+:root[data-daypart="morning"]{--bg:#fbf7f1;--stage-a:#fff6ec;--stage-b:#fdf3f7;--stage-c:#f2f8ff;--mom-hero-b:#fff4ec}
+:root[data-daypart="afternoon"]{--bg:#f4f6fb;--stage-a:#f0fbff;--stage-b:#eef7ff;--stage-c:#eafaf3;--mom-hero-b:#fdf3fa}
+:root[data-daypart="evening"]{--bg:#f9f4f4;--stage-a:#fff1ec;--stage-b:#fdeef4;--stage-c:#f3eeff;--mom-hero-b:#fff0f2}
+:root[data-daypart="night"]{--bg:#f1f2f9;--stage-a:#eef1fb;--stage-b:#f0eefb;--stage-c:#eaf2fa;--mom-hero-b:#f3eefc}
+:root{--stage-a:#f2fbff;--stage-b:#eef7ff;--stage-c:#eafaf3;--mom-hero-b:#fdf3fa}
+
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:var(--font);color:var(--ink);background:var(--bg);-webkit-text-size-adjust:100%}
 body.locked{overflow:hidden}
@@ -92,7 +100,7 @@ button{cursor:pointer;font-family:inherit}
 
 /* ----------------------------------------------------------------- hero -- */
 .hero{position:relative;overflow:hidden;border-radius:var(--radius-lg);padding:24px 26px;display:flex;align-items:center;gap:24px;margin-bottom:16px;border:1px solid var(--line);box-shadow:var(--shadow-soft)}
-.mom-hero{background:linear-gradient(135deg,#fff 0%,#fdf3fa 46%,#f1ebff 100%)}
+.mom-hero{background:linear-gradient(135deg,#fff 0%,var(--mom-hero-b) 46%,#f1ebff 100%)}
 .hero-copy{position:relative;z-index:2;min-width:0;flex:1}
 .eyebrow{display:block;font-size:10px;font-weight:900;letter-spacing:.14em;color:#8b91a3;margin-bottom:6px}
 .hero h2{font:800 30px var(--display);margin:0 0 6px;line-height:1.12;letter-spacing:-.01em}
@@ -137,10 +145,11 @@ button{cursor:pointer;font-family:inherit}
 /* ----------------------------------------------------------- baby stage -- */
 /* The Baby surface deliberately avoids a grid of squares: a curved stage, one wide
    action, circular orbs, pills, a 24h track and dial rings. */
-.baby-stage{position:relative;overflow:hidden;border-radius:34px 34px 30px 30px;padding:22px 24px 24px;margin-bottom:14px;background:linear-gradient(150deg,#f2fbff 0%,#eef7ff 45%,#eafaf3 100%);border:1px solid #dfeef5;box-shadow:var(--shadow-soft)}
+.baby-stage{position:relative;overflow:hidden;border-radius:34px 34px 30px 30px;padding:22px 24px 24px;margin-bottom:14px;background:linear-gradient(150deg,var(--stage-a) 0%,var(--stage-b) 45%,var(--stage-c) 100%);border:1px solid #dfeef5;box-shadow:var(--shadow-soft);transition:background .6s ease}
 .stage-glow{position:absolute;inset:-40% -30% auto;height:260px;background:radial-gradient(60% 60% at 30% 40%,rgba(67,191,164,.22),transparent 70%),radial-gradient(55% 55% at 75% 30%,rgba(47,151,201,.2),transparent 70%);pointer-events:none}
 .stage-body{position:relative;z-index:2;display:flex;align-items:center;gap:18px}
 .stage-avatar{width:104px;height:104px;flex:0 0 auto;border-radius:50%;overflow:hidden;background:#fff;box-shadow:0 10px 26px rgba(30,90,120,.14),0 0 0 5px rgba(255,255,255,.7);display:grid;place-items:center}
+.stage-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .stage-avatar .scene{width:132%;height:132%}
 .stage-copy{min-width:0;flex:1}
 .stage-copy h2{font:800 27px var(--display);margin:0 0 6px;line-height:1.1;letter-spacing:-.02em}
@@ -281,6 +290,60 @@ button{cursor:pointer;font-family:inherit}
 .pills button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:9px 14px;font-size:11.5px;font-weight:900;white-space:nowrap;color:#6b7284;transition:.14s}
 .pills button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
 
+
+/* ---------------------------------------------------- development view -- */
+.age-badge{background:var(--baby-soft);color:var(--baby-ink);border-radius:99px;padding:8px 14px;font-size:11.5px;font-weight:900;white-space:nowrap}
+.journey{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:16px 18px 14px;margin-bottom:14px;box-shadow:var(--shadow-soft)}
+.journey-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.journey-head strong{font:800 15px var(--display)}
+.journey-head span{font-size:10.5px;color:var(--muted);font-weight:800}
+.journey-track{position:relative;height:52px;border-radius:16px;background:var(--surface-2);border:1px solid var(--line-soft);overflow:hidden}
+.band{position:absolute;top:6px;bottom:6px;border:0;padding:0;border-radius:11px;background:var(--line-soft);overflow:hidden;transition:transform .12s ease}
+.band+.band{margin-left:0}
+.band::after{content:'';position:absolute;inset:0;border-radius:11px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.7)}
+.band em{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-size:9px;font-weight:900;color:var(--ink-2);z-index:2}
+.band-fill{position:absolute;left:0;top:0;bottom:0;border-radius:11px;background:var(--baby);opacity:.32;transition:width .45s ease}
+.band.past{background:#dfeaf2}
+.band.now{background:var(--baby-soft);box-shadow:0 0 0 2px var(--baby) inset}
+.band.ahead{background:var(--line-soft)}
+.band.sel{transform:translateY(-1px);box-shadow:0 0 0 2px var(--ink) inset}
+.band.sel em{color:var(--ink)}
+.journey-now{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);opacity:.6;z-index:3}
+.journey-now::after{content:'';position:absolute;top:-2px;left:-3px;width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.journey-legend{display:flex;gap:14px;margin-top:10px}
+.journey-legend span{display:inline-flex;align-items:center;gap:6px;font-size:9.5px;font-weight:800;color:var(--muted)}
+.journey-legend i{width:10px;height:10px;border-radius:3px;display:block}
+.journey-legend .k-past{background:#dfeaf2}
+.journey-legend .k-now{background:var(--baby)}
+.journey-legend .k-ahead{background:var(--line-soft)}
+
+.stage-card{display:flex;align-items:center;gap:18px;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow-soft)}
+.stage-card.is-now{background:linear-gradient(135deg,#f4fcff,#f2fbf7);border-color:#d9eef4}
+.stage-card .ring{width:96px;height:96px}
+.stage-card .ring-label strong{font-size:22px}
+.stage-card strong{display:block;font:800 16px var(--display);margin-bottom:4px}
+.stage-card p{margin:0;font-size:11.5px;color:var(--muted);line-height:1.5;font-weight:600}
+
+.ms-group{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:15px 16px;margin-bottom:12px;box-shadow:var(--shadow-soft)}
+.ms-group-head{display:flex;align-items:center;gap:9px;margin-bottom:10px;color:var(--c)}
+.ms-group-head .ico{width:19px;height:19px}
+.ms-group-head strong{font:800 13.5px var(--display);color:var(--ink)}
+.ms-item{display:flex;align-items:flex-start;gap:11px;width:100%;border:0;background:transparent;text-align:left;padding:9px 2px;border-bottom:1px solid var(--line-soft);font-size:13px;font-weight:600;color:var(--ink-2);line-height:1.45;border-radius:9px}
+.ms-item:last-child{border-bottom:0}
+.ms-item:hover{background:var(--surface-2)}
+.ms-check{flex:0 0 auto;width:23px;height:23px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;margin-top:1px;transition:.15s}
+.ms-check .ico{width:14px;height:14px;color:#fff;stroke-width:3}
+.ms-item.on{color:var(--ink);font-weight:700}
+.ms-item.on .ms-check{background:var(--c);border-color:var(--c)}
+
+.profile-row{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.profile-photo{width:86px;height:86px;flex:0 0 auto;border-radius:50%;overflow:hidden;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center}
+.profile-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.profile-photo .scene{width:128%;height:128%}
+.profile-photo-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.profile-photo-actions button{border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:10px 13px;font-weight:900;font-size:11.5px;display:inline-flex;align-items:center;gap:7px;color:var(--ink-2)}
+.profile-photo-actions .ico{width:16px;height:16px}
+.profile-photo-actions small{flex:1 0 100%;font-size:10px;color:var(--muted);font-weight:600;line-height:1.45}
 
 /* --------------------------------------------------------------- charts -- */
 .chart-scroll{overflow-x:auto;padding-bottom:4px;margin:0 -2px}
@@ -507,6 +570,14 @@ button{cursor:pointer;font-family:inherit}
   .quick-tile .tile-art .ico{width:27px;height:27px}
   .quick-tile strong{font-size:17px}
   .orb-row,.pill-row,.feed-cta{max-width:none}
+  .stage-card{gap:13px;padding:15px}
+  .stage-card .ring{width:80px;height:80px}
+  .stage-card .ring-label strong{font-size:19px}
+  .journey-track{height:46px}
+  .band em{font-size:8px}
+  .age-badge{padding:7px 11px;font-size:10.5px}
+  .profile-row{gap:13px}
+  .profile-photo{width:74px;height:74px}
   .baby-stage{padding:18px 18px 20px;border-radius:30px}
   .stage-body{gap:14px}
   .stage-avatar{width:88px;height:88px}

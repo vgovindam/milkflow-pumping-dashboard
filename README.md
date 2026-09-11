@@ -51,6 +51,30 @@ Remove is a soft-void: the record keeps its id, stays in local storage and in Fi
 `voidedAt` timestamp, and simply stops counting toward history and totals. A toast offers **Undo**,
 and the entry is still present in any export. Nothing in the app hard-deletes a record.
 
+## Development
+
+A visual milestone journey across the first two years. The track shows every checklist band,
+where the baby is now, and how much of each band has been noted. Tapping an item records it as a
+normal baby event (`eventType: "milestone"`), so it appears in History, syncs, exports, and can be
+un-marked with undo.
+
+Content is the CDC **"Learn the Signs. Act Early."** checklists (2022 revision), which are US
+federal government work in the public domain. They describe what about 75% of children can do by
+each age — a conversation starter for pediatric visits, not a test or a diagnosis.
+
+This is deliberately **not** the Wonder Weeks "leap" schedule: that schedule, its numbering and its
+artwork are proprietary, and its developmental claims are not clinically established.
+
+The journey needs a date of birth, set in **Settings → Baby profile** along with the baby's name
+and a photo. Photos are centre-cropped and downscaled to 320px JPEG before storage so the synced
+profile document stays small.
+
+## Time of day
+
+The app tints itself across four day parts (morning, afternoon, evening, night) and greets you on
+every load. Only ambient surfaces change — ink, lines and accent colours are fixed, so text
+contrast is identical at every hour.
+
 ## Trends
 
 Both Trends views and the Doctor summary offer 7 / 14 / 30 / 90 days and **All**, where All spans
