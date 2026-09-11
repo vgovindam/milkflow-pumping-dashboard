@@ -3,11 +3,9 @@
 window.MILKFLOW_CONFIG = {
   enableCloudSync: true,
 
-  // Optional server-side AI coach endpoint. Leave blank until a trusted backend exists.
-  // Never place an OpenAI/API secret in this browser file or anywhere else in the public repo.
-  // Recommended endpoint: HTTPS Firebase Function / Cloud Run route that verifies the
-  // Firebase ID token, calls the AI provider server-side, and returns { message: "..." }.
-  aiCoachEndpoint: "",
+  // Optional server-side AI coach endpoint. The OpenAI/API secret lives only in Firebase
+  // Secret Manager; this public HTTPS URL is safe to expose in the browser.
+  aiCoachEndpoint: "https://pumpcoachai-unb4gv4wpq-uc.a.run.app",
 
   firebaseConfig: {
     apiKey: "AIzaSyAUfC16n_ZSSZtmJZoz2UVfQVbLePu1BvA",
