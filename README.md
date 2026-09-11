@@ -1,6 +1,6 @@
 # MilkFlow
 
-A polished, local-first pumping and nursing dashboard designed for quick daily logging and useful trend analysis.
+A polished, local-first pumping and nursing dashboard with private Firebase cloud synchronization.
 
 ## Highlights
 
@@ -9,17 +9,19 @@ A polished, local-first pumping and nursing dashboard designed for quick daily l
 - Daily goal progress, 7/14-day trends, personal bests, average output
 - Freezer stash and estimated runway
 - Family-friendly editable pumping schedule
-- Local-first persistence via `localStorage`
-- Optional Supabase cloud sync with Row Level Security
+- Immediate offline persistence via `localStorage`
+- Firebase Authentication + Firestore cloud sync
 - JSON backup/export
 - No personal pumping data is committed to this public repository
 
-## Supabase
+## Firebase
 
-`config.js` intentionally contains no credentials. Use only a Supabase **publishable** key in the browser. Never put a secret/service-role key in this repository.
+The browser configuration lives in `config.js`. Firebase web configuration is public client configuration; access control is enforced with Firebase Authentication and `firestore.rules`.
 
-The database schema is in `supabase-schema.sql`. After the target Supabase project is selected and the migration is applied, set the project URL and publishable key in `config.js`, then enable cloud sync.
+Deploy the included Firestore rules before relying on cloud sync. Each user's data is stored beneath `users/{uid}` and is readable/writable only by that authenticated UID.
+
+The app keeps local storage enabled even when signed in, so a temporary network interruption does not block logging. When signed in, local entries are synchronized to Firestore.
 
 ## Hosting
 
-The app is static and can be served directly by GitHub Pages or any static host. No build step is required.
+The app is static and can be served directly by GitHub Pages. No build step is required.
