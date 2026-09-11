@@ -21,6 +21,8 @@
   };
 
   function readState(){ try{return JSON.parse(localStorage.getItem(stateKey)||'{}')}catch{return{}} }
+  function writeState(s){ localStorage.setItem(stateKey,JSON.stringify(s)); }
+  function fmt(d){ if(!d)return''; try{return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric'}).format(new Date(d+'T12:00:00'))}catch{return d} }
 
   function decorateStatic(){
     const map={'mom-home':'heart',today:'clock',history:'history',trends:'chart',stash:'snow','baby-home':'baby','baby-timeline':'timeline',settings:'settings'};
@@ -38,21 +40,10 @@
     if(eyebrow){const m={'MOM COMMAND CENTER':'MOM','MOM DATA':'MOM','ANALYTICS':'MOM','MILK STORAGE':'MOM','BABY CARE':'BABY','BABY DATA':'BABY','SYSTEM':'FAMILY'};eyebrow.textContent=m[eyebrow.textContent.trim()]||eyebrow.textContent}
     if(title){const m={'Mom home':'Mom','Pumping history':'History','Trends':'Trends','Stash & runway':'Stash','Baby dashboard':'Baby','Baby timeline':'History','Settings & import':'Settings'};title.textContent=m[title.textContent.trim()]||title.textContent}
     const replacements=[
-      ['Your pumping day, without the noise.','Your day at a glance'],
-      ['Your pumping, milk supply, freezer stash and reminders are here first. Baby care is one tap away, with each person’s records kept separate.','Pump, nurse, rest, repeat.'],
-      ['Today’s rhythm','Today'],['Your family-friendly six-session plan','Pump schedule'],
-      ['Smart mom insights','For you'],['Based on your own recent pattern','Your recent pattern'],
-      ['Recent activity','Latest'],['Pumping and nursing','Mom care'],
-      ['Everything for baby, right when you need it.','Baby today'],
-      ['Log diapers, bottles, nursing and sleep quickly. Baby records stay separate from Mom’s pumping numbers.','Feeds, diapers and care.'],
-      ['Quick diaper log','Diapers'],['One tap to save it. Add details only when you want to.','Tap to log'],
-      ['Recent baby activity','Latest'],['Newest care events','Baby care'],
-      ['Mom pumping & nursing history','Mom history'],['Your complete mom-side activity stream',''],
-      ['7-day production','Milk trend'],['Daily pumped volume against your target','Last 7 days'],
-      ['Family account','Account'],['Keeps your family data available across signed-in devices',''],
-      ['Baby history','Import'],['Imported from your previous baby tracker',''],
-      ['Pump schedule','Schedule'],['Used for your next pump time and reminders',''],
-      ['Helpful reminders for planned pumping times',''],['Mom preferences','Preferences'],['Adjust the numbers used on Mom’s dashboard','']
+      ['Your pumping day, without the noise.','Your day'],['Your pumping, milk supply, freezer stash and reminders are here first. Baby care is one tap away, with each person’s records kept separate.','Pump · nurse · rest'],
+      ['Today’s rhythm','Today'],['Your family-friendly six-session plan','Pump schedule'],['Smart mom insights','For you'],['Based on your own recent pattern',''],['Recent activity','Latest'],['Pumping and nursing',''],
+      ['Everything for baby, right when you need it.','Baby today'],['Log diapers, bottles, nursing and sleep quickly. Baby records stay separate from Mom’s pumping numbers.','Feed · diaper · sleep'],['Quick diaper log','Diapers'],['One tap to save it. Add details only when you want to.',''],['Recent baby activity','Latest'],['Newest care events',''],
+      ['Mom pumping & nursing history','Mom history'],['Your complete mom-side activity stream',''],['7-day production','Milk trend'],['Daily pumped volume against your target','Last 7 days'],['Family account','Account'],['Keeps your family data available across signed-in devices',''],['Baby history','Import'],['Imported from your previous baby tracker',''],['Pump schedule','Schedule'],['Used for your next pump time and reminders',''],['Helpful reminders for planned pumping times',''],['Mom preferences','Preferences'],['Adjust the numbers used on Mom’s dashboard','']
     ];
     document.querySelectorAll('#content *').forEach(el=>{if(el.children.length)return;for(const[a,b]of replacements)if(el.textContent===a){el.textContent=b;break}});
     decorateStatic();
@@ -68,23 +59,84 @@
       const localMom=Array.isArray(s.entries)?s.entries.length:0, localBaby=Array.isArray(s.babyEvents)?s.babyEvents.length:0;
       const momOk=mom.size>=localMom, babyOk=baby.size>=localBaby;
       note.className='verify-note '+(momOk&&babyOk?'ok':'warn');
-      note.textContent=momOk&&babyOk?`Cloud checked: ${mom.size} Mom records and ${baby.size} Baby records are stored.`:`Cloud has ${mom.size} Mom / ${baby.size} Baby records. This device has ${localMom} / ${localBaby}. Keep this device online until counts match.`;
-    }catch(e){note.className='verify-note warn';note.textContent='Could not verify cloud right now. Try again when online.'}
+      note.textContent=momOk&&babyOk?`Cloud checked · Mom ${mom.size} · Baby ${baby.size}`:`Cloud ${mom.size}/${baby.size} · Device ${localMom}/${localBaby}`;
+    }catch(e){note.className='verify-note warn';note.textContent='Could not check cloud. Try again online.'}
     finally{btn.disabled=false;btn.textContent='Check cloud'}
+  }
+
+  async function syncBundleToCloud(state,momEntries,babyEvents){
+    if(!window.firebase||!firebase.auth().currentUser) return false;
+    const uid=firebase.auth().currentUser.uid, db=firebase.firestore(), user=db.collection('users').doc(uid);
+    const writeBatch=async(items,collection,mapper)=>{
+      for(let i=0;i<items.length;i+=400){
+        const batch=db.batch();
+        items.slice(i,i+400).forEach(x=>batch.set(user.collection(collection).doc(x.id),mapper(x),{merge:true}));
+        await batch.commit();
+      }
+    };
+    await writeBatch(momEntries,'entries',e=>({type:e.type,date:e.date,time:e.time||'',amountMl:e.amountMl??null,durationMin:e.durationMin??null,side:e.side||null,quality:e.quality||null,note:e.note||'',occurredAt:`${e.date}T${e.time||'00:00'}:00`,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}));
+    await writeBatch(babyEvents,'familyEvents',e=>({...e,synced:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}));
+    await user.collection('private').doc('profile').set({profile:state.profile||{},baby:state.baby||{},schedule:state.schedule||[],dailyOverrides:state.dailyOverrides||{},updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    return true;
+  }
+
+  async function importCompleteBundle(file,input){
+    let data; try{data=JSON.parse(await file.text())}catch{return false}
+    if(data?.schema_version!=='milkflow-family-bundle-2') return false;
+    const s=readState();
+    const momIn=Array.isArray(data.mom?.entries)?data.mom.entries:[];
+    const babyRaw=Array.isArray(data.baby?.events)?data.baby.events:[];
+    const babyIn=babyRaw.map(r=>({id:r.migration_id||r.id,babyId:r.baby_id||'saahas-2026',eventType:r.event_type||r.eventType,date:r.date,time:r.time||'',subtype:r.status||r.subtype||null,feedingType:r.feeding_type||r.feedingType||null,amountOz:r.amount_oz??r.amountOz??null,totalMinutes:r.total_minutes??r.totalMinutes??null,leftMinutes:r.left_minutes??r.leftMinutes??null,rightMinutes:r.right_minutes??r.rightMinutes??null,durationMinutes:r.duration_minutes??r.durationMinutes??null,note:r.note||'',sourceFile:r.source_file||r.sourceFile||'Baby Tracker',sourceRow:r.source_row||r.sourceRow||null,exactSourceDuplicate:!!(r.exact_source_duplicate??r.exactSourceDuplicate),synced:false})).filter(e=>e.id&&e.date?.startsWith('2026-'));
+    const momMap=new Map((Array.isArray(s.entries)?s.entries:[]).map(e=>[e.id,e])); momIn.forEach(e=>{if(e?.id&&!momMap.has(e.id))momMap.set(e.id,{...e,synced:false})});
+    const babyMap=new Map((Array.isArray(s.babyEvents)?s.babyEvents:[]).map(e=>[e.id,e])); babyIn.forEach(e=>{if(!babyMap.has(e.id))babyMap.set(e.id,e)});
+    s.entries=[...momMap.values()]; s.babyEvents=[...babyMap.values()];
+    s.dailyOverrides={...(s.dailyOverrides||{}),...(data.mom?.dailyOverrides||{})};
+    s.profile={...(s.profile||{}),...(data.mom?.profile||{})};
+    if(Array.isArray(data.mom?.schedule)&&data.mom.schedule.length)s.schedule=data.mom.schedule;
+    s.baby={...(s.baby||{}),...(data.baby?.profile||{})};
+    writeState(s);
+    try{
+      const cloudSaved=await syncBundleToCloud(s,s.entries,s.babyEvents);
+      if(cloudSaved){s.entries=s.entries.map(e=>({...e,synced:true}));s.babyEvents=s.babyEvents.map(e=>({...e,synced:true}));s.cloud={...(s.cloud||{}),enabled:true,userId:firebase.auth().currentUser.uid,email:firebase.auth().currentUser.email,lastSync:new Date().toISOString()};writeState(s)}
+    }catch(e){console.error('Family import cloud sync failed',e)}
+    input.value='';
+    location.reload();
+    return true;
+  }
+
+  function enhanceImport(){
+    const input=document.getElementById('importFile'); if(!input||input.dataset.familyEnhanced)return;
+    input.dataset.familyEnhanced='1'; const original=input.onchange;
+    input.onchange=async e=>{const f=e.target.files?.[0];if(!f)return;const handled=await importCompleteBundle(f,input);if(!handled&&original)original.call(input,e)};
+  }
+
+  function addRecentHistoryHint(){
+    if(document.getElementById('recentHistoryHint'))return;
+    const title=document.getElementById('viewTitle'); if(!title)return;
+    const s=readState(); const content=document.getElementById('content'); if(!content)return;
+    const today=new Date().toISOString().slice(0,10);
+    if(title.textContent.trim()==='Today'){
+      const entries=(s.entries||[]).filter(e=>e.date); const todayEntries=entries.filter(e=>e.date===today);
+      if(!todayEntries.length&&entries.length){const last=entries.slice().sort((a,b)=>(b.date+(b.time||'')).localeCompare(a.date+(a.time||'')))[0];const card=document.createElement('button');card.id='recentHistoryHint';card.className='history-hint';card.dataset.view='history';card.innerHTML=`<span class="history-hint-icon">${icon('history')}</span><span><strong>No entries yet today</strong><small>History is saved through ${fmt(last.date)} · tap to view</small></span>`;content.prepend(card)}
+    }
+    if(title.textContent.trim()==='Baby'){
+      const events=(s.babyEvents||[]).filter(e=>e.date); const todayEvents=events.filter(e=>e.date===today);
+      if(!todayEvents.length&&events.length){const last=events.slice().sort((a,b)=>(b.date+(b.time||'')).localeCompare(a.date+(a.time||'')))[0];const card=document.createElement('button');card.id='recentHistoryHint';card.className='history-hint baby-hint';card.dataset.view='baby-timeline';card.innerHTML=`<span class="history-hint-icon">${icon('timeline')}</span><span><strong>No baby logs yet today</strong><small>History is saved through ${fmt(last.date)} · tap to view</small></span>`;content.prepend(card)}
+    }
   }
 
   function addFamilyStatus(){
     if(document.getElementById('familyDataStatus'))return;
     const title=document.getElementById('viewTitle'); if(!title||title.textContent.trim()!=='Settings')return;
     const content=document.getElementById('content'); if(!content)return;
-    const s=readState(),events=Array.isArray(s.babyEvents)?s.babyEvents:[],mom=Array.isArray(s.entries)?s.entries:[],synced=events.filter(e=>e.synced).length,signed=!!s.cloud?.enabled;
+    const s=readState(),events=Array.isArray(s.babyEvents)?s.babyEvents:[],mom=Array.isArray(s.entries)?s.entries:[],syncedBaby=events.filter(e=>e.synced).length,syncedMom=mom.filter(e=>e.synced).length,signed=!!s.cloud?.enabled;
     const card=document.createElement('section');card.id='familyDataStatus';card.className='family-status-card';
-    card.innerHTML=`<div class="family-status-head"><div class="family-status-icon">${icon('shield')}</div><div><span class="eyebrow">YOUR DATA</span><h3>${signed?'Family account connected':'On this device'}</h3></div><button class="btn ghost verify-btn" id="verifyCloudBtn">Check cloud</button></div><div class="family-status-grid"><div><span>Mom</span><strong>${mom.length.toLocaleString()}</strong><small>records</small></div><div><span>${s.baby?.name||'Baby'}</span><strong>${events.length.toLocaleString()}</strong><small>records</small></div><div><span>Cloud</span><strong>${signed?'Connected':'Off'}</strong><small>${signed?(s.cloud?.email||'family account'):'sign in to sync'}</small></div><div><span>Imported</span><strong>${synced===events.length&&events.length?'Ready':'Saved locally'}</strong><small>${events.length?'baby history loaded':'no baby history yet'}</small></div></div><div class="verify-note" id="verifyCloudNote">Tap “Check cloud” to compare this device with Firebase.</div>`;
+    card.innerHTML=`<div class="family-status-head"><div class="family-status-icon">${icon('shield')}</div><div><span class="eyebrow">YOUR DATA</span><h3>${signed?'Family account connected':'On this device'}</h3></div><button class="btn ghost verify-btn" id="verifyCloudBtn">Check cloud</button></div><div class="family-status-grid"><div><span>Mom</span><strong>${mom.length.toLocaleString()}</strong><small>${syncedMom.toLocaleString()} cloud-marked</small></div><div><span>${s.baby?.name||'Baby'}</span><strong>${events.length.toLocaleString()}</strong><small>${syncedBaby.toLocaleString()} cloud-marked</small></div><div><span>Cloud</span><strong>${signed?'Connected':'Off'}</strong><small>${signed?(s.cloud?.email||'family account'):'sign in to sync'}</small></div><div><span>History</span><strong>${mom.length||events.length?'Loaded':'Empty'}</strong><small>${events.length?'baby history available':'import history once'}</small></div></div><div class="verify-note" id="verifyCloudNote">Check cloud to compare this device with Firebase.</div>`;
     content.prepend(card);
     const b=card.querySelector('#verifyCloudBtn'),n=card.querySelector('#verifyCloudNote');b.onclick=()=>verifyCloud(b,n);
   }
 
-  function refresh(){simplifyLanguage();addFamilyStatus()}
+  function refresh(){simplifyLanguage();enhanceImport();addFamilyStatus();addRecentHistoryHint()}
   let scheduled=false;const schedule=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;refresh()})};
   document.addEventListener('DOMContentLoaded',schedule);new MutationObserver(schedule).observe(document.documentElement,{subtree:true,childList:true});
 })();
