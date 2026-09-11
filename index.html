@@ -7,28 +7,26 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>MilkFlow Family</title>
-  <link rel="manifest" href="manifest.webmanifest?build=stable8">
+  <link rel="manifest" href="manifest.webmanifest?build=stable9">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <meta name="apple-mobile-web-app-title" content="MilkFlow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?build=stable8">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?build=stable9">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="config.js?build=stable8" defer></script>
-  <script src="app.js?build=stable8" defer></script>
+  <script src="config.js?build=stable9" defer></script>
+  <script src="app.js?build=stable9" defer></script>
 </head>
 <body>
 <div class="shell">
   <aside class="sidebar">
     <div class="brand"><div class="brand-logo"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></div><div><strong>MilkFlow</strong><span>Family care</span></div></div>
     <div class="workspace"><button data-workspace="mom">Mom</button><button data-workspace="baby">Baby</button></div>
-    <div class="side-label">MOM</div>
-    <nav><button data-view="mom-home"><span>♥</span>Home</button><button data-view="mom-history"><span>≡</span>History</button><button data-view="mom-trends"><span>⌁</span>Trends</button><button data-view="mom-stash"><span>❄</span>Stash</button></nav>
-    <div class="side-label">BABY</div>
-    <nav><button data-view="baby-home"><span>●</span>Home</button><button data-view="baby-history"><span>≡</span>History</button><button data-view="baby-trends"><span>⌁</span>Trends</button><button data-view="baby-growth"><span>↗</span>Growth</button></nav>
-    <div class="side-label">FAMILY</div>
-    <nav><button data-view="settings"><span>⚙</span>Settings</button></nav>
+    <div id="sideNav" class="side-nav"></div>
     <div class="side-status"><strong id="syncTitle">On this device</strong><span id="syncSubtitle">Sign in to sync across devices</span></div>
   </aside>
 
@@ -54,7 +52,7 @@
     <input id="momType" type="hidden" value="pump">
     <section class="form-section"><div class="form-section-title">When</div><div class="form-grid"><label class="field"><span>Date</span><input id="momDate" type="date" required></label><label class="field"><span>Time</span><input id="momTime" type="time" required></label></div></section>
     <section class="form-section"><div class="form-section-title">Details</div><div class="form-grid"><label id="momAmountWrap" class="field"><span>Milk (mL)</span><input id="momAmount" type="number" inputmode="decimal" min="0" step="1"></label><label class="field"><span>Minutes</span><input id="momDuration" type="number" inputmode="numeric" min="0" step="1"></label><label id="momSideWrap" class="field hidden"><span>Side</span><select id="momSide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label></div><details class="optional"><summary>Add note</summary><textarea id="momNote" rows="2"></textarea></details></section>
-    <div class="form-actions"><button type="button" onclick="document.getElementById('momDialog').close()">Cancel</button><button class="save">Save</button></div>
+    <div class="form-actions"><button type="button" onclick="document.getElementById('momDialog').close()">Cancel</button><button class="save" data-save-label="Save">Save</button></div>
   </form>
 </dialog>
 
@@ -63,7 +61,7 @@
     <div class="dialog-head"><h2 id="diaperDialogTitle">Diaper</h2><button type="button" onclick="document.getElementById('diaperDialog').close()" aria-label="Close">×</button></div>
     <input id="diaperKind" type="hidden" value="wet">
     <section class="form-section"><div class="form-section-title">When</div><div class="form-grid"><label class="field"><span>Date</span><input id="diaperDate" type="date" required></label><label class="field"><span>Time</span><input id="diaperTime" type="time" required></label></div><details class="optional"><summary>Add note</summary><textarea id="diaperNote" rows="2"></textarea></details></section>
-    <div class="form-actions"><button type="button" onclick="document.getElementById('diaperDialog').close()">Cancel</button><button class="save">Save</button></div>
+    <div class="form-actions"><button type="button" onclick="document.getElementById('diaperDialog').close()">Cancel</button><button class="save" data-save-label="Save">Save</button></div>
   </form>
 </dialog>
 
@@ -73,7 +71,7 @@
     <input id="feedType" type="hidden" value="nursing">
     <section class="form-section"><div class="form-section-title">When</div><div class="form-grid"><label class="field"><span>Date</span><input id="feedDate" type="date" required></label><label class="field"><span>Time</span><input id="feedTime" type="time" required></label></div></section>
     <section class="form-section"><div class="form-section-title">Feed</div><div class="form-grid"><label id="feedAmountWrap" class="field hidden"><span>Amount (oz)</span><input id="feedAmount" type="number" inputmode="decimal" min="0" step="0.1"></label><label id="feedNursingWrap" class="field"><span>Minutes</span><input id="feedDuration" type="number" inputmode="numeric" min="0" step="1"></label><label class="field" id="feedSideWrap"><span>Side</span><select id="feedSide"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select></label></div></section>
-    <div class="form-actions"><button type="button" onclick="document.getElementById('feedDialog').close()">Cancel</button><button class="save">Save</button></div>
+    <div class="form-actions"><button type="button" onclick="document.getElementById('feedDialog').close()">Cancel</button><button class="save" data-save-label="Save">Save</button></div>
   </form>
 </dialog>
 
@@ -81,7 +79,7 @@
   <form id="growthForm">
     <div class="dialog-head"><h2>Growth</h2><button type="button" onclick="document.getElementById('growthDialog').close()" aria-label="Close">×</button></div>
     <section class="form-section"><div class="form-section-title">Measurement</div><div class="form-grid"><label class="field"><span>Date</span><input id="growthDate" type="date" required></label><label class="field"><span>Weight lb</span><input id="growthWeightLb" type="number" inputmode="decimal" min="0" step="0.1"></label><label class="field"><span>Weight oz</span><input id="growthWeightOz" type="number" inputmode="decimal" min="0" max="15.9" step="0.1"></label><label class="field"><span>Length (in)</span><input id="growthLength" type="number" inputmode="decimal" min="0" step="0.1"></label><label class="field"><span>Head (in)</span><input id="growthHead" type="number" inputmode="decimal" min="0" step="0.1"></label></div><details class="optional"><summary>Add note</summary><textarea id="growthNote" rows="2"></textarea></details></section>
-    <div class="form-actions"><button type="button" onclick="document.getElementById('growthDialog').close()">Cancel</button><button class="save">Save</button></div>
+    <div class="form-actions"><button type="button" onclick="document.getElementById('growthDialog').close()">Cancel</button><button class="save" data-save-label="Save">Save</button></div>
   </form>
 </dialog>
 
@@ -89,7 +87,7 @@
   <form id="sleepForm">
     <div class="dialog-head"><h2>Sleep</h2><button type="button" onclick="document.getElementById('sleepDialog').close()" aria-label="Close">×</button></div>
     <section class="form-section"><div class="form-grid"><label class="field"><span>Date</span><input id="sleepDate" type="date" required></label><label class="field"><span>Start</span><input id="sleepTime" type="time" required></label><label class="field"><span>Minutes</span><input id="sleepMinutes" type="number" inputmode="numeric" min="0" step="1" required></label></div></section>
-    <div class="form-actions"><button type="button" onclick="document.getElementById('sleepDialog').close()">Cancel</button><button class="save">Save</button></div>
+    <div class="form-actions"><button type="button" onclick="document.getElementById('sleepDialog').close()">Cancel</button><button class="save" data-save-label="Save">Save</button></div>
   </form>
 </dialog>
 
@@ -103,10 +101,24 @@
 </dialog>
 
 <input id="importFile" type="file" accept="application/json,.json" class="hidden">
+<input id="photoFile" type="file" accept="image/*" class="hidden">
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script>
+  // Network-first service worker: the newest deploy always wins, the cache is only a
+  // fallback for offline logging. Never unregister on every load - that killed the cache.
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))).catch(()=>{}));
+    window.addEventListener('load', () => {
+      // Only reload when an OLD worker is replaced. On a first visit clients.claim() also
+      // fires controllerchange, and reloading there would look like a random refresh.
+      const hadController = !!navigator.serviceWorker.controller;
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || reloading) return;
+        reloading = true;
+        location.reload();
+      });
+      navigator.serviceWorker.register('./sw.js?build=stable9', { updateViaCache: 'none' }).catch(err => console.warn('SW registration skipped', err));
+    });
   }
 </script>
 </body>

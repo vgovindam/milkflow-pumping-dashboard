@@ -10,8 +10,10 @@ Production intentionally uses one UI/runtime layer:
 - `styles.css`
 - `app.js`
 - `config.js`
+- `sw.js` (offline cache)
+- `icon.svg`, `icon-*.png`, `favicon.ico` (install icons)
 
-Older app versions, standalone migration scripts, competing CSS layers, and the stale service worker are not loaded in production. Baby Tracker compatibility and diaper normalization are handled directly in `app.js` so there is one source of truth.
+Older app versions, standalone migration scripts and competing CSS layers are not loaded in production. Baby Tracker compatibility and diaper normalization are handled directly in `app.js` so there is one source of truth.
 
 ## Mom
 
@@ -24,7 +26,10 @@ Older app versions, standalone migration scripts, competing CSS layers, and the 
 
 ## Baby
 
-Baby Home is optimized for repeated one-handed use with four large actions: Feed, Wet, Poopy, and Mixed.
+Baby Home is optimized for repeated one-handed use: a wide **Log a feed** action, three large
+circular diaper orbs (Wet / Poopy / Mixed), pill shortcuts for Sleep, Growth and Trends, a
+24-hour **Today's rhythm** track where each logged entry is a tappable dot, and dial rings that
+compare today against this baby's own 7-day average rather than any invented clinical target.
 
 - Nursing, expressed-breast-milk bottles, and formula bottles
 - Wet-only, poopy-only, and mixed diapers
@@ -38,13 +43,96 @@ Legacy Baby Tracker values are normalized in the data layer: `dirty` becomes `po
 
 Imported source duplicates are preserved for data safety but flagged exact-source duplicates are excluded from Baby trend calculations.
 
+## Editing and removing entries
+
+Any row in Mom history, Baby history or Growth opens an entry sheet with **Edit** and **Remove**.
+
+Remove is a soft-void: the record keeps its id, stays in local storage and in Firestore with a
+`voidedAt` timestamp, and simply stops counting toward history and totals. A toast offers **Undo**,
+and the entry is still present in any export. Nothing in the app hard-deletes a record.
+
+## Activity timeline
+
+Baby Home leads with three live activity rows — Feed, Diaper, Sleep — each showing how long since
+the last one, what it was, and the day's roll-up, with a one-tap add button. Tapping a row opens
+that entry.
+
+**Day review** (`#baby-day`, in the Baby nav and linked from Daily trends) is the per-day timeline:
+a scrollable date strip, a statistics block for the selected day (nursing minutes and count, bottle
+volume split into breast milk and formula, diapers broken down by type, sleep total and count),
+filter tabs, and the day's entries in chronological order. Every row opens the record sheet.
+
+## Feed reminders
+
+**Settings → Feed reminders** nudges you when the baby is due, based on the last feed plus a chosen
+gap (2–5 hours). A due chip appears on the feed row, and an in-app toast with a **Log** shortcut
+fires once per due feed, plus a system notification when permission is granted.
+
+This is a **nudge, not an alarm clock**. A browser cannot wake a closed page, so reminders only
+arrive while MilkFlow is open or installed and running. Genuine background alarms would need
+Firebase Cloud Messaging with a push handler and server-side scheduling.
+
+## Development
+
+A visual milestone journey across the first two years. The track shows every checklist band,
+where the baby is now, and how much of each band has been noted. Tapping an item records it as a
+normal baby event (`eventType: "milestone"`), so it appears in History, syncs, exports, and can be
+un-marked with undo.
+
+Content is the CDC **"Learn the Signs. Act Early."** checklists (2022 revision), which are US
+federal government work in the public domain. They describe what about 75% of children can do by
+each age — a conversation starter for pediatric visits, not a test or a diagnosis.
+
+This is deliberately **not** the Wonder Weeks "leap" schedule: that schedule, its numbering and its
+artwork are proprietary, and its developmental claims are not clinically established.
+
+The journey needs a date of birth, set in **Settings → Baby profile** along with the baby's name
+and a photo. Photos are centre-cropped and downscaled to 320px JPEG before storage so the synced
+profile document stays small.
+
+## Time of day
+
+The app tints itself across four day parts (morning, afternoon, evening, night) and greets you on
+every load. Only ambient surfaces change — ink, lines and accent colours are fixed, so text
+contrast is identical at every hour.
+
+## Trends
+
+Both Trends views and the Doctor summary offer 7 / 14 / 30 / 90 days and **All**, where All spans
+from the first recorded entry. Ranges longer than 45 days are aggregated into even buckets so the
+charts stay readable.
+
+Mom: daily output, a 7-day rolling average with a direction badge, and an output-by-time-of-day
+breakdown (morning / midday / evening / night). Baby: stacked diaper composition, feeds per day,
+bottle volume, a feeding-mix donut, and sleep when logged. Charts are inline SVG/CSS with no
+third-party library.
+
+A confirmed daily total (`dailyOverrides`) acts as a **floor**, not a replacement: the day shows
+`max(confirmed, logged)`, so sessions logged after the total was confirmed are never hidden.
+
+## Navigation
+
+Screens are real history entries, so the phone/browser Back button walks back through the screens
+you visited instead of leaving the app. Refreshing keeps you on the current screen.
+
+## Offline
+
+`sw.js` caches the app shell with a network-first strategy: the newest deploy always wins when
+online, and the cache is only used as a fallback. The app opens and logs entries with no network;
+those entries sync when the connection returns. The cache version is bumped with the `build` query
+string in `index.html`.
+
 ## Data safety and sync
 
 The app keeps the existing `milkflow-family-v4-state` localStorage key for backward compatibility, so UI upgrades do not reset local history.
 
+If the app is open in more than one tab, each tab listens for the other's writes and merges both
+sides by record id rather than overwriting with its own older in-memory copy. Records carry
+`createdAt` / `editedAt` / `voidedAt` so the newer version of a record wins and no entry is lost.
+
 When signed in, Mom records use `users/{uid}/entries` and Baby records use `users/{uid}/familyEvents`. The app reconciles local and cloud records by stable ID, uploads missing local records, normalizes legacy Baby records, and listens for Firestore changes so devices using the same account stay current.
 
-Import is merge-only and creates a pre-import local snapshot. The stable UI intentionally exposes no delete action.
+Import is merge-only and creates a pre-import local snapshot. The UI exposes no hard delete; removing an entry only sets `voidedAt` and can be undone.
 
 Use **Settings → Check cloud** to compare cloud record counts with the current device. Use **Export** for a private JSON backup.
 
@@ -54,7 +142,14 @@ The tracker layout is informed by current infant-care guidance: feeding history,
 
 The mobile UI uses persistent top-level navigation, large labeled controls, and generous touch targets for frequent handheld use.
 
-Selected interface icons use Lucide-style SVG paths under the ISC License. Larger Mom and Baby hero illustrations are embedded SVG artwork so the app does not depend on third-party image hosting at runtime.
+Type is **Fraunces** (variable, optical-sized) for headlines and figures against **Plus Jakarta
+Sans** for dense UI text. Control labels stay in the sans so they read as things to tap; counts and
+volumes use tabular figures so columns line up.
+
+Interface icons are hand-written SVG paths rendered from one `icon()` map in `app.js`, so the
+sidebar, bottom bar, tiles and rows always use the same symbol for the same action. Wet, poopy and
+mixed diapers each have their own icon and colour. The Baby hero illustration and the app install
+icons are embedded/generated SVG so the app does not depend on third-party image hosting at runtime.
 
 ## Firebase
 

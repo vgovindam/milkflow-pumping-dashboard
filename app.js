@@ -4,18 +4,18 @@
 const STATE_KEY = 'milkflow-family-v4-state';
 const SNAPSHOT_KEY = 'milkflow-family-pre-import-backup';
 const VERSION = 8;
-const VIEWS = new Set(['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','doctor','settings']);
+const VIEWS = new Set(['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','baby-day','development','doctor','settings']);
 const DEFAULTS = {
   version: VERSION,
-  profile: { dailyGoalMl: 760, stashMl: 0 },
-  baby: { id: 'saahas-2026', name: 'Saahas', feedingPreference: 'auto' },
+  profile: { dailyGoalMl: 760, stashMl: 0, momName: '' },
+  baby: { id: 'saahas-2026', name: 'Saahas', feedingPreference: 'auto', birthDate: '', photo: '' },
   schedule: ['05:40','11:05','14:35','17:45','20:45','23:35'],
   entries: [],
   babyEvents: [],
   dailyOverrides: {},
-  reminders: { enabled: false, leadMin: 10, lastSentKey: null },
+  reminders: { enabled: false, leadMin: 10, lastSentKey: null, feedEnabled: false, feedGapMin: 180, feedLastKey: null },
   cloud: { enabled: false, userId: null, email: null, lastSync: null, lastVerified: null, momCount: null, babyCount: null },
-  ui: { workspace: 'mom', view: 'mom-home', momRange: 30, babyRange: 30, babyFilter: 'all', trendRange: 14, doctorRange: 14 }
+  ui: { workspace: 'mom', view: 'mom-home', momRange: 30, babyRange: 30, babyFilter: 'all', trendRange: 14, doctorRange: 14, reviewDate: '', reviewFilter: 'all' }
 };
 
 const $ = id => document.getElementById(id);
@@ -89,6 +89,7 @@ function readState(){
 }
 
 const S = readState();
+let dataVersion = 0;
 let cloud = null;
 let unsubscribers = [];
 let renderTimer = null;
@@ -99,69 +100,202 @@ let view = (() => {
   return S.ui.workspace === 'baby' ? 'baby-home' : 'mom-home';
 })();
 
-function workspaceOf(v){ return v.startsWith('baby') || v === 'doctor' ? 'baby' : 'mom'; }
+function workspaceOf(v){ return v.startsWith('baby') || v === 'doctor' || v === 'development' ? 'baby' : 'mom'; }
 function save(){
   S.version = VERSION;
   S.ui.view = view;
   S.ui.workspace = workspaceOf(view);
-  localStorage.setItem(STATE_KEY,JSON.stringify(S));
+  S.savedAt = Date.now();
+  dataVersion++;
+  try{ localStorage.setItem(STATE_KEY,JSON.stringify(S)); }
+  catch(err){ console.error('Local save failed',err); toast('This device is out of storage. Export a backup soon.',6000); }
 }
-function toast(text,ms=2800){ const t=$('toast'); if(!t) return; t.textContent=text; t.classList.add('show'); clearTimeout(t._timer); t._timer=setTimeout(()=>t.classList.remove('show'),ms); }
+// Records carry their own timestamps so two tabs/devices can be merged without losing either side.
+const stampOf = e => Date.parse(e?.voidedAt || e?.editedAt || e?.createdAt || '') || 0;
+// Union two record lists. Returns `changed` so a no-op merge writes nothing - without that,
+// two open tabs would answer each other's storage events forever.
+function unionById(mine,theirs,norm){
+  const m = new Map((mine||[]).map(e => [e.id,e]));
+  let changed = false;
+  for(const raw of (Array.isArray(theirs) ? theirs : [])){
+    const r = norm ? norm(raw) : raw;
+    if(!r?.id) continue;
+    const old = m.get(r.id);
+    if(!old){ m.set(r.id,r); changed = true; }
+    else if(stampOf(r) > stampOf(old)){ m.set(r.id,{...old,...r}); changed = true; }
+  }
+  return {list:[...m.values()], changed};
+}
+// Another tab of the same app wrote to localStorage. Union both sides instead of letting
+// this tab's older in-memory copy overwrite records the other tab just created.
+function adoptExternalState(raw){
+  let p; try{ p = JSON.parse(raw); }catch{ return; }
+  if(!p || typeof p !== 'object') return;
+  const mom = unionById(S.entries, p.entries);
+  const baby = unionById(S.babyEvents, p.babyEvents, normalizeBabyEvent);
+  S.entries = mom.list; S.babyEvents = baby.list;
+  let changed = mom.changed || baby.changed;
+
+  if((p.savedAt||0) > (S.savedAt||0)){
+    const settings = {profile:S.profile, baby:S.baby, schedule:S.schedule, dailyOverrides:S.dailyOverrides, reminders:S.reminders};
+    const merged = {
+      profile:{...S.profile, ...(p.profile||{})},
+      baby:{...S.baby, ...(p.baby||{})},
+      schedule:(Array.isArray(p.schedule) && p.schedule.length) ? p.schedule : S.schedule,
+      dailyOverrides:{...S.dailyOverrides, ...(p.dailyOverrides||{})},
+      reminders:{...S.reminders, ...(p.reminders||{})}
+    };
+    // Compare values, not timestamps: adopting on timestamp alone would also ping-pong.
+    if(JSON.stringify(settings) !== JSON.stringify(merged)){
+      Object.assign(S, merged);
+      changed = true;
+    }
+  }
+  if(!changed) return;
+  save();
+  clearTimeout(renderTimer); renderTimer = setTimeout(render,80);
+}
+window.addEventListener('storage', e => { if(e.key === STATE_KEY && e.newValue) adoptExternalState(e.newValue); });
+function toast(text,ms=2800,action=null){
+  const t=$('toast'); if(!t) return;
+  t.innerHTML=`<span>${esc(text)}</span>`;
+  if(action){ const b=document.createElement('button'); b.type='button'; b.className='toast-action'; b.textContent=action.label; b.addEventListener('click',()=>{ t.classList.remove('show'); action.run(); }); t.appendChild(b); }
+  t.classList.add('show'); clearTimeout(t._timer); t._timer=setTimeout(()=>t.classList.remove('show'),ms);
+}
 function closeOverlays(){ document.body.classList.remove('locked'); $('drawer')?.classList.remove('open'); $('sheet')?.classList.remove('open'); $('scrim')?.classList.remove('open'); }
-function setView(v){
+function closeDialogs(){ document.querySelectorAll('dialog[open]').forEach(d => { try{ d.close(); }catch{} }); }
+function setView(v,{replace=false}={}){
   if(!VIEWS.has(v)) v = S.ui.workspace === 'baby' ? 'baby-home' : 'mom-home';
-  view = v; save(); history.replaceState(null,'',`#${v}`); closeOverlays(); render(); window.scrollTo({top:0,behavior:'auto'});
+  const same = v === view;
+  view = v; save();
+  const url = `#${v}`;
+  // pushState (not replaceState) so the device Back button walks back through screens
+  // instead of leaving the app entirely.
+  if(replace || same) history.replaceState({view:v},'',url); else history.pushState({view:v},'',url);
+  closeOverlays(); closeDialogs(); render();
+  window.scrollTo({top:0,behavior:'auto'});
 }
-window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(VIEWS.has(h)&&h!==view){ view=h; save(); closeOverlays(); render(); } });
+window.addEventListener('popstate',e => {
+  // Back also dismisses anything covering the screen, so it never leaves a stale overlay.
+  closeOverlays(); closeDialogs();
+  const v = e.state?.view || location.hash.slice(1);
+  if(!VIEWS.has(v) || v === view) return;
+  view = v; save(); render(); window.scrollTo({top:0,behavior:'auto'});
+});
 
 function icon(name,cls=''){
   const paths={
-    home:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9 20v-6h6v6"/>',
-    drop:'<path d="M12 3s6 6.2 6 11a6 6 0 0 1-12 0c0-4.8 6-11 6-11Z"/>',
+    home:'<path d="M3 11.4 12 4l9 7.4"/><path d="M5.6 10.3V20h12.8v-9.7"/><path d="M9.4 20v-5.4a2.6 2.6 0 0 1 5.2 0V20"/>',
+    drop:'<path d="M12 3.2c2.8 3 5.6 6.2 5.6 9.4a5.6 5.6 0 1 1-11.2 0c0-3.2 2.8-6.4 5.6-9.4Z"/>',
+    poop:'<path d="M12.4 4.3c1.4.3 2 1.3 1.7 2.3h.5c1.5 0 2.6 1 2.6 2.2 0 .5-.2 1-.5 1.3 1.5.2 2.6 1.2 2.6 2.5 0 .6-.2 1.1-.6 1.5 1.1.4 1.8 1.2 1.8 2.2 0 1.5-1.6 2.7-3.6 2.7H7.1c-2 0-3.6-1.2-3.6-2.7 0-1 .7-1.8 1.8-2.2a2 2 0 0 1-.6-1.5c0-1.3 1.1-2.3 2.6-2.5a1.9 1.9 0 0 1-.5-1.3c0-1.2 1.1-2.2 2.6-2.2h.5c-.4-1.3.7-2.6 2.5-2.3Z"/><path d="M10 13.4h.01M14 13.4h.01"/>',
+    mixed:'<path d="M8 3.6c1.9 2 3.8 4.2 3.8 6.3a3.8 3.8 0 1 1-7.6 0c0-2.1 1.9-4.3 3.8-6.3Z"/><path d="M17.6 10.6c1 .2 1.4 1 1.2 1.7h.3c1.1 0 1.9.7 1.9 1.6 0 .4-.2.7-.4 1 1.1.2 1.9.9 1.9 1.8 0 1.1-1.2 2-2.7 2h-5.6c-1.5 0-2.7-.9-2.7-2 0-.9.8-1.6 1.9-1.8a1.4 1.4 0 0 1-.4-1c0-.9.8-1.6 1.9-1.6h.3c-.3-1 .5-1.9 1.8-1.7Z"/>',
+    nursing:'<path d="M20.8 5.2a5.2 5.2 0 0 0-7.4-.2L12 6.2l-1.4-1.2a5.2 5.2 0 0 0-7.2 7.4L12 21l8.6-8.4a5.2 5.2 0 0 0 .2-7.4Z"/><circle cx="9.4" cy="10.4" r="1.5"/><circle cx="14.6" cy="10.4" r="1.5"/>',
     heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.6a5.5 5.5 0 0 0 0-7.8Z"/>',
-    bottle:'<path d="M9 3h6M10 3v4l-2 3v9a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-9l-2-3V3"/><path d="M8 13h8"/>',
-    diaper:'<path d="M5 7c2.3 1.4 4.6 2.1 7 2.1S16.7 8.4 19 7v8.5c-2.1 2.3-4.5 3.5-7 3.5s-4.9-1.2-7-3.5Z"/><path d="M8 9.1v7.1M16 9.1v7.1"/>',
-    history:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/>',
-    chart:'<path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 3-4 3 2 4-6"/>',
-    snow:'<path d="M12 2v20M4.2 6.5l15.6 9M4.2 17.5l15.6-9"/>',
-    baby:'<circle cx="12" cy="12" r="8"/><path d="M9.5 10h.01M14.5 10h.01M9.5 14c1.6 1.2 3.4 1.2 5 0"/><path d="M8 4.7c1.2-1.9 3.7-2.3 5.3-.8"/>',
-    plus:'<path d="M12 5v14M5 12h14"/>',
-    more:'<circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/>',
+    bottle:'<path d="M9.6 2.8h4.8"/><path d="M10.4 2.8v3.4L8.6 9v10a2.2 2.2 0 0 0 2.2 2.2h2.4a2.2 2.2 0 0 0 2.2-2.2V9l-1.8-2.8V2.8"/><path d="M8.6 12.4h6.8M8.6 16h6.8"/>',
+    diaper:'<path d="M4.6 6.6c2.4 1.5 4.8 2.2 7.4 2.2s5-.7 7.4-2.2v8.2c-2.2 2.6-4.7 3.9-7.4 3.9s-5.2-1.3-7.4-3.9Z"/><path d="M8 8.7v8.1M16 8.7v8.1"/>',
+    history:'<path d="M3.2 12a8.8 8.8 0 1 0 2.9-6.5"/><path d="M3.2 4.2v5h5"/><path d="M12 7.6V12l3.2 2"/>',
+    chart:'<path d="M4 19.2V4.8"/><path d="M4 19.2h15.6"/><path d="m7.4 15.2 3.4-4.4 3 2 4.2-6.2"/>',
+    snow:'<path d="M12 2.4v19.2"/><path d="m4 7 16 10M4 17 20 7"/><path d="m9.2 4.4 2.8 2.6 2.8-2.6M9.2 19.6l2.8-2.6 2.8 2.6"/>',
+    baby:'<circle cx="12" cy="13" r="7.4"/><path d="M9.6 11.6h.01M14.4 11.6h.01"/><path d="M9.8 15.4c1.4 1.2 3 1.2 4.4 0"/><path d="M8.6 6.1C9.8 3.7 13 3.2 14.8 5"/>',
+    plus:'<path d="M12 4.8v14.4M4.8 12h14.4"/>',
+    more:'<circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
     menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
     close:'<path d="m6 6 12 12M18 6 6 18"/>',
-    bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
-    check:'<path d="m5 12 4 4L19 6"/>',
+    bell:'<path d="M18.4 8.4a6.4 6.4 0 1 0-12.8 0c0 6.8-2.8 7-2.8 9.2h18.4c0-2.2-2.8-2.4-2.8-9.2"/><path d="M9.8 21h4.4"/>',
+    check:'<path d="m5 12.4 4.4 4.4L19 6.6"/>',
     settings:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 3.1a7 7 0 0 0-1.7 1l-2.4-1-2 3.4L5.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.3 3.1h5l.3-3.1a7 7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.5c.1-.3.1-.7.1-1Z"/>',
-    steth:'<path d="M6 3v5a4 4 0 0 0 8 0V3"/><path d="M10 12v2a5 5 0 0 0 10 0v-1"/><circle cx="20" cy="10" r="2"/>',
-    growth:'<path d="M4 20V10M10 20V4M16 20v-7M22 20V7"/>',
-    moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>',
+    steth:'<path d="M6 3v5.2a4 4 0 0 0 8 0V3"/><path d="M10 12.2v1.6a5 5 0 0 0 10 0v-1.2"/><circle cx="20" cy="10" r="2.2"/><path d="M6 3H4.4M14 3h1.6"/>',
+    growth:'<path d="M3.4 8.2h17.2a1 1 0 0 1 1 1v5.6a1 1 0 0 1-1 1H3.4a1 1 0 0 1-1-1V9.2a1 1 0 0 1 1-1Z"/><path d="M7 8.2v3.4M11 8.2v4.6M15 8.2v3.4M19 8.2v4.6"/>',
+    moon:'<path d="M20.8 13.4A9 9 0 1 1 10.6 3.2a7 7 0 0 0 10.2 10.2Z"/><path d="M17 3.4v3M15.5 4.9h3"/>',
     shield:'<path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6Z"/><path d="m9 12 2 2 4-4"/>',
-    upload:'<path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M5 3h14"/>',
-    download:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
-    chevron:'<path d="m9 18 6-6-6-6"/>',
-    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-    spark:'<path d="m12 3 1.6 4.1L18 9l-4.4 1.9L12 15l-1.6-4.1L6 9l4.4-1.9Z"/><path d="m19 15 .8 2 2.2 1-.2.1-2 1-.8 1.9-.8-1.9-2.2-1 2.2-1Z"/>'
+    upload:'<path d="M12 20.4V8.6"/><path d="m7.2 13 4.8-4.8L16.8 13"/><path d="M4.6 3.6h14.8"/>',
+    download:'<path d="M12 3.6v11.8"/><path d="m7.2 11 4.8 4.8L16.8 11"/><path d="M4.6 20.4h14.8"/>',
+    chevron:'<path d="m9.4 18 6-6-6-6"/>',
+    clock:'<circle cx="12" cy="12" r="8.8"/><path d="M12 6.8V12l3.4 2.2"/>',
+    spark:'<path d="m12 3 1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7Z"/><path d="m18.6 15.2.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7Z"/>',
+    edit:'<path d="M12.5 5.6H5.2A1.8 1.8 0 0 0 3.4 7.4v11.4a1.8 1.8 0 0 0 1.8 1.8h11.4a1.8 1.8 0 0 0 1.8-1.8v-7.3"/><path d="M17.4 3.6a2.2 2.2 0 0 1 3.1 3.1L12.4 15l-3.6.8.8-3.6Z"/>',
+    trash:'<path d="M3.8 6.4h16.4"/><path d="M8.6 6.4V4.8a1.6 1.6 0 0 1 1.6-1.6h3.6a1.6 1.6 0 0 1 1.6 1.6v1.6"/><path d="M18.4 6.4v13.2a1.6 1.6 0 0 1-1.6 1.6H7.2a1.6 1.6 0 0 1-1.6-1.6V6.4"/><path d="M10.2 11v5.6M13.8 11v5.6"/>',
+    sun:'<circle cx="12" cy="12" r="4.4"/><path d="M12 2.6v2.2M12 19.2v2.2M4.6 12H2.4M21.6 12h-2.2M6.3 6.3 4.8 4.8M19.2 19.2l-1.5-1.5M6.3 17.7l-1.5 1.5M19.2 4.8l-1.5 1.5"/>',
+    timer:'<circle cx="12" cy="13.4" r="7.8"/><path d="M12 9.4v4h3"/><path d="M9.4 2.6h5.2"/>',
+    calendar:'<rect x="3.4" y="5.2" width="17.2" height="15.4" rx="2.4"/><path d="M3.4 10h17.2"/><path d="M8.2 3v4.4M15.8 3v4.4"/>',
+    cloud:'<path d="M17.4 18.6H7a4.4 4.4 0 0 1-.6-8.8 5.8 5.8 0 0 1 11.1 1.2 3.8 3.8 0 0 1-.1 7.6Z"/>',
+    scale:'<path d="M12 3.4a8.6 8.6 0 0 1 8.6 8.6v6a2 2 0 0 1-2 2H5.4a2 2 0 0 1-2-2v-6A8.6 8.6 0 0 1 12 3.4Z"/><path d="M12 12V8.2"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/>'
   };
-  return `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.heart}</svg>`;
+  return `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.heart}</svg>`;
 }
 function babyIllustration(){
   return `<svg class="scene" viewBox="0 0 220 150" aria-hidden="true"><defs><linearGradient id="bgB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8f8ff"/><stop offset="1" stop-color="#eef0ff"/></linearGradient></defs><rect x="10" y="16" width="200" height="122" rx="42" fill="url(#bgB)"/><circle cx="52" cy="46" r="18" fill="#fff6c9"/><circle cx="170" cy="38" r="12" fill="#e8ddff"/><path d="M37 111c17-20 40-30 69-30 31 0 57 11 77 32" fill="none" stroke="#b7e8dc" stroke-width="17" stroke-linecap="round"/><circle cx="111" cy="76" r="33" fill="#fff"/><path d="M96 73h.01M126 73h.01" stroke="#42556f" stroke-width="4" stroke-linecap="round"/><path d="M101 88c7 5 14 5 21 0" fill="none" stroke="#6c86a6" stroke-width="3" stroke-linecap="round"/><path d="M91 52c10-10 28-13 42-3" fill="none" stroke="#7f9bbd" stroke-width="5" stroke-linecap="round"/><path d="M69 41c-7-7-15-5-18 3 7 0 12 3 16 8" fill="#fff"/></svg>`;
 }
-function momIllustration(){
-  return `<svg class="scene" viewBox="0 0 220 150" aria-hidden="true"><defs><linearGradient id="bgM" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0f6"/><stop offset="1" stop-color="#f0eaff"/></linearGradient></defs><rect x="10" y="16" width="200" height="122" rx="42" fill="url(#bgM)"/><circle cx="55" cy="42" r="15" fill="#ffe8b5"/><circle cx="172" cy="45" r="13" fill="#e2d8ff"/><path d="M109 44c18 21 29 38 29 53a29 29 0 1 1-58 0c0-15 11-32 29-53Z" fill="#fff" stroke="#b79be8" stroke-width="4"/><path d="M96 96c6 6 19 6 26 0" fill="none" stroke="#d17aa4" stroke-width="4" stroke-linecap="round"/><path d="M55 116c18-10 36-12 54-7M164 116c-18-10-36-12-54-7" fill="none" stroke="#efb7ce" stroke-width="12" stroke-linecap="round"/></svg>`;
-}
-
 const momEntries = () => S.entries.filter(e => !e.voidedAt);
 const pumps = () => momEntries().filter(e => e.type === 'pump');
 const nurses = () => momEntries().filter(e => e.type === 'nursing');
-const babyEvents = () => S.babyEvents.filter(e => !e.voidedAt).map(normalizeBabyEvent);
+let _babyCache = null, _babyCacheV = -1;
+const babyEvents = () => {
+  if(_babyCacheV === dataVersion && _babyCache) return _babyCache;
+  _babyCacheV = dataVersion;
+  _babyCache = S.babyEvents.filter(e => !e.voidedAt).map(normalizeBabyEvent);
+  return _babyCache;
+};
+let _byDate = null, _byDateV = -1;
+function babyByDate(){
+  if(_byDateV === dataVersion && _byDate) return _byDate;
+  _byDateV = dataVersion;
+  _byDate = new Map();
+  for(const e of babyEvents()){
+    if(!_byDate.has(e.date)) _byDate.set(e.date,[]);
+    _byDate.get(e.date).push(e);
+  }
+  return _byDate;
+}
 const dayP = d => pumps().filter(e => e.date === d).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-const dayTotal = d => Number.isFinite(+S.dailyOverrides?.[d]) ? +S.dailyOverrides[d] : sum(dayP(d).map(e => +e.amountMl || 0));
-const babyOn = (d,t) => babyEvents().filter(e => e.date === d && (!t || e.eventType === t));
+const dayLogged = d => sum(dayP(d).map(e => +e.amountMl || 0));
+const dayOverride = d => { const v = +S.dailyOverrides?.[d]; return Number.isFinite(v) ? v : null; };
+// A confirmed daily total covers sessions that were never logged individually, so it acts as a
+// floor - not a replacement. Taking the override verbatim hid logged pumps once the logged
+// sessions for that day added up to more than the confirmed figure.
+const dayTotal = d => { const o = dayOverride(d), l = dayLogged(d); return o === null ? l : Math.max(o, l); };
+const dayAdjusted = d => { const o = dayOverride(d); return o !== null && o > dayLogged(d); };
+const babyOn = (d,t) => { const a = babyByDate().get(d) || []; return t ? a.filter(e => e.eventType === t) : a; };
 function dateList(n,end=today()){ const out=[], d=new Date(`${end}T12:00:00`); for(let i=n-1;i>=0;i--){ const x=new Date(d); x.setDate(d.getDate()-i); out.push(iso(x)); } return out; }
+const daysBetween = (a,b) => Math.round((new Date(`${b}T12:00:00`) - new Date(`${a}T12:00:00`))/86400000);
+function earliestDate(scope){
+  const src = scope === 'baby' ? babyEvents().map(e => e.date)
+            : scope === 'mom' ? [...momEntries().map(e => e.date), ...Object.keys(S.dailyOverrides||{})]
+            : [...momEntries().map(e => e.date), ...babyEvents().map(e => e.date)];
+  const ds = src.filter(Boolean).sort();
+  return ds[0] || today();
+}
+// `range` 9999 means "all recorded history" - without it, anything older than 30 days was
+// simply unreachable from Trends and the Doctor summary even though History still listed it.
+function rangeDays(range,scope){
+  if(+range < 9999) return +range;
+  return Math.max(1, Math.min(daysBetween(earliestDate(scope), today()) + 1, 400));
+}
+const RANGE_PILLS = [[7,'7 days'],[14,'14 days'],[30,'30 days'],[90,'90 days'],[9999,'All']];
 function rollingAvg(n=7){ const vals=dateList(n).map(dayTotal).filter(v=>v>0); return vals.length ? Math.round(sum(vals)/vals.length) : 0; }
 function lastPump(){ return pumps().slice().sort(byWhenDesc)[0] || null; }
-function nextPump(){ const d=new Date(), m=d.getHours()*60+d.getMinutes(); return S.schedule.find(t => (+t.slice(0,2)*60 + +t.slice(3)) > m) || S.schedule[0]; }
+const mins = t => t ? (+String(t).slice(0,2)*60 + +String(t).slice(3,5)) : 0;
+const sortedSchedule = () => [...S.schedule].filter(Boolean).sort((a,b) => mins(a)-mins(b));
+function nextPump(){ const d=new Date(), m=d.getHours()*60+d.getMinutes(), s=sortedSchedule(); return s.find(t => mins(t) > m) || s[0] || '--:--'; }
+// Pair each planned slot with the pump actually logged nearest to it (each pump used once)
+// instead of pairing by array position, which marked the 5:40 slot done when the first
+// pump of the day was really the 11:05 one.
+function scheduleSlots(d){
+  const logged = dayP(d).map((e,i) => ({e,i}));
+  const used = new Set();
+  const slots = sortedSchedule().map(t => {
+    let best = null, bestDiff = Infinity;
+    for(const {e,i} of logged){
+      if(used.has(i) || !e.time) continue;
+      const diff = Math.abs(mins(e.time) - mins(t));
+      if(diff < bestDiff){ bestDiff = diff; best = i; }
+    }
+    if(best !== null && bestDiff <= 150){ used.add(best); return {time:t, entry:logged[best].e}; }
+    return {time:t, entry:null};
+  });
+  const extras = logged.filter(({i}) => !used.has(i)).map(({e}) => ({time:e.time, entry:e, extra:true}));
+  return [...slots, ...extras].sort((a,b) => mins(a.entry?.time || a.time) - mins(b.entry?.time || b.time));
+}
 function babyStats(d){
   const diapers = babyOn(d,'diaper').filter(e => !e.exactSourceDuplicate);
   const feeds = babyOn(d,'feeding').filter(e => !e.exactSourceDuplicate);
@@ -188,7 +322,6 @@ function babyStats(d){
     sleepMin: sum(sleep.map(e => +e.durationMinutes || 0))
   };
 }
-function latestBabyDate(){ return babyEvents().slice().sort(byWhenDesc)[0]?.date || today(); }
 function latestGrowth(){ return babyEvents().filter(e => e.eventType === 'growth').sort(byWhenDesc)[0] || null; }
 function feedingPreference(){
   if(['mostly_breastfed','mostly_formula','mixed'].includes(S.baby.feedingPreference)) return S.baby.feedingPreference;
@@ -202,6 +335,169 @@ function feedingPreference(){
   return 'mixed';
 }
 
+// "3h 20m ago" is what a parent actually wants at a glance, not a bare clock time.
+const birthDate = () => S.baby.birthDate || '';
+const ageDays = () => { const b = birthDate(); if(!b) return null; const d = daysBetween(b, today()); return Number.isFinite(d) && d >= 0 ? d : null; };
+const ageWeeks = () => { const d = ageDays(); return d === null ? null : Math.floor(d/7); };
+// Calendar months, so "4 months" lines up with how milestone guidance is written.
+function ageMonths(){
+  const b = birthDate(); if(!b) return null;
+  const bd = new Date(`${b}T12:00:00`), nd = new Date(`${today()}T12:00:00`);
+  let m = (nd.getFullYear()-bd.getFullYear())*12 + (nd.getMonth()-bd.getMonth());
+  if(nd.getDate() < bd.getDate()) m--;
+  return m < 0 ? null : m;
+}
+function ageLabel(){
+  const d = ageDays(); if(d === null) return null;
+  if(d < 14) return `${d} ${d===1?'day':'days'} old`;
+  if(d < 70) { const w = Math.floor(d/7); return `${w} weeks old`; }
+  const m = ageMonths(), rem = Math.floor((d - m*30.44)/7);
+  if(m < 24) return rem > 0 ? `${m} months ${rem}w` : `${m} months old`;
+  return `${Math.floor(m/12)}y ${m%12}m old`;
+}
+
+// Four gentle day parts: tints the app and drives the greeting on every load.
+const DAY_PARTS = [
+  {key:'morning',   from:5,  to:12, greet:'Good morning'},
+  {key:'afternoon', from:12, to:17, greet:'Good afternoon'},
+  {key:'evening',   from:17, to:21, greet:'Good evening'},
+  {key:'night',     from:21, to:5,  greet:'Good night'}
+];
+function dayPart(){
+  const h = new Date().getHours();
+  return DAY_PARTS.find(p => p.from < p.to ? (h >= p.from && h < p.to) : (h >= p.from || h < p.to)) || DAY_PARTS[0];
+}
+function applyDayPart(){
+  const p = dayPart();
+  if(document.documentElement.dataset.daypart !== p.key) document.documentElement.dataset.daypart = p.key;
+  return p;
+}
+function greeting(name){
+  const g = dayPart().greet;
+  return name ? `${g}, ${esc(name)}` : g;
+}
+
+function sinceLabel(date,time){
+  if(!date) return null;
+  const t=new Date(`${date}T${time||'00:00'}:00`);
+  const diff=Date.now()-t.getTime();
+  if(!Number.isFinite(diff)) return null;
+  if(diff < 0) return null;
+  const m=Math.round(diff/60000);
+  if(m < 2) return 'just now';
+  if(m < 60) return `${m}m ago`;
+  const h=Math.floor(m/60);
+  if(h < 24) return m%60 ? `${h}h ${m%60}m ago` : `${h}h ago`;
+  const d=Math.round(h/24);
+  return d <= 1 ? 'yesterday' : `${d} days ago`;
+}
+function untilLabel(t){
+  if(!t || t === '--:--') return '';
+  const d0=new Date(); let diff=mins(t) - (d0.getHours()*60 + d0.getMinutes());
+  if(diff < 0) diff += 1440;
+  if(diff < 2) return 'now';
+  if(diff < 60) return `in ${diff}m`;
+  const h=Math.floor(diff/60);
+  return diff%60 ? `in ${h}h ${diff%60}m` : `in ${h}h`;
+}
+function ring(pct,center,sub,tone='mom'){
+  const r=52, c=2*Math.PI*r, p=Math.max(0,Math.min(1,pct||0));
+  return `<div class="ring ${tone}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="${r}"/><circle class="ring-fg" cx="60" cy="60" r="${r}" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-p)).toFixed(1)}"/></svg><div class="ring-label"><strong>${center}</strong><span>${sub}</span></div></div>`;
+}
+function chip(ic,text,cls=''){ return `<span class="chip ${cls}">${icon(ic)}${text}</span>`; }
+const hoursSince = e => e ? (Date.now() - new Date(`${e.date}T${e.time||'00:00'}:00`).getTime())/3600000 : Infinity;
+const isRecent = (e,maxHours=36) => { const h=hoursSince(e); return Number.isFinite(h) && h >= 0 && h <= maxHours; };
+// ---------------------------------------------------------------- charts --
+// All charts are inline SVG/CSS with no dependencies. Geometry lives in the SVG;
+// every label is HTML, so text stays crisp at any container width. Lines use
+// vector-effect="non-scaling-stroke" so stretching never distorts stroke weight.
+
+// Long ranges are aggregated into weeks so a 90-day or All view stays readable.
+function bucketDays(days,maxBars=45){
+  if(days.length <= maxBars) return days.map(d => ({days:[d], label:fd(d), short:fd(d)}));
+  const size = Math.ceil(days.length / maxBars), out = [];
+  for(let i = 0; i < days.length; i += size){
+    const chunk = days.slice(i, i+size);
+    out.push({days:chunk, label:`${fd(chunk[0])} – ${fd(chunk[chunk.length-1])}`, short:fd(chunk[0])});
+  }
+  return out;
+}
+const avg = a => a.length ? sum(a)/a.length : 0;
+
+// Vertical bars. `segments` turns each bar into a stack (diaper types).
+function barChart(buckets,{value,segments=null,color='var(--mom)',format=v=>Math.round(v),emptyLabel='No data yet'}){
+  const vals = buckets.map(value);
+  const max = Math.max(...vals, 1);
+  if(!vals.some(v => v > 0)) return `<div class="chart-empty">${emptyLabel}</div>`;
+  const bars = buckets.map((b,i) => {
+    const v = vals[i], h = v ? Math.max(4, Math.round(v/max*100)) : 2;
+    const stack = segments
+      ? segments.map(sg => { const sv = sg.value(b); return sv ? `<i class="seg" style="flex:${sv};background:${sg.color}" title="${esc(sg.label)}"></i>` : ''; }).join('')
+      : `<i class="seg" style="flex:1;background:${color}"></i>`;
+    return `<div class="cbar ${v?'':'is-empty'}"><span class="cbar-v">${v?format(v):''}</span><div class="cbar-track"><div class="cbar-fill" style="height:${h}%">${stack}</div></div><small>${b.short}</small></div>`;
+  }).join('');
+  return `<div class="chart-scroll"><div class="cbars" style="--n:${buckets.length}">${bars}</div></div>`;
+}
+
+// Smoothed area + line. Returns HTML label rail + SVG geometry.
+function areaChart(buckets,{value,color='var(--mom)',format=v=>Math.round(v),unit='',emptyLabel='No data yet'}){
+  let vals = buckets.map(value);
+  if(!vals.some(v => v > 0)) return `<div class="chart-empty">${emptyLabel}</div>`;
+  // Trim empty runs at each end so the line starts at the first real day instead of
+  // climbing out of a flat zero. Interior zeros are kept - those are real days.
+  let lo = vals.findIndex(v => v > 0);
+  let hi = vals.length - 1; while(hi > lo && !vals[hi]) hi--;
+  buckets = buckets.slice(lo, hi+1); vals = vals.slice(lo, hi+1);
+  const n = vals.length, max = Math.max(...vals, 1), W = 100, H = 100;
+  const x = i => n === 1 ? W/2 : (i/(n-1))*W;
+  const y = v => H - (v/max)*(H-6) - 3;
+  const pts = vals.map((v,i) => [x(i), y(v)]);
+  const line = pts.map(([px,py],i) => `${i?'L':'M'}${px.toFixed(2)} ${py.toFixed(2)}`).join(' ');
+  const area = `${line} L${W} ${H} L0 ${H} Z`;
+  const id = `g${Math.random().toString(36).slice(2,8)}`;
+  const dots = pts.map(([px,py],i) => (i === pts.length-1) ? `<circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="2.4" fill="${color}" vector-effect="non-scaling-stroke"/>` : '').join('');
+  return `<div class="chart-area">
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".28"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+      <path d="${area}" fill="url(#${id})"/>
+      <path d="${line}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      ${dots}
+    </svg>
+    <div class="chart-rail"><span>${format(vals[0])}${unit}</span><span class="peak">peak ${format(max)}${unit}</span><span>${format(vals[n-1])}${unit}</span></div>
+    <div class="chart-rail dim"><span>${buckets[0].short}</span><span>${buckets[n-1].short}</span></div>
+  </div>`;
+}
+
+// Proportional donut for a small set of categories.
+function donut(segments,centerLabel,centerSub){
+  const total = sum(segments.map(s => s.value));
+  if(!total) return `<div class="chart-empty">No data yet</div>`;
+  const R = 42, C = 2*Math.PI*R;
+  let offset = 0;
+  const rings = segments.filter(s => s.value > 0).map(s => {
+    const len = (s.value/total)*C;
+    const el = `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${s.color}" stroke-width="15" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" stroke-linecap="butt"/>`;
+    offset += len; return el;
+  }).join('');
+  const legend = segments.map(s => `<div><i style="background:${s.color}"></i><span>${esc(s.label)}</span><strong>${s.value}</strong><small>${total?Math.round(s.value/total*100):0}%</small></div>`).join('');
+  return `<div class="donut-wrap"><div class="donut"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--line-soft)" stroke-width="15"/>${rings}</svg><div class="donut-center"><strong>${centerLabel}</strong><span>${centerSub}</span></div></div><div class="donut-legend">${legend}</div></div>`;
+}
+
+// Horizontal distribution bars (e.g. output by time of day).
+function hBars(items,{format=v=>Math.round(v),unit=''}={}){
+  const max = Math.max(...items.map(i => i.value), 1);
+  if(!items.some(i => i.value > 0)) return `<div class="chart-empty">No data yet</div>`;
+  return `<div class="hbars">${items.map(i => `<div class="hbar"><span class="hbar-label">${icon(i.icon)}${esc(i.label)}</span><div class="hbar-track"><div class="hbar-fill" style="width:${Math.max(2,Math.round(i.value/max*100))}%;background:${i.color}"></div></div><b>${format(i.value)}${unit}</b><small>${esc(i.sub||'')}</small></div>`).join('')}</div>`;
+}
+
+// Direction badge comparing the latest window with the one before it.
+function trendBadge(recent,previous,{unit='',goodIsUp=true}={}){
+  if(!previous) return '';
+  const delta = recent - previous, pct = Math.round(delta/previous*100);
+  if(!Number.isFinite(pct) || Math.abs(pct) < 3) return `<span class="delta flat">Steady</span>`;
+  const up = delta > 0, good = up === goodIsUp;
+  return `<span class="delta ${good?'up':'down'}">${up?'▲':'▼'} ${Math.abs(pct)}%<em>vs previous</em></span>`;
+}
 function metric(label,value,sub,ic,tone='mom'){ return `<article class="metric ${tone}"><div class="metric-icon">${icon(ic)}</div><div><span>${label}</span><strong>${value}</strong><small>${sub}</small></div></article>`; }
 function panel(title,content,action=''){ return `<section class="panel"><div class="panel-head"><h3>${title}</h3>${action}</div>${content}</section>`; }
 function empty(ic,title,sub,action=''){ return `<div class="empty"><div class="empty-icon">${icon(ic)}</div><strong>${title}</strong><span>${sub||''}</span>${action}</div>`; }
@@ -209,48 +505,384 @@ function pills(items,active,attr){ return `<div class="pills">${items.map(([v,l]
 
 function momHome(){
   const d=today(), total=dayTotal(d), count=dayP(d).length, lp=lastPump();
-  return `<section class="hero mom-hero"><div class="hero-copy"><span class="eyebrow">MOM</span><h2>${total?`${total} mL today`:'Ready when you are'}</h2><p>${count} pumps${lp?` · last ${to12(lp.time)}`:''}</p></div><div class="hero-art">${momIllustration()}</div></section>
+  const goal=+S.profile.dailyGoalMl||760, next=nextPump();
+  const since=lp?sinceLabel(lp.date,lp.time):null;
+  const avg=rollingAvg();
+  const pace=avg?Math.round((total/Math.max(avg,1))*100):0;
+  return `<section class="hero mom-hero">
+    ${ring(goal?total/goal:0,`${total}`,`of ${goal} mL`,'mom')}
+    <div class="hero-copy">
+      <span class="eyebrow">${greeting(S.profile.momName)}</span>
+      <h2>${total?`${total} mL today`:'Ready when you are'}</h2>
+      <p>${count?`${count} ${count===1?'pump':'pumps'} logged`:'No pumps logged yet today'}</p>
+      <div class="chips">${chip('clock',`Next ${to12(next)} · ${untilLabel(next)}`)}${since?chip('history',`Last ${since}`):''}</div>
+    </div>
+  </section>
   <div class="quick-grid mom-grid">
     <button class="quick-tile mom" data-mom="pump"><span class="tile-art">${icon('drop')}</span><strong>Pump</strong><small>Log milk</small></button>
-    <button class="quick-tile mom" data-mom="nursing"><span class="tile-art">${icon('heart')}</span><strong>Nursing</strong><small>Log session</small></button>
-    <button class="quick-tile mom" data-view="mom-history"><span class="tile-art">${icon('history')}</span><strong>History</strong><small>Past entries</small></button>
-    <button class="quick-tile mom" data-view="mom-stash"><span class="tile-art">${icon('snow')}</span><strong>Stash</strong><small>${(+S.profile.stashMl||0).toLocaleString()} mL</small></button>
+    <button class="quick-tile nurse" data-mom="nursing"><span class="tile-art">${icon('nursing')}</span><strong>Nursing</strong><small>Log session</small></button>
+    <button class="quick-tile history" data-view="mom-history"><span class="tile-art">${icon('history')}</span><strong>History</strong><small>Past entries</small></button>
+    <button class="quick-tile stash" data-view="mom-stash"><span class="tile-art">${icon('snow')}</span><strong>Stash</strong><small>${(+S.profile.stashMl||0).toLocaleString()} mL</small></button>
   </div>
-  <div class="metric-grid mom-summary">${metric('Today',`${total} mL`,`${count} pumps`,'drop')}${metric('7-day avg',`${rollingAvg()} mL`,'pumping days','chart')}${metric('Next pump',to12(nextPump()),'planned','clock')}</div>
+  <div class="metric-grid mom-summary">${metric('7-day avg',`${avg} mL`,'per pumping day','chart')}${metric('Today vs avg',count&&avg?`${pace}%`:'—',count&&avg?'of your average':'after your first pump','spark')}${metric('Freezer stash',`${(+S.profile.stashMl||0).toLocaleString()} mL`,'saved milk','snow')}</div>
   ${panel('Pump plan',scheduleStrip(),'<button data-view="settings">Edit</button>')}
   ${panel('Recent',recentMom(5),'<button data-view="mom-history">See all</button>')}`;
 }
-function scheduleStrip(){ const p=dayP(today()); return `<div class="schedule-strip">${S.schedule.map((t,i)=>{ const e=p[i]; return `<div class="schedule-card ${e?'done':''}"><div>${e?icon('check'):icon('clock')}</div><strong>${e?to12(e.time):to12(t)}</strong><small>${e?`${e.amountMl} mL`:'Planned'}</small></div>`; }).join('')}</div>`; }
-function recentMom(n){ const a=momEntries().slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('history','No Mom history yet','Log a pump or import your private backup.','<button class="primary-link" data-import>Import backup</button>'); return `<div class="rows">${a.map(momRow).join('')}</div>`; }
-function momRow(e){ return `<div class="row"><div class="row-icon mom">${icon(e.type==='pump'?'drop':'heart')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}</span></div><div class="row-status">${e.synced?'Saved':'Device'}</div></div>`; }
-function momHistory(){
-  const range=+S.ui.momRange||30, cutoff=dateList(range)[0];
-  const a=momEntries().filter(e=>range>=9999||e.date>=cutoff).sort(byWhenDesc);
-  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>History</h2></div><button class="round-action" data-mom="pump">${icon('plus')}<span>Pump</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[9999,'All']],range,'data-mom-range')}${panel('',a.length?`<div class="rows">${a.map(momRow).join('')}</div>`:empty('history','No Mom records here','Try a wider date range.'))}`;
+function scheduleStrip(){
+  const slots=scheduleSlots(today());
+  return `<div class="schedule-strip">${slots.map(({time,entry,extra})=>{
+    const done=!!entry;
+    return `<div class="schedule-card ${done?'done':''} ${extra?'extra':''}"><div>${done?icon('check'):icon('clock')}</div><strong>${to12(entry?entry.time:time)}</strong><small>${done?`${entry.amountMl||0} mL`:untilLabel(time)||'Planned'}</small>${extra?'<em>Extra</em>':''}</div>`;
+  }).join('')}</div>`;
 }
+function recentMom(n){ const a=momEntries().slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('history','No Mom history yet','Log a pump or import your private backup.','<button class="primary-link" data-import>Import backup</button>'); return `<div class="rows">${a.map(momRow).join('')}</div>`; }
+function momRow(e){ return `<button type="button" class="row" data-record="mom:${esc(e.id)}"><div class="row-icon mom">${icon(e.type==='pump'?'drop':'nursing')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`; }
+function momHistory(){
+  const range=S.ui.momRange ?? 30, all=+range>=9999, cutoff=all?'':dateList(rangeDays(range,'mom'))[0];
+  const a=momEntries().filter(e=>all||e.date>=cutoff).sort(byWhenDesc);
+  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>History</h2></div><button class="round-action" data-mom="pump">${icon('plus')}<span>Pump</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-mom-range')}${panel('',a.length?`<div class="rows">${a.map(momRow).join('')}</div>`:empty('history','No Mom records here','Try a wider date range.'))}`;
+}
+const TIME_BANDS = [
+  {key:'morning', label:'Morning', sub:'5am – 11am', from:5*60, to:11*60, color:'var(--mom)', icon:'sun'},
+  {key:'midday',  label:'Midday',  sub:'11am – 5pm', from:11*60, to:17*60, color:'var(--mom-2)', icon:'clock'},
+  {key:'evening', label:'Evening', sub:'5pm – 10pm', from:17*60, to:22*60, color:'#e08bbe', icon:'clock'},
+  {key:'night',   label:'Night',   sub:'10pm – 5am', from:22*60, to:5*60, color:'#7d8ad6', icon:'moon'}
+];
+const inBand = (t,b) => { const m = mins(t); return b.from < b.to ? (m >= b.from && m < b.to) : (m >= b.from || m < b.to); };
+
 function momTrends(){
-  const range=+S.ui.trendRange||14, days=dateList(range), vals=days.map(dayTotal), max=Math.max(...vals,1);
-  const bars=days.map((d,i)=>`<div class="bar"><span>${vals[i]||''}</span><i style="height:${Math.max(4,Math.round(vals[i]/max*150))}px"></i><small>${fd(d)}</small></div>`).join('');
-  const sessions=pumps().filter(e=>e.date>=days[0]); const avgSession=sessions.length?Math.round(sum(sessions.map(e=>+e.amountMl||0))/sessions.length):0; const best=sessions.reduce((m,e)=>(+e.amountMl||0)>(+m?.amountMl||0)?e:m,null);
-  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Milk trends</h2></div></div>${pills([[7,'7 days'],[14,'14 days'],[30,'30 days']],range,'data-trend-range')}<div class="metric-grid three">${metric('Daily avg',`${rollingAvg(Math.min(range,7))} mL`,'recent pumping days','chart')}${metric('Avg pump',`${avgSession} mL`,`${sessions.length} sessions`,'drop')}${metric('Best pump',`${best?.amountMl||0} mL`,best?fd(best.date):'—','spark')}</div>${panel('Daily output',`<div class="bars">${bars}</div>`)}`;
+  const range = S.ui.trendRange ?? 14, days = dateList(rangeDays(range,'mom'));
+  const buckets = bucketDays(days);
+  const vals = days.map(dayTotal);
+  const sessions = pumps().filter(e => e.date >= days[0]);
+  const avgSession = sessions.length ? Math.round(sum(sessions.map(e => +e.amountMl||0))/sessions.length) : 0;
+  const best = sessions.reduce((m,e) => (+e.amountMl||0) > (+m?.amountMl||0) ? e : m, null);
+  const activeDays = days.filter(d => dayTotal(d) > 0);
+  const perDay = activeDays.length ? Math.round(sum(activeDays.map(dayTotal))/activeDays.length) : 0;
+  const sessionsPerDay = activeDays.length ? (sessions.length/activeDays.length).toFixed(1) : '0.0';
+
+  // Latest half of the window against the half before it.
+  const half = Math.floor(days.length/2);
+  const recentAvg = avg(days.slice(half).map(dayTotal).filter(v => v > 0));
+  const priorAvg = avg(days.slice(0,half).map(dayTotal).filter(v => v > 0));
+
+  const bandTotals = TIME_BANDS.map(b => {
+    const inB = sessions.filter(e => e.time && inBand(e.time,b));
+    return {...b, value: sum(inB.map(e => +e.amountMl||0)), count: inB.length};
+  });
+  const topBand = bandTotals.slice().sort((a,b) => b.value-a.value)[0];
+  const adjustedDays = days.filter(dayAdjusted).length;
+
+  // 7-day rolling average, so the supply direction is readable through daily noise.
+  const rollingBy = new Map(days.map((d,i) => { const w = days.slice(Math.max(0,i-6), i+1).map(dayTotal).filter(v => v > 0); return [d, w.length ? Math.round(sum(w)/w.length) : 0]; }));
+
+  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Milk trends</h2></div></div>
+  ${pills(RANGE_PILLS,range,'data-trend-range')}
+  <div class="metric-grid">${metric('Per pumping day',`${perDay} mL`,`${activeDays.length} active days`,'chart')}${metric('Avg pump',`${avgSession} mL`,`${sessions.length} sessions`,'drop')}${metric('Best pump',`${best?.amountMl||0} mL`,best?fd(best.date):'—','spark')}${metric('Pumps / day',sessionsPerDay,'on active days','timer')}</div>
+  ${panel(`Daily output${adjustedDays?' ':''}`,barChart(buckets,{value:b => Math.round(avg(b.days.map(dayTotal))), color:'var(--mom)', emptyLabel:'No pumping logged in this range'}) + (adjustedDays?`<p class="chart-note">${adjustedDays} day${adjustedDays>1?'s':''} use a confirmed daily total that is higher than the sessions logged individually.</p>`:''),
+    `<span class="panel-note">${days.length} days</span>`)}
+  ${panel('Supply direction',areaChart(buckets,{value:b => Math.round(avg(b.days.map(d => rollingBy.get(d) || 0))), color:'var(--mom)', unit:' mL', emptyLabel:'Needs a few more days'}),trendBadge(recentAvg,priorAvg,{goodIsUp:true}))}
+  ${panel('When you produce most',hBars(bandTotals.map(b => ({...b, sub:`${b.count} ${b.count===1?'pump':'pumps'}`})),{unit:' mL'}) + (topBand&&topBand.value?`<p class="chart-note">Strongest window: <strong>${topBand.label.toLowerCase()}</strong> (${topBand.sub}).</p>`:''))}
+  ${panel('Recent sessions',recentMom(6),'<button data-view="mom-history">See all</button>')}`;
 }
 function momStash(){ return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Freezer stash</h2></div></div><section class="stash-hero"><div class="stash-art">${icon('snow')}</div><div><strong>${(+S.profile.stashMl||0).toLocaleString()} mL</strong><span>saved milk</span></div></section>${panel('Update stash',`<div class="stash-buttons"><button data-stash="-30">−30</button><button data-stash="30">+30</button><button data-stash="60">+60</button><button data-stash="120">+120</button></div><label class="field"><span>Exact amount (mL)</span><input id="stashExact" type="number" inputmode="numeric" min="0" value="${+S.profile.stashMl||0}"></label>`)}`; }
 
-function babyHome(){
-  const s=babyStats(today()), pref=feedingPreference(), prefLabel=pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed';
-  const last=latestBabyDate();
-  return `<section class="hero baby-hero"><div class="hero-copy"><span class="eyebrow">${esc(S.baby.name)}</span><h2>Baby care</h2><p>${prefLabel}${s.feeds?` · ${s.feeds} feeds today`:last!==today()?` · last log ${fd(last)}`:''}</p></div><div class="hero-art">${babyIllustration()}</div></section>
-  <div class="quick-grid baby-grid" aria-label="Quick baby logging">
-    <button class="quick-tile feed" data-feed><span class="tile-art">${icon('bottle')}</span><strong>Feed</strong><small>Nurse or bottle</small></button>
-    <button class="quick-tile wet" data-diaper="wet"><span class="tile-art">${icon('drop')}</span><strong>Wet</strong><small>Wet diaper</small></button>
-    <button class="quick-tile poop" data-diaper="poop"><span class="tile-art">${icon('diaper')}</span><strong>Poopy</strong><small>Poopy diaper</small></button>
-    <button class="quick-tile mixed" data-diaper="both"><span class="tile-art">${icon('diaper')}</span><strong>Mixed</strong><small>Wet + poopy</small></button>
-  </div>
-  ${todaySnapshot(s)}
-  ${panel('Recent care',recentBaby(5),'<button data-view="baby-history">See all</button>')}`;
+// ---------------------------------------------------- development stages --
+// Source: CDC "Learn the Signs. Act Early." milestone checklists (2022 revision).
+// US federal government work, public domain. These describe what MOST children
+// (about 75%) can do by each age - they are not a test and not a diagnosis.
+// Deliberately NOT the Wonder Weeks "leap" schedule, which is proprietary and
+// whose developmental claims are not clinically established.
+const MILESTONES = [
+  {m:2, label:'2 months', tag:'First smiles', groups:{
+    social:['Calms down when spoken to or picked up','Looks at your face','Seems happy to see you when you walk up','Smiles when you talk to or smile at them'],
+    language:['Makes sounds other than crying','Reacts to loud sounds'],
+    cognitive:['Watches you as you move','Looks at a toy for several seconds'],
+    movement:['Holds head up when on tummy','Moves both arms and both legs','Opens hands briefly']}},
+  {m:4, label:'4 months', tag:'Cooing and reaching', groups:{
+    social:['Smiles on their own to get your attention','Chuckles when you try to make them laugh','Looks at you, moves, or makes sounds to get or keep your attention'],
+    language:['Makes cooing sounds like "oooo" and "aahh"','Makes sounds back when you talk to them','Turns head towards the sound of your voice'],
+    cognitive:['Opens mouth when they see the breast or bottle if hungry','Looks at their hands with interest'],
+    movement:['Holds head steady without support when you are holding them','Holds a toy when you put it in their hand','Uses their arm to swing at toys','Brings hands to mouth','Pushes up onto elbows or forearms when on tummy']}},
+  {m:6, label:'6 months', tag:'Rolling and laughing', groups:{
+    social:['Knows familiar people','Likes to look at themselves in a mirror','Laughs'],
+    language:['Takes turns making sounds with you','Blows raspberries','Makes squealing noises'],
+    cognitive:['Puts things in their mouth to explore them','Reaches to grab a toy they want','Closes lips to show they do not want more food'],
+    movement:['Rolls from tummy to back','Pushes up with straight arms when on tummy','Leans on hands to support themselves when sitting']}},
+  {m:9, label:'9 months', tag:'Sitting and babbling', groups:{
+    social:['Is shy, clingy, or fearful around strangers','Shows several facial expressions','Looks when you call their name','Reacts when you leave','Smiles or laughs during peek-a-boo'],
+    language:['Makes different sounds like "mamamama" and "bababababa"','Lifts arms up to be picked up'],
+    cognitive:['Looks for objects when dropped out of sight','Bangs two things together'],
+    movement:['Gets to a sitting position by themselves','Moves things from one hand to the other','Uses fingers to rake food towards themselves','Sits without support']}},
+  {m:12, label:'12 months', tag:'First words and steps', groups:{
+    social:['Plays games with you, like pat-a-cake'],
+    language:['Waves bye-bye','Calls a parent "mama" or "dada" or another special name','Understands "no"'],
+    cognitive:['Puts something in a container','Looks for things they see you hide'],
+    movement:['Pulls up to stand','Walks holding on to furniture','Drinks from a cup without a lid as you hold it','Picks things up between thumb and pointer finger']}},
+  {m:15, label:'15 months', tag:'Walking and copying', groups:{
+    social:['Copies other children while playing','Shows you an object they like','Claps when excited','Hugs a stuffed doll or toy','Shows you affection'],
+    language:['Tries to say one or two words besides "mama" or "dada"','Looks at a familiar object when you name it','Follows directions given with both a gesture and words','Points to ask for something'],
+    cognitive:['Tries to use things the right way','Stacks at least two small objects'],
+    movement:['Takes a few steps on their own','Uses fingers to feed themselves']}},
+  {m:18, label:'18 months', tag:'Exploring on their own', groups:{
+    social:['Moves away from you but looks to make sure you are close by','Points to show you something interesting','Puts hands out for you to wash them','Looks at a few pages in a book with you','Helps you dress them'],
+    language:['Tries to say three or more words besides "mama" or "dada"','Follows one-step directions without a gesture'],
+    cognitive:['Copies you doing chores','Plays with toys in a simple way'],
+    movement:['Walks without holding on','Scribbles','Drinks from a cup without a lid and may spill','Feeds themselves with fingers','Tries to use a spoon','Climbs on and off a couch or chair without help']}},
+  {m:24, label:'2 years', tag:'Two-word phrases', groups:{
+    social:['Notices when others are hurt or upset','Looks at your face to see how to react in a new situation'],
+    language:['Points to things in a book when you ask','Says at least two words together, like "more milk"','Points to at least two body parts','Uses more gestures than just waving and pointing'],
+    cognitive:['Holds something in one hand while using the other','Tries to use switches, knobs, or buttons','Plays with more than one toy at the same time'],
+    movement:['Kicks a ball','Runs','Walks up a few stairs with or without help','Eats with a spoon']}}
+];
+const MILESTONE_GROUPS = {
+  social:{label:'Social & emotional', icon:'nursing', color:'var(--growth-ink)'},
+  language:{label:'Language', icon:'bell', color:'var(--feed-ink)'},
+  cognitive:{label:'Learning & thinking', icon:'spark', color:'var(--mixed-ink)'},
+  movement:{label:'Movement', icon:'growth', color:'var(--wet-ink)'}
+};
+const milestoneId = (m,group,i) => `ms-${m}-${group}-${i}`;
+const milestoneTotal = st => Object.values(st.groups).reduce((a,g) => a+g.length, 0);
+// Marked milestones are ordinary baby events, so they land in History, sync and export.
+function markedMilestones(){
+  const set = new Map();
+  for(const e of babyEvents()) if(e.eventType === 'milestone' && e.milestoneId) set.set(e.milestoneId, e);
+  return set;
 }
-function todaySnapshot(s){
-  return `<section class="today-strip"><div><span>Wet</span><strong>${s.wetTotal}</strong><small>${s.mixed?`${s.mixed} mixed`:''}</small></div><div><span>Poopy</span><strong>${s.poopTotal}</strong><small>${s.mixed?`${s.mixed} mixed`:''}</small></div><div><span>Feeds</span><strong>${s.feeds}</strong><small>${s.nursing} nursing</small></div><div><span>Bottle milk</span><strong>${s.bottleOz.toFixed(1)}</strong><small>oz logged</small></div></section>`;
+function currentStage(){
+  const m = ageMonths();
+  if(m === null) return null;
+  let stage = MILESTONES[0];
+  for(const st of MILESTONES) if(m >= st.m) stage = st;
+  // before 2 months the first checklist is still the one ahead of them
+  return m < MILESTONES[0].m ? MILESTONES[0] : stage;
+}
+
+const BABY_EVENT_TONE = {
+  diaper_wet:{color:'var(--wet-ink)', label:'Wet'},
+  diaper_poop:{color:'var(--poop-ink)', label:'Poopy'},
+  diaper_both:{color:'var(--mixed-ink)', label:'Mixed'},
+  feeding:{color:'var(--feed-ink)', label:'Bottle'},
+  nursing:{color:'var(--growth-ink)', label:'Nursing'},
+  sleep:{color:'var(--sleep-ink)', label:'Sleep'},
+  growth:{color:'var(--growth-ink)', label:'Growth'},
+  milestone:{color:'var(--mixed-ink)', label:'Milestone'}
+};
+const toneKey = e => e.eventType === 'diaper' ? `diaper_${e.subtype||'wet'}` : e.eventType;
+const toneOf = e => BABY_EVENT_TONE[toneKey(e)] || {color:'var(--baby)', label:cap(e.eventType)};
+
+// A ring measured against this baby's own recent average - never an invented clinical target.
+function statRing(value,average,label,sub,color){
+  const base = Math.max(average, value, 1);
+  const pct = Math.max(0, Math.min(1, value/base));
+  const r = 26, c = 2*Math.PI*r;
+  return `<div class="stat-ring" style="--c:${color}">
+    <div class="stat-ring-dial">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" class="sr-bg"/><circle cx="32" cy="32" r="${r}" class="sr-fg" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-pct)).toFixed(1)}"/></svg>
+      <b>${value}</b>
+    </div>
+    <span>${label}</span><small>${sub}</small>
+  </div>`;
+}
+
+// Today's events laid along a 24-hour track: clustering and gaps are visible at a glance.
+function dayTimeline(){
+  const evs = babyOn(today()).filter(e => !e.exactSourceDuplicate && e.time && e.eventType !== 'milestone' && e.eventType !== 'growth').sort((a,b) => mins(a.time)-mins(b.time));
+  const d = new Date(), nowPct = ((d.getHours()*60 + d.getMinutes())/1440)*100;
+  const dots = evs.map(e => {
+    const t = toneOf(e);
+    return `<button type="button" class="tl-dot" data-record="baby:${esc(e.id)}" style="left:${(mins(e.time)/1440*100).toFixed(2)}%;--c:${t.color}" aria-label="${esc(t.label)} at ${to12(e.time)}"></button>`;
+  }).join('');
+  const ticks = [0,6,12,18,24].map(h => `<span style="left:${(h/24*100).toFixed(2)}%">${h===0?'12a':h===12?'12p':h>12?`${h-12}p`:`${h}a`}</span>`).join('');
+  return `<section class="timeline-card">
+    <div class="timeline-head"><strong>Today's rhythm</strong><span>${evs.length} ${evs.length===1?'entry':'entries'}</span></div>
+    <div class="timeline-track">
+      <div class="tl-now" style="left:${nowPct.toFixed(2)}%"></div>
+      ${dots || '<span class="tl-empty" data-label="Nothing logged yet today"></span>'}
+    </div>
+    <div class="tl-ticks">${ticks}</div>
+  </section>`;
+}
+
+const hhmm = d => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+const fmtGap = m => m >= 60 ? (m%60 ? `${Math.floor(m/60)}h ${m%60}m` : `${Math.floor(m/60)}h`) : `${m}m`;
+// Next feed is derived from the last one plus the chosen gap - there is no fixed clock
+// schedule for a baby, unlike the Mom pump plan.
+function nextFeedDue(last){
+  if(!S.reminders.feedEnabled || !last || !last.date || !last.time) return null;
+  const gap = +S.reminders.feedGapMin || 180;
+  const due = new Date(new Date(`${last.date}T${last.time}:00`).getTime() + gap*60000);
+  if(!Number.isFinite(due.getTime())) return null;
+  const diff = Math.round((due.getTime() - Date.now())/60000);
+  return diff <= 0
+    ? {overdue:true, due, label:`Due ${fmtGap(Math.abs(diff))} ago`}
+    : {overdue:false, due, label:`Next ${to12(hhmm(due))}`};
+}
+
+// ---------------------------------------------------------- activity feed --
+// Per-activity detail line, e.g. "Nursing, right · 12 min" or "3.5 oz formula".
+function activityDetail(e){
+  if(!e) return '';
+  if(e.eventType === 'nursing'){ const m = e.durationMinutes ?? e.totalMinutes; return `Nursing${e.side?`, ${cap(e.side)}`:''}${m?` · ${m} min`:''}`; }
+  if(e.eventType === 'feeding') return `${(+e.amountOz||0).toFixed(1)} oz ${e.feedingType==='formula'?'formula':'breast milk'}`;
+  if(e.eventType === 'diaper') return e.subtype==='both'?'Mixed':e.subtype==='poop'?'Poopy':'Wet';
+  if(e.eventType === 'sleep'){ const m = +e.durationMinutes||0; return m>=60?`Slept ${Math.floor(m/60)} hr ${m%60} min`:`Slept ${m} min`; }
+  if(e.eventType === 'growth') return 'Growth measurement';
+  if(e.eventType === 'milestone') return e.milestoneText || 'Milestone';
+  return cap(e.eventType);
+}
+function dayRollup(st,kind){
+  if(kind === 'feed'){
+    const bits = [];
+    if(st.nursing) bits.push(`nursing ${st.nursing}`);
+    if(st.breastMilkBottles) bits.push(`breast milk ${st.breastMilkOz.toFixed(1)} oz`);
+    if(st.formulaBottles) bits.push(`formula ${st.formulaOz.toFixed(1)} oz`);
+    return st.feeds ? `Fed ${st.feeds} ${st.feeds===1?'time':'times'}${bits.length?`: ${bits.join(', ')}`:''}` : 'Nothing logged today';
+  }
+  if(kind === 'diaper'){
+    const bits = [];
+    if(st.wetOnly) bits.push(`wet ${st.wetOnly}`);
+    if(st.poopOnly) bits.push(`poopy ${st.poopOnly}`);
+    if(st.mixed) bits.push(`mixed ${st.mixed}`);
+    return st.diapers ? `${st.diapers} ${st.diapers===1?'change':'changes'}${bits.length?`: ${bits.join(', ')}`:''}` : 'Nothing logged today';
+  }
+  const m = st.sleepMin;
+  return m ? `${Math.floor(m/60)} hr ${m%60} min today` : 'Nothing logged today';
+}
+// The three rows a parent checks first: how long since, what it was, and today's total.
+function activityStrip(){
+  const st = babyStats(today());
+  const live = babyEvents().filter(e => !e.exactSourceDuplicate).slice().sort(byWhenDesc);
+  const rows = [
+    {kind:'feed',   label:'Feed',   icon:'bottle', color:'var(--feed-ink)',  bg:'var(--feed)',  find:e => e.eventType==='feeding'||e.eventType==='nursing', act:'data-feed'},
+    {kind:'diaper', label:'Diaper', icon:'diaper', color:'var(--wet-ink)',   bg:'var(--wet)',   find:e => e.eventType==='diaper', act:'data-diaper="wet"'},
+    {kind:'sleep',  label:'Sleep',  icon:'moon',   color:'var(--sleep-ink)', bg:'var(--sleep)', find:e => e.eventType==='sleep', act:'data-sleep'}
+  ].map(r => {
+    const last = live.find(r.find);
+    const ago = last ? sinceLabel(last.date,last.time) : null;
+    const due = r.kind === 'feed' ? nextFeedDue(last) : null;
+    return `<div class="act-row" style="--c:${r.color};--bg:${r.bg}">
+      <button type="button" class="act-main" ${last?`data-record="baby:${esc(last.id)}"`:r.act}>
+        <span class="act-icon">${icon(r.icon)}</span>
+        <span class="act-body">
+          <span class="act-when">${ago?esc(ago):`No ${r.label.toLowerCase()} logged yet`}</span>
+          <strong>${last?esc(activityDetail(last)):`Tap + to log a ${r.label.toLowerCase()}`}</strong>
+          <small>${esc(dayRollup(st,r.kind))}</small>
+        </span>
+      </button>
+      <button type="button" class="act-add" ${r.act} aria-label="Log ${esc(r.label)}">${icon('plus')}</button>
+      ${due?`<span class="act-due ${due.overdue?'due':''}">${icon('bell')}${esc(due.label)}</span>`:''}
+    </div>`;
+  }).join('');
+  return `<section class="act-strip">${rows}</section>`;
+}
+
+// ------------------------------------------------------------- day review --
+function reviewStats(d){
+  const st = babyStats(d);
+  const nursingMin = sum(babyOn(d,'nursing').filter(e => !e.exactSourceDuplicate).map(e => +(e.durationMinutes ?? e.totalMinutes) || 0));
+  const line = (cls,label,value) => `<div class="stat-line ${cls}"><span>${label}</span><b>${value}</b></div>`;
+  return `<section class="review-stats">
+    ${line('feed','Nursing', st.nursing ? `${nursingMin} min · ${st.nursing}×` : '—')}
+    ${line('feed','Bottle', st.bottles ? `${st.bottleOz.toFixed(2)} oz (breast ${st.breastMilkOz.toFixed(2)}, formula ${st.formulaOz.toFixed(2)})` : '—')}
+    ${line('diaper','Diapers', st.diapers ? `${st.diapers}× — wet ${st.wetOnly}, poopy ${st.poopOnly}, mixed ${st.mixed}` : '—')}
+    ${line('sleep','Sleep', st.sleepMin ? `${Math.floor(st.sleepMin/60)} hr ${st.sleepMin%60} min · ${babyOn(d,'sleep').length}×` : '—')}
+  </section>`;
+}
+const REVIEW_FILTERS = [['all','All'],['feed','Feeds'],['diaper','Diapers'],['sleep','Sleep'],['growth','Growth'],['milestone','Milestones']];
+function dayReview(){
+  const sel = S.ui.reviewDate && babyByDate().has(S.ui.reviewDate) || S.ui.reviewDate === today() ? S.ui.reviewDate : today();
+  const strip = dateList(7).map(d => {
+    const dt = new Date(`${d}T12:00:00`);
+    const isToday = d === today();
+    return `<button type="button" class="day-chip ${d===sel?'sel':''} ${isToday?'today':''}" data-review-date="${d}">
+      <b>${isToday?'Today':dt.getDate()}</b><span>${isToday?fd(d):new Intl.DateTimeFormat('en-US',{weekday:'short'}).format(dt)}</span></button>`;
+  }).join('');
+
+  const filter = S.ui.reviewFilter || 'all';
+  const matches = e => filter==='all' || (filter==='feed' && (e.eventType==='feeding'||e.eventType==='nursing')) || e.eventType===filter;
+  const evs = babyOn(sel).filter(e => !e.exactSourceDuplicate && matches(e))
+    .sort((a,b) => (a.time||'').localeCompare(b.time||''));
+
+  const list = evs.length ? evs.map(e => {
+    const t = toneOf(e);
+    const ic = e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':e.eventType==='milestone'?'spark':'moon';
+    return `<button type="button" class="rev-row" data-record="baby:${esc(e.id)}" style="--c:${t.color}">
+      <span class="rev-time">${to12(e.time)}</span>
+      <span class="rev-icon">${icon(ic)}</span>
+      <span class="rev-body"><strong>${esc(activityDetail(e))}</strong>${e.note?`<small>${esc(e.note)}</small>`:''}</span>
+      <span class="rev-go">${icon('chevron')}</span>
+    </button>`;
+  }).join('') : empty('history','Nothing here',`No ${filter==='all'?'entries':REVIEW_FILTERS.find(f=>f[0]===filter)[1].toLowerCase()} logged on ${fd(sel)}.`);
+
+  return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Day review</h2></div><button class="round-action baby" data-add>${icon('plus')}<span>Add</span></button></div>
+  <div class="day-strip">${strip}</div>
+  <div class="review-head"><strong>${fdl(sel)}</strong><span>${evs.length} ${evs.length===1?'entry':'entries'}</span></div>
+  ${reviewStats(sel)}
+  ${pills(REVIEW_FILTERS,filter,'data-review-filter')}
+  <section class="rev-list">${list}</section>`;
+}
+
+function babyHome(){
+  const t = today(), s = babyStats(t), pref = feedingPreference();
+  const prefLabel = pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed';
+  const live = babyEvents().filter(e => !e.exactSourceDuplicate).slice().sort(byWhenDesc);
+  const lastFeed = live.find(e => e.eventType==='feeding' || e.eventType==='nursing');
+
+  // seven-day averages give each ring an honest baseline
+  const week = dateList(8).slice(0,7).map(babyStats);
+  const wk = k => week.length ? sum(week.map(r => r[k]))/week.length : 0;
+
+  const feedAgo = lastFeed ? sinceLabel(lastFeed.date,lastFeed.time) : null;
+  const stageTag = ageMonths() !== null ? (currentStage()?.tag || '') : '';
+  const hero = isRecent(lastFeed)
+    ? `<h2>Fed <em>${feedAgo}</em></h2>`
+    : `<h2>${esc(S.baby.name)}</h2>`;
+
+  return `<section class="baby-stage">
+    <div class="stage-glow" aria-hidden="true"></div>
+    <div class="stage-body">
+      <div class="stage-avatar">${S.baby.photo?`<img src="${esc(S.baby.photo)}" alt="${esc(S.baby.name)}">`:babyIllustration()}</div>
+      <div class="stage-copy">
+        <span class="eyebrow">${greeting()}${ageLabel()?` · ${esc(ageLabel())}`:''}</span>
+        ${hero}
+        <p>${prefLabel}${s.feeds?` · ${s.feeds} ${s.feeds===1?'feed':'feeds'} today`:' · nothing logged today'}</p>
+        <div class="chips">${stageTag?chip('spark',esc(stageTag)):''}${!isRecent(lastFeed)&&lastFeed?chip('history',`Last feed ${fd(lastFeed.date)}`):''}</div>
+      </div>
+    </div>
+  </section>
+
+  ${activityStrip()}
+
+  <button class="feed-cta" data-feed>
+    <span class="cta-medallion">${icon('bottle')}</span>
+    <span class="cta-copy"><strong>Log a feed</strong><small>${lastFeed?`Last ${feedAgo}`:'Nurse, breast milk or formula'}</small></span>
+    <span class="cta-go">${icon('chevron')}</span>
+  </button>
+
+  <div class="orb-row" aria-label="Quick diaper logging">
+    <button class="orb wet" data-diaper="wet"><span class="orb-face">${icon('drop')}</span><strong>Wet</strong></button>
+    <button class="orb poop" data-diaper="poop"><span class="orb-face">${icon('poop')}</span><strong>Poopy</strong></button>
+    <button class="orb mixed" data-diaper="both"><span class="orb-face">${icon('mixed')}</span><strong>Mixed</strong></button>
+  </div>
+
+  <div class="pill-row">
+    <button data-sleep>${icon('moon')}<span>Sleep</span></button>
+    <button data-growth>${icon('scale')}<span>Growth</span></button>
+    <button data-view="baby-day">${icon('calendar')}<span>Day review</span></button>
+    <button data-view="baby-trends">${icon('chart')}<span>Trends</span></button>
+  </div>
+
+  ${dayTimeline()}
+
+  <section class="ring-row">
+    ${statRing(s.wetTotal, wk('wetTotal'), 'Wet', `avg ${wk('wetTotal').toFixed(1)}`, 'var(--wet-ink)')}
+    ${statRing(s.poopTotal, wk('poopTotal'), 'Poopy', `avg ${wk('poopTotal').toFixed(1)}`, 'var(--poop-ink)')}
+    ${statRing(s.feeds, wk('feeds'), 'Feeds', `avg ${wk('feeds').toFixed(1)}`, 'var(--feed-ink)')}
+    ${statRing(+s.bottleOz.toFixed(1), wk('bottleOz'), 'Bottle oz', `avg ${wk('bottleOz').toFixed(1)}`, 'var(--baby)')}
+  </section>
+
+  ${panel('Recent care',recentBaby(5),'<button data-view="baby-day">Day review</button>')}`;
 }
 function babyLabel(e){
   if(e.eventType==='diaper') return e.subtype==='both'?'Mixed diaper':e.subtype==='poop'?'Poopy diaper':'Wet diaper';
@@ -258,42 +890,149 @@ function babyLabel(e){
   if(e.eventType==='nursing') return `${e.durationMinutes??e.totalMinutes??0} min nursing`;
   if(e.eventType==='sleep') return `${Math.round((+e.durationMinutes||0)/6)/10} hr sleep`;
   if(e.eventType==='growth') return 'Growth measurement';
+  if(e.eventType==='milestone') return e.milestoneText || 'Milestone';
   return cap(e.eventType);
 }
 function babyRow(e){
-  const ic=e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':'diaper'):e.eventType==='nursing'?'heart':e.eventType==='growth'?'growth':'moon';
-  return `<div class="row"><div class="row-icon baby ${e.eventType==='diaper'?`sub-${e.subtype}`:''}">${icon(ic)}</div><div class="row-main"><strong>${babyLabel(e)}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.exactSourceDuplicate?' · source duplicate preserved':''}</span></div><div class="row-status">${e.synced?'Saved':'Device'}</div></div>`;
+  const ic=e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':e.eventType==='milestone'?'spark':'moon';
+  return `<button type="button" class="row" data-record="baby:${esc(e.id)}"><div class="row-icon baby ${e.eventType==='diaper'?`sub-${esc(e.subtype)}`:`kind-${esc(e.eventType)}`}">${icon(ic)}</div><div class="row-main"><strong>${babyLabel(e)}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.note?` · ${esc(e.note)}`:''}${e.exactSourceDuplicate?' · source duplicate preserved':''}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
 }
 function recentBaby(n){ const a=babyEvents().filter(e=>!e.exactSourceDuplicate).slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('baby','No Baby history yet','Use one of the four buttons above to start.'); return `<div class="rows">${a.map(babyRow).join('')}</div>`; }
 function babyHistory(){
-  const range=+S.ui.babyRange||30, filter=S.ui.babyFilter||'all', cutoff=dateList(range)[0];
+  const range=S.ui.babyRange ?? 30, all=+range>=9999, filter=S.ui.babyFilter||'all', cutoff=all?'':dateList(rangeDays(range,'baby'))[0];
   const matches=e=>filter==='all'||(filter==='feed'&&(e.eventType==='feeding'||e.eventType==='nursing'))||e.eventType===filter;
-  const a=babyEvents().filter(e=>(range>=9999||e.date>=cutoff)&&matches(e)).sort(byWhenDesc);
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>History</h2></div><button class="round-action baby" data-add>${icon('plus')}<span>Add</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[9999,'All']],range,'data-baby-range')}${pills([['all','All'],['diaper','Diapers'],['feed','Feeds'],['sleep','Sleep'],['growth','Growth']],filter,'data-baby-filter')}${panel('',a.length?`<div class="rows">${a.map(babyRow).join('')}</div>`:empty('history','No matching records','Try another filter or date range.'))}`;
+  const a=babyEvents().filter(e=>(all||e.date>=cutoff)&&matches(e)).sort(byWhenDesc);
+  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>History</h2></div><button class="round-action baby" data-add>${icon('plus')}<span>Add</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-baby-range')}${pills([['all','All'],['diaper','Diapers'],['feed','Feeds'],['sleep','Sleep'],['growth','Growth'],['milestone','Milestones']],filter,'data-baby-filter')}${panel('',a.length?`<div class="rows">${a.map(babyRow).join('')}</div>`:empty('history','No matching records','Try another filter or date range.'))}`;
 }
-function dailyBabyRows(range){ return dateList(range).map(d=>({d,...babyStats(d)})); }
+function dailyBabyRows(n){ return dateList(n).map(d=>({d,...babyStats(d)})); }
 function avgFromActive(rows,key){ const active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz); return active.length ? (sum(active.map(r=>r[key]))/active.length).toFixed(1) : '0.0'; }
 function babyDailyTable(rows){
   const body=rows.slice().reverse().map(r=>`<div class="daily-row"><div class="daily-date"><strong>${fdl(r.d)}</strong><small>${r.diapers} diapers · ${r.feeds} feeds</small></div><div class="daily-cell wet"><span>Wet only</span><b>${r.wetOnly}</b></div><div class="daily-cell poop"><span>Poopy only</span><b>${r.poopOnly}</b></div><div class="daily-cell mixed"><span>Mixed</span><b>${r.mixed}</b></div><div class="daily-cell feeds"><span>Feeds</span><b>${r.feeds}</b></div><div class="daily-cell milk"><span>Bottle milk</span><b>${r.bottleOz.toFixed(1)} <small>oz</small></b></div></div>`).join('');
   return `<div class="daily-table"><div class="daily-row daily-head"><div>Date</div><div>Wet only</div><div>Poopy only</div><div>Mixed</div><div>Feeds</div><div>Bottle milk</div></div>${body}</div>`;
 }
 function babyTrends(){
-  const range=+S.ui.trendRange||14, rows=dailyBabyRows(range);
-  const totalNursing=sum(rows.map(r=>r.nursing)), totalBreastBottles=sum(rows.map(r=>r.breastMilkBottles)), totalFormula=sum(rows.map(r=>r.formulaBottles));
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Daily trends</h2></div></div>${pills([[7,'7 days'],[14,'14 days'],[30,'30 days']],range,'data-trend-range')}
-  <div class="metric-grid baby-summary">${metric('Wet diapers / day',avgFromActive(rows,'wetTotal'),'includes mixed','drop','baby')}${metric('Poopy / day',avgFromActive(rows,'poopTotal'),'includes mixed','diaper','baby')}${metric('Feeds / day',avgFromActive(rows,'feeds'),'nursing + bottles','bottle','baby')}${metric('Bottle milk / day',`${avgFromActive(rows,'bottleOz')} oz`,'logged bottles','bottle','baby')}</div>
-  ${panel('Daily log',babyDailyTable(rows))}
-  ${panel('Feeding mix',`<div class="feeding-mix"><div><span>Nursing</span><strong>${totalNursing}</strong></div><div><span>Breast-milk bottles</span><strong>${totalBreastBottles}</strong></div><div><span>Formula bottles</span><strong>${totalFormula}</strong></div></div>`)}`;
+  const range = S.ui.trendRange ?? 14, n = rangeDays(range,'baby'), days = dateList(n);
+  const rows = dailyBabyRows(n);
+  const byDate = new Map(rows.map(r => [r.d,r]));
+  const buckets = bucketDays(days);
+  const stat = k => b => avg(b.days.map(d => byDate.get(d)?.[k] || 0));
+
+  const active = rows.filter(r => r.diapers || r.feeds || r.bottleOz);
+  const totalNursing = sum(rows.map(r => r.nursing));
+  const totalBreast = sum(rows.map(r => r.breastMilkBottles));
+  const totalFormula = sum(rows.map(r => r.formulaBottles));
+  const totalSleep = sum(rows.map(r => r.sleepMin));
+
+  const half = Math.floor(rows.length/2);
+  const recentFeeds = avg(rows.slice(half).filter(r => r.feeds).map(r => r.feeds));
+  const priorFeeds = avg(rows.slice(0,half).filter(r => r.feeds).map(r => r.feeds));
+  const recentOz = avg(rows.slice(half).filter(r => r.bottleOz).map(r => r.bottleOz));
+  const priorOz = avg(rows.slice(0,half).filter(r => r.bottleOz).map(r => r.bottleOz));
+
+  return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Daily trends</h2></div><button class="round-action baby" data-view="baby-day">${icon('calendar')}<span>Day review</span></button></div>
+  ${pills(RANGE_PILLS,range,'data-trend-range')}
+  <div class="metric-grid baby-summary">${metric('Wet / day',avgFromActive(rows,'wetTotal'),'includes mixed','drop','baby')}${metric('Poopy / day',avgFromActive(rows,'poopTotal'),'includes mixed','poop','baby')}${metric('Feeds / day',avgFromActive(rows,'feeds'),'nursing + bottles','bottle','baby')}${metric('Bottle milk / day',`${avgFromActive(rows,'bottleOz')} oz`,'logged bottles','bottle','baby')}</div>
+
+  ${panel('Diapers per day',barChart(buckets,{
+    value: b => avg(b.days.map(d => byDate.get(d)?.diapers || 0)),
+    segments: [
+      {label:'Wet only', color:'var(--wet-ink)', value: stat('wetOnly')},
+      {label:'Poopy only', color:'var(--poop-ink)', value: stat('poopOnly')},
+      {label:'Mixed', color:'var(--mixed-ink)', value: stat('mixed')}
+    ],
+    format: v => v.toFixed(v < 10 ? 1 : 0),
+    emptyLabel:'No diapers logged in this range'
+  }) + `<div class="chart-legend"><span><i style="background:var(--wet-ink)"></i>Wet only</span><span><i style="background:var(--poop-ink)"></i>Poopy only</span><span><i style="background:var(--mixed-ink)"></i>Mixed</span></div>`,
+    `<span class="panel-note">${active.length} active days</span>`)}
+
+  ${panel('Feeds per day',areaChart(buckets,{value:stat('feeds'), color:'var(--feed-ink)', format:v => v.toFixed(1), emptyLabel:'No feeds logged in this range'}),trendBadge(recentFeeds,priorFeeds,{goodIsUp:true}))}
+
+  ${panel('Bottle milk per day',areaChart(buckets,{value:stat('bottleOz'), color:'var(--baby)', format:v => v.toFixed(1), unit:' oz', emptyLabel:'No bottles logged in this range'}),trendBadge(recentOz,priorOz,{goodIsUp:true}))}
+
+  ${panel('Feeding mix',donut([
+      {label:'Nursing', value:totalNursing, color:'var(--growth-ink)'},
+      {label:'Breast-milk bottles', value:totalBreast, color:'var(--feed-ink)'},
+      {label:'Formula bottles', value:totalFormula, color:'var(--baby)'}
+    ], totalNursing+totalBreast+totalFormula, 'feeds'))}
+
+  ${totalSleep ? panel('Sleep logged',areaChart(buckets,{value:b => avg(b.days.map(d => (byDate.get(d)?.sleepMin || 0)/60)), color:'var(--sleep-ink)', format:v => v.toFixed(1), unit:' hr', emptyLabel:'No sleep logged'}),'') : ''}
+
+  ${panel('Daily log',babyDailyTable(rows.slice(-14)) + (rows.length>14?`<p class="chart-note">Showing the most recent 14 of ${rows.length} days. <strong>Doctor summary</strong> lists the full range, and History lists every entry.</p>`:''),`<span class="panel-note">${Math.min(rows.length,14)} days</span>`)}`;
 }
 function babyGrowth(){
   const a=babyEvents().filter(e=>e.eventType==='growth').sort(byWhenDesc), g=a[0];
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Growth</h2></div><button class="round-action baby" data-growth>${icon('plus')}<span>Add</span></button></div><div class="metric-grid three">${metric('Weight',g?.weightLb!=null?`${g.weightLb} lb${g.weightOz?` ${g.weightOz} oz`:''}`:'—',g?fd(g.date):'No measurement','growth','baby')}${metric('Length',g?.lengthIn!=null?`${g.lengthIn} in`:'—','latest','growth','baby')}${metric('Head',g?.headIn!=null?`${g.headIn} in`:'—','latest','growth','baby')}</div>${panel('Measurements',a.length?`<div class="rows">${a.map(e=>`<div class="row"><div class="row-icon baby">${icon('growth')}</div><div class="row-main"><strong>${e.weightLb??'—'} lb${e.weightOz?` ${e.weightOz} oz`:''} · ${e.lengthIn??'—'} in</strong><span>${fd(e.date)} · head ${e.headIn??'—'} in</span></div><div class="row-status">${e.synced?'Saved':'Device'}</div></div>`).join('')}</div>`:empty('growth','No measurements yet','Add measurements from pediatric visits.'))}<div class="clinical-note">For children under 2, clinicians generally follow weight, length, weight-for-length and head circumference over time using WHO growth standards.</div>`;
+  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Growth</h2></div><button class="round-action baby" data-growth>${icon('plus')}<span>Add</span></button></div><div class="metric-grid three">${metric('Weight',g?.weightLb!=null?`${g.weightLb} lb${g.weightOz?` ${g.weightOz} oz`:''}`:'—',g?fd(g.date):'No measurement','scale','baby')}${metric('Length',g?.lengthIn!=null?`${g.lengthIn} in`:'—','latest','growth','baby')}${metric('Head',g?.headIn!=null?`${g.headIn} in`:'—','latest','growth','baby')}</div>${panel('Measurements',a.length?`<div class="rows">${a.map(e=>{
+    const parts=[e.weightLb!=null?`${e.weightLb} lb${e.weightOz?` ${e.weightOz} oz`:''}`:null,e.lengthIn!=null?`${e.lengthIn} in long`:null].filter(Boolean);
+    const head=e.headIn!=null?` · head ${e.headIn} in`:'';
+    return `<button type="button" class="row" data-record="baby:${esc(e.id)}"><div class="row-icon baby kind-growth">${icon('scale')}</div><div class="row-main"><strong>${parts.length?parts.join(' · '):'Measurement'}</strong><span>${fd(e.date)}${head}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
+  }).join('')}</div>`:empty('growth','No measurements yet','Add measurements from pediatric visits.'))}<div class="clinical-note">For children under 2, clinicians generally follow weight, length, weight-for-length and head circumference over time using WHO growth standards.</div>`;
 }
+function developmentView(){
+  const born = birthDate();
+  if(!born) return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Development</h2></div></div>
+    ${empty('spark','Add a date of birth','The development timeline follows your baby\'s age, so it needs a birthday to line up.','<button class="primary-link" data-view="settings">Open settings</button>')}`;
+
+  const months = ageMonths(), marked = markedMilestones();
+  const stage = currentStage();
+  const stageId = selectedStage ?? stage.m;
+  const shown = MILESTONES.find(x => x.m === +stageId) || stage;
+  const span = MILESTONES[MILESTONES.length-1].m;
+
+  // journey track: one band per checklist, positioned by age
+  const bands = MILESTONES.map((st,i) => {
+    const next = MILESTONES[i+1]?.m ?? span+6;
+    const left = (st.m/(span+6))*100, width = ((next-st.m)/(span+6))*100;
+    const done = Object.entries(st.groups).reduce((a,[g,items]) => a + items.filter((_,j) => marked.has(milestoneId(st.m,g,j))).length, 0);
+    const total = milestoneTotal(st);
+    const state = months >= next ? 'past' : months >= st.m ? 'now' : 'ahead';
+    return `<button type="button" class="band ${state} ${+stageId===st.m?'sel':''}" data-stage="${st.m}" style="left:${left.toFixed(2)}%;width:${width.toFixed(2)}%" aria-label="${esc(st.label)}">
+      <span class="band-fill" style="width:${total?Math.round(done/total*100):0}%"></span><em>${st.label.replace(' months','m').replace(' years','y').replace('2 years','2y')}</em></button>`;
+  }).join('');
+  const agePct = months === null ? 0 : Math.max(0, Math.min(100, (months/(span+6))*100));
+
+  const stageDone = Object.entries(shown.groups).reduce((a,[g,items]) => a + items.filter((_,j) => marked.has(milestoneId(shown.m,g,j))).length, 0);
+  const stageTotal = milestoneTotal(shown);
+
+  const groups = Object.entries(shown.groups).map(([g,items]) => {
+    const meta = MILESTONE_GROUPS[g];
+    return `<section class="ms-group" style="--c:${meta.color}">
+      <div class="ms-group-head">${icon(meta.icon)}<strong>${meta.label}</strong></div>
+      ${items.map((text,j) => {
+        const id = milestoneId(shown.m,g,j), on = marked.has(id);
+        return `<button type="button" class="ms-item ${on?'on':''}" data-milestone="${id}" data-ms-text="${esc(text)}" data-ms-group="${g}" data-ms-month="${shown.m}">
+          <span class="ms-check">${on?icon('check'):''}</span><span>${esc(text)}</span></button>`;
+      }).join('')}
+    </section>`;
+  }).join('');
+
+  const isCurrent = shown.m === stage.m;
+  return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Development</h2></div><span class="age-badge">${esc(ageLabel()||'')}</span></div>
+
+  <section class="journey">
+    <div class="journey-head"><strong>Milestone journey</strong><span>${months!==null?`${months} month${months===1?'':'s'}`:''}</span></div>
+    <div class="journey-track">${bands}<div class="journey-now" style="left:${agePct.toFixed(2)}%"></div></div>
+    <div class="journey-legend"><span><i class="k-past"></i>Passed</span><span><i class="k-now"></i>Now</span><span><i class="k-ahead"></i>Ahead</span></div>
+  </section>
+
+  <section class="stage-card ${isCurrent?'is-now':''}">
+    <div class="stage-ring">${ring(stageTotal?stageDone/stageTotal:0,`${stageDone}`,`of ${stageTotal}`,'baby')}</div>
+    <div>
+      <span class="eyebrow">${isCurrent?'WHERE YOU ARE':'CHECKLIST'}</span>
+      <strong>${esc(shown.label)} · ${esc(shown.tag)}</strong>
+      <p>Most children can do these by ${esc(shown.label)}. Tap anything you have seen — it saves to history.</p>
+    </div>
+  </section>
+
+  ${groups}
+
+  <div class="clinical-note">Milestones are from the CDC “Learn the Signs. Act Early.” checklists and describe what about 75% of children can do by each age. Babies develop at their own pace, so this is a conversation starter, not a test or a diagnosis. Share concerns with your pediatrician — acting early makes a real difference.</div>`;
+}
+
 function doctorView(){
-  const range=+S.ui.doctorRange||14, rows=dailyBabyRows(range), active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz), g=latestGrowth(), pref=feedingPreference();
+  const range=S.ui.doctorRange ?? 14, n=rangeDays(range,'baby'), rows=dailyBabyRows(n), active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz), g=latestGrowth(), pref=feedingPreference();
   const totalNursing=sum(active.map(r=>r.nursing)), totalBottles=sum(active.map(r=>r.bottles));
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Doctor summary</h2></div><button class="round-action baby" data-print>${icon('steth')}<span>Print</span></button></div>${pills([[7,'7 days'],[14,'14 days'],[30,'30 days']],range,'data-doctor-range')}
-  <section class="doctor-summary-card"><div>${icon('steth')}</div><div><strong>${esc(S.baby.name)} · ${range}-day snapshot</strong><span>Quick answers from logged care</span></div></section>
+  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Doctor summary</h2></div><button class="round-action baby" data-print>${icon('steth')}<span>Print</span></button></div>${pills(RANGE_PILLS,range,'data-doctor-range')}
+  <section class="doctor-summary-card"><div>${icon('steth')}</div><div><strong>${esc(S.baby.name)} · ${n}-day snapshot</strong><span>Quick answers from logged care</span></div></section>
   <div class="qa-grid"><div><span>Feeding pattern</span><strong>${pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed'}</strong></div><div><span>Wet diapers</span><strong>${avgFromActive(rows,'wetTotal')} / day</strong><small>includes mixed</small></div><div><span>Poopy diapers</span><strong>${avgFromActive(rows,'poopTotal')} / day</strong><small>includes mixed</small></div><div><span>Mixed diapers</span><strong>${avgFromActive(rows,'mixed')} / day</strong></div><div><span>Feeds</span><strong>${avgFromActive(rows,'feeds')} / day</strong><small>${totalNursing} nursing · ${totalBottles} bottles</small></div><div><span>Latest growth</span><strong>${g?`${g.weightLb??'—'} lb · ${g.lengthIn??'—'} in`:'Not logged'}</strong></div></div>
   ${panel('Daily review',babyDailyTable(rows))}
   <div class="clinical-note">This is a log summary, not a diagnosis. Around and after 6 weeks, stool frequency can vary widely, so your pediatrician may look at feeding, wet diapers, growth and the overall pattern together.</div>`;
@@ -313,29 +1052,47 @@ function settingsView(){
   return `<div class="page-head"><div><span class="eyebrow">FAMILY</span><h2>Settings</h2></div></div>${dataStatus()}
   ${panel('Family account',S.cloud.enabled?`<div class="setting-row"><div><strong>${esc(S.cloud.email||'Signed in')}</strong><span>Use this same account on every device. New records sync automatically.</span></div><div class="setting-actions"><button data-cloud-check>Check cloud</button><button data-signout>Sign out</button></div></div>`:`<div class="setting-row"><div><strong>Not signed in</strong><span>Sign in with one family account to see the same Mom and Baby history on every device.</span></div><button class="primary-link" data-auth>Sign in</button></div>`)}
   ${panel('Backup & restore',`<div class="setting-row"><div><strong>Private family backup</strong><span>Import merges by record ID and does not delete existing history.</span></div><div class="setting-actions"><button data-import>${icon('upload')} Import</button><button data-export>${icon('download')} Export</button></div></div>`)}
+  ${panel('Baby profile',`<div class="profile-row">
+    <div class="profile-photo">${S.baby.photo?`<img src="${esc(S.baby.photo)}" alt="">`:babyIllustration()}</div>
+    <div class="profile-photo-actions"><button data-photo>${icon('upload')} ${S.baby.photo?'Change photo':'Add photo'}</button>${S.baby.photo?'<button data-photo-clear>Remove</button>':''}<small>Stored with your family account and shown on Baby home.</small></div>
+  </div>
+  <div class="settings-grid"><label class="field"><span>Baby's name</span><input id="babyName" type="text" maxlength="40" value="${esc(S.baby.name)}"></label><label class="field"><span>Date of birth</span><input id="babyBirth" type="date" max="${today()}" value="${esc(S.baby.birthDate||'')}"></label><label class="field"><span>Your name</span><input id="momName" type="text" maxlength="40" placeholder="Used for the greeting" value="${esc(S.profile.momName||'')}"></label></div>${S.baby.birthDate?`<p class="chart-note">${esc(S.baby.name)} is <strong>${esc(ageLabel()||'')}</strong>. Development follows this date.</p>`:'<p class="chart-note">Add a date of birth to unlock the development timeline.</p>'}`)}
   ${panel('Baby feeding',`<label class="field"><span>Usual feeding</span><select id="feedingPreference"><option value="auto" ${S.baby.feedingPreference==='auto'?'selected':''}>Choose from recent history</option><option value="mostly_breastfed" ${S.baby.feedingPreference==='mostly_breastfed'?'selected':''}>Mostly breastfed</option><option value="mostly_formula" ${S.baby.feedingPreference==='mostly_formula'?'selected':''}>Mostly formula</option><option value="mixed" ${S.baby.feedingPreference==='mixed'?'selected':''}>Mixed feeding</option></select></label>`)}
   ${panel('Mom pumping',`<div class="settings-grid"><label class="field"><span>Daily goal (mL)</span><input id="goalMl" type="number" inputmode="numeric" min="0" value="${+S.profile.dailyGoalMl||760}"></label><label class="field"><span>Freezer stash (mL)</span><input id="stashMl" type="number" inputmode="numeric" min="0" value="${+S.profile.stashMl||0}"></label>${S.schedule.map((t,i)=>`<label class="field"><span>Pump ${i+1}</span><input data-schedule="${i}" type="time" value="${t}"></label>`).join('')}</div>`)}
-  ${panel('Pump reminders',`<div class="setting-row"><div><strong>${S.reminders.enabled?'Reminders on':'Reminders off'}</strong><span>${notificationStatus()}</span></div><button data-reminders>${S.reminders.enabled?'Turn off':'Turn on'}</button></div>`)}`;
+  ${panel('Pump reminders',`<div class="setting-row"><div><strong>${S.reminders.enabled?'Reminders on':'Reminders off'}</strong><span>${notificationStatus()}</span></div><button data-reminders>${S.reminders.enabled?'Turn off':'Turn on'}</button></div>`)}
+  ${panel('Feed reminders',`<div class="setting-row"><div><strong>${S.reminders.feedEnabled?'Feed reminders on':'Feed reminders off'}</strong><span>Nudges you when ${esc(S.baby.name)} is due, based on the last feed plus your chosen gap.</span></div><button data-feed-reminders>${S.reminders.feedEnabled?'Turn off':'Turn on'}</button></div>
+  ${S.reminders.feedEnabled?`<label class="field" style="margin-top:12px"><span>Remind me this long after a feed</span><select id="feedGap">${[120,150,180,210,240,300].map(m=>`<option value="${m}" ${(+S.reminders.feedGapMin||180)===m?'selected':''}>${fmtGap(m)}</option>`).join('')}</select></label>`:''}
+  <p class="chart-note">A browser cannot wake a closed app. These arrive while MilkFlow is open in a tab or installed and running — treat them as a nudge, not an alarm clock. ${esc(notificationStatus())}</p>`)}`;
 }
 
 const renderers={
   'mom-home':momHome,'mom-history':momHistory,'mom-trends':momTrends,'mom-stash':momStash,
-  'baby-home':babyHome,'baby-history':babyHistory,'baby-trends':babyTrends,'baby-growth':babyGrowth,
-  doctor:doctorView,settings:settingsView
+  'baby-home':babyHome,'baby-history':babyHistory,'baby-trends':babyTrends,'baby-growth':babyGrowth,'baby-day':dayReview,
+  development:developmentView,doctor:doctorView,settings:settingsView
 };
-const titles={'mom-home':'Mom','mom-history':'Mom history','mom-trends':'Milk trends','mom-stash':'Stash','baby-home':'Baby','baby-history':'Baby history','baby-trends':'Daily trends','baby-growth':'Growth',doctor:'Doctor summary',settings:'Settings'};
+const titles={'mom-home':'Mom','mom-history':'Mom history','mom-trends':'Milk trends','mom-stash':'Stash','baby-home':'Baby','baby-history':'Baby history','baby-trends':'Daily trends','baby-growth':'Growth','baby-day':'Day review',development:'Development',doctor:'Doctor summary',settings:'Settings'};
 function render(){
+  applyDayPart();
   $('pageTitle').textContent=titles[view]||'MilkFlow';
   $('view').innerHTML=(renderers[view]||momHome)();
   const workspace=workspaceOf(view); S.ui.workspace=workspace; save();
   document.querySelectorAll('[data-workspace]').forEach(b=>b.classList.toggle('active',b.dataset.workspace===workspace));
   document.querySelectorAll('.sidebar [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
-  renderBottomNav(); syncBadge(); bindViewInputs();
+  renderSideNav(); renderBottomNav(); syncBadge(); bindViewInputs();
+}
+const SIDE_NAV=[
+  {label:'MOM',items:[['mom-home','Home','home'],['mom-history','History','history'],['mom-trends','Milk trends','chart'],['mom-stash','Freezer stash','snow']]},
+  {label:'BABY',items:[['baby-home','Home','baby'],['baby-history','History','history'],['baby-trends','Daily trends','chart'],['baby-day','Day review','calendar'],['baby-growth','Growth','scale'],['development','Development','spark'],['doctor','Doctor summary','steth']]},
+  {label:'FAMILY',items:[['settings','Settings','settings']]}
+];
+function renderSideNav(){
+  const el=$('sideNav'); if(!el) return;
+  el.innerHTML=SIDE_NAV.map(g=>`<div class="side-label">${g.label}</div><nav>${g.items.map(([v,l,ic])=>`<button data-view="${v}" class="${view===v?'active':''}">${icon(ic)}<span>${l}</span></button>`).join('')}</nav>`).join('');
 }
 function renderBottomNav(){
   const w=workspaceOf(view), nav=$('bottomNav');
   const home=w==='baby'?'baby-home':'mom-home', history=w==='baby'?'baby-history':'mom-history', trends=w==='baby'?'baby-trends':'mom-trends';
-  nav.innerHTML=`<button data-view="${home}" class="${view===home?'active':''}">${icon('home')}<span>Home</span></button><button data-view="${history}" class="${view===history?'active':''}">${icon('history')}<span>History</span></button><button class="add-tab" data-add>${icon('plus')}<span>Add</span></button><button data-view="${trends}" class="${view===trends?'active':''}">${icon('chart')}<span>Trends</span></button><button data-more class="${['settings','doctor','baby-growth','mom-stash'].includes(view)?'active':''}">${icon('more')}<span>More</span></button>`;
+  nav.innerHTML=`<button data-view="${home}" class="${view===home?'active':''}">${icon('home')}<span>Home</span></button><button data-view="${history}" class="${view===history?'active':''}">${icon('history')}<span>History</span></button><button class="add-tab" data-add>${icon('plus')}<span>Add</span></button><button data-view="${trends}" class="${view===trends?'active':''}">${icon('chart')}<span>Trends</span></button><button data-more class="${['settings','doctor','baby-growth','baby-day','development','mom-stash'].includes(view)?'active':''}">${icon('more')}<span>More</span></button>`;
 }
 function syncBadge(){
   const b=$('syncBadge'), t=$('syncTitle'), sub=$('syncSubtitle');
@@ -347,31 +1104,166 @@ function syncBadge(){
 function openDrawer(){
   const w=workspaceOf(view);
   $('drawerBody').innerHTML = w==='baby' ?
-  `<button data-view="baby-home">${icon('baby')}<span>Baby home</span></button><button data-view="baby-history">${icon('history')}<span>History</span></button><button data-view="baby-trends">${icon('chart')}<span>Daily trends</span></button><button data-view="baby-growth">${icon('growth')}<span>Growth</span></button><button data-view="doctor">${icon('steth')}<span>Doctor summary</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="mom-home">${icon('heart')}<span>Switch to Mom</span></button>` :
-  `<button data-view="mom-home">${icon('heart')}<span>Mom home</span></button><button data-view="mom-history">${icon('history')}<span>History</span></button><button data-view="mom-trends">${icon('chart')}<span>Milk trends</span></button><button data-view="mom-stash">${icon('snow')}<span>Freezer stash</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="baby-home">${icon('baby')}<span>Switch to Baby</span></button>`;
+  `<button data-view="baby-home">${icon('baby')}<span>Baby home</span></button><button data-view="baby-history">${icon('history')}<span>History</span></button><button data-view="baby-trends">${icon('chart')}<span>Daily trends</span></button><button data-view="baby-day">${icon('calendar')}<span>Day review</span></button><button data-view="baby-growth">${icon('scale')}<span>Growth</span></button><button data-view="development">${icon('spark')}<span>Development</span></button><button data-view="doctor">${icon('steth')}<span>Doctor summary</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="mom-home">${icon('nursing')}<span>Switch to Mom</span></button>` :
+  `<button data-view="mom-home">${icon('nursing')}<span>Mom home</span></button><button data-view="mom-history">${icon('history')}<span>History</span></button><button data-view="mom-trends">${icon('chart')}<span>Milk trends</span></button><button data-view="mom-stash">${icon('snow')}<span>Freezer stash</span></button><hr><button data-view="settings">${icon('settings')}<span>Settings</span></button><button data-view="baby-home">${icon('baby')}<span>Switch to Baby</span></button>`;
   $('drawer').classList.add('open'); $('scrim').classList.add('open'); document.body.classList.add('locked');
 }
 function openSheet(html){ $('sheet').innerHTML=`<div class="sheet-handle"></div>${html}`; $('sheet').classList.add('open'); $('scrim').classList.add('open'); document.body.classList.add('locked'); }
 function addSheet(){
-  if(workspaceOf(view)==='mom') return openSheet(`<div class="sheet-head"><strong>Add Mom care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions two"><button data-mom="pump">${icon('drop')}<strong>Pump</strong><span>Milk output</span></button><button data-mom="nursing">${icon('heart')}<strong>Nursing</strong><span>Breastfeed</span></button></div>`);
-  openSheet(`<div class="sheet-head"><strong>Add Baby care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions"><button data-feed>${icon('bottle')}<strong>Feed</strong><span>Nurse or bottle</span></button><button data-diaper="wet">${icon('drop')}<strong>Wet</strong></button><button data-diaper="poop">${icon('diaper')}<strong>Poopy</strong></button><button data-diaper="both">${icon('diaper')}<strong>Mixed</strong></button><button data-sleep>${icon('moon')}<strong>Sleep</strong></button><button data-growth>${icon('growth')}<strong>Growth</strong></button></div>`);
+  if(workspaceOf(view)==='mom') return openSheet(`<div class="sheet-head"><strong>Add Mom care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions two"><button data-mom="pump">${icon('drop')}<strong>Pump</strong><span>Milk output</span></button><button data-mom="nursing">${icon('nursing')}<strong>Nursing</strong><span>Breastfeed</span></button></div>`);
+  openSheet(`<div class="sheet-head"><strong>Add Baby care</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions"><button data-feed>${icon('bottle')}<strong>Feed</strong><span>Nurse or bottle</span></button><button data-diaper="wet">${icon('drop')}<strong>Wet</strong></button><button data-diaper="poop">${icon('poop')}<strong>Poopy</strong></button><button data-diaper="both">${icon('mixed')}<strong>Mixed</strong></button><button data-sleep>${icon('moon')}<strong>Sleep</strong></button><button data-growth>${icon('scale')}<strong>Growth</strong></button></div>`);
 }
 function feedSheet(){
   const pref=feedingPreference();
-  openSheet(`<div class="sheet-head"><strong>How did baby feed?</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions three"><button data-feed-type="nursing">${icon('heart')}<strong>Nursing</strong></button><button data-feed-type="expressed_milk" class="${pref!=='mostly_formula'?'recommended':''}">${icon('bottle')}<strong>Breast milk</strong><span>Bottle</span></button><button data-feed-type="formula" class="${pref==='mostly_formula'?'recommended':''}">${icon('bottle')}<strong>Formula</strong><span>Bottle</span></button></div>`);
+  openSheet(`<div class="sheet-head"><strong>How did baby feed?</strong><button data-close>${icon('close')}</button></div><div class="sheet-actions three"><button data-feed-type="nursing">${icon('nursing')}<strong>Nursing</strong></button><button data-feed-type="expressed_milk" class="${pref!=='mostly_formula'?'recommended':''}">${icon('bottle')}<strong>Breast milk</strong><span>Bottle</span></button><button data-feed-type="formula" class="${pref==='mostly_formula'?'recommended':''}">${icon('bottle')}<strong>Formula</strong><span>Bottle</span></button></div>`);
 }
-function openMomDialog(type){ closeOverlays(); $('momType').value=type; $('momDialogTitle').textContent=type==='pump'?'Pump':'Nursing'; $('momDate').value=today(); $('momTime').value=now(); $('momAmount').value=''; $('momDuration').value=''; $('momNote').value=''; const pump=type==='pump'; $('momAmountWrap').classList.toggle('hidden',!pump); $('momSideWrap').classList.toggle('hidden',pump); $('momAmount').required=pump; $('momDialog').showModal(); }
-function openDiaperDialog(kind){ closeOverlays(); const normalized=normalizeSubtype(kind); $('diaperKind').value=normalized; $('diaperDialogTitle').textContent=normalized==='wet'?'Wet diaper':normalized==='poop'?'Poopy diaper':'Mixed diaper'; $('diaperDate').value=today(); $('diaperTime').value=now(); $('diaperNote').value=''; $('diaperDialog').showModal(); }
-function openFeedDialog(type){ closeOverlays(); $('feedType').value=type; $('feedDialogTitle').textContent=type==='nursing'?'Nursing':type==='formula'?'Formula bottle':'Breast milk bottle'; $('feedDate').value=today(); $('feedTime').value=now(); $('feedAmount').value=''; $('feedDuration').value=''; const nursing=type==='nursing'; $('feedAmountWrap').classList.toggle('hidden',nursing); $('feedNursingWrap').classList.toggle('hidden',!nursing); $('feedSideWrap').classList.toggle('hidden',!nursing); $('feedAmount').required=!nursing; $('feedDuration').required=nursing; $('feedDialog').showModal(); }
-function openGrowthDialog(){ closeOverlays(); $('growthDate').value=today(); $('growthWeightLb').value=''; $('growthWeightOz').value=''; $('growthLength').value=''; $('growthHead').value=''; $('growthNote').value=''; $('growthDialog').showModal(); }
-function openSleepDialog(){ closeOverlays(); $('sleepDate').value=today(); $('sleepTime').value=now(); $('sleepMinutes').value=''; $('sleepDialog').showModal(); }
+function findRecord(kind,id){ return (kind==='mom' ? S.entries : S.babyEvents).find(e => e.id === id) || null; }
+function recordTitle(kind,e){ return kind==='mom' ? (e.type==='pump' ? `${e.amountMl||0} mL pump` : `${e.durationMin||0} min nursing`) : babyLabel(e); }
+function openRecordSheet(kind,id){
+  const e=findRecord(kind,id); if(!e) return;
+  const ic = kind==='mom' ? (e.type==='pump'?'drop':'nursing') : (e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':'moon');
+  openSheet(`<div class="sheet-head"><strong>Entry</strong><button data-close aria-label="Close">${icon('close')}</button></div>
+  <div class="record-card"><div class="record-icon ${kind}">${icon(ic)}</div><div><strong>${esc(recordTitle(kind,e))}</strong><span>${fdl(e.date)} · ${to12(e.time)}</span>${e.note?`<small>${esc(e.note)}</small>`:''}</div></div>
+  <div class="record-actions"><button data-edit-record="${kind}:${esc(e.id)}">${icon('edit')}<span>Edit</span></button><button class="danger" data-void-record="${kind}:${esc(e.id)}">${icon('trash')}<span>Remove</span></button></div>
+  <p class="record-note">Removing hides the entry from history and totals. It is never erased, and you can undo it.</p>`);
+}
+// Soft-void only: the record keeps its id and stays in local + cloud storage, so nothing is
+// ever destroyed and the removal can be undone or reversed from a backup.
+async function voidRecord(kind,id){
+  const e=findRecord(kind,id); if(!e) return;
+  closeOverlays();
+  e.voidedAt=new Date().toISOString(); e.synced=false; save(); render();
+  try{ kind==='mom' ? await pushMom(e) : await pushBabies([e]); }catch{}
+  toast('Entry removed',6000,{label:'Undo',run:()=>restoreRecord(kind,id)});
+}
+async function restoreRecord(kind,id){
+  const e=findRecord(kind,id); if(!e) return;
+  delete e.voidedAt; e.editedAt=new Date().toISOString(); e.synced=false; save(); render();
+  try{ kind==='mom' ? await pushMom(e) : await pushBabies([e]); }catch{}
+  toast('Entry restored');
+}
+let editing=null;
+let selectedStage=null;
+function editRecord(kind,id){
+  const e=findRecord(kind,id); if(!e) return;
+  closeOverlays();
+  let handled=true;
+  if(kind==='mom'){
+    openMomDialog(e.type,true);
+    $('momDate').value=e.date||today(); $('momTime').value=e.time||now();
+    $('momAmount').value=e.amountMl??''; $('momDuration').value=e.durationMin??'';
+    $('momNote').value=e.note||''; if(e.side) $('momSide').value=e.side;
+  } else if(e.eventType==='diaper'){
+    openDiaperDialog(e.subtype,true);
+    $('diaperDate').value=e.date; $('diaperTime').value=e.time; $('diaperNote').value=e.note||'';
+  } else if(e.eventType==='feeding'||e.eventType==='nursing'){
+    openFeedDialog(e.eventType==='nursing'?'nursing':(e.feedingType||'expressed_milk'),true);
+    $('feedDate').value=e.date; $('feedTime').value=e.time;
+    $('feedAmount').value=e.amountOz??''; $('feedDuration').value=e.durationMinutes??e.totalMinutes??'';
+    if(e.side) $('feedSide').value=e.side;
+  } else if(e.eventType==='growth'){
+    openGrowthDialog(true);
+    $('growthDate').value=e.date; $('growthWeightLb').value=e.weightLb??''; $('growthWeightOz').value=e.weightOz??'';
+    $('growthLength').value=e.lengthIn??''; $('growthHead').value=e.headIn??''; $('growthNote').value=e.note||'';
+  } else if(e.eventType==='sleep'){
+    openSleepDialog(true);
+    $('sleepDate').value=e.date; $('sleepTime').value=e.time; $('sleepMinutes').value=e.durationMinutes??'';
+  } else handled=false;
+  // Set AFTER opening: showDialog may close an already-open dialog, and that fires the
+  // 'close' handler which clears `editing` - an edit would silently become a new record.
+  editing = handled ? {kind,id} : null;
+  if(!handled) toast('That entry type cannot be edited yet.');
+}
+// Dialogs are shared between "add" and "edit"; `editing` decides which one a submit means.
+function commitRecord(list,built){
+  if(editing){
+    const e=findRecord(editing.kind,editing.id);
+    if(e){ Object.assign(e,built,{id:e.id,createdAt:e.createdAt||built.createdAt,editedAt:new Date().toISOString(),synced:false}); editing=null; return e; }
+    editing=null;
+  }
+  list.push(built); return built;
+}
+// showModal() throws if the dialog is already open (double-tap), so always reset first.
+function showDialog(id,isEdit){
+  const d=$(id); if(!d) return;
+  if(d.open){ try{ d.close(); }catch{} }
+  d.classList.toggle('is-edit',!!isEdit);
+  d.querySelectorAll('[data-save-label]').forEach(b => b.textContent = isEdit ? 'Save changes' : b.dataset.saveLabel);
+  try{ d.showModal(); }catch{}
+}
+function openMomDialog(type,isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('momType').value=type; $('momDialogTitle').textContent=(isEdit?'Edit ':'')+(type==='pump'?'Pump':'Nursing'); $('momDate').value=today(); $('momTime').value=now(); $('momAmount').value=''; $('momDuration').value=''; $('momNote').value=''; const pump=type==='pump'; $('momAmountWrap').classList.toggle('hidden',!pump); $('momSideWrap').classList.toggle('hidden',pump); $('momAmount').required=pump; showDialog('momDialog',isEdit); }
+function openDiaperDialog(kind,isEdit=false){ closeOverlays(); if(!isEdit) editing=null; const normalized=normalizeSubtype(kind); $('diaperKind').value=normalized; $('diaperDialogTitle').textContent=(isEdit?'Edit ':'')+(normalized==='wet'?'Wet diaper':normalized==='poop'?'Poopy diaper':'Mixed diaper'); $('diaperDate').value=today(); $('diaperTime').value=now(); $('diaperNote').value=''; showDialog('diaperDialog',isEdit); }
+function openFeedDialog(type,isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('feedType').value=type; $('feedDialogTitle').textContent=(isEdit?'Edit ':'')+(type==='nursing'?'Nursing':type==='formula'?'Formula bottle':'Breast milk bottle'); $('feedDate').value=today(); $('feedTime').value=now(); $('feedAmount').value=''; $('feedDuration').value=''; const nursing=type==='nursing'; $('feedAmountWrap').classList.toggle('hidden',nursing); $('feedNursingWrap').classList.toggle('hidden',!nursing); $('feedSideWrap').classList.toggle('hidden',!nursing); $('feedAmount').required=!nursing; $('feedDuration').required=nursing; showDialog('feedDialog',isEdit); }
+function openGrowthDialog(isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('growthDate').value=today(); $('growthWeightLb').value=''; $('growthWeightOz').value=''; $('growthLength').value=''; $('growthHead').value=''; $('growthNote').value=''; showDialog('growthDialog',isEdit); }
+function openSleepDialog(isEdit=false){ closeOverlays(); if(!isEdit) editing=null; $('sleepDate').value=today(); $('sleepTime').value=now(); $('sleepMinutes').value=''; showDialog('sleepDialog',isEdit); }
+// Closing a dialog by any route (Cancel, ×, Esc) must drop the pending edit.
+['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].forEach(id => $(id)?.addEventListener('close',()=>{ editing=null; }));
 
 function bindViewInputs(){
+  // A 30-day chart overflows: the most recent days matter most, so open scrolled to them.
+  document.querySelectorAll('.chart-scroll').forEach(el => { el.scrollLeft = el.scrollWidth; });
+  // The day strip runs oldest-to-newest; open on the selected day, which is usually Today.
+  document.querySelectorAll('.day-strip').forEach(el => {
+    const sel = el.querySelector('.day-chip.sel');
+    if(sel && el.scrollWidth > el.clientWidth) el.scrollLeft = Math.max(0, sel.offsetLeft - el.clientWidth + sel.offsetWidth + 12);
+  });
+  document.querySelectorAll('.schedule-strip').forEach(el => {
+    const next=el.querySelector('.schedule-card:not(.done)');
+    if(next && el.scrollWidth > el.clientWidth) el.scrollLeft = Math.max(0, next.offsetLeft - 12);
+  });
   $('stashExact')?.addEventListener('change',e=>{ S.profile.stashMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); render(); });
   $('goalMl')?.addEventListener('change',e=>{ S.profile.dailyGoalMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); });
   $('stashMl')?.addEventListener('change',e=>{ S.profile.stashMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); });
   $('feedingPreference')?.addEventListener('change',e=>{ S.baby.feedingPreference=e.target.value; save(); pushProfile().catch(()=>{}); render(); });
+  $('babyName')?.addEventListener('change',e=>{ const v=e.target.value.trim(); if(v){ S.baby.name=v; save(); pushProfile().catch(()=>{}); render(); } });
+  $('babyBirth')?.addEventListener('change',e=>{ S.baby.birthDate=e.target.value||''; save(); pushProfile().catch(()=>{}); render(); });
+  $('momName')?.addEventListener('change',e=>{ S.profile.momName=e.target.value.trim(); save(); pushProfile().catch(()=>{}); render(); });
+  $('feedGap')?.addEventListener('change',e=>{ S.reminders.feedGapMin=+e.target.value||180; S.reminders.feedLastKey=null; save(); pushProfile().catch(()=>{}); render(); });
   document.querySelectorAll('[data-schedule]').forEach(x=>x.addEventListener('change',()=>{ S.schedule[+x.dataset.schedule]=x.value; save(); pushProfile().catch(()=>{}); }));
+}
+
+// A marked milestone is a normal baby event, so it appears in History, syncs and exports.
+async function toggleMilestone(id,text,group,month){
+  const existing = S.babyEvents.find(e => e.milestoneId === id && !e.voidedAt);
+  if(existing){
+    existing.voidedAt = new Date().toISOString(); existing.synced = false; save(); render();
+    try{ await pushBabies([existing]); }catch{}
+    toast('Milestone cleared',5000,{label:'Undo',run:()=>{ delete existing.voidedAt; existing.editedAt=new Date().toISOString(); save(); render(); pushBabies([existing]).catch(()=>{}); }});
+    return;
+  }
+  // restore a previously cleared one rather than creating a duplicate
+  const prior = S.babyEvents.find(e => e.milestoneId === id);
+  if(prior){ delete prior.voidedAt; prior.editedAt=new Date().toISOString(); prior.synced=false; save(); render(); try{ await pushBabies([prior]); }catch{} toast('Milestone noted'); return; }
+  const x = normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'milestone',date:today(),time:now(),
+    milestoneId:id,milestoneText:text,milestoneGroup:group,milestoneMonth:month,note:'',sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false});
+  S.babyEvents.push(x); save(); render();
+  try{ await pushBabies([x]); }catch{ toast('Saved on this device. Cloud will retry.'); }
+  toast('Milestone noted');
+}
+
+// Photos are downscaled before storing so the profile document stays small.
+function readPhoto(file){
+  if(!file) return;
+  if(!/^image\//.test(file.type)) return toast('That file is not an image.');
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const size = 320, c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      const side = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, size, size);
+      try{
+        S.baby.photo = c.toDataURL('image/jpeg', 0.82);
+        save(); pushProfile().catch(()=>{}); render(); toast('Photo updated');
+      }catch(err){ console.error(err); toast('That photo could not be saved.'); }
+    };
+    img.onerror = () => toast('That image could not be read.');
+    img.src = reader.result;
+  };
+  reader.onerror = () => toast('That image could not be read.');
+  reader.readAsDataURL(file);
 }
 
 function snapshot(){ try{ localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(S)); }catch{} }
@@ -384,20 +1276,24 @@ function mergeBaby(current,incoming){
 }
 async function importBackup(file){
   let d; try{ d=JSON.parse(await file.text()); }catch{ return toast('That file could not be read.'); }
-  let mom=[],baby=[],profile=null,schedule=null,overrides={};
+  let mom=[],baby=[],profile=null,schedule=null,overrides={},babyProfile=null;
   if(d.schema_version==='milkflow-family-bundle-2'){
     mom=Array.isArray(d.mom?.entries)?d.mom.entries:[];
     baby=Array.isArray(d.baby?.events)?d.baby.events.map(mapBaby):[];
     profile=d.mom?.profile||null; schedule=d.mom?.schedule||null; overrides=d.mom?.dailyOverrides||{};
+    // The baby profile (name, date of birth, photo) was exported but never restored.
+    babyProfile=d.baby?.profile||null;
   }else if(Array.isArray(d.events)){
     baby=d.events.filter(x=>x.owner_scope==='baby'&&String(x.date||'').startsWith('2026-')).map(mapBaby);
   }else if(Array.isArray(d.entries)){
     mom=d.entries; profile=d.profile||null; schedule=d.schedule||null; overrides=d.dailyOverrides||{};
   }
-  if(!mom.length&&!baby.length) return toast('No compatible family records found.');
+  if(!mom.length&&!baby.length&&!babyProfile&&!profile) return toast('No compatible family records found.');
   snapshot(); const beforeMom=momEntries().length, beforeBaby=babyEvents().length;
   S.entries=mergeMom(S.entries,mom); S.babyEvents=mergeBaby(S.babyEvents,baby);
-  if(profile) S.profile={...S.profile,...profile}; if(Array.isArray(schedule)&&schedule.length) S.schedule=schedule; S.dailyOverrides={...S.dailyOverrides,...overrides};
+  if(profile) S.profile={...S.profile,...profile};
+  if(babyProfile) S.baby={...S.baby,...babyProfile};
+  if(Array.isArray(schedule)&&schedule.length) S.schedule=schedule; S.dailyOverrides={...S.dailyOverrides,...overrides};
   save(); const addedMom=momEntries().length-beforeMom, addedBaby=babyEvents().length-beforeBaby;
   toast(`Added ${addedMom} Mom · ${addedBaby} Baby records`,4000);
   if(S.cloud.enabled){ try{ await reconcile(); await verifyCloud(true); toast('Family history saved to cloud.',3500); }catch(err){ console.error(err); toast('Saved on this device. Cloud will retry.',4000); } }
@@ -448,7 +1344,7 @@ async function reconcile(){
   await pushBabies(S.babyEvents.filter(e=>!remoteBaby.has(e.id)));
   await pushProfile(); S.cloud.lastSync=new Date().toISOString(); save();
 }
-async function pushMom(e){ if(!cloud||!S.cloud.userId) return; await momRef().doc(e.id).set({type:e.type,date:e.date,time:e.time||'',amountMl:e.amountMl??null,durationMin:e.durationMin??null,side:e.side||null,quality:e.quality||null,note:e.note||'',source:e.source||'MilkFlow',updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); e.synced=true; S.cloud.lastSync=new Date().toISOString(); save(); }
+async function pushMom(e){ if(!cloud||!S.cloud.userId) return; await momRef().doc(e.id).set({type:e.type,date:e.date,time:e.time||'',amountMl:e.amountMl??null,durationMin:e.durationMin??null,side:e.side||null,quality:e.quality||null,note:e.note||'',source:e.source||'MilkFlow',createdAt:e.createdAt||null,editedAt:e.editedAt||null,voidedAt:e.voidedAt||null,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); e.synced=true; S.cloud.lastSync=new Date().toISOString(); save(); }
 async function pushBabies(arr){
   if(!cloud||!S.cloud.userId||!arr.length) return;
   for(let i=0;i<arr.length;i+=350){ const part=arr.slice(i,i+350).map(normalizeBabyEvent), batch=cloud.db.batch(); for(const e of part) batch.set(babyRef().doc(e.id),{...e,synced:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); await batch.commit(); part.forEach(e=>e.synced=true); }
@@ -483,8 +1379,33 @@ async function toggleReminders(){
   S.reminders.enabled=turningOn; save(); try{ await pushProfile(); }catch{} render(); toast(turningOn?'Pump reminders are on.':'Pump reminders are off.');
 }
 function tickReminders(){
+  feedReminderTick();
   if(!S.reminders.enabled) return; const d=new Date(), m=d.getHours()*60+d.getMinutes(), dt=today();
   S.schedule.forEach((t,i)=>{ const target=+t.slice(0,2)*60 + +t.slice(3)-(+S.reminders.leadMin||0), key=`${dt}-${i}-${target}`; if(Math.abs(m-target)<=1&&S.reminders.lastSentKey!==key&&dayP(dt).length<=i){ toast(`Pump ${i+1} is coming up · ${to12(t)}`,7000); if('Notification'in window&&Notification.permission==='granted'){ try{ new Notification('Pump reminder',{body:`Pump ${i+1} · ${to12(t)}`}); }catch{} } S.reminders.lastSentKey=key; save(); } });
+}
+
+// Fires once per due feed while the app is open. Browsers cannot wake a closed page,
+// so this is a prompt, never an alarm clock - the Settings copy says so plainly.
+function feedReminderTick(){
+  if(!S.reminders.feedEnabled) return;
+  const last = babyEvents().filter(e => !e.exactSourceDuplicate && (e.eventType==='feeding'||e.eventType==='nursing')).sort(byWhenDesc)[0];
+  const due = nextFeedDue(last);
+  if(!due || !due.overdue) return;
+  const key = `${last.id}-${S.reminders.feedGapMin}`;
+  if(S.reminders.feedLastKey === key) return;
+  S.reminders.feedLastKey = key; save();
+  const msg = `${S.baby.name} is due for a feed`;
+  toast(msg, 8000, {label:'Log', run:()=>feedSheet()});
+  if('Notification' in window && Notification.permission === 'granted'){
+    try{ new Notification('Feed reminder',{body:`${msg} · last feed ${sinceLabel(last.date,last.time)||''}`,tag:'milkflow-feed'}); }catch{}
+  }
+}
+async function toggleFeedReminders(){
+  const on = !S.reminders.feedEnabled;
+  if(on && 'Notification' in window && Notification.permission === 'default'){ try{ await Notification.requestPermission(); }catch{} }
+  S.reminders.feedEnabled = on; S.reminders.feedLastKey = null; save();
+  try{ await pushProfile(); }catch{}
+  render(); toast(on ? 'Feed reminders are on while the app is open.' : 'Feed reminders are off.');
 }
 
 function handleClick(e){
@@ -493,6 +1414,15 @@ function handleClick(e){
   const route=e.target.closest('[data-view]'); if(route){ setView(route.dataset.view); return; }
   if(e.target.closest('[data-menu]')||e.target.closest('[data-more]')){ openDrawer(); return; }
   if(e.target.closest('[data-add]')){ addSheet(); return; }
+  const rd=e.target.closest('[data-review-date]'); if(rd){ S.ui.reviewDate=rd.dataset.reviewDate; save(); render(); return; }
+  const rf=e.target.closest('[data-review-filter]'); if(rf){ S.ui.reviewFilter=rf.dataset.reviewFilter; save(); render(); return; }
+  const stg=e.target.closest('[data-stage]'); if(stg){ selectedStage=+stg.dataset.stage; render(); return; }
+  const ms=e.target.closest('[data-milestone]'); if(ms){ toggleMilestone(ms.dataset.milestone,ms.dataset.msText,ms.dataset.msGroup,+ms.dataset.msMonth); return; }
+  if(e.target.closest('[data-photo]')){ $('photoFile').click(); return; }
+  if(e.target.closest('[data-photo-clear]')){ S.baby.photo=''; save(); pushProfile().catch(()=>{}); render(); toast('Photo removed'); return; }
+  const rec=e.target.closest('[data-record]'); if(rec){ const [k,...r]=rec.dataset.record.split(':'); openRecordSheet(k,r.join(':')); return; }
+  const er=e.target.closest('[data-edit-record]'); if(er){ const [k,...r]=er.dataset.editRecord.split(':'); editRecord(k,r.join(':')); return; }
+  const vr=e.target.closest('[data-void-record]'); if(vr){ const [k,...r]=vr.dataset.voidRecord.split(':'); voidRecord(k,r.join(':')); return; }
   const mom=e.target.closest('[data-mom]'); if(mom){ openMomDialog(mom.dataset.mom); return; }
   if(e.target.closest('[data-feed]')){ feedSheet(); return; }
   const ft=e.target.closest('[data-feed-type]'); if(ft){ openFeedDialog(ft.dataset.feedType); return; }
@@ -503,6 +1433,7 @@ function handleClick(e){
   if(e.target.closest('[data-export]')){ exportBackup(); return; }
   if(e.target.closest('[data-cloud-check]')){ verifyCloud().then(render); return; }
   if(e.target.closest('[data-reminders]')){ toggleReminders(); return; }
+  if(e.target.closest('[data-feed-reminders]')){ toggleFeedReminders(); return; }
   if(e.target.closest('[data-auth]')){ $('authDialog').showModal(); return; }
   if(e.target.closest('[data-signout]')){ cloud?.auth.signOut(); return; }
   if(e.target.closest('[data-print]')){ window.print(); return; }
@@ -515,14 +1446,19 @@ function handleClick(e){
 }
 document.addEventListener('click',handleClick);
 
-$('momForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('momType').value, x={id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',synced:false}; S.entries.push(x); save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); });
-$('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const x=normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'diaper',date:$('diaperDate').value,time:$('diaperTime').value,subtype:$('diaperKind').value,note:$('diaperNote').value.trim(),sourceFile:'MilkFlow',synced:false}); S.babyEvents.push(x); save(); $('diaperDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); });
-$('feedForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('feedType').value, x=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',synced:false}); S.babyEvents.push(x); save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); });
-$('growthForm').addEventListener('submit',async e=>{ e.preventDefault(); const x=normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'growth',date:$('growthDate').value,time:'12:00',weightLb:$('growthWeightLb').value===''?null:+$('growthWeightLb').value,weightOz:$('growthWeightOz').value===''?null:+$('growthWeightOz').value,lengthIn:$('growthLength').value===''?null:+$('growthLength').value,headIn:$('growthHead').value===''?null:+$('growthHead').value,note:$('growthNote').value.trim(),sourceFile:'MilkFlow',synced:false}); S.babyEvents.push(x); save(); $('growthDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} setView('baby-growth'); });
-$('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const x=normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:+$('sleepMinutes').value||0,sourceFile:'MilkFlow',synced:false}); S.babyEvents.push(x); save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); });
+$('momForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('momType').value, wasEdit=!!editing; const x=commitRecord(S.entries,{id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false}); save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved')); });
+$('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'diaper',date:$('diaperDate').value,time:$('diaperTime').value,subtype:$('diaperKind').value,note:$('diaperNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('diaperDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Diaper logged'); });
+$('feedForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('feedType').value, wasEdit=!!editing, stamp=new Date().toISOString(); const built=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}); const x=commitRecord(S.babyEvents,built); save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Feed logged'); });
+$('growthForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'growth',date:$('growthDate').value,time:'12:00',weightLb:$('growthWeightLb').value===''?null:+$('growthWeightLb').value,weightOz:$('growthWeightOz').value===''?null:+$('growthWeightOz').value,lengthIn:$('growthLength').value===''?null:+$('growthLength').value,headIn:$('growthHead').value===''?null:+$('growthHead').value,note:$('growthNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('growthDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} setView('baby-growth'); toast(wasEdit?'Measurement updated':'Measurement saved'); });
+$('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:+$('sleepMinutes').value||0,sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Sleep logged'); });
 $('authForm').addEventListener('submit',async e=>{ e.preventDefault(); if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.signInWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('createAccount').addEventListener('click',async()=>{ if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.createUserWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('importFile').addEventListener('change',e=>{ const f=e.target.files?.[0]; if(f) importBackup(f); e.target.value=''; });
+$('photoFile')?.addEventListener('change',e=>{ const f=e.target.files?.[0]; if(f) readPhoto(f); e.target.value=''; });
 
-S.babyEvents=S.babyEvents.map(normalizeBabyEvent); save(); render(); initCloud(); tickReminders(); setInterval(tickReminders,60000);
+S.babyEvents=S.babyEvents.map(normalizeBabyEvent); save();
+// Seed the first history entry so Back from the very first screen behaves predictably.
+applyDayPart();
+history.replaceState({view},'',`#${view}`);
+render(); initCloud(); tickReminders(); setInterval(tickReminders,60000);
 })();

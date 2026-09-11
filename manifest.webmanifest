@@ -1,9 +1,19 @@
 {
-  "name":"MilkFlow Family",
-  "short_name":"MilkFlow",
-  "start_url":"./",
-  "display":"standalone",
-  "background_color":"#f7f8fc",
-  "theme_color":"#fff7fb",
-  "description":"Mom-first pumping and baby-care dashboard"
+  "name": "MilkFlow Family",
+  "short_name": "MilkFlow",
+  "id": "/milkflow-pumping-dashboard/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f7fb",
+  "theme_color": "#7c5ce2",
+  "description": "Private Mom and Baby care tracker for the whole family",
+  "categories": ["health", "lifestyle"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }
