@@ -2,16 +2,15 @@
 // Strategy: network-first for the app shell so a new deploy is always picked up on the next
 // online load, with the cache used only as an offline fallback. Firebase traffic is never
 // intercepted - Firestore manages its own offline persistence.
-const VERSION = 'milkflow-stable26';
+const VERSION = 'milkflow-stable27';
 const SHELL = [
-  './', './index.html', './styles.css', './app.js', './app-reliability.js', './smart-pumping.js', './pump-home-controls.js', './pump-insights.js', './ai-coach-client.js', './app-update-notice.js', './modern-stickers.js', './mom-profile.js', './family-chat.js', './config.js',
+  './', './index.html', './styles.css', './app.js', './app-reliability.js', './smart-pumping.js', './pump-home-controls.js', './adaptive-pump-plan.js', './pump-insights.js', './ai-coach-client.js', './app-update-notice.js', './modern-stickers.js', './baby-home-modern.js', './mom-profile.js', './family-chat.js', './config.js',
   './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(VERSION)
-      // addAll fails the whole install if any single file 404s, so warm entries individually.
       .then(cache => Promise.all(SHELL.map(url => cache.add(url).catch(() => {}))))
       .then(() => self.skipWaiting())
   );
@@ -30,9 +29,7 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
-  // Only same-origin app assets. Firebase/Firestore/fonts go straight to the network.
   if (url.origin !== self.location.origin) return;
-  // Never cache the worker script itself - a stale copy could pin an old version.
   if (url.pathname.endsWith('/sw.js')) return;
 
   event.respondWith(
@@ -47,7 +44,6 @@ self.addEventListener('fetch', event => {
       .catch(async () => {
         const hit = await caches.match(req, { ignoreSearch: true });
         if (hit) return hit;
-        // Offline deep link (e.g. #baby-home): fall back to the cached shell.
         if (req.mode === 'navigate') {
           const shell = await caches.match('./index.html', { ignoreSearch: true });
           if (shell) return shell;
