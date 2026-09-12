@@ -50,12 +50,12 @@ jobs:
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
-          grep -q 'stable34-bridge.js?build=stable34r5' index.html
-          grep -q 'app.js?build=stable34r5' index.html
-          grep -q 'core-ui.js?build=stable34r5' index.html
-          grep -q 'family-chat.js?build=stable34r5' index.html
-          grep -q 'manifest.webmanifest?build=stable34r5' index.html
-          grep -q "milkflow-stable34r5" sw.js
+          grep -q 'stable34-bridge.js?build=stable34r6' index.html
+          grep -q 'app.js?build=stable34r6' index.html
+          grep -q 'core-ui.js?build=stable34r6' index.html
+          grep -q 'family-chat.js?build=stable34r6' index.html
+          grep -q 'manifest.webmanifest?build=stable34r6' index.html
+          grep -q "milkflow-stable34r6" sw.js
           grep -q 'familyChatEndpoints' config.js
           grep -q 'correctedPlan' stable34-bridge.js
           grep -q 'mf-r2-highlights{display:none' stable34-bridge.js
@@ -63,7 +63,9 @@ jobs:
           grep -q 'body\[data-screen="baby-home"\].*main' stable34-bridge.js
           grep -q 'mf-top-orbs' core-ui.js
           grep -q 'mf-mom-orbs' core-ui.js
+          grep -q 'mf-mom-hero-photo' core-ui.js
           grep -q 'mf-last-feed-band' core-ui.js
+          grep -q 'relativeAgo' core-ui.js
           grep -q 'lastFeedText' core-ui.js
           grep -q "'Pumps','mom-pumps'" core-ui.js
           grep -q 'milkflow:base-rendered' core-ui.js
