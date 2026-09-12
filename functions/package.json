@@ -1,12 +1,12 @@
 {
   "name": "milkflow-functions",
   "private": true,
-  "main": "index.js",
+  "main": "index-entry.js",
   "engines": {
     "node": "22"
   },
   "scripts": {
-    "check": "node --check index.js && node --check pump-context.js"
+    "check": "node --check index.js && node --check index-entry.js && node --check family-chat.js && node --check pump-context.js"
   },
   "dependencies": {
     "firebase-admin": "^13.0.0",
