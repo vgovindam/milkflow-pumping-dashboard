@@ -32,6 +32,7 @@ jobs:
           node --check pump-insights.js
           node --check ai-coach-client.js
           node --check app-update-notice.js
+          node --check mom-profile.js
           node --check family-chat.js
           node --check functions/index.js
           node --check functions/index-entry.js
@@ -47,6 +48,7 @@ jobs:
           test -f pump-insights.js
           test -f ai-coach-client.js
           test -f app-update-notice.js
+          test -f mom-profile.js
           test -f family-chat.js
           test -f functions/index.js
           test -f functions/index-entry.js
@@ -55,6 +57,8 @@ jobs:
           test -f functions/package.json
           test -f styles.css
           test -f config.js
+          test -f firebase.json
+          test -f .firebaserc
           grep -q 'app.js' index.html
           grep -q 'app-reliability.js' index.html
           grep -q 'smart-pumping.js' index.html
@@ -62,6 +66,7 @@ jobs:
           grep -q 'pump-insights.js' index.html
           grep -q 'ai-coach-client.js' index.html
           grep -q 'app-update-notice.js' index.html
+          grep -q 'mom-profile.js' index.html
           grep -q 'family-chat.js' index.html
           grep -q 'styles.css' index.html
           ! grep -q 'app-v7.js' index.html
