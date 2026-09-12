@@ -18,78 +18,37 @@ const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth(
 const to12=m=>{if(!Number.isFinite(m))return '—';const n=((Math.round(m)%1440)+1440)%1440,h=Math.floor(n/60),mm=n%60;return `${((h+11)%12)+1}:${pad(mm)} ${h>=12?'PM':'AM'}`;};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const read=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{}')||{};}catch{return {};}};
-const prefs=()=>{try{return {target:6,mode:'normal',...(JSON.parse(localStorage.getItem(COACH_KEY)||'{}')||{})};}catch{return {target:6,mode:'normal'};}};
+function rawPrefs(){try{return JSON.parse(localStorage.getItem(COACH_KEY)||'{}')||{};}catch{return {};}}
+function prefs(){const p=rawPrefs(),d=today(),daily=Number(p.dayTargets?.[d]);return{target:Number.isFinite(daily)?daily:(+p.target||6),mode:p.mode||'normal',nextOverrideByDate:p.nextOverrideByDate||{},dayTargets:p.dayTargets||{}};}
+function savePrefs(mutator){const old=localStorage.getItem(COACH_KEY),p=rawPrefs(),next=mutator({...p,dayTargets:{...(p.dayTargets||{})},nextOverrideByDate:{...(p.nextOverrideByDate||{})}})||p;localStorage.setItem(COACH_KEY,JSON.stringify(next));try{window.dispatchEvent(new StorageEvent('storage',{key:COACH_KEY,oldValue:old,newValue:JSON.stringify(next),storageArea:localStorage,url:location.href}));}catch{window.dispatchEvent(new CustomEvent('milkflow:coach-change'));}return next;}
 const livePumps=s=>(Array.isArray(s.entries)?s.entries:[]).filter(e=>e?.type==='pump'&&!e?.voidedAt&&e?.date&&e?.time);
 const dayPumps=s=>livePumps(s).filter(e=>e.date===today()).sort((a,b)=>String(a.time).localeCompare(String(b.time)));
 const round5=m=>Math.round(m/5)*5;
 
-function positiveGreeting(){
-  const h=new Date().getHours();
-  if(h>=5&&h<8)return {text:'Early bird',mark:'☀️'};
-  if(h>=8&&h<12)return {text:'Good morning',mark:'☀️'};
-  if(h>=12&&h<17)return {text:'Good afternoon',mark:'🌤️'};
-  if(h>=17&&h<21)return {text:'Good evening',mark:'✨'};
-  return {text:'Hey, night owl',mark:'🌙'};
-}
-function ageLabel(birthDate){
-  if(!birthDate)return'';
-  const b=new Date(`${birthDate}T12:00:00`),n=new Date(`${today()}T12:00:00`),days=Math.floor((n-b)/86400000);
-  if(!Number.isFinite(days)||days<0)return'';
-  if(days<14)return`${days} day${days===1?'':'s'} old`;
-  if(days<70)return`${Math.floor(days/7)} weeks old`;
-  let m=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());if(n.getDate()<b.getDate())m--;
-  return m<24?`${m} months old`:`${Math.floor(m/12)}y ${m%12}m`;
-}
-
+function positiveGreeting(){const h=new Date().getHours();if(h>=5&&h<8)return{text:'Early bird',mark:'☀️'};if(h>=8&&h<12)return{text:'Good morning',mark:'☀️'};if(h>=12&&h<17)return{text:'Good afternoon',mark:'🌤️'};if(h>=17&&h<21)return{text:'Good evening',mark:'✨'};return{text:'Hey, night owl',mark:'🌙'};}
+function ageLabel(birthDate){if(!birthDate)return'';const b=new Date(`${birthDate}T12:00:00`),n=new Date(`${today()}T12:00:00`),days=Math.floor((n-b)/86400000);if(!Number.isFinite(days)||days<0)return'';if(days<14)return`${days} day${days===1?'':'s'} old`;if(days<70)return`${Math.floor(days/7)} weeks old`;let m=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());if(n.getDate()<b.getDate())m--;return m<24?`${m} months old`:`${Math.floor(m/12)}y ${m%12}m`;}
 function bucket(m){if(m<540)return'early';if(m<810)return'lateMorning';if(m<1050)return'afternoon';if(m<1290)return'evening';return'late';}
-function transitions(s){
-  const by={};
-  for(const e of livePumps(s)){if(e.date===today())continue;(by[e.date]??=[]).push(e);}
-  const out=[];
-  for(const d of Object.keys(by).sort().slice(-10)){
-    const a=by[d].sort((x,y)=>String(x.time).localeCompare(String(y.time)));
-    for(let i=1;i<a.length;i++){const pm=mins(a[i-1].time),nm=mins(a[i].time),gap=nm-pm;if(Number.isFinite(pm)&&gap>=120&&gap<=390)out.push({bucket:bucket(pm),gap});}
-  }
-  return out;
-}
-function learnedGap(s,anchor,target){
-  const k=bucket(anchor),rows=transitions(s),same=rows.filter(x=>x.bucket===k).map(x=>x.gap),all=rows.map(x=>x.gap);
-  const d6={early:310,lateMorning:215,afternoon:190,evening:180,late:165},b6={early:[270,335],lateMorning:[185,240],afternoon:[170,210],evening:[160,205],late:[150,195]};
-  const d5={early:330,lateMorning:255,afternoon:240,evening:225,late:195},b5={early:[290,365],lateMorning:[220,300],afternoon:[205,280],evening:[195,265],late:[175,230]};
-  const is5=target===5,defs=is5?d5:d6,bounds=is5?b5:b6;
-  let raw=same.length>=2?median(same):median(all);if(!Number.isFinite(raw))raw=defs[k];if(is5&&same.length>=2)raw+=30;
-  return clamp(Math.round(raw),bounds[k][0],bounds[k][1]);
-}
-function historicalEdge(s,which){
-  const by={};for(const e of livePumps(s)){if(e.date===today())continue;(by[e.date]??=[]).push(e);}
-  const vals=Object.keys(by).sort().slice(-7).map(d=>{const a=by[d].sort((x,y)=>String(x.time).localeCompare(String(y.time)));return mins(which==='first'?a[0]?.time:a.at(-1)?.time);}).filter(Number.isFinite);
-  return median(vals);
-}
+function transitions(s){const by={};for(const e of livePumps(s)){if(e.date===today())continue;(by[e.date]??=[]).push(e);}const out=[];for(const d of Object.keys(by).sort().slice(-10)){const a=by[d].sort((x,y)=>String(x.time).localeCompare(String(y.time)));for(let i=1;i<a.length;i++){const pm=mins(a[i-1].time),nm=mins(a[i].time),gap=nm-pm;if(Number.isFinite(pm)&&gap>=120&&gap<=390)out.push({bucket:bucket(pm),gap});}}return out;}
+function learnedGap(s,anchor,target){const k=bucket(anchor),rows=transitions(s),same=rows.filter(x=>x.bucket===k).map(x=>x.gap),all=rows.map(x=>x.gap);const d6={early:310,lateMorning:215,afternoon:190,evening:180,late:165},b6={early:[270,335],lateMorning:[185,240],afternoon:[170,210],evening:[160,205],late:[150,195]};const d5={early:330,lateMorning:255,afternoon:240,evening:225,late:195},b5={early:[290,365],lateMorning:[220,300],afternoon:[205,280],evening:[195,265],late:[175,230]};const is5=target===5,defs=is5?d5:d6,bounds=is5?b5:b6;let raw=same.length>=2?median(same):median(all);if(!Number.isFinite(raw))raw=defs[k];if(is5&&same.length>=2)raw+=30;return clamp(Math.round(raw),bounds[k][0],bounds[k][1]);}
+function historicalEdge(s,which){const by={};for(const e of livePumps(s)){if(e.date===today())continue;(by[e.date]??=[]).push(e);}const vals=Object.keys(by).sort().slice(-7).map(d=>{const a=by[d].sort((x,y)=>String(x.time).localeCompare(String(y.time)));return mins(which==='first'?a[0]?.time:a.at(-1)?.time);}).filter(Number.isFinite);return median(vals);}
 function plan(s=read(),p=prefs()){
-  const actual=dayPumps(s),target=clamp(+p.target||6,4,8),remaining=Math.max(0,target-actual.length),schedule=(Array.isArray(s.schedule)?s.schedule:[]).map(mins).filter(Number.isFinite).sort((a,b)=>a-b);
+  const actual=dayPumps(s),target=clamp(+p.target||6,4,8),remaining=Math.max(0,target-actual.length),schedule=(Array.isArray(s.schedule)?s.schedule:[]).map(mins).filter(Number.isFinite).sort((a,b)=>a-b),override=Number(p.nextOverrideByDate?.[today()]);
   let end=Math.max(target===5?1410:1425,historicalEdge(s,'last')||0,schedule.at(-1)||0);end=Math.min(end,target===5?1440:1445);
-  if(!actual.length){const now=new Date(),nowM=now.getHours()*60+now.getMinutes(),raw=schedule.filter(m=>m>=nowM-20).slice(0,remaining),first=schedule[0]??historicalEdge(s,'first')??340;const future=raw.length?raw:Array.from({length:remaining},(_,i)=>first+i*(target===5?240:195)).filter(m=>m>=nowM-20).slice(0,remaining);return{target,actual,remaining,future,source:'baseline'};}
+  if(!actual.length){const now=new Date(),nowM=now.getHours()*60+now.getMinutes(),raw=schedule.filter(m=>m>=nowM-20).slice(0,remaining),first=schedule[0]??historicalEdge(s,'first')??340;let future=raw.length?raw:Array.from({length:remaining},(_,i)=>first+i*(target===5?240:195)).filter(m=>m>=nowM-20).slice(0,remaining);if(Number.isFinite(override)&&override>=nowM-10&&remaining){const gap=target===5?240:195;future=[override,...Array.from({length:remaining-1},(_,i)=>round5(override+gap*(i+1)))].slice(0,remaining);}return{target,actual,remaining,future,source:Number.isFinite(override)?'override':'baseline'};}
   const last=actual.at(-1),lastM=mins(last.time);let gap=learnedGap(s,lastM,target);if(p.mode==='tired')gap+=15;if(p.mode==='travel')gap+=10;if(!remaining)return{target,actual,remaining,future:[],source:'actual',last};
-  const minGap=target===5?180:150;let first=lastM+gap;if(remaining>1)first=Math.min(first,end-minGap*(remaining-1));else first=Math.min(first,end);first=round5(Math.max(first,lastM+minGap));
-  const future=[first];if(remaining>1){const step=clamp(Math.round(Math.max(minGap*(remaining-1),end-first)/(remaining-1)),minGap,gap);for(let i=1;i<remaining;i++)future.push(round5(first+step*i));}
-  return{target,actual,remaining,future,source:'actual',last};
+  const minGap=target===5?180:150;let first=lastM+gap;if(Number.isFinite(override)&&override>lastM)first=override;if(remaining>1)first=Math.min(first,end-minGap*(remaining-1));else first=Math.min(first,end);first=round5(Math.max(first,lastM+minGap));const future=[first];if(remaining>1){const step=clamp(Math.round(Math.max(minGap*(remaining-1),end-first)/(remaining-1)),minGap,gap);for(let i=1;i<remaining;i++)future.push(round5(first+step*i));}return{target,actual,remaining,future,source:Number.isFinite(override)&&override>lastM?'override':'actual',last};
 }
-window.MilkFlowDynamicPump={getPlan:()=>plan(read(),prefs())};
+function setTodayTarget(n){n=clamp(Math.round(Number(n)||6),4,8);savePrefs(p=>{p.dayTargets[today()]=n;return p;});return plan(read(),prefs());}
+function setTodayNextTime(value){const m=Number.isFinite(Number(value))?Number(value):mins(value);if(!Number.isFinite(m))return plan(read(),prefs());savePrefs(p=>{p.nextOverrideByDate[today()]=clamp(Math.round(m),0,1439);return p;});return plan(read(),prefs());}
+function clearTodayNextTime(){savePrefs(p=>{delete p.nextOverrideByDate[today()];return p;});return plan(read(),prefs());}
+window.MilkFlowDynamicPump={getPlan:()=>plan(read(),prefs()),previewTarget:n=>plan(read(),{...prefs(),target:clamp(Math.round(Number(n)||6),4,8)}),setTodayTarget,setTodayNextTime,clearTodayNextTime};
 
 function icon(kind){const p={nursing:'<path d="M17 17c0-5 3-8 7-8s7 3 7 8-3 8-7 8-7-3-7-8Z"/><path d="M10 41c1-9 6-14 14-14s13 5 14 14"/><circle cx="36" cy="27" r="5"/><path d="M30 28c7 0 11 4 11 10"/>',wet:'<path d="M24 7c6 7 11 13 11 20a11 11 0 1 1-22 0c0-7 5-13 11-20Z"/>',poop:'<path d="M24 9c4 1 5 4 4 7h2c5 0 8 3 8 7 0 2-.7 3-2 5 4 1 6 4 6 7 0 4-4 7-9 7H15c-5 0-9-3-9-7 0-3 2-6 6-7-1-2-2-3-2-5 0-4 3-7 8-7h2c-1-4 1-7 4-7Z"/>',both:'<path d="M16 7c4 5 8 10 8 14a8 8 0 1 1-16 0c0-4 4-9 8-14Z"/><path d="M33 20c3 1 4 3 3 5h1c4 0 6 2 6 5 0 1-.4 2-1 3 2 1 3 3 3 5 0 3-3 5-7 5H27c-4 0-7-2-7-5 0-2 1-4 3-5-.6-1-1-2-1-3 0-3 2-5 6-5h1c-.5-3 1-5 4-5Z"/>'};return `<svg viewBox="0 0 48 48" aria-hidden="true">${p[kind]||p.nursing}</svg>`;}
 function diaperKind(e){const x=String(e?.subtype||'').toLowerCase();return x==='poop'||x==='dirty'?'poop':x==='both'||x==='mixed'?'both':'wet';}
 function babyEvents(s){const id=s.baby?.id||'saahas-2026';return(Array.isArray(s.babyEvents)?s.babyEvents:[]).filter(e=>!e?.voidedAt&&!e?.exactSourceDuplicate&&(!e.babyId||e.babyId===id)).sort((a,b)=>`${a.date||''}${a.time||''}`.localeCompare(`${b.date||''}${b.time||''}`));}
-function usage(s){
-  const cut=new Date();cut.setDate(cut.getDate()-30);const c=`${cut.getFullYear()}-${pad(cut.getMonth()+1)}-${pad(cut.getDate())}`,count={nursing:0,wet:0,poop:0,both:0};
-  for(const e of babyEvents(s)){if(e.date<c)continue;if(e.eventType==='nursing')count.nursing++;else if(e.eventType==='diaper')count[diaperKind(e)]++;}
-  const base=[['nursing','Breastfeed','Log nursing','data-feed-type="nursing"'],['wet','Wet','Log diaper','data-diaper="wet"'],['poop','Poopy','Log diaper','data-diaper="poop"'],['both','Mixed','Wet + poopy','data-diaper="both"']];
-  const pri={nursing:4,wet:3,poop:2,both:1};
-  return base.sort((a,b)=>(count[b[0]]-count[a[0]])||(pri[b[0]]-pri[a[0]])).map((x,i)=>({key:x[0],label:x[1],sub:x[2],action:x[3],count:count[x[0]],top:i===0}));
-}
+function usage(s){const cut=new Date();cut.setDate(cut.getDate()-30);const c=`${cut.getFullYear()}-${pad(cut.getMonth()+1)}-${pad(cut.getDate())}`,count={nursing:0,wet:0,poop:0,both:0};for(const e of babyEvents(s)){if(e.date<c)continue;if(e.eventType==='nursing')count.nursing++;else if(e.eventType==='diaper')count[diaperKind(e)]++;}const base=[['nursing','Breastfeed','Log nursing','data-feed-type="nursing"'],['wet','Wet','Log diaper','data-diaper="wet"'],['poop','Poopy','Log diaper','data-diaper="poop"'],['both','Mixed','Wet + poopy','data-diaper="both"']];const pri={nursing:4,wet:3,poop:2,both:1};return base.sort((a,b)=>(count[b[0]]-count[a[0]])||(pri[b[0]]-pri[a[0]])).map((x,i)=>({key:x[0],label:x[1],sub:x[2],action:x[3],count:count[x[0]],top:i===0}));}
 
-function addStyles(){
-  if(document.getElementById('mfCoreUIStyles'))return;
-  const s=document.createElement('style');s.id='mfCoreUIStyles';s.textContent=`
+function addStyles(){if(document.getElementById('mfCoreUIStyles'))return;const s=document.createElement('style');s.id='mfCoreUIStyles';s.textContent=`
 html{scroll-behavior:auto!important}#view{overflow-anchor:none}.nav-forward,.nav-back,.nav-swap{animation:none!important;transform:none!important}
 .mf-profile-line{display:flex;align-items:center;gap:12px;margin:0 0 14px}.mf-profile-photo{width:64px;height:64px;border-radius:22px;overflow:hidden;flex:0 0 auto;background:var(--surface-2);display:grid;place-items:center;border:0;padding:0;color:var(--muted)}.mf-profile-photo img{width:100%;height:100%;object-fit:cover;display:block}.mf-profile-photo .placeholder{font-size:24px;line-height:1}.mf-profile-copy{min-width:0;flex:1}.mf-profile-copy .welcome{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:4px}.mf-profile-copy .welcome b{font-size:16px}.mf-profile-copy h2{margin:0;font:800 28px var(--display);letter-spacing:-.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mf-profile-copy small{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:650}.mf-profile-photo.addable{cursor:pointer}.mf-photo-hint{font-size:9px!important;color:var(--muted)!important}
 .mf-core-plan{margin:14px 0 17px;padding:17px 18px;border-radius:22px;background:var(--surface);border:1px solid var(--line-soft,var(--line));box-shadow:none}.mf-core-plan-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.mf-core-plan-head strong{font-size:15px}.mf-core-plan-head span{font-size:10px;color:var(--muted);font-weight:800}.mf-core-next{font:800 24px var(--display);letter-spacing:-.03em;margin:12px 0 5px}.mf-core-sub{font-size:11px;color:var(--muted);line-height:1.4}.mf-core-times{display:flex;gap:7px;overflow:auto;margin-top:12px;scrollbar-width:none}.mf-core-time{flex:0 0 auto;padding:8px 11px;border-radius:999px;background:var(--surface-2);font-size:10.5px;font-weight:800}.mf-core-time.next{background:var(--mom);color:#fff}
@@ -97,66 +56,19 @@ html{scroll-behavior:auto!important}#view{overflow-anchor:none}.nav-forward,.nav
 .mf-core-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.mf-core-summary div{background:var(--surface);border-radius:16px;padding:10px}.mf-core-summary small,.mf-core-summary strong{display:block}.mf-core-summary small{font-size:8px;color:var(--muted);font-weight:800}.mf-core-summary strong{font-size:18px;margin-top:3px}
 body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #view>.act-strip,body[data-screen="baby-home"] #view>.feed-cta,body[data-screen="baby-home"] #view>.orb-row,body[data-screen="baby-home"] #view>.pill-row,body[data-screen="baby-home"] #view>.ring-row{display:none!important}
 @media(max-width:760px){#view{transition:none!important}.mf-core-plan{border-radius:19px}.mf-core-care button{min-height:104px;border-radius:20px}.mf-profile-photo{width:58px;height:58px;border-radius:20px}.mf-profile-copy h2{font-size:25px}.mf-core-summary{grid-template-columns:repeat(4,minmax(0,1fr))}.mf-core-summary div{padding:9px 7px}}
-`;
-  document.head.appendChild(s);
-}
-
-function profilePhoto(src,kind){
-  if(src)return `<img src="${esc(src)}" alt="${kind==='mom'?'Mom':'Baby'} profile photo">`;
-  return `<span class="placeholder">${kind==='mom'?'♡':'☁︎'}</span>`;
-}
-function renderMom(s){
-  const view=document.getElementById('view'),hero=view?.querySelector('.mom-hero');if(!view||!hero)return;
-  const g=positiveGreeting(),name=s.profile?.momName||'Mom',photo=s.profile?.momPhoto||'';
-  let prof=document.getElementById('mfMomProfileLine');
-  if(!prof){prof=document.createElement('div');prof.id='mfMomProfileLine';prof.className='mf-profile-line';const copy=hero.querySelector('.hero-copy')||hero;copy.prepend(prof);}
-  prof.innerHTML=`<button type="button" class="mf-profile-photo addable" data-core-mom-photo aria-label="${photo?'Change Mom photo':'Add Mom photo'}">${profilePhoto(photo,'mom')}</button><div class="mf-profile-copy"><div class="welcome"><b>${g.mark}</b><span>${g.text}</span></div><h2>${esc(name)}</h2><small class="mf-photo-hint">${photo?'Tap photo to change it':'Tap the photo spot to add yours'}</small></div>`;
-
-  const greetNode=hero.querySelector('.greet');if(greetNode)greetNode.textContent=g.text;
-  const x=plan(s,prefs());let card=document.getElementById('mfCorePlan');if(!card){card=document.createElement('section');card.id='mfCorePlan';card.className='mf-core-plan';hero.insertAdjacentElement('afterend',card);}
-  const next=x.remaining&&x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:'Target reached for today';
-  card.innerHTML=`<div class="mf-core-plan-head"><strong>Today’s live plan</strong><span>${x.actual.length} of ${x.target} done</span></div><div class="mf-core-next">${esc(next)}</div><div class="mf-core-sub">${x.source==='actual'&&x.last?`Updated from your ${to12(mins(x.last.time))} pump and your recent time-of-day spacing.`:'Uses your saved baseline until today’s first pump is logged.'}</div>${x.future.length?`<div class="mf-core-times">${x.future.map((m,i)=>`<span class="mf-core-time ${i===0?'next':''}">${to12(m)}</span>`).join('')}</div>`:''}`;
-}
-function renderBaby(s){
-  const view=document.getElementById('view');if(!view)return;
-  const acts=usage(s),ev=babyEvents(s),d=today(),todayEv=ev.filter(e=>e.date===d),n=todayEv.filter(e=>e.eventType==='nursing').length,di=todayEv.filter(e=>e.eventType==='diaper'),wet=di.filter(e=>diaperKind(e)==='wet').length,poop=di.filter(e=>diaperKind(e)==='poop').length,both=di.filter(e=>diaperKind(e)==='both').length;
-  const g=positiveGreeting(),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate);
-  let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}
-  box.innerHTML=`<div class="mf-profile-line"><button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}</button><div class="mf-profile-copy"><div class="welcome"><b>${g.mark}</b><span>${g.text}</span></div><h2>${esc(babyName)}</h2><small>${age?esc(age)+' · ':''}${photo?'Tap photo to change it':'Tap the photo spot to add one'}</small></div></div><div class="mf-core-care">${acts.map(a=>`<button type="button" class="${a.key}" ${a.action}>${icon(a.key)}${a.top?'<em>Most used</em>':''}<strong>${esc(a.label)}</strong><span>${esc(a.sub)}</span></button>`).join('')}</div><div class="mf-core-summary"><div><small>Breastfeeds</small><strong>${n}</strong></div><div><small>Wet</small><strong>${wet}</strong></div><div><small>Poopy</small><strong>${poop}</strong></div><div><small>Mixed</small><strong>${both}</strong></div></div>`;
-}
-function cleanup(){
-  if(document.body.dataset.screen!=='mom-home'){document.getElementById('mfCorePlan')?.remove();document.getElementById('mfMomProfileLine')?.remove();}
-  if(document.body.dataset.screen!=='baby-home')document.getElementById('mfCoreBaby')?.remove();
-}
+`;document.head.appendChild(s);}
+function profilePhoto(src,kind){if(src)return `<img src="${esc(src)}" alt="${kind==='mom'?'Mom':'Baby'} profile photo">`;return `<span class="placeholder">${kind==='mom'?'♡':'☁︎'}</span>`;}
+function renderMom(s){const view=document.getElementById('view'),hero=view?.querySelector('.mom-hero');if(!view||!hero)return;const g=positiveGreeting(),name=s.profile?.momName||'Mom',photo=s.profile?.momPhoto||'';let prof=document.getElementById('mfMomProfileLine');if(!prof){prof=document.createElement('div');prof.id='mfMomProfileLine';prof.className='mf-profile-line';const copy=hero.querySelector('.hero-copy')||hero;copy.prepend(prof);}prof.innerHTML=`<button type="button" class="mf-profile-photo addable" data-core-mom-photo aria-label="${photo?'Change Mom photo':'Add Mom photo'}">${profilePhoto(photo,'mom')}</button><div class="mf-profile-copy"><div class="welcome"><b>${g.mark}</b><span>${g.text}</span></div><h2>${esc(name)}</h2><small class="mf-photo-hint">${photo?'Tap photo to change it':'Tap the photo spot to add yours'}</small></div>`;const greetNode=hero.querySelector('.greet');if(greetNode)greetNode.textContent=g.text;const x=plan(s,prefs());let card=document.getElementById('mfCorePlan');if(!card){card=document.createElement('section');card.id='mfCorePlan';card.className='mf-core-plan';hero.insertAdjacentElement('afterend',card);}const next=x.remaining&&x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:'Target reached for today';card.innerHTML=`<div class="mf-core-plan-head"><strong>Today’s live plan</strong><span>${x.actual.length} of ${x.target} done</span></div><div class="mf-core-next">${esc(next)}</div><div class="mf-core-sub">${x.source==='override'?'Adjusted for how today is going.':x.source==='actual'&&x.last?`Updated from your ${to12(mins(x.last.time))} pump and your recent time-of-day spacing.`:'Uses your saved baseline until today’s first pump is logged.'}</div>${x.future.length?`<div class="mf-core-times">${x.future.map((m,i)=>`<span class="mf-core-time ${i===0?'next':''}">${to12(m)}</span>`).join('')}</div>`:''}`;}
+function renderBaby(s){const view=document.getElementById('view');if(!view)return;const acts=usage(s),ev=babyEvents(s),d=today(),todayEv=ev.filter(e=>e.date===d),n=todayEv.filter(e=>e.eventType==='nursing').length,di=todayEv.filter(e=>e.eventType==='diaper'),wet=di.filter(e=>diaperKind(e)==='wet').length,poop=di.filter(e=>diaperKind(e)==='poop').length,both=di.filter(e=>diaperKind(e)==='both').length;const g=positiveGreeting(),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate);let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}box.innerHTML=`<div class="mf-profile-line"><button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}</button><div class="mf-profile-copy"><div class="welcome"><b>${g.mark}</b><span>${g.text}</span></div><h2>${esc(babyName)}</h2><small>${age?esc(age)+' · ':''}${photo?'Tap photo to change it':'Tap the photo spot to add one'}</small></div></div><div class="mf-core-care">${acts.map(a=>`<button type="button" class="${a.key}" ${a.action}>${icon(a.key)}${a.top?'<em>Most used</em>':''}<strong>${esc(a.label)}</strong><span>${esc(a.sub)}</span></button>`).join('')}</div><div class="mf-core-summary"><div><small>Breastfeeds</small><strong>${n}</strong></div><div><small>Wet</small><strong>${wet}</strong></div><div><small>Poopy</small><strong>${poop}</strong></div><div><small>Mixed</small><strong>${both}</strong></div></div>`;}
+function cleanup(){if(document.body.dataset.screen!=='mom-home'){document.getElementById('mfCorePlan')?.remove();document.getElementById('mfMomProfileLine')?.remove();}if(document.body.dataset.screen!=='baby-home')document.getElementById('mfCoreBaby')?.remove();}
 function apply(){if(applying)return;applying=true;try{addStyles();const s=read();cleanup();if(document.body.dataset.screen==='mom-home')renderMom(s);if(document.body.dataset.screen==='baby-home')renderBaby(s);}finally{applying=false;}}
 function afterApp(){queueMicrotask(apply);}
-
-async function syncMomProfile(profile){
-  try{
-    const user=window.firebase?.auth?.().currentUser;if(!user||!window.firebase?.firestore)return;
-    await firebase.firestore().collection('users').doc(user.uid).collection('private').doc('profile').set({profile},{merge:true});
-  }catch(err){console.warn('Mom profile photo cloud sync deferred',err?.message||err);}
-}
-function saveMomPhoto(data){
-  const s=read();s.profile={...(s.profile||{}),momPhoto:data};s.savedAt=Date.now();localStorage.setItem(STATE_KEY,JSON.stringify(s));syncMomProfile(s.profile);apply();
-}
-function chooseMomPhoto(){
-  let input=document.getElementById('mfCoreMomPhotoFile');
-  if(!input){
-    input=document.createElement('input');input.type='file';input.accept='image/*';input.id='mfCoreMomPhotoFile';input.hidden=true;document.body.appendChild(input);
-    input.addEventListener('change',e=>{const f=e.target.files?.[0];e.target.value='';if(!f||!/^image\//.test(f.type||''))return;const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas'),size=320;c.width=c.height=size;const ctx=c.getContext('2d'),side=Math.min(img.width,img.height);ctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,size,size);saveMomPhoto(c.toDataURL('image/jpeg',.82));};img.src=r.result;};r.readAsDataURL(f);});
-  }
-  input.click();
-}
-
-// app.js handles the action first (registered earlier), then this controller applies in the
-// same task/microtask before the browser paints. No observer and no delayed re-render.
-document.addEventListener('click',e=>{
-  if(e.target.closest('[data-core-mom-photo]')){chooseMomPhoto();return;}
-  if(e.target.closest('[data-view],[data-workspace],[data-feed-type],[data-diaper],[data-mom],[data-photo]'))afterApp();
-});
+async function syncMomProfile(profile){try{const user=window.firebase?.auth?.().currentUser;if(!user||!window.firebase?.firestore)return;await firebase.firestore().collection('users').doc(user.uid).collection('private').doc('profile').set({profile},{merge:true});}catch(err){console.warn('Mom profile photo cloud sync deferred',err?.message||err);}}
+function saveMomPhoto(data){const s=read();s.profile={...(s.profile||{}),momPhoto:data};s.savedAt=Date.now();localStorage.setItem(STATE_KEY,JSON.stringify(s));syncMomProfile(s.profile);apply();}
+function chooseMomPhoto(){let input=document.getElementById('mfCoreMomPhotoFile');if(!input){input=document.createElement('input');input.type='file';input.accept='image/*';input.id='mfCoreMomPhotoFile';input.hidden=true;document.body.appendChild(input);input.addEventListener('change',e=>{const f=e.target.files?.[0];e.target.value='';if(!f||!/^image\//.test(f.type||''))return;const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas'),size=320;c.width=c.height=size;const ctx=c.getContext('2d'),side=Math.min(img.width,img.height);ctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,size,size);saveMomPhoto(c.toDataURL('image/jpeg',.82));};img.src=r.result;};r.readAsDataURL(f);});}input.click();}
+document.addEventListener('click',e=>{if(e.target.closest('[data-core-mom-photo]')){chooseMomPhoto();return;}if(e.target.closest('[data-view],[data-workspace],[data-feed-type],[data-diaper],[data-mom],[data-photo]'))afterApp();});
 document.addEventListener('submit',e=>{if(['momForm','feedForm','diaperForm'].includes(e.target?.id))setTimeout(apply,0);});
-window.addEventListener('hashchange',afterApp);window.addEventListener('popstate',afterApp);window.addEventListener('pageshow',afterApp);window.addEventListener('storage',e=>{if(e.key===STATE_KEY||e.key===COACH_KEY)afterApp();});
+window.addEventListener('hashchange',afterApp);window.addEventListener('popstate',afterApp);window.addEventListener('pageshow',afterApp);window.addEventListener('storage',e=>{if(e.key===STATE_KEY||e.key===COACH_KEY)afterApp();});window.addEventListener('milkflow:coach-change',afterApp);window.addEventListener('milkflow:chat-data',afterApp);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',afterApp,{once:true});else afterApp();
 setInterval(()=>{if(document.body.dataset.screen==='mom-home'||document.body.dataset.screen==='baby-home')apply();},60000);
 })();
