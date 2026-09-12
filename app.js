@@ -212,6 +212,17 @@ window.addEventListener('popstate',e => {
   view = v; save(); render(dir); window.scrollTo({top:0,behavior:'auto'});
 });
 
+// Deep links and hand-edited URLs change the hash without a popstate, so route on that
+// too. Guarded on v===view, which is also what keeps back/forward (which fire both
+// events) from rendering twice.
+window.addEventListener('hashchange',() => {
+  const v = location.hash.slice(1);
+  if(!VIEWS.has(v) || v === view) return;
+  closeOverlays(); closeDialogs();
+  const dir = depthOf(v) > depthOf(view) ? 'forward' : depthOf(v) < depthOf(view) ? 'back' : 'swap';
+  view = v; save(); render(dir); window.scrollTo({top:0,behavior:'auto'});
+});
+
 function icon(name,cls=''){
   const paths={
     home:'<path d="M3 11.4 12 4l9 7.4"/><path d="M5.6 10.3V20h12.8v-9.7"/><path d="M9.4 20v-5.4a2.6 2.6 0 0 1 5.2 0V20"/>',
@@ -297,6 +308,27 @@ function glyph(name,cls=''){
       + '<path class="g-line-f" d="M18.6 27.6h10.8a1.7 1.7 0 0 1 0 3.4H18.6a1.7 1.7 0 0 1 0-3.4Z"/>'
   };
   return `<svg class="gly ${cls}" viewBox="0 0 48 48" aria-hidden="true">${P[name]||P.drop}</svg>`;
+}
+// Navigation marks. Inactive is a clean line; active fills the same silhouette, which is
+// how a native tab bar shows state without changing the shape you learned to aim for.
+function navIcon(name,on=false){
+  // `line` is the whole readable glyph and is always drawn; `fill` is only the soft body
+  // added when the tab is selected. Detail must live in `line`, or an unselected tab
+  // degrades to a bare silhouette - an empty circle instead of a face.
+  const M={
+    mom:{fill:'<path class="g-fill" d="M12 3.4c2.7 2.9 5.5 6.1 5.5 9.2a5.5 5.5 0 1 1-11 0c0-3.1 2.8-6.3 5.5-9.2Z"/>',
+         line:'<path class="g-line" d="M12 3.4c2.7 2.9 5.5 6.1 5.5 9.2a5.5 5.5 0 1 1-11 0c0-3.1 2.8-6.3 5.5-9.2Z"/><path class="g-hi" d="M9.1 13.2c0 1.5.8 2.7 2 3.2"/>'},
+    baby:{fill:'<circle class="g-fill" cx="12" cy="13.6" r="6.9"/>',
+          line:'<circle class="g-line" cx="12" cy="13.6" r="6.9"/><path class="g-line" d="M8.9 7.1c1.2-2.2 4.1-2.6 5.8-.9"/>'
+               +'<path class="g-line-f" d="M10.6 13.1a.95.95 0 1 1-1.9 0 .95.95 0 0 1 1.9 0ZM15.3 13.1a.95.95 0 1 1-1.9 0 .95.95 0 0 1 1.9 0Z"/>'
+               +'<path class="g-hi" d="M10 16.2c1.3 1.1 2.7 1.1 4 0"/>'},
+    history:{fill:'<circle class="g-fill" cx="12" cy="12.4" r="8.2"/>',
+             line:'<path class="g-line" d="M4 12.4a8.2 8.2 0 1 0 2.6-6"/><path class="g-line" d="M3.5 4.9v4.6h4.6"/><path class="g-line" d="M12 8v4.6l3.1 1.8"/>'},
+    trends:{fill:'<rect class="g-fill" x="4.1" y="12.8" width="4.1" height="7.1" rx="1.7"/><rect class="g-fill" x="9.9" y="8.6" width="4.1" height="11.3" rx="1.7"/><rect class="g-fill" x="15.7" y="4.6" width="4.1" height="15.3" rx="1.7"/>',
+            line:'<rect class="g-line" x="4.1" y="12.8" width="4.1" height="7.1" rx="1.7"/><rect class="g-line" x="9.9" y="8.6" width="4.1" height="11.3" rx="1.7"/><rect class="g-line" x="15.7" y="4.6" width="4.1" height="15.3" rx="1.7"/>'}
+  };
+  const m=M[name]||M.mom;
+  return `<svg class="gly nav-gly${on?' on':''}" viewBox="0 0 24 24" aria-hidden="true">${on?m.fill:''}${m.line}</svg>`;
 }
 const GLYPHS = new Set(['drop','poop','mixed','bottle','nursing','pump','moon','scale']);
 // Large surfaces use the glyph when one exists, otherwise fall back to the line icon.
@@ -1167,17 +1199,18 @@ function render(dir='none'){
   const back=$('backLabel');
   if(back) back.textContent = parent ? (titles[parent]||'Back') : '';
   document.querySelector('.back-btn')?.classList.toggle('show',!!parent);
-  el.innerHTML=(renderers[view]||momHome)();
+  el.innerHTML=personaSwitch()+(renderers[view]||momHome)();
   if(dir!=='none' && !matchMedia('(prefers-reduced-motion: reduce)').matches){
     el.classList.remove('nav-forward','nav-back','nav-swap');
     void el.offsetWidth;
     el.classList.add(dir==='forward'?'nav-forward':dir==='back'?'nav-back':'nav-swap');
   }
   const workspace=workspaceOf(view); S.ui.workspace=workspace; save();
-  document.querySelectorAll('[data-workspace]').forEach(b=>b.classList.toggle('active',b.dataset.workspace===workspace));
   document.querySelectorAll('.sidebar [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+  document.querySelector('.more-btn')?.classList.toggle('active',IN_MORE.has(view)||view.startsWith('set-'));
   renderSideNav(); renderBottomNav(); syncBadge(); bindViewInputs();
 }
+const IN_MORE=new Set(['more','settings','doctor','baby-growth','development','mom-stash']);
 const SIDE_NAV=[
   {label:'MOM',items:[['mom-home','Home','home'],['mom-history','History','history'],['mom-trends','Trends','chart'],['mom-stash','Freezer stash','snow']]},
   {label:'BABY',items:[['baby-home','Home','baby'],['baby-history','History','history'],['baby-trends','Trends','chart'],['baby-growth','Growth','scale'],['development','Development','spark'],['doctor','Doctor summary','steth']]},
@@ -1187,10 +1220,31 @@ function renderSideNav(){
   const el=$('sideNav'); if(!el) return;
   el.innerHTML=SIDE_NAV.map(g=>`<div class="side-label">${g.label}</div><nav>${g.items.map(([v,l,ic])=>`<button data-view="${v}" class="${view===v?'active':''}">${icon(ic)}<span>${l}</span></button>`).join('')}</nav>`).join('');
 }
+// One bar, five fixed destinations. Mom and Baby are tabs rather than a mode switch, so a
+// tab never changes meaning under you; History and Trends carry their own Mom/Baby segment
+// inside the screen, where the choice is visible instead of hidden in a global mode.
 function renderBottomNav(){
-  const w=workspaceOf(view), nav=$('bottomNav');
-  const home=w==='baby'?'baby-home':'mom-home', history=w==='baby'?'baby-history':'mom-history', trends=w==='baby'?'baby-trends':'mom-trends';
-  nav.innerHTML=`<button data-view="${home}" class="${view===home?'active':''}">${icon('home')}<span>Home</span></button><button data-view="${history}" class="${view===history?'active':''}">${icon('history')}<span>History</span></button><button class="add-tab" data-add>${icon('plus')}<span>Add</span></button><button data-view="${trends}" class="${view===trends?'active':''}">${icon('chart')}<span>Trends</span></button><button data-view="more" class="${['more','settings','doctor','baby-growth','development','mom-stash'].includes(view)||view.startsWith('set-')?'active':''}">${icon('more')}<span>More</span></button>`;
+  const nav=$('bottomNav'); if(!nav) return;
+  const baby=workspaceOf(view)==='baby';
+  const hist=baby?'baby-history':'mom-history', trend=baby?'baby-trends':'mom-trends';
+  const tab=(v,label,ic,on)=>`<button data-view="${v}" class="${on?'active':''}"${on?' aria-current="page"':''}>${navIcon(ic,on)}<span>${esc(label)}</span></button>`;
+  nav.innerHTML =
+    tab('mom-home','Mom','mom',view==='mom-home')
+    + tab('baby-home',S.baby.name||'Baby','baby',view==='baby-home')
+    + `<button class="add-tab" data-add aria-label="Add a record">${icon('plus')}<span>Add</span></button>`
+    + tab(hist,'History','history',view==='mom-history'||view==='baby-history')
+    + tab(trend,'Trends','trends',view==='mom-trends'||view==='baby-trends');
+}
+// History and Trends exist for both people, so the screen says whose it is and lets you
+// flip without leaving. Mom and Baby stay separate views, so deep links and the
+// pumping add-ons keep seeing the hashes they expect.
+const PERSONA_PAIR={'mom-history':['mom-history','baby-history'],'baby-history':['mom-history','baby-history'],
+  'mom-trends':['mom-trends','baby-trends'],'baby-trends':['mom-trends','baby-trends']};
+function personaSwitch(){
+  const pair=PERSONA_PAIR[view]; if(!pair) return '';
+  const [m,b]=pair;
+  const btn=(v,label,ic)=>`<button type="button" data-view="${v}" class="${view===v?'on':''}" aria-pressed="${view===v}">${navIcon(ic,view===v)}<span>${esc(label)}</span></button>`;
+  return `<div class="persona-seg" role="group" aria-label="Whose records to show">${btn(m,'Mom','mom')}${btn(b,S.baby.name||'Baby','baby')}</div>`;
 }
 // Sync lives quietly at the foot of the page - it matters when it breaks, not while it works.
 function syncBadge(){
@@ -1228,21 +1282,21 @@ const TILE = {
   purple:'#7a56d6', indigo:'#5b5fc7', red:'#cf5a5a', slate:'#6b7487', cyan:'#3a9cc0'
 };
 
+// More is no longer scoped to whichever person you happened to be looking at, and no
+// longer offers a third way to switch between them - the tab bar owns that now.
 function moreView(){
-  const baby = workspaceOf(view) === 'baby';
-  const other = baby ? 'mom' : 'baby';
-  const rows = baby ? [
+  const name=S.baby.name||'Baby';
+  return `<div class="page-head"><div><span class="eyebrow">FAMILY</span><h2>More</h2></div></div>
+  ${group('Mom',[
+    listRow({view:'mom-stash', label:'Freezer stash', sub:`${(+S.profile.stashMl||0).toLocaleString()} mL saved`, icon:'snow', color:TILE.cyan})
+  ])}
+  ${group(name,[
     listRow({view:'baby-growth', label:'Growth', sub:'Weight, length, head', icon:'scale', color:TILE.green}),
     listRow({view:'development', label:'Development', sub:'Milestones by age', icon:'spark', color:TILE.amber}),
     listRow({view:'doctor', label:'Doctor summary', sub:'Printable visit notes', icon:'steth', color:TILE.teal})
-  ] : [
-    listRow({view:'mom-stash', label:'Freezer stash', sub:`${(+S.profile.stashMl||0).toLocaleString()} mL saved`, icon:'snow', color:TILE.cyan})
-  ];
-  return `<div class="page-head"><div><span class="eyebrow">${baby?esc(S.baby.name).toUpperCase():'MOM'}</span><h2>More</h2></div></div>
-  ${group(baby?'Baby':'Mom', rows)}
+  ])}
   ${group('Family',[
-    listRow({view:'settings', label:'Settings', sub:'Account, profile, reminders', icon:'settings', color:TILE.slate}),
-    listRow({label:`Switch to ${other==='baby'?esc(S.baby.name):'Mom'}`, sub:`Show the ${other} side of the app`, icon:other==='baby'?'baby':'nursing', color:other==='baby'?TILE.blue:TILE.purple, action:`data-workspace="${other}"`})
+    listRow({view:'settings', label:'Settings', sub:'Account, profile, reminders', icon:'settings', color:TILE.slate})
   ])}`;
 }
 

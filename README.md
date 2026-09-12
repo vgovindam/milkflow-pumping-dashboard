@@ -37,7 +37,7 @@ compare today against this baby's own 7-day average rather than any invented cli
 - Growth: weight, length, head circumference
 - Filterable history
 - Daily care trends with clear Bottle milk (oz) labeling
-- Doctor summary in the More/hamburger menu
+- Doctor summary under the ··· menu
 
 Legacy Baby Tracker values are normalized in the data layer: `dirty` becomes `poop`, and `mixed` becomes `both`. The same record IDs are retained. Existing Firestore diaper records are repaired in place after sign-in rather than duplicated or deleted.
 
@@ -149,30 +149,46 @@ A confirmed daily total (`dailyOverrides`) acts as a **floor**, not a replacemen
 
 ## Navigation
 
-One hierarchy, one Back button. Five tabs — Home, History, Add, Trends, More — and everything
-else is *pushed* from a single parent, so there is exactly one route to each screen:
+The people are the tabs. Mom and Baby are two of the five destinations, so a tab never
+changes meaning under you and there is exactly one route to each screen:
 
 ```
-Home  History  (+)  Trends  More
-                              ├── Growth / Development / Doctor summary   (baby)
-                              ├── Freezer stash                           (mom)
-                              └── Settings
-                                    ├── Family account
-                                    ├── Baby profile
-                                    ├── Pumping
-                                    ├── Reminders
-                                    ├── Backup & data
-                                    └── About
+Mom   Baby   (+)   History   Trends        ···  (top right)
+                                            ├── Freezer stash                     (mom)
+                                            ├── Growth / Development / Doctor     (baby)
+                                            └── Settings
+                                                  ├── Family account
+                                                  ├── Baby profile
+                                                  ├── Pumping
+                                                  ├── Reminders
+                                                  ├── Backup & data
+                                                  └── About
 ```
+
+This replaced a design where a full-width Mom/Baby segmented control sat above a
+Home/History/Trends tab bar. That cost about 75px of every screen and, worse, made three of
+the five tabs ambiguous — the same tab, icon and label led somewhere different depending on a
+toggle elsewhere. There were also three separate places to switch person (the top control, the
+sidebar, and a row inside More).
+
+History and Trends genuinely belong to both people, so they keep one fixed meaning as tabs and
+carry a Mom/Baby segment *inside* the screen. The choice is visible on the screen it affects
+rather than stored in a global mode, and `mom-history` / `baby-trends` stay separate views, so
+deep links and the pumping add-on modules keep seeing the hashes they expect.
+
+More and Settings moved out of the tab bar to a single `···` button in the header, which makes
+Settings two taps from anywhere instead of three and stops More from being a per-person drawer.
+More now lists every destination regardless of which person you were last looking at.
+
+Tab marks are line icons that fill in when selected, and Mom and Baby keep their own accent
+colour in the bar so the two people never blur together.
 
 Going deeper slides in from the trailing edge, Back slides the other way, switching tabs
 cross-fades; `prefers-reduced-motion` turns all of it off. The in-app Back is a real history pop,
-so the device Back button never walks forward through screens you already left.
+so the device Back button never walks forward through screens you already left. Routing also
+listens for `hashchange`, so a hand-edited or shared URL lands on the right screen.
 
-The nav bar carries Back and sync status; the page carries its own large title. Sub-pages hide the
-Mom/Baby switch, because a sub-page belongs to one side of the app.
-
-
+The nav bar carries Back and the More button; the page carries its own large title.
 
 Refreshing keeps you on the current screen.
 

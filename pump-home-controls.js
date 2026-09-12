@@ -131,11 +131,11 @@ function style(){
   document.getElementById('pumpQuickStyles')?.remove();
   const el=document.createElement('style');el.id='pumpQuickStylesV2';el.textContent=`
   .pump-quick{margin:10px 0 12px;padding:16px;border:1px solid var(--line-soft,var(--line));border-radius:22px;background:linear-gradient(150deg,var(--surface),color-mix(in srgb,var(--mom) 5%,var(--surface)));box-shadow:0 10px 28px rgba(30,35,55,.06)}
-  .pq-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.pq-kicker{display:block;font-size:.66rem;font-weight:900;letter-spacing:.1em;color:var(--mom)}.pq-title{font-size:1rem;font-weight:850;margin-top:2px}.pq-live{font-size:.68rem;font-weight:850;color:var(--mom);background:var(--mom-soft,var(--surface-2));padding:6px 9px;border-radius:999px;white-space:nowrap}
+  .pq-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.pq-kicker{display:block;font-size:.66rem;font-weight:900;letter-spacing:.1em;color:var(--mom)}.pq-title{font-size:1rem;font-weight:850;margin-top:2px}.pq-live{font-size:.68rem;font-weight:850;color:var(--mom-ink);background:var(--mom-soft,var(--surface-2));padding:6px 9px;border-radius:999px;white-space:nowrap}
   .pq-next{margin:13px 0 5px;padding:15px;border-radius:18px;background:var(--surface);border:1px solid color-mix(in srgb,var(--mom) 18%,var(--line));}.pq-next span{display:block;font-size:.7rem;font-weight:800;color:var(--muted)}.pq-next strong{display:block;font-size:1.5rem;line-height:1.1;margin:5px 0;color:var(--ink)}.pq-next small{display:block;font-size:.74rem;line-height:1.4;color:var(--muted)}
   .pq-rest-label{margin:13px 0 7px;font-size:.72rem;font-weight:850;color:var(--muted)}.pq-rest{display:flex;gap:7px;overflow:auto;padding-bottom:2px;scrollbar-width:none}.pq-rest::-webkit-scrollbar{display:none}.pq-slot{min-width:104px;padding:10px 11px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line-soft,var(--line))}.pq-slot b,.pq-slot span{display:block}.pq-slot b{font-size:.76rem}.pq-slot span{font-size:.68rem;color:var(--muted);margin-top:2px}.pq-slot.next{border-color:color-mix(in srgb,var(--mom) 38%,var(--line));background:color-mix(in srgb,var(--mom) 7%,var(--surface))}
   .pq-tip{margin:12px 0;padding:11px 12px;border-radius:14px;background:var(--surface-2);font-size:.78rem;line-height:1.45}.pq-tip b{color:var(--mom)}
-  .pump-quick-main{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pump-quick-main button{min-height:52px;border:1px solid var(--line-soft,var(--line));border-radius:15px;background:var(--surface-2);color:var(--ink);font:inherit;font-weight:850;font-size:.95rem}.pump-quick-main button.on{background:var(--mom);color:#fff;border-color:var(--mom);box-shadow:0 7px 18px color-mix(in srgb,var(--mom) 24%,transparent)}
+  .pump-quick-main{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pump-quick-main button{min-height:52px;border:1px solid var(--line-soft,var(--line));border-radius:15px;background:var(--surface-2);color:var(--ink);font:inherit;font-weight:850;font-size:.95rem}.pump-quick-main button.on{background:var(--mom);color:var(--on-ink,#fff);border-color:var(--mom);box-shadow:0 7px 18px color-mix(in srgb,var(--mom) 24%,transparent)}
   .pump-quick-label{margin:12px 0 6px;font-size:.7rem;font-weight:850;color:var(--muted)}.pump-quick-mode{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.pump-quick-mode button{min-height:42px;border:1px solid var(--line-soft,var(--line));border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-size:.76rem;font-weight:800}.pump-quick-mode button.on{background:var(--surface-2);color:var(--ink);border-color:color-mix(in srgb,var(--mom) 28%,var(--line))}
   #pumpCoach .pc-controls{display:none!important}
   @media(max-width:560px){.pump-quick{border-radius:19px;padding:14px}.pq-next strong{font-size:1.42rem}.pump-quick-main button{min-height:56px}}
@@ -175,6 +175,14 @@ function patchCoach(plan,p){
   }
   const heroChip=[...document.querySelectorAll('.mom-hero .chip')].find(x=>/^Next\b/i.test((x.textContent||'').trim()));
   if(heroChip&&plan.remaining)heroChip.textContent=`Next ~${to12FromMin(plan.future[0])}`;
+}
+
+// stable20 shipped calling isMomHome() without ever defining it, which threw on every
+// render and silently removed the whole dynamic plan. Match how smart-pumping.js
+// decides: the hash when there is one, otherwise the presence of the Mom hero.
+function isMomHome(){
+  const h=location.hash.replace(/^#/,'');
+  return h==='mom-home' || (!h && !!document.querySelector('#view .mom-hero'));
 }
 
 function render(){

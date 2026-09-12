@@ -160,9 +160,6 @@ button{cursor:pointer;font-family:inherit}
 .brand-logo .ico{width:26px;height:26px}
 .brand strong{font:800 19px var(--display);letter-spacing:-.01em}
 .brand span{display:block;font-size:10px;color:var(--muted);margin-top:2px}
-.workspace{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px;background:var(--sidebar-chip);border-radius:14px;margin:2px 5px 6px}
-.workspace button{border:0;background:transparent;color:var(--sidebar-ink);border-radius:10px;min-height:42px;font-weight:800;transition:background .15s,color .15s}
-.workspace button.active{background:var(--surface);color:var(--ink)}
 .side-nav{overflow-y:auto;flex:1;margin-top:6px}
 .side-label{padding:12px 10px 6px;font-size:9px;letter-spacing:.14em;color:var(--muted);font-weight:900}
 .sidebar nav{display:grid;gap:3px}
@@ -183,7 +180,10 @@ button{cursor:pointer;font-family:inherit}
 .back-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .title-wrap{display:none}
 .title-wrap h1{margin:0;font:800 23px var(--display);letter-spacing:-.015em}
-.mobile-workspace{display:none}
+.more-btn{margin-left:auto;flex:0 0 auto;width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--muted)}
+.more-btn .ico{width:20px;height:20px}
+.more-btn:hover{background:var(--surface-2);color:var(--ink)}
+.more-btn.active{background:color-mix(in srgb,var(--accent,var(--mom)) 13%,var(--surface));border-color:color-mix(in srgb,var(--accent,var(--mom)) 30%,var(--line));color:var(--accent,var(--mom))}
 /* Sync status footer: out of the nav bar entirely, since it is only interesting when
    something is wrong. It shouts only in the error state. */
 .sync-foot{max-width:1180px;margin:0 auto;padding:0 24px 26px}
@@ -203,6 +203,17 @@ button{cursor:pointer;font-family:inherit}
 
 
 .view{max-width:1180px;margin:auto;padding:18px 24px 72px}
+/* History and Trends belong to both people. The segment states whose records are on
+   screen and switches without leaving, instead of a global mode set somewhere else. */
+.persona-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:0 0 16px;background:var(--line-soft);border-radius:16px}
+.persona-seg button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;border:0;border-radius:12px;background:transparent;color:var(--ink-2);font:inherit;font-size:.88rem;font-weight:800;transition:background .16s,color .16s,box-shadow .16s}
+.persona-seg button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.persona-seg .gly{width:20px;height:20px}
+.persona-seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(24,28,44,.09)}
+.persona-seg button:first-child.on{color:var(--mom)}
+.persona-seg button:last-child.on{color:var(--baby-ink)}
+/* The segment already says whose screen this is, so the page head must not repeat it. */
+.persona-seg + .page-head .eyebrow{display:none}
 
 /* ----------------------------------------------------------------- hero -- */
 .hero{position:relative;overflow:hidden;border-radius:var(--radius-lg);padding:24px 26px;display:flex;align-items:center;gap:24px;margin-bottom:16px;border:1px solid var(--line);box-shadow:var(--shadow-soft)}
@@ -246,6 +257,9 @@ button{cursor:pointer;font-family:inherit}
 .gly .g-line-f{fill:currentColor;stroke:none}
 .gly .g-hi{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;opacity:.5}
 .gly ellipse.g-hi{fill:currentColor;stroke:none;opacity:.34}
+/* Nav marks sit at 25px in a crowded bar; the care glyphs' 2.4 stroke reads too heavy there. */
+.nav-gly .g-line{stroke-width:2.05}
+.nav-gly .g-hi{stroke-width:1.9}
 
 /* sizes per surface */
 .orb-face .gly{width:46%;height:46%}
@@ -435,7 +449,7 @@ button{cursor:pointer;font-family:inherit}
 .schedule-card .ico{width:17px;height:17px}
 .schedule-card strong,.schedule-card small{display:block}
 .schedule-card strong{font-size:13px;font-weight:800}
-.schedule-card small{font-size:10px;color:var(--muted);margin-top:2px;font-weight:700}
+.schedule-card small{font-size:10px;color:var(--ink-2);margin-top:2px;font-weight:700}
 .schedule-card em{position:absolute;top:10px;right:10px;font-size:8px;font-style:normal;font-weight:900;color:var(--mom);background:var(--surface);border-radius:99px;padding:3px 6px}
 
 /* ----------------------------------------------------------------- rows -- */
@@ -750,11 +764,15 @@ button{cursor:pointer;font-family:inherit}
 .view.nav-swap{animation:navSwap .2s ease-out}
 
 /* per-section accent, used by the back button and active tab */
-body[data-screen^="mom"]{--accent:var(--mom)}
+body[data-screen^="mom"]{--accent:var(--mom-ink)}
 body[data-screen^="baby"]{--accent:var(--baby-ink)}
-body[data-screen="development"]{--accent:#b8802c}
+body[data-screen="development"]{--accent:#8a5c17}
 body[data-screen="doctor"]{--accent:var(--feed-ink)}
 body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{--accent:#5b6272}
+/* These two accents are literals rather than tokens, so they never followed the theme.
+   On the dark ground the slate one drove the Back label to 2.99:1. */
+:root[data-theme="dark"] body[data-screen="development"]{--accent:#dcab57}
+:root[data-theme="dark"] body[data-screen="more"],:root[data-theme="dark"] body[data-screen="settings"],:root[data-theme="dark"] body[data-screen^="set-"]{--accent:#aeb7ca}
 
 /* -------------------------------------------------------------- dialogs -- */
 .dialog{border:0;border-radius:var(--radius-lg);padding:0;width:min(620px,96vw);max-height:92dvh;box-shadow:var(--shadow);background:var(--surface)}
@@ -844,16 +862,10 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
   .main{min-height:100vh}
   /* iOS large-title behaviour: the nav bar carries Back + status, the page carries the
      title. Showing both meant every screen printed its name twice. */
-  .topbar{height:auto;min-height:56px;padding:9px 14px;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"back spacer" "switch switch";gap:8px 10px}
-  .back-btn{grid-area:back}
-  /* A sub-page belongs to one side of the app, so the Mom/Baby switch is hidden there. */
-  body[data-depth="0"] .mobile-workspace{grid-area:switch;display:grid}
-  body:not([data-depth="0"]) .mobile-workspace{display:none}
-  body:not([data-depth="0"]) .topbar{grid-template-areas:"back spacer"}
-  .sync-badge{grid-area:sync;margin-left:0}
-  .mobile-workspace{grid-template-columns:1fr 1fr;gap:5px;padding:4px;background:var(--line-soft);border-radius:14px}
-  .mobile-workspace button{border:0;background:transparent;border-radius:10px;min-height:40px;font-weight:900;color:var(--muted)}
-  .mobile-workspace button.active{background:var(--surface);color:var(--ink);box-shadow:0 3px 10px rgba(30,34,48,.07)}
+  /* A single 52px row: Back on the left, More on the right. The old bar stacked a
+     full-width Mom/Baby switch beneath this and cost ~75px on every screen. */
+  .topbar{height:auto;min-height:52px;padding:7px 13px;display:flex;align-items:center;gap:8px}
+  .persona-seg{margin-bottom:14px}
   .view{padding:14px 13px 20px}
   .sync-foot{padding:0 13px 24px}
 
@@ -930,6 +942,11 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
   .bottom-nav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:55;background:var(--nav-bg);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border:1px solid var(--line);border-radius:26px;padding:6px 6px;box-shadow:0 12px 34px rgba(16,20,32,.16),inset 0 1px 0 var(--glow)}
   .bottom-nav button{border:0;background:transparent;min-height:56px;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:10px;font-weight:900}
   .bottom-nav button .ico{width:25px;height:25px}
+  .bottom-nav button .gly{width:25px;height:25px}
+  .bottom-nav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+  /* Mom and Baby keep their own colour as tabs, so the two people never blur together. */
+  .bottom-nav button:first-child.active{color:var(--mom-ink);background:color-mix(in srgb,var(--mom) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--mom) 22%,transparent)}
+  .bottom-nav button:nth-child(2).active{color:var(--baby-ink);background:color-mix(in srgb,var(--baby-ink) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--baby-ink) 22%,transparent)}
   .bottom-nav button.active{color:var(--accent,var(--mom));background:color-mix(in srgb,var(--accent,var(--mom)) 12%,transparent)}
   .bottom-nav .add-tab{position:relative;top:-20px}
   .bottom-nav .add-tab .ico{width:29px;height:29px;background:linear-gradient(135deg,var(--btn-mom-a),var(--btn-mom-b));color:#fff;border-radius:50%;padding:12px;box-sizing:content-box;box-shadow:0 10px 22px rgba(122,86,214,.3)}
@@ -973,7 +990,7 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
 }
 
 @media print{
-  .sidebar,.topbar,.bottom-nav,.round-action,.pills,.sheet,.sync-foot,.scrim,.toast,.more-actions,.feed-cta,.orb-row,.pill-row,.act-add,.day-strip{display:none!important}
+  .sidebar,.topbar,.bottom-nav,.round-action,.pills,.sheet,.sync-foot,.scrim,.toast,.more-actions,.feed-cta,.orb-row,.pill-row,.act-add,.day-strip,.persona-seg{display:none!important}
   .shell{display:block}
   .view{max-width:none;padding:0}
   .panel,.metric,.doctor-summary-card,.qa-grid>div{box-shadow:none;break-inside:avoid}
