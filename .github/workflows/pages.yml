@@ -48,10 +48,14 @@ jobs:
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
-          grep -q 'app.js?build=stable33' index.html
-          grep -q 'core-ui.js?build=stable33' index.html
-          grep -q 'family-chat.js?build=stable33' index.html
-          grep -q 'manifest.webmanifest?build=stable33' index.html
+          grep -q 'app.js?build=stable34' index.html
+          grep -q 'core-ui.js?build=stable34' index.html
+          grep -q 'family-chat.js?build=stable34' index.html
+          grep -q 'manifest.webmanifest?build=stable34' index.html
+          grep -q 'data-feed-type="expressed_milk"' core-ui.js
+          grep -q 'mf-diaper-cluster' core-ui.js
+          grep -q 'data-sleep' core-ui.js
+          grep -q 'data-growth' core-ui.js
           ! grep -q 'chat-reliability.js' index.html
           ! grep -q 'runtime-stability.js' index.html
           ! grep -q 'smart-pumping.js' index.html
