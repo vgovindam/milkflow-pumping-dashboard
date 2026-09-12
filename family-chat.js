@@ -29,8 +29,29 @@ function styles(){
 
 function context(){
   const s=readState();
-  const cleanMom=e=>({type:e.type||null,date:e.date||null,time:e.time||null,amountMl:e.amountMl??null,durationMinutes:e.durationMinutes??e.duration??null,side:e.side||null,voidedAt:e.voidedAt||null});
-  const cleanBaby=e=>({eventType:e.eventType||e.event_type||null,date:e.date||null,time:e.time||null,subtype:e.subtype||null,feedingType:e.feedingType||e.feeding_type||null,amountOz:e.amountOz??e.amount_oz??null,durationMinutes:e.durationMinutes??e.duration_minutes??null,totalMinutes:e.totalMinutes??e.total_minutes??null,leftMinutes:e.leftMinutes??e.left_minutes??null,rightMinutes:e.rightMinutes??e.right_minutes??null,voidedAt:e.voidedAt||null});
+  const cleanMom=e=>({type:e.type||null,date:e.date||null,time:e.time||null,amountMl:e.amountMl??null,durationMinutes:e.durationMinutes??e.durationMin??e.duration??null,side:e.side||null,voidedAt:e.voidedAt||null});
+  const cleanBaby=e=>({
+    babyId:e.babyId||e.baby_id||null,
+    eventType:e.eventType||e.event_type||null,
+    date:e.date||null,time:e.time||null,
+    subtype:e.subtype||null,
+    feedingType:e.feedingType||e.feeding_type||null,
+    amountOz:e.amountOz??e.amount_oz??null,
+    durationMinutes:e.durationMinutes??e.duration_minutes??null,
+    totalMinutes:e.totalMinutes??e.total_minutes??null,
+    leftMinutes:e.leftMinutes??e.left_minutes??null,
+    rightMinutes:e.rightMinutes??e.right_minutes??null,
+    side:e.side||null,
+    weightLb:e.weightLb??e.weight_lb??null,
+    weightOz:e.weightOz??e.weight_oz??null,
+    lengthIn:e.lengthIn??e.length_in??null,
+    headIn:e.headIn??e.head_in??null,
+    milestoneId:e.milestoneId??e.milestone_id??null,
+    milestoneText:e.milestoneText??e.milestone_text??null,
+    milestoneGroup:e.milestoneGroup??e.milestone_group??null,
+    milestoneMonth:e.milestoneMonth??e.milestone_month??null,
+    voidedAt:e.voidedAt||null
+  });
   let dynamicPlan=null;
   try{
     const p=window.MilkFlowDynamicPump?.getPlan?.();
@@ -39,16 +60,17 @@ function context(){
   return {
     currentLocalTime:new Date().toISOString(),
     currentWorkspace:s.ui?.workspace||null,
+    activeBaby:s.baby?{id:s.baby.id||null,name:s.baby.name||null,birthDate:s.baby.birthDate||null}:null,
     dynamicPlan,
     recentMom:(Array.isArray(s.entries)?s.entries:[]).filter(e=>!e?.voidedAt).sort((a,b)=>`${a.date||''}${a.time||''}`.localeCompare(`${b.date||''}${b.time||''}`)).slice(-24).map(cleanMom),
-    recentBaby:(Array.isArray(s.babyEvents)?s.babyEvents:[]).filter(e=>!e?.voidedAt).sort((a,b)=>`${a.date||''}${a.time||''}`.localeCompare(`${b.date||''}${b.time||''}`)).slice(-40).map(cleanBaby)
+    recentBaby:(Array.isArray(s.babyEvents)?s.babyEvents:[]).filter(e=>!e?.voidedAt).sort((a,b)=>`${a.date||''}${a.time||''}`.localeCompare(`${b.date||''}${b.time||''}`)).slice(-80).map(cleanBaby)
   };
 }
 
 function renderMessages(){
   const body=document.getElementById('mfChatBody');if(!body)return;
   const list=readChat();
-  body.innerHTML=`<div class="mf-chat-welcome">Ask about pumping, your rolling trend, today’s next pump, feeds, diapers, nursing, sleep, or other Baby tracking. MilkFlow uses your signed-in family data when available.</div>`+list.map(m=>`<div class="mf-chat-row ${m.role==='user'?'user':'assistant'}"><div class="mf-chat-msg">${esc(m.text)}</div></div>`).join('');
+  body.innerHTML=`<div class="mf-chat-welcome">Ask about pumping, your rolling trend, today’s next pump, feeds, diapers, nursing, sleep, growth, milestones, or other Baby tracking. MilkFlow uses your signed-in family data when available.</div>`+list.map(m=>`<div class="mf-chat-row ${m.role==='user'?'user':'assistant'}"><div class="mf-chat-msg">${esc(m.text)}</div></div>`).join('');
   body.scrollTop=body.scrollHeight;
 }
 
@@ -103,7 +125,7 @@ function mount(){
   const panel=document.createElement('section');panel.id='mfChatPanel';panel.className='mf-chat-panel';panel.setAttribute('aria-label','MilkFlow family chat');panel.innerHTML=`
     <div class="mf-chat-head"><div class="mf-chat-avatar">M</div><div class="mf-chat-head-text"><strong>MilkFlow chat</strong><small>Mom + Baby · private family assistant</small></div><button id="mfChatClose" class="mf-chat-close" type="button" aria-label="Close chat">×</button></div>
     <div id="mfChatBody" class="mf-chat-body"></div>
-    <div><div class="mf-chat-quick"><button type="button" data-mf-prompt="When should I pump next?">Next pump</button><button type="button" data-mf-prompt="Show my rolling 7-day pumping summary.">7-day pumping</button><button type="button" data-mf-prompt="Summarize Baby today from what is logged.">Baby today</button></div><div class="mf-chat-compose"><form id="mfChatForm" class="mf-chat-form"><textarea id="mfChatInput" class="mf-chat-input" rows="1" placeholder="Ask MilkFlow…" aria-label="Message MilkFlow"></textarea><button id="mfChatSend" class="mf-chat-send" type="submit" aria-label="Send">➤</button></form><small class="mf-chat-note">Uses your tracker data. It is separate from your ChatGPT account conversation.</small></div></div>`;
+    <div><div class="mf-chat-quick"><button type="button" data-mf-prompt="When should I pump next?">Next pump</button><button type="button" data-mf-prompt="Show my rolling 7-day pumping summary.">7-day pumping</button><button type="button" data-mf-prompt="Summarize Baby today from what is logged, including feeds, diapers, nursing, sleep, growth, and milestones if present.">Baby today</button></div><div class="mf-chat-compose"><form id="mfChatForm" class="mf-chat-form"><textarea id="mfChatInput" class="mf-chat-input" rows="1" placeholder="Ask MilkFlow…" aria-label="Message MilkFlow"></textarea><button id="mfChatSend" class="mf-chat-send" type="submit" aria-label="Send">➤</button></form><small class="mf-chat-note">Uses your tracker data. It is separate from your ChatGPT account conversation.</small></div></div>`;
   const btn=document.createElement('button');btn.id='mfChatButton';btn.className='mf-chat-btn';btn.type='button';btn.setAttribute('aria-label','Open MilkFlow chat');btn.setAttribute('aria-expanded','false');btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/><path d="M8 9h8M8 13h5"/></svg><span class="dot"></span>';
   document.body.append(panel,btn);
   btn.addEventListener('click',()=>toggle());document.getElementById('mfChatClose').addEventListener('click',()=>toggle(false));
