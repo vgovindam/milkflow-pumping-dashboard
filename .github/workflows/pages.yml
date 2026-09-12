@@ -50,9 +50,10 @@ jobs:
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
-          grep -q 'app.js?build=stable30' index.html
-          grep -q 'core-ui.js?build=stable30' index.html
-          grep -q 'family-chat.js?build=stable30' index.html
+          grep -q 'app.js?build=stable31' index.html
+          grep -q 'core-ui.js?build=stable31' index.html
+          grep -q 'family-chat.js?build=stable31' index.html
+          grep -q 'manifest.webmanifest?build=stable31' index.html
           ! grep -q 'runtime-stability.js' index.html
           ! grep -q 'smart-pumping.js' index.html
           ! grep -q 'pump-home-controls.js' index.html
