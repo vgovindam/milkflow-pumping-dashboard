@@ -29,10 +29,12 @@ jobs:
           node --check app-reliability.js
           node --check smart-pumping.js
           node --check pump-home-controls.js
+          node --check adaptive-pump-plan.js
           node --check pump-insights.js
           node --check ai-coach-client.js
           node --check app-update-notice.js
           node --check modern-stickers.js
+          node --check baby-home-modern.js
           node --check mom-profile.js
           node --check family-chat.js
           node --check functions/index.js
@@ -46,10 +48,12 @@ jobs:
           test -f app-reliability.js
           test -f smart-pumping.js
           test -f pump-home-controls.js
+          test -f adaptive-pump-plan.js
           test -f pump-insights.js
           test -f ai-coach-client.js
           test -f app-update-notice.js
           test -f modern-stickers.js
+          test -f baby-home-modern.js
           test -f mom-profile.js
           test -f family-chat.js
           test -f functions/index.js
@@ -65,10 +69,12 @@ jobs:
           grep -q 'app-reliability.js' index.html
           grep -q 'smart-pumping.js' index.html
           grep -q 'pump-home-controls.js' index.html
+          grep -q 'adaptive-pump-plan.js' index.html
           grep -q 'pump-insights.js' index.html
           grep -q 'ai-coach-client.js' index.html
           grep -q 'app-update-notice.js' index.html
           grep -q 'modern-stickers.js' index.html
+          grep -q 'baby-home-modern.js' index.html
           grep -q 'mom-profile.js' index.html
           grep -q 'family-chat.js' index.html
           grep -q 'styles.css' index.html
