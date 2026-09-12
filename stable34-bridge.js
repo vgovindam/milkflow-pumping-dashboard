@@ -2,10 +2,10 @@
 'use strict';
 
 /*
- * MilkFlow stable34r2 integration bridge.
+ * MilkFlow stable34r3 integration bridge.
  * Keeps stable34 attached after authenticated Firestore re-renders, reconciles all
  * visible "next pump" surfaces to one adaptive plan, adds compact rolling highlights,
- * protects mobile layout, and provides a resilient chat route.
+ * protects mobile layout, adds a warm family-care color system, and provides a resilient chat route.
  *
  * Event-driven: no MutationObserver. The only render hook is the app's #view write.
  */
@@ -26,6 +26,52 @@ function addStyles(){
   const style=document.createElement('style');
   style.id='mfStable34BridgeStyles';
   style.textContent=`
+    /* A calm family-care canvas: color separates meaning without turning the app into a toy. */
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .main{
+      background:
+        radial-gradient(circle at 90% 7%,rgba(198,167,255,.24),transparent 27%),
+        radial-gradient(circle at 8% 28%,rgba(255,203,220,.18),transparent 25%),
+        linear-gradient(180deg,#f9f5ff 0%,#f7f7fc 48%,#f1f7ff 100%);
+    }
+    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .main{
+      background:
+        radial-gradient(circle at 90% 8%,rgba(167,220,255,.25),transparent 27%),
+        radial-gradient(circle at 8% 36%,rgba(181,236,218,.20),transparent 25%),
+        linear-gradient(180deg,#f3f9ff 0%,#f7f8fd 46%,#f1faf7 100%);
+    }
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .topbar{background:rgba(249,245,255,.88)}
+    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .topbar{background:rgba(243,249,255,.88)}
+
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .mom-hero{
+      background:linear-gradient(135deg,#fff9fd 0%,#f6edff 48%,#e9efff 100%)!important;
+      border-color:#e5d8fb!important;
+    }
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .mf-core-plan{
+      background:linear-gradient(135deg,#f7efff 0%,#f3f0ff 45%,#edf6ff 100%)!important;
+      border-color:#ddd3f3!important;
+    }
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .panel{
+      background:linear-gradient(145deg,rgba(255,255,255,.90),rgba(244,240,255,.86))!important;
+      border-color:#e3dcf1!important;
+    }
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .schedule-card{background:#f6f3fc!important;border-color:#e8e0f4!important}
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .schedule-card.done{background:#e9f7f0!important;border-color:#cae9db!important}
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .schedule-card.mf-r2-next{background:#eee5ff!important;border-color:#cab5f2!important}
+
+    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .timeline-card{
+      background:linear-gradient(135deg,#f7fbff 0%,#edf8ff 50%,#eefaf5 100%)!important;
+      border-color:#d8e9ef!important;
+    }
+    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .panel{
+      background:linear-gradient(145deg,rgba(255,255,255,.93),rgba(237,248,255,.82))!important;
+      border-color:#dcebf2!important;
+    }
+    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .mf-care-ribbon button:nth-child(1){background:#edf0ff!important;color:#565fad!important}
+    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .mf-care-ribbon button:nth-child(2){background:#fff0f5!important;color:#aa5576!important}
+    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .mf-care-ribbon button:nth-child(3){background:#eaf6ff!important;color:#397a9e!important}
+    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .mf-care-ribbon button:nth-child(4){background:#eaf8f2!important;color:#347d69!important}
+    :root:not([data-theme="dark"]) .mf-profile-photo{box-shadow:0 0 0 4px rgba(255,255,255,.72),0 7px 18px rgba(62,67,95,.08)}
+
     .mf-feed-main{min-width:0!important;min-height:138px!important;padding:20px 20px 22px!important;border-radius:34px 48px 38px 44px / 40px 34px 46px 38px!important;overflow:hidden!important}
     .mf-feed-main strong,.mf-feed-main>span{display:block;max-width:76%;white-space:normal;overflow-wrap:anywhere}
     .mf-feed-main strong{line-height:1.08!important}.mf-feed-main>span{line-height:1.3!important;margin-top:5px!important;padding-bottom:1px}.mf-feed-main em{max-width:66%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -34,16 +80,20 @@ function addStyles(){
     #syncFoot{display:none!important}
 
     .mf-r2-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 14px}
-    .mf-r2-highlight{min-width:0;padding:11px 10px 10px;border-radius:18px;background:var(--surface,#fff);border:1px solid var(--line-soft,var(--line,#e8e6ee));box-shadow:none}
-    .mf-r2-highlight.mom{background:color-mix(in srgb,var(--mom,#7653c6) 5%,var(--surface,#fff))}
-    .mf-r2-highlight.baby{background:color-mix(in srgb,#62a9c8 6%,var(--surface,#fff))}
+    .mf-r2-highlight{min-width:0;padding:11px 10px 10px;border-radius:18px;background:var(--surface,#fff);border:1px solid var(--line-soft,var(--line,#e8e6ee));box-shadow:0 5px 14px rgba(42,47,73,.035)}
+    :root:not([data-theme="dark"]) .mf-r2-highlight.mom:nth-child(1){background:linear-gradient(145deg,#f3eaff,#ede9ff);border-color:#dfd1f4}
+    :root:not([data-theme="dark"]) .mf-r2-highlight.mom:nth-child(2){background:linear-gradient(145deg,#fff0f5,#fbe9f3);border-color:#f0d9e5}
+    :root:not([data-theme="dark"]) .mf-r2-highlight.mom:nth-child(3){background:linear-gradient(145deg,#ebf8f4,#e6f4ff);border-color:#d5ebe4}
+    :root:not([data-theme="dark"]) .mf-r2-highlight.baby:nth-child(1){background:linear-gradient(145deg,#e7f5ff,#e9f3ff);border-color:#d4e8f5}
+    :root:not([data-theme="dark"]) .mf-r2-highlight.baby:nth-child(2){background:linear-gradient(145deg,#f2ecff,#eeeaff);border-color:#dfd7f1}
+    :root:not([data-theme="dark"]) .mf-r2-highlight.baby:nth-child(3){background:linear-gradient(145deg,#e7f8f1,#eef9e9);border-color:#d3ebdf}
     .mf-r2-highlight>span{display:block;color:var(--muted,#74798a);font-size:9px;font-weight:800;letter-spacing:.02em}
     .mf-r2-highlight>strong{display:block;margin-top:3px;font:800 18px var(--display,inherit);letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .mf-r2-highlight>small{display:block;margin-top:3px;color:var(--muted,#74798a);font-size:8.5px;line-height:1.3}
-    .mf-r2-bar{height:4px;border-radius:999px;background:var(--surface-2,#f2f1f7);overflow:hidden;margin-top:7px}.mf-r2-bar i{display:block;height:100%;border-radius:inherit;background:var(--mom,#7653c6);width:var(--p)}
-    .schedule-strip .schedule-card.mf-r2-next{outline:2px solid color-mix(in srgb,var(--mom,#7653c6) 42%,transparent);background:color-mix(in srgb,var(--mom,#7653c6) 8%,var(--surface,#fff))}
+    .mf-r2-bar{height:4px;border-radius:999px;background:rgba(255,255,255,.68);overflow:hidden;margin-top:7px}.mf-r2-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--mom,#7653c6),#b16cce);width:var(--p)}
+    .schedule-strip .schedule-card.mf-r2-next{outline:2px solid color-mix(in srgb,var(--mom,#7653c6) 42%,transparent)}
     .schedule-card .mf-r2-plan-status{font-size:13px;font-weight:900;line-height:1}
-    .timeline-card{overflow:hidden}.timeline-track{isolation:isolate}.timeline-track .mf-day-elapsed{position:absolute;z-index:0;left:0;top:0;bottom:0;border-radius:inherit;background:linear-gradient(90deg,rgba(122,91,205,.10),rgba(66,160,196,.10));pointer-events:none}.timeline-track .tl-dot,.timeline-track .tl-now{z-index:2}
+    .timeline-card{overflow:hidden}.timeline-track{isolation:isolate}.timeline-track .mf-day-elapsed{position:absolute;z-index:0;left:0;top:0;bottom:0;border-radius:inherit;background:linear-gradient(90deg,rgba(122,91,205,.12),rgba(66,160,196,.14),rgba(76,181,149,.10));pointer-events:none}.timeline-track .tl-dot,.timeline-track .tl-now{z-index:2}
 
     @media(max-width:700px){
       .mf-chat-panel{right:8px!important;left:8px!important;width:auto!important;bottom:calc(142px + env(safe-area-inset-bottom))!important;height:min(560px,calc(100svh - 176px))!important;max-height:calc(100svh - 176px)!important;border-radius:20px!important}
