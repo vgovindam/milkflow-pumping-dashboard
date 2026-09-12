@@ -23,7 +23,29 @@ function createFamilyChat({onRequest,admin,db,OPENAI_API_KEY,ALLOWED_ORIGINS}){
     return {id:e.id||null,type:e.type||null,date:e.date||null,time:e.time||null,amountMl:e.amountMl??null,durationMinutes:e.durationMinutes??e.duration??null,side:e.side||null,voidedAt:e.voidedAt||null};
   }
   function cleanBaby(e){
-    return {id:e.id||null,eventType:e.eventType||e.event_type||null,date:e.date||null,time:e.time||null,subtype:e.subtype||null,feedingType:e.feedingType||e.feeding_type||null,amountOz:e.amountOz??e.amount_oz??null,durationMinutes:e.durationMinutes??e.duration_minutes??null,totalMinutes:e.totalMinutes??e.total_minutes??null,leftMinutes:e.leftMinutes??e.left_minutes??null,rightMinutes:e.rightMinutes??e.right_minutes??null,voidedAt:e.voidedAt||null};
+    return {
+      id:e.id||null,
+      babyId:e.babyId||e.baby_id||null,
+      eventType:e.eventType||e.event_type||null,
+      date:e.date||null,time:e.time||null,
+      subtype:e.subtype||null,
+      feedingType:e.feedingType||e.feeding_type||null,
+      amountOz:e.amountOz??e.amount_oz??null,
+      durationMinutes:e.durationMinutes??e.duration_minutes??null,
+      totalMinutes:e.totalMinutes??e.total_minutes??null,
+      leftMinutes:e.leftMinutes??e.left_minutes??null,
+      rightMinutes:e.rightMinutes??e.right_minutes??null,
+      side:e.side||null,
+      weightLb:e.weightLb??e.weight_lb??null,
+      weightOz:e.weightOz??e.weight_oz??null,
+      lengthIn:e.lengthIn??e.length_in??null,
+      headIn:e.headIn??e.head_in??null,
+      milestoneId:e.milestoneId??e.milestone_id??null,
+      milestoneText:e.milestoneText??e.milestone_text??null,
+      milestoneGroup:e.milestoneGroup??e.milestone_group??null,
+      milestoneMonth:e.milestoneMonth??e.milestone_month??null,
+      voidedAt:e.voidedAt||null
+    };
   }
   function pumpDays(entries,overrides={}){
     const map={};
@@ -42,21 +64,40 @@ function createFamilyChat({onRequest,admin,db,OPENAI_API_KEY,ALLOWED_ORIGINS}){
     const map={};
     for(const e of events){
       if(e.voidedAt||!e.date)continue;
-      const d=map[e.date]||(map[e.date]={date:e.date,feeds:0,feedOz:0,nursing:0,nursingMinutes:0,wet:0,poop:0,both:0,sleepMinutes:0});
+      const key=`${e.babyId||'baby'}:${e.date}`;
+      const d=map[key]||(map[key]={babyId:e.babyId||null,date:e.date,feeds:0,feedOz:0,nursing:0,nursingMinutes:0,wet:0,poop:0,both:0,sleepMinutes:0,growth:0,milestones:0,latestGrowth:null,milestoneTexts:[]});
       const t=e.eventType||e.event_type;
       if(t==='feeding'){d.feeds++;d.feedOz+=Number(e.amountOz??e.amount_oz)||0;}
       else if(t==='nursing'){d.nursing++;d.nursingMinutes+=Number(e.totalMinutes??e.total_minutes??e.durationMinutes??e.duration_minutes)||0;}
       else if(t==='diaper'){const s=String(e.subtype||'').toLowerCase();if(s==='wet')d.wet++;else if(s==='poop'||s==='dirty')d.poop++;else if(s==='both'||s==='mixed')d.both++;}
       else if(t==='sleep')d.sleepMinutes+=Number(e.durationMinutes??e.duration_minutes)||0;
+      else if(t==='growth'){
+        d.growth++;
+        d.latestGrowth={weightLb:e.weightLb??null,weightOz:e.weightOz??null,lengthIn:e.lengthIn??null,headIn:e.headIn??null};
+      }else if(t==='milestone'){
+        d.milestones++;
+        if(e.milestoneText)d.milestoneTexts.push(String(e.milestoneText).slice(0,160));
+      }
     }
-    return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date)).slice(-7);
+    return Object.values(map).sort((a,b)=>`${a.date}${a.babyId||''}`.localeCompare(`${b.date}${b.babyId||''}`)).slice(-21);
+  }
+  function childSummaries(events){
+    const map={};
+    for(const e of events){
+      const id=e.babyId||'unassigned';
+      const x=map[id]||(map[id]={babyId:id,eventCount:0,lastEventDate:null,types:{}});
+      x.eventCount++;
+      x.lastEventDate=!x.lastEventDate||String(e.date||'')>x.lastEventDate?e.date:x.lastEventDate;
+      const t=e.eventType||'other';x.types[t]=(x.types[t]||0)+1;
+    }
+    return Object.values(map);
   }
 
   async function load(uid){
     const root=db.collection('users').doc(uid);
     const [momSnap,babySnap,profileDoc,chatSnap]=await Promise.all([
       root.collection('entries').where('date','>=',cutoff(45)).get(),
-      root.collection('familyEvents').where('date','>=',cutoff(14)).get(),
+      root.collection('familyEvents').where('date','>=',cutoff(90)).get(),
       root.collection('private').doc('profile').get(),
       root.collection('familyChatMessages').orderBy('createdAt','desc').limit(12).get().catch(()=>null)
     ]);
@@ -65,11 +106,12 @@ function createFamilyChat({onRequest,admin,db,OPENAI_API_KEY,ALLOWED_ORIGINS}){
     const baby=babySnap.docs.map(d=>cleanBaby({id:d.id,...d.data()})).filter(e=>!e.voidedAt).sort(byWhen);
     const history=chatSnap?chatSnap.docs.map(d=>d.data()).reverse().map(x=>({role:x.role==='assistant'?'assistant':'user',text:String(x.text||'').slice(0,1600)})):[];
     return {
-      profile:{dailyGoalMl:raw.profile?.dailyGoalMl??raw.dailyGoalMl??null,schedule:Array.isArray(raw.schedule)?raw.schedule:[],babyBirthDate:raw.baby?.birthDate||raw.babyBirthDate||null},
+      profile:{dailyGoalMl:raw.profile?.dailyGoalMl??raw.dailyGoalMl??null,schedule:Array.isArray(raw.schedule)?raw.schedule:[],baby:raw.baby||null,babyBirthDate:raw.baby?.birthDate||raw.babyBirthDate||null},
       pumpDays:pumpDays(mom,raw.dailyOverrides||{}),
       recentMom:mom.slice(-24),
+      children:childSummaries(baby),
       babyDays:babyDays(baby),
-      recentBaby:baby.slice(-40),
+      recentBaby:baby.slice(-80),
       history
     };
   }
@@ -77,12 +119,13 @@ function createFamilyChat({onRequest,admin,db,OPENAI_API_KEY,ALLOWED_ORIGINS}){
   const SYSTEM=`You are MilkFlow Family Chat, a private in-app assistant for one family's Mom and Baby tracker. Answer the user's actual question using only the structured tracker context supplied and the conversation history. Be warm, concise, practical, and plain-spoken.
 
 Rules:
-- Never invent a pump, amount, feed, diaper, nursing session, symptom, date, or total.
+- Never invent a pump, amount, feed, diaper, nursing session, sleep session, growth measurement, milestone, symptom, date, or total.
 - Nursing minutes are not pumped milk and must never be converted to mL or oz.
 - If the user asks for a pumping table or total, calculate exactly from supplied data and clearly mark incomplete days.
 - For next-pump timing, use the supplied dynamicPlan when present. Actual logged pump times override the old fixed clock schedule.
 - A single low-output pump, especially a shorter/problem session, does not by itself prove supply changed; prefer multi-day trends.
-- For Baby, summarize only logged events. Do not infer intake from nursing duration.
+- For Baby, you can use feeding, nursing, diaper, sleep, growth, and milestone records when present. Summarize only logged events and never infer intake from nursing duration.
+- If more than one babyId exists, keep children separate and identify which child a statement belongs to. Never combine totals across different babyIds unless the user explicitly asks for a family-wide count.
 - You may explain general health information, but do not diagnose. For urgent red flags, recommend prompt medical care.
 - Do not claim you are the user's existing ChatGPT conversation or that you share ChatGPT account memory. You are the MilkFlow in-app assistant backed by the same family's tracker data.
 - Keep normal answers under about 180 words unless the user asks for detail or a table.
@@ -115,7 +158,7 @@ Rules:
       if(!message)return res.status(400).json({ok:false,error:'Message required'});
       const cloud=await load(uid);
       const local=req.body?.context&&typeof req.body.context==='object'?req.body.context:{};
-      const payload={currentLocalTime:local.currentLocalTime||null,currentWorkspace:local.currentWorkspace||null,dynamicPlan:local.dynamicPlan||null,localRecentMom:Array.isArray(local.recentMom)?local.recentMom.slice(-16):[],localRecentBaby:Array.isArray(local.recentBaby)?local.recentBaby.slice(-24):[],profile:cloud.profile,pumpDays:cloud.pumpDays,recentMom:cloud.recentMom,babyDays:cloud.babyDays,recentBaby:cloud.recentBaby,conversation:cloud.history,userMessage:message};
+      const payload={currentLocalTime:local.currentLocalTime||null,currentWorkspace:local.currentWorkspace||null,dynamicPlan:local.dynamicPlan||null,localRecentMom:Array.isArray(local.recentMom)?local.recentMom.slice(-16):[],localRecentBaby:Array.isArray(local.recentBaby)?local.recentBaby.slice(-24):[],profile:cloud.profile,pumpDays:cloud.pumpDays,recentMom:cloud.recentMom,children:cloud.children,babyDays:cloud.babyDays,recentBaby:cloud.recentBaby,conversation:cloud.history,userMessage:message};
       const out=await callModel(payload);
       const col=db.collection('users').doc(uid).collection('familyChatMessages');
       const batch=db.batch();
