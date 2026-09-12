@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Validate app JavaScript
         run: |
+          node --check runtime-stability.js
           node --check app.js
           node --check app-reliability.js
           node --check smart-pumping.js
@@ -45,6 +46,7 @@ jobs:
       - name: Verify production files
         run: |
           test -f index.html
+          test -f runtime-stability.js
           test -f app.js
           test -f app-reliability.js
           test -f smart-pumping.js
@@ -67,6 +69,7 @@ jobs:
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
+          grep -q 'runtime-stability.js' index.html
           grep -q 'app.js' index.html
           grep -q 'app-reliability.js' index.html
           grep -q 'smart-pumping.js' index.html
