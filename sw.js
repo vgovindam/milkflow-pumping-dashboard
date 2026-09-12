@@ -2,9 +2,9 @@
 // Strategy: network-first for the app shell so a new deploy is always picked up on the next
 // online load, with the cache used only as an offline fallback. Firebase traffic is never
 // intercepted - Firestore manages its own offline persistence.
-const VERSION = 'milkflow-stable27';
+const VERSION = 'milkflow-stable28';
 const SHELL = [
-  './', './index.html', './styles.css', './app.js', './app-reliability.js', './smart-pumping.js', './pump-home-controls.js', './adaptive-pump-plan.js', './pump-insights.js', './ai-coach-client.js', './app-update-notice.js', './modern-stickers.js', './baby-home-modern.js', './mom-profile.js', './family-chat.js', './config.js',
+  './', './index.html', './styles.css', './app.js', './app-reliability.js', './smart-pumping.js', './pump-home-controls.js', './adaptive-pump-plan.js', './pump-insights.js', './ai-coach-client.js', './app-update-notice.js', './modern-stickers.js', './baby-home-modern.js', './mom-profile.js', './family-chat.js', './chat-reliability.js', './config.js',
   './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'
 ];
 
@@ -27,11 +27,9 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
-
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.endsWith('/sw.js')) return;
-
   event.respondWith(
     fetch(req)
       .then(res => {
