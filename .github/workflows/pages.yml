@@ -37,6 +37,7 @@ jobs:
           node --check baby-home-modern.js
           node --check mom-profile.js
           node --check family-chat.js
+          node --check chat-reliability.js
           node --check functions/index.js
           node --check functions/index-entry.js
           node --check functions/family-chat.js
@@ -56,6 +57,7 @@ jobs:
           test -f baby-home-modern.js
           test -f mom-profile.js
           test -f family-chat.js
+          test -f chat-reliability.js
           test -f functions/index.js
           test -f functions/index-entry.js
           test -f functions/family-chat.js
@@ -77,6 +79,7 @@ jobs:
           grep -q 'baby-home-modern.js' index.html
           grep -q 'mom-profile.js' index.html
           grep -q 'family-chat.js' index.html
+          grep -q 'chat-reliability.js' index.html
           grep -q 'styles.css' index.html
           ! grep -q 'app-v7.js' index.html
           ! grep -q 'data-migration-v7.js' index.html
