@@ -325,7 +325,11 @@ function navIcon(name,on=false){
     history:{fill:'<circle class="g-fill" cx="12" cy="12.4" r="8.2"/>',
              line:'<path class="g-line" d="M4 12.4a8.2 8.2 0 1 0 2.6-6"/><path class="g-line" d="M3.5 4.9v4.6h4.6"/><path class="g-line" d="M12 8v4.6l3.1 1.8"/>'},
     trends:{fill:'<rect class="g-fill" x="4.1" y="12.8" width="4.1" height="7.1" rx="1.7"/><rect class="g-fill" x="9.9" y="8.6" width="4.1" height="11.3" rx="1.7"/><rect class="g-fill" x="15.7" y="4.6" width="4.1" height="15.3" rx="1.7"/>',
-            line:'<rect class="g-line" x="4.1" y="12.8" width="4.1" height="7.1" rx="1.7"/><rect class="g-line" x="9.9" y="8.6" width="4.1" height="11.3" rx="1.7"/><rect class="g-line" x="15.7" y="4.6" width="4.1" height="15.3" rx="1.7"/>'}
+            line:'<rect class="g-line" x="4.1" y="12.8" width="4.1" height="7.1" rx="1.7"/><rect class="g-line" x="9.9" y="8.6" width="4.1" height="11.3" rx="1.7"/><rect class="g-line" x="15.7" y="4.6" width="4.1" height="15.3" rx="1.7"/>'},
+    home:{fill:'<path class="g-fill" d="M12 3.3 3.6 10.4V20a1 1 0 0 0 1 1h14.8a1 1 0 0 0 1-1v-9.6Z"/>',
+          line:'<path class="g-line" d="M3.6 10.4 12 3.3l8.4 7.1"/><path class="g-line" d="M5.5 9.2V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.2"/><path class="g-line" d="M9.6 21v-5.2a2.4 2.4 0 0 1 4.8 0V21"/>'},
+    more:{fill:'<circle class="g-fill" cx="12" cy="12" r="8.6"/>',
+          line:'<path class="g-line-f" d="M7 12a1.55 1.55 0 1 1-3.1 0A1.55 1.55 0 0 1 7 12ZM13.55 12a1.55 1.55 0 1 1-3.1 0 1.55 1.55 0 0 1 3.1 0ZM20.1 12a1.55 1.55 0 1 1-3.1 0 1.55 1.55 0 0 1 3.1 0Z"/>'}
   };
   const m=M[name]||M.mom;
   return `<svg class="gly nav-gly${on?' on':''}" viewBox="0 0 24 24" aria-hidden="true">${on?m.fill:''}${m.line}</svg>`;
@@ -516,6 +520,14 @@ function sinceLabel(date,time){
   const d=Math.round(h/24);
   return d <= 1 ? 'yesterday' : `${d} days ago`;
 }
+// untilLabel wraps past times to tomorrow, which is right for "next pump" but wrong on a
+// schedule card for a slot that already went by today: pump-insights stamps that same card
+// MISSED, so the card ended up reading "in 6h 26m" directly above "MISSED".
+function slotNote(t){
+  const m=mins(t); if(m==null) return 'Planned';
+  const d0=new Date();
+  return m < (d0.getHours()*60 + d0.getMinutes()) ? 'Earlier today' : (untilLabel(t)||'Planned');
+}
 function untilLabel(t){
   if(!t || t === '--:--') return '';
   const d0=new Date(); let diff=mins(t) - (d0.getHours()*60 + d0.getMinutes());
@@ -655,7 +667,7 @@ function scheduleStrip(){
   const slots=scheduleSlots(today());
   return `<div class="schedule-strip">${slots.map(({time,entry,extra})=>{
     const done=!!entry;
-    return `<div class="schedule-card ${done?'done':''} ${extra?'extra':''}"><div>${done?icon('check'):icon('clock')}</div><strong>${to12(entry?entry.time:time)}</strong><small>${done?`${entry.amountMl||0} mL`:untilLabel(time)||'Planned'}</small>${extra?'<em>Extra</em>':''}</div>`;
+    return `<div class="schedule-card ${done?'done':''} ${extra?'extra':''}"><div>${done?icon('check'):icon('clock')}</div><strong>${to12(entry?entry.time:time)}</strong><small>${done?`${entry.amountMl||0} mL`:slotNote(time)}</small>${extra?'<em>Extra</em>':''}</div>`;
   }).join('')}</div>`;
 }
 function recentMom(n){ const a=momEntries().slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('history','No Mom history yet','Log a pump or import your private backup.','<button class="primary-link" data-import>Import backup</button>'); return `<div class="rows">${a.map(momRow).join('')}</div>`; }
@@ -1199,7 +1211,7 @@ function render(dir='none'){
   const back=$('backLabel');
   if(back) back.textContent = parent ? (titles[parent]||'Back') : '';
   document.querySelector('.back-btn')?.classList.toggle('show',!!parent);
-  el.innerHTML=personaSwitch()+(renderers[view]||momHome)();
+  el.innerHTML=(renderers[view]||momHome)();
   if(dir!=='none' && !matchMedia('(prefers-reduced-motion: reduce)').matches){
     el.classList.remove('nav-forward','nav-back','nav-swap');
     void el.offsetWidth;
@@ -1207,7 +1219,9 @@ function render(dir='none'){
   }
   const workspace=workspaceOf(view); S.ui.workspace=workspace; save();
   document.querySelectorAll('.sidebar [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
-  document.querySelector('.more-btn')?.classList.toggle('active',IN_MORE.has(view)||view.startsWith('set-'));
+  const babyTab=$('personaTabs')?.lastElementChild;
+  if(babyTab) babyTab.textContent=S.baby.name||'Baby';
+  document.querySelectorAll('[data-workspace]').forEach(b=>b.classList.toggle('active',b.dataset.workspace===workspace));
   renderSideNav(); renderBottomNav(); syncBadge(); bindViewInputs();
 }
 const IN_MORE=new Set(['more','settings','doctor','baby-growth','development','mom-stash']);
@@ -1226,25 +1240,14 @@ function renderSideNav(){
 function renderBottomNav(){
   const nav=$('bottomNav'); if(!nav) return;
   const baby=workspaceOf(view)==='baby';
-  const hist=baby?'baby-history':'mom-history', trend=baby?'baby-trends':'mom-trends';
+  const home=baby?'baby-home':'mom-home', hist=baby?'baby-history':'mom-history', trend=baby?'baby-trends':'mom-trends';
   const tab=(v,label,ic,on)=>`<button data-view="${v}" class="${on?'active':''}"${on?' aria-current="page"':''}>${navIcon(ic,on)}<span>${esc(label)}</span></button>`;
   nav.innerHTML =
-    tab('mom-home','Mom','mom',view==='mom-home')
-    + tab('baby-home',S.baby.name||'Baby','baby',view==='baby-home')
-    + `<button class="add-tab" data-add aria-label="Add a record">${icon('plus')}<span>Add</span></button>`
+    tab(home,'Home','home',view===home)
     + tab(hist,'History','history',view==='mom-history'||view==='baby-history')
-    + tab(trend,'Trends','trends',view==='mom-trends'||view==='baby-trends');
-}
-// History and Trends exist for both people, so the screen says whose it is and lets you
-// flip without leaving. Mom and Baby stay separate views, so deep links and the
-// pumping add-ons keep seeing the hashes they expect.
-const PERSONA_PAIR={'mom-history':['mom-history','baby-history'],'baby-history':['mom-history','baby-history'],
-  'mom-trends':['mom-trends','baby-trends'],'baby-trends':['mom-trends','baby-trends']};
-function personaSwitch(){
-  const pair=PERSONA_PAIR[view]; if(!pair) return '';
-  const [m,b]=pair;
-  const btn=(v,label,ic)=>`<button type="button" data-view="${v}" class="${view===v?'on':''}" aria-pressed="${view===v}">${navIcon(ic,view===v)}<span>${esc(label)}</span></button>`;
-  return `<div class="persona-seg" role="group" aria-label="Whose records to show">${btn(m,'Mom','mom')}${btn(b,S.baby.name||'Baby','baby')}</div>`;
+    + `<button class="add-tab" data-add aria-label="Add a record">${icon('plus')}<span>Add</span></button>`
+    + tab(trend,'Trends','trends',view==='mom-trends'||view==='baby-trends')
+    + tab('more','More','more',IN_MORE.has(view)||view.startsWith('set-'));
 }
 // Sync lives quietly at the foot of the page - it matters when it breaks, not while it works.
 function syncBadge(){

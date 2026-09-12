@@ -6,6 +6,7 @@ const COACH_KEY='milkflow-pumping-coach-v1';
 let observer=null;
 let timer=null;
 let patching=false;
+const panelOpen={tips:false,adjust:false};
 
 const pad=n=>String(n).padStart(2,'0');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -130,32 +131,49 @@ function style(){
   if(document.getElementById('pumpQuickStylesV2'))return;
   document.getElementById('pumpQuickStyles')?.remove();
   const el=document.createElement('style');el.id='pumpQuickStylesV2';el.textContent=`
-  .pump-quick{margin:10px 0 12px;padding:16px;border:1px solid var(--line-soft,var(--line));border-radius:22px;background:linear-gradient(150deg,var(--surface),color-mix(in srgb,var(--mom) 5%,var(--surface)));box-shadow:0 10px 28px rgba(30,35,55,.06)}
-  .pq-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.pq-kicker{display:block;font-size:.66rem;font-weight:900;letter-spacing:.1em;color:var(--mom)}.pq-title{font-size:1rem;font-weight:850;margin-top:2px}.pq-live{font-size:.68rem;font-weight:850;color:var(--mom-ink);background:var(--mom-soft,var(--surface-2));padding:6px 9px;border-radius:999px;white-space:nowrap}
-  .pq-next{margin:13px 0 5px;padding:15px;border-radius:18px;background:var(--surface);border:1px solid color-mix(in srgb,var(--mom) 18%,var(--line));}.pq-next span{display:block;font-size:.7rem;font-weight:800;color:var(--muted)}.pq-next strong{display:block;font-size:1.5rem;line-height:1.1;margin:5px 0;color:var(--ink)}.pq-next small{display:block;font-size:.74rem;line-height:1.4;color:var(--muted)}
-  .pq-rest-label{margin:13px 0 7px;font-size:.72rem;font-weight:850;color:var(--muted)}.pq-rest{display:flex;gap:7px;overflow:auto;padding-bottom:2px;scrollbar-width:none}.pq-rest::-webkit-scrollbar{display:none}.pq-slot{min-width:104px;padding:10px 11px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line-soft,var(--line))}.pq-slot b,.pq-slot span{display:block}.pq-slot b{font-size:.76rem}.pq-slot span{font-size:.68rem;color:var(--muted);margin-top:2px}.pq-slot.next{border-color:color-mix(in srgb,var(--mom) 38%,var(--line));background:color-mix(in srgb,var(--mom) 7%,var(--surface))}
-  .pq-tip{margin:12px 0;padding:11px 12px;border-radius:14px;background:var(--surface-2);font-size:.78rem;line-height:1.45}.pq-tip b{color:var(--mom)}
-  .pump-quick-main{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pump-quick-main button{min-height:52px;border:1px solid var(--line-soft,var(--line));border-radius:15px;background:var(--surface-2);color:var(--ink);font:inherit;font-weight:850;font-size:.95rem}.pump-quick-main button.on{background:var(--mom);color:var(--on-ink,#fff);border-color:var(--mom);box-shadow:0 7px 18px color-mix(in srgb,var(--mom) 24%,transparent)}
-  .pump-quick-label{margin:12px 0 6px;font-size:.7rem;font-weight:850;color:var(--muted)}.pump-quick-mode{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.pump-quick-mode button{min-height:42px;border:1px solid var(--line-soft,var(--line));border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-size:.76rem;font-weight:800}.pump-quick-mode button.on{background:var(--surface-2);color:var(--ink);border-color:color-mix(in srgb,var(--mom) 28%,var(--line))}
+  .pump-quick{margin:14px 0 16px;padding:18px;border:1px solid var(--line-soft,var(--line));border-radius:22px;background:linear-gradient(150deg,var(--surface),color-mix(in srgb,var(--mom) 5%,var(--surface)));box-shadow:0 10px 28px rgba(30,35,55,.06)}
+  .pq-top{display:flex;justify-content:space-between;gap:10px;align-items:center}.pq-title{font-size:1.02rem;font-weight:850;letter-spacing:-.01em}.pq-live{font-size:.66rem;font-weight:850;color:var(--mom-ink);background:var(--mom-soft,var(--surface-2));padding:6px 9px;border-radius:999px;white-space:nowrap}
+  .pq-next{margin:16px 0 0;padding:16px;border-radius:18px;background:var(--surface);border:1px solid color-mix(in srgb,var(--mom) 18%,var(--line))}.pq-next span{display:block;font-size:.68rem;font-weight:850;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}.pq-next strong{display:block;font-size:1.5rem;line-height:1.15;margin:7px 0 6px;color:var(--ink)}.pq-next small{display:block;font-size:.75rem;line-height:1.45;color:var(--ink-2)}
+  .pq-rest-label{margin:18px 0 8px;font-size:.7rem;font-weight:850;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+  .pq-rest{display:flex;gap:8px;overflow:auto;padding-bottom:2px;scrollbar-width:none}.pq-rest::-webkit-scrollbar{display:none}
+  .pq-slot{flex:0 0 auto;padding:11px 15px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line-soft,var(--line))}.pq-slot b{display:block;font-size:.82rem;font-weight:800;white-space:nowrap}
+  .pq-slot.next{border-color:color-mix(in srgb,var(--mom) 38%,var(--line));background:color-mix(in srgb,var(--mom) 8%,var(--surface))}.pq-slot.next b{color:var(--mom-ink)}
+  .pq-fold{margin-top:10px;border-top:1px solid var(--line-soft,var(--line))}
+  .pq-fold summary{list-style:none;cursor:pointer;padding:13px 2px 12px;font-size:.8rem;font-weight:800;color:var(--ink-2);display:flex;align-items:center;gap:7px;min-height:44px;box-sizing:border-box}
+  .pq-fold summary::-webkit-details-marker{display:none}
+  .pq-fold summary:before{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);margin-left:2px;transition:transform .18s}
+  .pq-fold[open] summary:before{transform:rotate(45deg)}
+  .pq-fold[open] summary{color:var(--ink)}
+  .pq-fold-body{padding:2px 2px 14px;font-size:.82rem;line-height:1.5;color:var(--ink-2)}
+  .pump-quick-label{margin:14px 0 7px;font-size:.7rem;font-weight:850;color:var(--ink-2)}.pq-fold-body>.pump-quick-label:first-child{margin-top:4px}
+  .pump-quick-main{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pump-quick-main button{min-height:50px;border:1px solid var(--line-soft,var(--line));border-radius:14px;background:var(--surface-2);color:var(--ink);font:inherit;font-weight:850;font-size:.92rem}.pump-quick-main button.on{background:var(--mom);color:var(--on-ink,#fff);border-color:var(--mom);box-shadow:0 7px 18px color-mix(in srgb,var(--mom) 24%,transparent)}
+  .pump-quick-mode{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.pump-quick-mode button{min-height:44px;border:1px solid var(--line-soft,var(--line));border-radius:12px;background:transparent;color:var(--ink-2);font:inherit;font-size:.78rem;font-weight:800}.pump-quick-mode button.on{background:var(--surface-2);color:var(--ink);border-color:color-mix(in srgb,var(--mom) 28%,var(--line))}
   #pumpCoach .pc-controls{display:none!important}
-  @media(max-width:560px){.pump-quick{border-radius:19px;padding:14px}.pq-next strong{font-size:1.42rem}.pump-quick-main button{min-height:56px}}
+  @media(max-width:560px){.pump-quick{border-radius:19px;padding:16px}.pq-next strong{font-size:1.42rem}}
   `;document.head.appendChild(el);
 }
 
+// The card used to print two labelled button groups, a four-line coaching paragraph and a
+// kicker naming the screen you were already on. Same algorithm, same controls - the
+// standing advice and the plan settings now sit behind disclosures so the daily answer
+// (next pump, then the rest of today) is what you actually see.
 function html(s,p,plan){
   const ai=String(window.MILKFLOW_CONFIG?.aiCoachEndpoint||'').trim();
   const next=plan.future[0];
   const nextText=plan.remaining?timeWindow(next):'Target reached for today';
-  const rest=plan.future.map((m,i)=>`<div class="pq-slot ${i===0?'next':''}"><b>${i===0?'Next':'Then'} ${esc(to12FromMin(m))}</b><span>${esc(timeWindow(m))}</span></div>`).join('');
+  const rest=plan.future.map((m,i)=>`<div class="pq-slot ${i===0?'next':''}"><b>${esc(to12FromMin(m))}</b></div>`).join('');
+  const openTips=panelOpen.tips?' open':'', openAdj=panelOpen.adjust?' open':'';
   return `<section id="pumpQuick" class="pump-quick" aria-label="Dynamic pumping plan">
-    <div class="pq-top"><div><span class="pq-kicker">MOM · PUMPING</span><div class="pq-title">Today’s live plan</div></div><span class="pq-live">${ai?'AI + adaptive':'Adaptive'}</span></div>
-    <div class="pq-next"><span>${plan.actual.length} of ${plan.target} pumps logged · Next pump</span><strong>${esc(nextText)}</strong><small>${esc(nextReason(plan,p))}</small></div>
-    ${plan.remaining?`<div class="pq-rest-label">Rest of today — updates after every logged pump</div><div class="pq-rest">${rest}</div>`:''}
-    <div class="pq-tip"><b>Support output:</b> ${esc(tipFor(s,p,plan))}</div>
-    <div class="pump-quick-label">Daily goal</div>
-    <div class="pump-quick-main" role="group" aria-label="Daily pump target"><button type="button" data-pc-target="6" class="${+p.target===6?'on':''}" aria-pressed="${+p.target===6}">6 pumps</button><button type="button" data-pc-target="5" class="${+p.target===5?'on':''}" aria-pressed="${+p.target===5}">5 pumps</button></div>
-    <div class="pump-quick-label">How should today flex?</div>
-    <div class="pump-quick-mode" role="group" aria-label="Day mode"><button type="button" data-pc-mode="normal" class="${p.mode==='normal'?'on':''}" aria-pressed="${p.mode==='normal'}">Normal</button><button type="button" data-pc-mode="tired" class="${p.mode==='tired'?'on':''}" aria-pressed="${p.mode==='tired'}">Tired</button><button type="button" data-pc-mode="travel" class="${p.mode==='travel'?'on':''}" aria-pressed="${p.mode==='travel'}">Travel</button></div>
+    <div class="pq-top"><div class="pq-title">Today’s live plan</div><span class="pq-live">${ai?'AI + adaptive':'Adaptive'}</span></div>
+    <div class="pq-next"><span>Next pump · ${plan.actual.length} of ${plan.target} done</span><strong>${esc(nextText)}</strong><small>${esc(nextReason(plan,p))}</small></div>
+    ${plan.remaining?`<div class="pq-rest-label">Later today</div><div class="pq-rest">${rest}</div>`:''}
+    <details class="pq-fold" data-pq-fold="tips"${openTips}><summary>Output tips</summary><div class="pq-fold-body">${esc(tipFor(s,p,plan))}</div></details>
+    <details class="pq-fold" data-pq-fold="adjust"${openAdj}><summary>Adjust plan</summary><div class="pq-fold-body">
+      <div class="pump-quick-label">Daily goal</div>
+      <div class="pump-quick-main" role="group" aria-label="Daily pump target"><button type="button" data-pc-target="6" class="${+p.target===6?'on':''}" aria-pressed="${+p.target===6}">6 pumps</button><button type="button" data-pc-target="5" class="${+p.target===5?'on':''}" aria-pressed="${+p.target===5}">5 pumps</button></div>
+      <div class="pump-quick-label">How should today flex?</div>
+      <div class="pump-quick-mode" role="group" aria-label="Day mode"><button type="button" data-pc-mode="normal" class="${p.mode==='normal'?'on':''}" aria-pressed="${p.mode==='normal'}">Normal</button><button type="button" data-pc-mode="tired" class="${p.mode==='tired'?'on':''}" aria-pressed="${p.mode==='tired'}">Tired</button><button type="button" data-pc-mode="travel" class="${p.mode==='travel'?'on':''}" aria-pressed="${p.mode==='travel'}">Travel</button></div>
+    </div></details>
   </section>`;
 }
 
@@ -173,8 +191,6 @@ function patchCoach(plan,p){
     if(strong)strong.textContent=`${plan.actual.length} of ${plan.target}`;
     if(small)small.textContent=plan.remaining?`${plan.remaining} remaining`:'daily target reached';
   }
-  const heroChip=[...document.querySelectorAll('.mom-hero .chip')].find(x=>/^Next\b/i.test((x.textContent||'').trim()));
-  if(heroChip&&plan.remaining)heroChip.textContent=`Next ~${to12FromMin(plan.future[0])}`;
 }
 
 // stable20 shipped calling isMomHome() without ever defining it, which threw on every
@@ -198,6 +214,12 @@ function render(){
     const existing=document.getElementById('pumpQuick');
     if(existing)existing.replaceWith(next);else hero.insertAdjacentElement('afterend',next);
     patchCoach(plan,p);
+    // The hero chip reports the STATIC schedule's next slot, which contradicts the adaptive
+    // time this card computes - two different answers to "when is my next pump" on one
+    // screen. Hide it while the live plan is showing. It lives in app.js and is rebuilt on
+    // every render, so if this module ever stops rendering the chip returns as the fallback.
+    const heroChip=[...document.querySelectorAll('.mom-hero .chip')].find(x=>/^Next\b/i.test((x.textContent||'').trim()));
+    if(heroChip) heroChip.style.display='none';
   } finally {patching=false;}
 }
 
@@ -213,6 +235,7 @@ window.addEventListener('hashchange',()=>renderSoon(80));
 window.addEventListener('pageshow',()=>renderSoon(80));
 window.addEventListener('storage',e=>{if(e.key===COACH_KEY||e.key===STATE_KEY)renderSoon(80);});
 document.addEventListener('click',e=>{if(e.target.closest('[data-pc-target],[data-pc-mode]')){renderSoon(180);setTimeout(render,650);}});
+document.addEventListener('toggle',e=>{const f=e.target?.dataset?.pqFold; if(f) panelOpen[f]=e.target.open;},true);
 document.addEventListener('submit',e=>{if(isPumpSubmit(e)){renderSoon(450);setTimeout(render,1200);}});
 document.addEventListener('change',e=>{if(e.target?.matches?.('[data-schedule]'))renderSoon(250);});
 setInterval(()=>renderSoon(0),30000);

@@ -149,48 +149,56 @@ A confirmed daily total (`dailyOverrides`) acts as a **floor**, not a replacemen
 
 ## Navigation
 
-The people are the tabs. Mom and Baby are two of the five destinations, so a tab never
-changes meaning under you and there is exactly one route to each screen:
+Mom and Baby are a segmented control in the header; the five tabs below are functional and
+the same on both sides:
 
 ```
-Mom   Baby   (+)   History   Trends        ···  (top right)
-                                            ├── Freezer stash                     (mom)
-                                            ├── Growth / Development / Doctor     (baby)
-                                            └── Settings
-                                                  ├── Family account
-                                                  ├── Baby profile
-                                                  ├── Pumping
-                                                  ├── Reminders
-                                                  ├── Backup & data
-                                                  └── About
+            [ Mom | Saahas ]                  ← header, depth 0 only
+
+Home   History   (+)   Trends   More
+                                 ├── Freezer stash                     (mom)
+                                 ├── Growth / Development / Doctor     (baby)
+                                 └── Settings
+                                       ├── Family account
+                                       ├── Baby profile
+                                       ├── Pumping
+                                       ├── Reminders
+                                       ├── Backup & data
+                                       └── About
 ```
 
-This replaced a design where a full-width Mom/Baby segmented control sat above a
-Home/History/Trends tab bar. That cost about 75px of every screen and, worse, made three of
-the five tabs ambiguous — the same tab, icon and label led somewhere different depending on a
-toggle elsewhere. There were also three separate places to switch person (the top control, the
-sidebar, and a row inside More).
+The person control sits inline and centred in the 54px header row. It used to be a
+full-width block stacked *under* the bar, which cost a second row on every screen. A
+sub-page hides it, because a sub-page belongs to one side of the app.
 
-History and Trends genuinely belong to both people, so they keep one fixed meaning as tabs and
-carry a Mom/Baby segment *inside* the screen. The choice is visible on the screen it affects
-rather than stored in a global mode, and `mom-history` / `baby-trends` stay separate views, so
-deep links and the pumping add-on modules keep seeing the hashes they expect.
+More is no longer a per-person drawer: it lists every destination regardless of which side
+you were last on, and it no longer offers a third way to switch person.
 
-More and Settings moved out of the tab bar to a single `···` button in the header, which makes
-Settings two taps from anywhere instead of three and stops More from being a per-person drawer.
-More now lists every destination regardless of which person you were last looking at.
-
-Tab marks are line icons that fill in when selected, and Mom and Baby keep their own accent
-colour in the bar so the two people never blur together.
+Tab marks are line icons that fill in when selected. `--accent` follows the current person,
+so the bar tints itself Mom or Baby without the tabs changing meaning.
 
 Going deeper slides in from the trailing edge, Back slides the other way, switching tabs
-cross-fades; `prefers-reduced-motion` turns all of it off. The in-app Back is a real history pop,
-so the device Back button never walks forward through screens you already left. Routing also
-listens for `hashchange`, so a hand-edited or shared URL lands on the right screen.
-
-The nav bar carries Back and the More button; the page carries its own large title.
+cross-fades; `prefers-reduced-motion` turns all of it off. The in-app Back is a real history
+pop, so the device Back button never walks forward through screens you already left. Routing
+also listens for `hashchange`, so a shared or hand-edited URL lands on the right screen.
 
 Refreshing keeps you on the current screen.
+
+## Mom home density
+
+The live pumping plan keeps its full algorithm (`pump-home-controls.js` + `smart-pumping.js`)
+but not its full word count. The daily answer — next pump window, why it moved, and the rest
+of today — is what shows. Two things moved behind disclosures that remember their state
+across the card's 30-second re-render:
+
+- **Output tips** — the standing let-down/flange guidance, which does not change day to day.
+- **Adjust plan** — the 5/6 daily goal and the Normal/Tired/Travel day mode.
+
+Two contradictions were removed at the same time. The hero chip reports the *static*
+schedule's next slot, so it disagreed with the adaptive time the plan card computes; it is
+hidden while the live plan renders and returns if that module ever fails. And a schedule card
+for a slot already gone by showed a countdown to *tomorrow's* occurrence right above a
+MISSED stamp — past slots now read "Earlier today".
 
 ## Offline
 
