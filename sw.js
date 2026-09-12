@@ -1,8 +1,8 @@
 // MilkFlow service worker.
 // Network-first app shell; Firestore/Firebase traffic is left to Firebase.
-const VERSION = 'milkflow-stable31';
+const VERSION = 'milkflow-stable33';
 const SHELL = [
-  './', './index.html', './styles.css', './app.js', './app-reliability.js', './core-ui.js', './ai-coach-client.js', './app-update-notice.js', './family-chat.js', './chat-reliability.js', './config.js',
+  './', './index.html', './styles.css', './app.js', './app-reliability.js', './core-ui.js', './ai-coach-client.js', './app-update-notice.js', './family-chat.js', './config.js',
   './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'
 ];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(VERSION).then(cache=>Promise.all(SHELL.map(url=>cache.add(url).catch(()=>{})))).then(()=>self.skipWaiting()));});
