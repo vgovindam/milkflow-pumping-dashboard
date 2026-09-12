@@ -7,6 +7,10 @@ window.MILKFLOW_CONFIG = {
   // Secret Manager; this public HTTPS URL is safe to expose in the browser.
   aiCoachEndpoint: "https://pumpcoachai-unb4gv4wpq-uc.a.run.app",
 
+  // Private in-app Mom + Baby chat. This is a Firebase HTTPS function that authenticates
+  // the signed-in family before reading tracker data; no OpenAI secret is shipped to the browser.
+  familyChatEndpoint: "https://us-central1-milkflow-pumping-dashboard.cloudfunctions.net/familyChat",
+
   firebaseConfig: {
     apiKey: "AIzaSyAUfC16n_ZSSZtmJZoz2UVfQVbLePu1BvA",
     authDomain: "milkflow-pumping-dashboard.firebaseapp.com",
