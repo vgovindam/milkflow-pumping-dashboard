@@ -31,7 +31,6 @@ jobs:
           node --check ai-coach-client.js
           node --check app-update-notice.js
           node --check family-chat.js
-          node --check chat-reliability.js
           node --check functions/index.js
           node --check functions/index-entry.js
           node --check functions/family-chat.js
@@ -45,15 +44,15 @@ jobs:
           test -f ai-coach-client.js
           test -f app-update-notice.js
           test -f family-chat.js
-          test -f chat-reliability.js
           test -f styles.css
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
-          grep -q 'app.js?build=stable31' index.html
-          grep -q 'core-ui.js?build=stable31' index.html
-          grep -q 'family-chat.js?build=stable31' index.html
-          grep -q 'manifest.webmanifest?build=stable31' index.html
+          grep -q 'app.js?build=stable33' index.html
+          grep -q 'core-ui.js?build=stable33' index.html
+          grep -q 'family-chat.js?build=stable33' index.html
+          grep -q 'manifest.webmanifest?build=stable33' index.html
+          ! grep -q 'chat-reliability.js' index.html
           ! grep -q 'runtime-stability.js' index.html
           ! grep -q 'smart-pumping.js' index.html
           ! grep -q 'pump-home-controls.js' index.html
