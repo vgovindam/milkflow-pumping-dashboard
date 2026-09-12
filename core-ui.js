@@ -1,0 +1,87 @@
+(() => {
+'use strict';
+
+/*
+ * MilkFlow canonical UI controller.
+ * One owner for Mom/Baby home enhancements. No MutationObservers, no competing
+ * post-render modules, no CSS "last rule wins" chain. app.js remains the data/router
+ * authority; this controller runs synchronously after explicit app events only.
+ */
+const STATE_KEY='milkflow-family-v4-state';
+const COACH_KEY='milkflow-pumping-coach-v1';
+let applying=false;
+const pad=n=>String(n).padStart(2,'0');
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const median=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),i=Math.floor(s.length/2);return s.length%2?s[i]:(s[i-1]+s[i])/2;};
+const mins=t=>{if(!t)return null;const [h,m]=String(t).split(':').map(Number);return Number.isFinite(h)&&Number.isFinite(m)?h*60+m:null;};
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
+const to12=m=>{if(!Number.isFinite(m))return '—';const n=((Math.round(m)%1440)+1440)%1440,h=Math.floor(n/60),mm=n%60;return `${((h+11)%12)+1}:${pad(mm)} ${h>=12?'PM':'AM'}`;};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const read=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{}')||{};}catch{return {};}};
+const prefs=()=>{try{return {target:6,mode:'normal',...(JSON.parse(localStorage.getItem(COACH_KEY)||'{}')||{})};}catch{return {target:6,mode:'normal'};}};
+const livePumps=s=>(Array.isArray(s.entries)?s.entries:[]).filter(e=>e?.type==='pump'&&!e?.voidedAt&&e?.date&&e?.time);
+const dayPumps=s=>livePumps(s).filter(e=>e.date===today()).sort((a,b)=>String(a.time).localeCompare(String(b.time)));
+const round5=m=>Math.round(m/5)*5;
+
+function bucket(m){if(m<540)return'early';if(m<810)return'lateMorning';if(m<1050)return'afternoon';if(m<1290)return'evening';return'late';}
+function transitions(s){
+  const by={};
+  for(const e of livePumps(s)){if(e.date===today())continue;(by[e.date]??=[]).push(e);}
+  const out=[];
+  for(const d of Object.keys(by).sort().slice(-10)){
+    const a=by[d].sort((x,y)=>String(x.time).localeCompare(String(y.time)));
+    for(let i=1;i<a.length;i++){const pm=mins(a[i-1].time),nm=mins(a[i].time),gap=nm-pm;if(Number.isFinite(pm)&&gap>=120&&gap<=390)out.push({bucket:bucket(pm),gap});}
+  }
+  return out;
+}
+function learnedGap(s,anchor,target){
+  const k=bucket(anchor),rows=transitions(s),same=rows.filter(x=>x.bucket===k).map(x=>x.gap),all=rows.map(x=>x.gap);
+  const d6={early:310,lateMorning:215,afternoon:190,evening:180,late:165},b6={early:[270,335],lateMorning:[185,240],afternoon:[170,210],evening:[160,205],late:[150,195]};
+  const d5={early:330,lateMorning:255,afternoon:240,evening:225,late:195},b5={early:[290,365],lateMorning:[220,300],afternoon:[205,280],evening:[195,265],late:[175,230]};
+  const is5=target===5,defs=is5?d5:d6,bounds=is5?b5:b6;
+  let raw=same.length>=2?median(same):median(all);if(!Number.isFinite(raw))raw=defs[k];if(is5&&same.length>=2)raw+=30;
+  return clamp(Math.round(raw),bounds[k][0],bounds[k][1]);
+}
+function historicalEdge(s,which){
+  const by={};for(const e of livePumps(s)){if(e.date===today())continue;(by[e.date]??=[]).push(e);}
+  const vals=Object.keys(by).sort().slice(-7).map(d=>{const a=by[d].sort((x,y)=>String(x.time).localeCompare(String(y.time)));return mins(which==='first'?a[0]?.time:a.at(-1)?.time);}).filter(Number.isFinite);
+  return median(vals);
+}
+function plan(s=read(),p=prefs()){
+  const actual=dayPumps(s),target=clamp(+p.target||6,4,8),remaining=Math.max(0,target-actual.length),schedule=(Array.isArray(s.schedule)?s.schedule:[]).map(mins).filter(Number.isFinite).sort((a,b)=>a-b);
+  let end=Math.max(target===5?1410:1425,historicalEdge(s,'last')||0,schedule.at(-1)||0);end=Math.min(end,target===5?1440:1445);
+  if(!actual.length){const now=new Date(),nowM=now.getHours()*60+now.getMinutes(),raw=schedule.filter(m=>m>=nowM-20).slice(0,remaining),first=schedule[0]??historicalEdge(s,'first')??340;const future=raw.length?raw:Array.from({length:remaining},(_,i)=>first+i*(target===5?240:195)).filter(m=>m>=nowM-20).slice(0,remaining);return{target,actual,remaining,future,source:'baseline'};}
+  const last=actual.at(-1),lastM=mins(last.time);let gap=learnedGap(s,lastM,target);if(p.mode==='tired')gap+=15;if(p.mode==='travel')gap+=10;if(!remaining)return{target,actual,remaining,future:[],source:'actual',last};
+  const minGap=target===5?180:150;let first=lastM+gap;if(remaining>1)first=Math.min(first,end-minGap*(remaining-1));else first=Math.min(first,end);first=round5(Math.max(first,lastM+minGap));
+  const future=[first];if(remaining>1){const step=clamp(Math.round(Math.max(minGap*(remaining-1),end-first)/(remaining-1)),minGap,gap);for(let i=1;i<remaining;i++)future.push(round5(first+step*i));}
+  return{target,actual,remaining,future,source:'actual',last};
+}
+window.MilkFlowDynamicPump={getPlan:()=>plan(read(),prefs())};
+
+function icon(kind){const p={nursing:'<path d="M17 17c0-5 3-8 7-8s7 3 7 8-3 8-7 8-7-3-7-8Z"/><path d="M10 41c1-9 6-14 14-14s13 5 14 14"/><circle cx="36" cy="27" r="5"/><path d="M30 28c7 0 11 4 11 10"/>',wet:'<path d="M24 7c6 7 11 13 11 20a11 11 0 1 1-22 0c0-7 5-13 11-20Z"/>',poop:'<path d="M24 9c4 1 5 4 4 7h2c5 0 8 3 8 7 0 2-.7 3-2 5 4 1 6 4 6 7 0 4-4 7-9 7H15c-5 0-9-3-9-7 0-3 2-6 6-7-1-2-2-3-2-5 0-4 3-7 8-7h2c-1-4 1-7 4-7Z"/>',both:'<path d="M16 7c4 5 8 10 8 14a8 8 0 1 1-16 0c0-4 4-9 8-14Z"/><path d="M33 20c3 1 4 3 3 5h1c4 0 6 2 6 5 0 1-.4 2-1 3 2 1 3 3 3 5 0 3-3 5-7 5H27c-4 0-7-2-7-5 0-2 1-4 3-5-.6-1-1-2-1-3 0-3 2-5 6-5h1c-.5-3 1-5 4-5Z"/>'};return `<svg viewBox="0 0 48 48" aria-hidden="true">${p[kind]||p.nursing}</svg>`;}
+function diaperKind(e){const x=String(e?.subtype||'').toLowerCase();return x==='poop'||x==='dirty'?'poop':x==='both'||x==='mixed'?'both':'wet';}
+function babyEvents(s){const id=s.baby?.id||'saahas-2026';return(Array.isArray(s.babyEvents)?s.babyEvents:[]).filter(e=>!e?.voidedAt&&!e?.exactSourceDuplicate&&(!e.babyId||e.babyId===id)).sort((a,b)=>`${a.date||''}${a.time||''}`.localeCompare(`${b.date||''}${b.time||''}`));}
+function usage(s){const cut=new Date();cut.setDate(cut.getDate()-30);const c=`${cut.getFullYear()}-${pad(cut.getMonth()+1)}-${pad(cut.getDate())}`,count={nursing:0,wet:0,poop:0,both:0};for(const e of babyEvents(s)){if(e.date<c)continue;if(e.eventType==='nursing')count.nursing++;else if(e.eventType==='diaper')count[diaperKind(e)]++;}const base=[['nursing','Breastfeed','Log nursing','data-feed-type="nursing"'],['wet','Wet','Log diaper','data-diaper="wet"'],['poop','Poopy','Log diaper','data-diaper="poop"'],['both','Mixed','Wet + poopy','data-diaper="both"']];const pri={nursing:4,wet:3,poop:2,both:1};return base.sort((a,b)=>(count[b[0]]-count[a[0]])||(pri[b[0]]-pri[a[0]])).map((x,i)=>({key:x[0],label:x[1],sub:x[2],action:x[3],count:count[x[0]],top:i===0}));}
+
+function addStyles(){if(document.getElementById('mfCoreUIStyles'))return;const s=document.createElement('style');s.id='mfCoreUIStyles';s.textContent=`
+html{scroll-behavior:auto!important}#view{overflow-anchor:none}.nav-forward,.nav-back,.nav-swap{animation:none!important;transform:none!important}
+.mf-core-plan{margin:14px 0 17px;padding:17px 18px;border-radius:22px;background:var(--surface);border:1px solid var(--line-soft,var(--line));box-shadow:none}.mf-core-plan-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.mf-core-plan-head strong{font-size:15px}.mf-core-plan-head span{font-size:10px;color:var(--muted);font-weight:800}.mf-core-next{font:800 24px var(--display);letter-spacing:-.03em;margin:12px 0 5px}.mf-core-sub{font-size:11px;color:var(--muted);line-height:1.4}.mf-core-times{display:flex;gap:7px;overflow:auto;margin-top:12px;scrollbar-width:none}.mf-core-time{flex:0 0 auto;padding:8px 11px;border-radius:999px;background:var(--surface-2);font-size:10.5px;font-weight:800}.mf-core-time.next{background:var(--mom);color:#fff}
+.mf-core-baby{display:grid;gap:14px;margin-bottom:18px}.mf-core-baby-title{display:flex;justify-content:space-between;align-items:end}.mf-core-baby-title h2{margin:0;font:800 25px var(--display);letter-spacing:-.03em}.mf-core-baby-title small{font-size:10px;color:var(--muted);font-weight:700}.mf-core-care{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.mf-core-care button{position:relative;min-height:116px;border:0;border-radius:23px;padding:15px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;color:var(--ink);font:inherit}.mf-core-care button svg{position:absolute;right:13px;top:13px;width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;opacity:.82}.mf-core-care button strong{font-size:17px;font-weight:850}.mf-core-care button span{font-size:10px;opacity:.7;margin-top:3px}.mf-core-care button em{position:absolute;left:12px;top:12px;font-size:8px;font-style:normal;font-weight:850;padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.5)}.mf-core-care .nursing{background:var(--feed);color:var(--baby-ink)}.mf-core-care .wet{background:var(--wet);color:var(--wet-ink)}.mf-core-care .poop{background:var(--poop);color:var(--poop-ink)}.mf-core-care .both{background:var(--mixed);color:var(--mixed-ink)}
+body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #view>.act-strip,body[data-screen="baby-home"] #view>.feed-cta,body[data-screen="baby-home"] #view>.orb-row,body[data-screen="baby-home"] #view>.pill-row,body[data-screen="baby-home"] #view>.ring-row{display:none!important}
+@media(max-width:760px){#view{transition:none!important}.mf-core-plan{border-radius:19px}.mf-core-care button{min-height:104px;border-radius:20px}}
+`;document.head.appendChild(s);}
+
+function renderMom(s){const view=document.getElementById('view'),hero=view?.querySelector('.mom-hero');if(!view||!hero)return;const x=plan(s,prefs());let card=document.getElementById('mfCorePlan');if(!card){card=document.createElement('section');card.id='mfCorePlan';card.className='mf-core-plan';hero.insertAdjacentElement('afterend',card);}const next=x.remaining&&x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:'Target reached for today';card.innerHTML=`<div class="mf-core-plan-head"><strong>Today’s live plan</strong><span>${x.actual.length} of ${x.target} done</span></div><div class="mf-core-next">${esc(next)}</div><div class="mf-core-sub">${x.source==='actual'&&x.last?`Updated from your ${to12(mins(x.last.time))} pump and your recent time-of-day spacing.`:'Uses your saved baseline until today’s first pump is logged.'}</div>${x.future.length?`<div class="mf-core-times">${x.future.map((m,i)=>`<span class="mf-core-time ${i===0?'next':''}">${to12(m)}</span>`).join('')}</div>`:''}`;}
+function renderBaby(s){const view=document.getElementById('view');if(!view)return;const acts=usage(s),ev=babyEvents(s),d=today(),todayEv=ev.filter(e=>e.date===d),n=todayEv.filter(e=>e.eventType==='nursing').length,di=todayEv.filter(e=>e.eventType==='diaper'),wet=di.filter(e=>diaperKind(e)==='wet').length,poop=di.filter(e=>diaperKind(e)==='poop').length,both=di.filter(e=>diaperKind(e)==='both').length;let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}box.innerHTML=`<div class="mf-core-baby-title"><h2>${esc(s.baby?.name||'Baby')}</h2><small>Quick log · adapts to use</small></div><div class="mf-core-care">${acts.map(a=>`<button type="button" class="${a.key}" ${a.action}>${icon(a.key)}${a.top?'<em>Most used</em>':''}<strong>${a.label}</strong><span>${a.sub}</span></button>`).join('')}</div><div class="mf-core-sub">Today · ${n} breastfeed${n===1?'':'s'} · ${wet} wet · ${poop} poopy · ${both} mixed</div>`;}
+function cleanup(){if(document.body.dataset.screen!=='mom-home')document.getElementById('mfCorePlan')?.remove();if(document.body.dataset.screen!=='baby-home')document.getElementById('mfCoreBaby')?.remove();}
+function apply(){if(applying)return;applying=true;try{addStyles();const s=read();cleanup();if(document.body.dataset.screen==='mom-home')renderMom(s);if(document.body.dataset.screen==='baby-home')renderBaby(s);}finally{applying=false;}}
+function afterApp(){queueMicrotask(apply);}
+
+// app.js handles the action first (registered earlier), then this controller applies in the
+// same task/microtask before the browser paints. No observer and no delayed re-render.
+document.addEventListener('click',e=>{if(e.target.closest('[data-view],[data-workspace],[data-feed-type],[data-diaper],[data-mom]'))afterApp();});
+document.addEventListener('submit',e=>{if(['momForm','feedForm','diaperForm'].includes(e.target?.id))setTimeout(apply,0);});
+window.addEventListener('hashchange',afterApp);window.addEventListener('popstate',afterApp);window.addEventListener('pageshow',afterApp);window.addEventListener('storage',e=>{if(e.key===STATE_KEY||e.key===COACH_KEY)afterApp();});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',afterApp,{once:true});else afterApp();
+setInterval(()=>{if(document.body.dataset.screen==='mom-home')apply();},60000);
+})();
