@@ -33,8 +33,21 @@ jobs:
               s = s.replace(old, new, 1)
 
           repl("  e.id = e.migration_id || e.id || uid('baby');",
-               "  // When a Firestore document supplies an id, that document id is authoritative.\n  // migration_id is only a fallback for older imported records that do not have an id.\n  e.id = e.id || e.migration_id || uid('baby');",
+               "  // Explicit/local ids and Firestore document ids are authoritative.\n  // migration_id is only a fallback for older imports that truly have no id.\n  e.id = e.id || e.migration_id || uid('baby');",
                'baby id precedence')
+
+          repl("const raw={id:doc.id,...doc.data()}; const normalized=normalizeBabyEvent(raw);",
+               "const raw={...doc.data(),id:doc.id}; const normalized=normalizeBabyEvent(raw);",
+               'remote repair id precedence')
+          repl("const remoteMom=new Map(ms.docs.map(d=>[d.id,{id:d.id,...d.data(),synced:true}]));",
+               "const remoteMom=new Map(ms.docs.map(d=>[d.id,{...d.data(),id:d.id,synced:true}]));",
+               'remote mom id precedence')
+          repl("const remoteBaby=new Map(bs.docs.map(d=>[d.id,{...normalizeBabyEvent({id:d.id,...d.data()}),synced:true}]));",
+               "const remoteBaby=new Map(bs.docs.map(d=>[d.id,{...normalizeBabyEvent({...d.data(),id:d.id}),synced:true}]));",
+               'remote baby id precedence')
+          repl("let r={id:change.doc.id,...change.doc.data(),synced:true}; if(key==='babyEvents') r=normalizeBabyEvent(r);",
+               "let r={...change.doc.data(),id:change.doc.id,synced:true}; if(key==='babyEvents') r=normalizeBabyEvent(r);",
+               'realtime id precedence')
 
           repl("let editing=null;\nlet selectedStage=null;\nfunction editRecord(kind,id){",
                "let editing=null;\nlet selectedStage=null;\nfunction setDialogEditTarget(dialogId,ref){\n  const d=$(dialogId); if(!d) return;\n  if(ref){ d.dataset.editKind=ref.kind; d.dataset.editId=ref.id; }\n  else { delete d.dataset.editKind; delete d.dataset.editId; }\n}\nfunction dialogEditTarget(){\n  for(const id of ['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog']){\n    const d=$(id);\n    if(d?.open && d.classList.contains('is-edit') && d.dataset.editKind && d.dataset.editId) return {kind:d.dataset.editKind,id:d.dataset.editId};\n  }\n  return editing;\n}\nfunction editRecord(kind,id){",
@@ -60,7 +73,7 @@ jobs:
                'persist edit target')
 
           repl("function commitRecord(list,built){\n  if(editing){\n    const e=findRecord(editing.kind,editing.id);\n    if(e){ Object.assign(e,built,{id:e.id,createdAt:e.createdAt||built.createdAt,editedAt:new Date().toISOString(),synced:false}); editing=null; return e; }\n    editing=null;\n  }\n  list.push(built); return built;\n}",
-               "function commitRecord(list,built){\n  const editRef=dialogEditTarget();\n  if(editRef){\n    const e=findRecord(editRef.kind,editRef.id);\n    editing=null;\n    if(e){ Object.assign(e,built,{id:e.id,createdAt:e.createdAt||built.createdAt,editedAt:new Date().toISOString(),synced:false}); return e; }\n    // Never turn a failed edit lookup into a new record. That was the duplicate-entry bug.\n    toast('That entry changed while you were editing it. Reopen it and try again.');\n    return null;\n  }\n  list.push(built); return built;\n}",
+               "function commitRecord(list,built){\n  const editRef=dialogEditTarget();\n  if(editRef){\n    const e=findRecord(editRef.kind,editRef.id);\n    editing=null;\n    if(e){ Object.assign(e,built,{id:e.id,createdAt:e.createdAt||built.createdAt,editedAt:new Date().toISOString(),synced:false}); return e; }\n    // A failed edit lookup must never silently become a brand-new record.\n    toast('That entry changed while you were editing it. Reopen it and try again.');\n    return null;\n  }\n  list.push(built); return built;\n}",
                'commit edit in place')
 
           repl("function showDialog(id,isEdit){\n  const d=$(id); if(!d) return;\n  if(d.open){ try{ d.close(); }catch{} }",
@@ -72,34 +85,15 @@ jobs:
                'clear closed edit target')
 
           p.write_text(s)
-
-          for name in ['index.html','sw.js','.github/workflows/pages.yml']:
-              q=Path(name)
-              t=q.read_text()
-              if 'stable34r9' not in t:
-                  raise SystemExit(f'{name}: expected stable34r9 token missing')
-              q.write_text(t.replace('stable34r9','stable34r10'))
-
-          q=Path('.github/workflows/pages.yml')
-          t=q.read_text()
-          needle="          grep -q 'data-growth' core-ui.js\n"
-          extra=("          grep -q 'data-growth' core-ui.js\n"
-                 "          grep -q \"e.id = e.id || e.migration_id\" app.js\n"
-                 "          grep -q 'dialogEditTarget' app.js\n")
-          if needle not in t:
-              raise SystemExit('pages workflow insertion point missing')
-          q.write_text(t.replace(needle,extra,1))
           PY
           node --check app.js
           grep -q "e.id = e.id || e.migration_id" app.js
           grep -q "function dialogEditTarget" app.js
-          grep -q "stable34r10" index.html
-          grep -q "milkflow-stable34r10" sw.js
+          grep -q "id:change.doc.id" app.js
       - name: Commit canonical fix
         run: |
           git config user.name "vgovindam"
           git config user.email "102747047+vgovindam@users.noreply.github.com"
-          git add app.js index.html sw.js .github/workflows/pages.yml
-          git rm .github/workflows/fix-edit-identity.yml
+          git add app.js
           git commit -m "Fix edit updates without duplicate records"
           git push origin main
