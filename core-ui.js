@@ -191,14 +191,14 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 .mf-last-feed-primary,.mf-last-feed-age{min-width:0}.mf-last-feed-band strong{display:block;font-size:15.5px;line-height:1.15;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mf-last-feed-band small{display:block;margin-top:4px;font-size:11.5px;line-height:1.2;color:#557087;font-weight:750}.mf-last-feed-age{text-align:right}.mf-last-feed-age strong{font-size:15.5px}.mf-last-feed-age small{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em}
 
-/* Feed actions: equal footprint, but organic/freehand shapes instead of square tiles. */
+/* Feed actions: organic shapes, with a protected text-safe area at the bottom. */
 .mf-feed-zone{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.mf-feed-card{position:relative;min-height:96px;border:0;padding:13px 11px 11px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--ink);box-shadow:0 7px 18px rgba(29,42,70,.08)}
-.mf-feed-card svg{position:absolute;right:10px;top:9px;width:31px;height:31px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
-.mf-feed-card strong{font-size:16px;font-weight:900;letter-spacing:-.015em;line-height:1.08;max-width:94%}.mf-feed-card small{display:block;font-size:11.5px;line-height:1.25;font-weight:750;opacity:.82;margin-top:4px}
-.mf-feed-card.milk{border-radius:54% 46% 58% 42% / 56% 46% 54% 44%;background:linear-gradient(145deg,#b8ddff 0%,#c5e3ff 58%,#c9cbff 100%);color:#153f61}
-.mf-feed-card.nurse{border-radius:58% 42% 49% 51% / 52% 62% 38% 48%;background:linear-gradient(145deg,#ffd1e2,#f5bad4);color:#7b244d}
-.mf-feed-card.formula{border-radius:44% 56% 60% 40% / 58% 43% 57% 42%;background:linear-gradient(145deg,#d8ccff,#c6b6f3);color:#432d73}
+.mf-feed-card{box-sizing:border-box;position:relative;min-height:108px;border:0;padding:14px 14px 21px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--ink);box-shadow:0 7px 18px rgba(29,42,70,.08)}
+.mf-feed-card svg{position:absolute;right:11px;top:10px;width:31px;height:31px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
+.mf-feed-card strong,.mf-feed-card small{position:relative;z-index:1;max-width:100%}.mf-feed-card strong{font-size:16px;font-weight:900;letter-spacing:-.015em;line-height:1.1}.mf-feed-card small{display:block;font-size:11.5px;line-height:1.18;font-weight:750;opacity:.84;margin-top:4px}
+.mf-feed-card.milk{border-radius:38px 29px 43px 32px / 30px 40px 28px 37px;background:linear-gradient(145deg,#b8ddff 0%,#c5e3ff 58%,#c9cbff 100%);color:#153f61}
+.mf-feed-card.nurse{border-radius:43px 31px 35px 42px / 35px 42px 29px 37px;background:linear-gradient(145deg,#ffd1e2,#f5bad4);color:#7b244d}
+.mf-feed-card.formula{border-radius:31px 44px 40px 33px / 39px 31px 42px 29px;background:linear-gradient(145deg,#d8ccff,#c6b6f3);color:#432d73}
 
 /* Diaper blobs stay playful, while count badges stay safely inset. */
 .mf-diaper-cluster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
@@ -236,7 +236,7 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
   .mf-profile-photo{width:60px;height:60px}.mf-profile-copy h2{font-size:27px}
   .mf-top-orb-wrap{width:52px}.mf-top-orb{width:50px;height:50px}.mf-top-orb strong{font-size:14px}.mf-top-orb-wrap>span{font-size:9.5px}
   .mf-mom-orbs{margin-top:5px}.ring.mf-mom-photo-ring,.mf-mom-hero-photo{width:116px;height:116px}
-  .mf-feed-card{min-height:94px;padding:12px 10px 10px}.mf-feed-card strong{font-size:15px}.mf-feed-card small{font-size:11px}
+  .mf-feed-card{min-height:106px;padding:13px 12px 20px}.mf-feed-card strong{font-size:15px}.mf-feed-card small{font-size:11px}
   .mf-diaper-blob{min-height:106px}.mf-care-ribbon button{padding:10px 13px}
 }
 @media(max-width:390px){
@@ -246,7 +246,7 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
   .mf-mom-orbs{gap:6px}.mf-mom-orbs .mf-top-orb-wrap{width:52px}.mf-mom-orbs .mf-top-orb{width:50px;height:50px}
   .ring.mf-mom-photo-ring,.mf-mom-hero-photo{width:104px;height:104px}
   .mf-last-feed-band{grid-template-columns:34px minmax(0,1fr) minmax(112px,auto);gap:8px;padding:11px}.mf-last-feed-band strong,.mf-last-feed-age strong{font-size:14px}.mf-last-feed-band small{font-size:10.5px}
-  .mf-feed-zone{gap:6px}.mf-feed-card{min-height:92px;padding:12px 8px 10px}.mf-feed-card svg{width:29px;height:29px;right:8px;top:8px}.mf-feed-card strong{font-size:14px}.mf-feed-card small{font-size:10.5px}
+  .mf-feed-zone{gap:6px}.mf-feed-card{min-height:104px;padding:12px 10px 19px}.mf-feed-card svg{width:29px;height:29px;right:9px;top:9px}.mf-feed-card strong{font-size:14px}.mf-feed-card small{font-size:10.5px}
   .mf-diaper-cluster{gap:6px}.mf-diaper-blob{min-height:104px;padding-left:7px;padding-right:7px}.mf-diaper-blob b{right:8px;top:8px;min-width:29px;height:29px;font-size:12px}.mf-diaper-blob strong{font-size:15px}.mf-diaper-blob span{font-size:11px}
 }
 `;
