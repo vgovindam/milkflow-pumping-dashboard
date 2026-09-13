@@ -138,8 +138,18 @@ function addStyles(){
   const s=document.createElement('style');s.id='mfCoreUIStyles';s.textContent=`
 html{scroll-behavior:auto!important}#view{overflow-anchor:none}.nav-forward,.nav-back,.nav-swap{animation:none!important;transform:none!important}
 
-/* ---------- shared type scale: readable, consistent, no tiny key data ---------- */
-.mf-profile-line{display:flex;align-items:center;gap:12px;margin:0 0 15px}
+/* ---------- ambient color: stronger identity without sacrificing readability ---------- */
+body[data-screen="mom-home"] .main{background:radial-gradient(circle at 12% 8%,rgba(129,76,225,.16),transparent 30%),radial-gradient(circle at 88% 20%,rgba(231,106,157,.12),transparent 30%),var(--bg)}
+body[data-screen="baby-home"] .main{background:radial-gradient(circle at 12% 8%,rgba(52,165,224,.15),transparent 30%),radial-gradient(circle at 88% 24%,rgba(61,190,154,.12),transparent 30%),var(--bg)}
+body[data-screen="mom-home"] .mom-hero{background:linear-gradient(135deg,#fff9ff 0%,#eee2ff 48%,#dfe9ff 100%)}
+body[data-screen="mom-home"] .quick-tile.mom{background:linear-gradient(145deg,#f4e8ff,#d9c5ff);color:#5732a7}
+body[data-screen="mom-home"] .quick-tile.nurse{background:linear-gradient(145deg,#ffeaf3,#ffcfe2);color:#9a3864}
+
+/* Chat belongs to Mom. Keep it completely off Baby and non-Mom screens. */
+body:not([data-screen^="mom-"]) #mfChatButton,body:not([data-screen^="mom-"]) #mfChatPanel{display:none!important}
+
+/* ---------- shared type scale ---------- */
+.mf-profile-line{display:flex;align-items:center;gap:12px;margin:0 0 13px}
 .mf-profile-line.has-summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:center}
 .mf-profile-photo{width:66px;height:66px;border-radius:48% 52% 44% 56% / 46% 42% 58% 54%;overflow:hidden;flex:0 0 auto;background:var(--surface-2);display:grid;place-items:center;border:0;padding:0;color:var(--muted)}
 .mf-profile-photo img{width:100%;height:100%;object-fit:cover;display:block}.mf-profile-photo .placeholder{font-size:26px;line-height:1}
@@ -151,66 +161,72 @@ html{scroll-behavior:auto!important}#view{overflow-anchor:none}.nav-forward,.nav
 /* ---------- summary circles ---------- */
 .mf-top-orbs{display:flex;align-items:flex-start;justify-content:flex-end;gap:7px;min-width:0}
 .mf-top-orb-wrap{width:56px;text-align:center;min-width:0}
-.mf-top-orb{--p:100%;--orb-ring:#7b60d6;--orb-fill:#f4edff;position:relative;width:54px;height:54px;margin:auto;border-radius:50%;display:grid;align-content:center;justify-items:center;background:conic-gradient(var(--orb-ring) var(--p),rgba(120,126,150,.13) 0);isolation:isolate}
+.mf-top-orb{--p:100%;--orb-ring:#7044dd;--orb-fill:#eadcff;position:relative;width:54px;height:54px;margin:auto;border-radius:50%;display:grid;align-content:center;justify-items:center;background:conic-gradient(var(--orb-ring) var(--p),rgba(120,126,150,.16) 0);isolation:isolate}
 .mf-top-orb::before{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--orb-fill);z-index:-1}
-.mf-top-orb.plain{background:var(--orb-fill);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--orb-ring) 25%,transparent)}.mf-top-orb.plain::before{display:none}
+.mf-top-orb.plain{background:var(--orb-fill);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--orb-ring) 34%,transparent)}.mf-top-orb.plain::before{display:none}
 .mf-top-orb strong{font:850 15px var(--display);line-height:1;color:var(--ink);letter-spacing:-.03em;max-width:48px;overflow:hidden;text-overflow:ellipsis}
 .mf-top-orb small{margin-top:3px!important;font-size:9.5px!important;font-weight:800!important;line-height:1!important;color:var(--muted)!important}
 .mf-top-orb-wrap>span{display:block;margin-top:5px;font-size:10px;line-height:1.05;font-weight:850;color:var(--muted);white-space:nowrap}
-.mf-top-orb.mom-pumps{--orb-ring:#7a56d6;--orb-fill:#f3eaff}.mf-top-orb.mom-goal{--orb-ring:#c46e9a;--orb-fill:#fff0f5}.mf-top-orb.mom-avg{--orb-ring:#49a28c;--orb-fill:#eaf8f2}
-.mf-top-orb.baby-milk{--orb-ring:#3e9dca;--orb-fill:#e7f5ff}.mf-top-orb.baby-usual{--orb-ring:#8670d6;--orb-fill:#f2ecff}.mf-top-orb.baby-diaper{--orb-ring:#4aa389;--orb-fill:#e7f8f1}
+.mf-top-orb.mom-pumps{--orb-ring:#7044dd;--orb-fill:#eadcff}.mf-top-orb.mom-goal{--orb-ring:#c94f86;--orb-fill:#ffe0ec}.mf-top-orb.mom-avg{--orb-ring:#278e72;--orb-fill:#d9f4e9}
+.mf-top-orb.baby-milk{--orb-ring:#198fc8;--orb-fill:#d6efff}.mf-top-orb.baby-usual{--orb-ring:#7255c9;--orb-fill:#e7defd}.mf-top-orb.baby-diaper{--orb-ring:#288f72;--orb-fill:#d8f3e8}
 
 /* ---------- Mom ---------- */
 .mf-mom-copy-line{margin-bottom:2px}.mf-mom-orbs{display:flex;gap:10px;align-items:flex-start;margin:5px 0 10px;padding-left:1px}.mf-mom-orbs .mf-top-orb-wrap{width:60px}.mf-mom-orbs .mf-top-orb{width:56px;height:56px}.mf-mom-orbs .mf-top-orb strong{font-size:15px}.mf-mom-orbs .mf-top-orb-wrap>span{font-size:10px}
 body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!important}
 .ring.mf-mom-photo-ring{width:124px;height:124px;border-radius:50%;overflow:visible}
-.mf-mom-hero-photo{width:124px;height:124px;border:0;padding:0;border-radius:50%;overflow:hidden;background:linear-gradient(145deg,#f3eaff,#e8f4ff);box-shadow:0 0 0 6px rgba(255,255,255,.68),0 10px 24px rgba(75,60,115,.12);display:grid;place-items:center;color:var(--mom-ink);cursor:pointer}
+.mf-mom-hero-photo{width:124px;height:124px;border:0;padding:0;border-radius:50%;overflow:hidden;background:linear-gradient(145deg,#e6d4ff,#d7e9ff);box-shadow:0 0 0 6px rgba(255,255,255,.72),0 10px 24px rgba(75,60,115,.14);display:grid;place-items:center;color:var(--mom-ink);cursor:pointer}
 .mf-mom-hero-photo img{width:100%;height:100%;object-fit:cover;display:block}.mf-mom-hero-photo .placeholder{font-size:30px}.ring.mf-mom-photo-ring svg,.ring.mf-mom-photo-ring .ring-label{display:none!important}
-.mf-core-plan{margin:14px 0 17px;padding:19px 20px;border-radius:28px 42px 30px 38px / 34px 26px 42px 30px;background:var(--surface);border:1px solid var(--line-soft,var(--line));box-shadow:none}
+.mf-core-plan{margin:13px 0 16px;padding:19px 20px;border-radius:28px 42px 30px 38px / 34px 26px 42px 30px;background:linear-gradient(145deg,#fbf7ff,#f0eaff 55%,#edf4ff);border:1px solid #dfd4f4;box-shadow:none}
 .mf-core-plan-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.mf-core-plan-head strong{font-size:17px}.mf-core-plan-head span{font-size:12.5px;color:var(--muted);font-weight:800}
 .mf-core-next{font:800 28px var(--display);letter-spacing:-.03em;margin:12px 0 7px}.mf-core-sub{font-size:13.5px;color:var(--muted);line-height:1.45}
-.mf-core-times{display:flex;gap:8px;overflow:auto;margin-top:14px;scrollbar-width:none}.mf-core-time{flex:0 0 auto;padding:9px 13px;border-radius:999px;background:var(--surface-2);font-size:12.5px;font-weight:800}.mf-core-time.next{background:var(--mom);color:#fff}
+.mf-core-times{display:flex;gap:8px;overflow:auto;margin-top:14px;scrollbar-width:none}.mf-core-time{flex:0 0 auto;padding:9px 13px;border-radius:999px;background:#ece5f8;font-size:12.5px;font-weight:800}.mf-core-time.next{background:linear-gradient(135deg,#774ddd,#9b59d0);color:#fff}
 
 /* ---------- Baby ---------- */
-.mf-core-baby{display:grid;gap:16px;margin-bottom:18px}.mf-core-baby .mf-profile-line{margin-bottom:0}
-.mf-care-label{display:flex;align-items:center;justify-content:space-between;margin:3px 2px -4px;font-size:13px;font-weight:850;letter-spacing:.025em;text-transform:uppercase;color:var(--muted)}
+.mf-core-baby{display:grid;gap:12px;margin-bottom:16px}.mf-core-baby .mf-profile-line{margin-bottom:0}
+.mf-care-label{display:flex;align-items:center;justify-content:space-between;margin:0 3px -1px;font-size:13px;font-weight:850;letter-spacing:.025em;text-transform:uppercase;color:var(--muted)}
 .mf-care-label small{font-size:12px;font-weight:750;letter-spacing:0;text-transform:none}
 
-/* Last fed is key status: amount and elapsed time share equal prominence. */
-.mf-last-feed-band{display:grid;grid-template-columns:38px minmax(0,1fr) minmax(126px,auto);gap:11px;align-items:center;margin:-1px 0 1px;padding:13px 14px;border-radius:20px;background:linear-gradient(135deg,#e8f6ff,#eef7ff 55%,#eef9f5);border:1px solid #d5e9f0;color:#38536f}
-.mf-last-feed-band .mf-last-feed-icon{width:38px;height:38px;border-radius:13px;background:rgba(255,255,255,.72);display:grid;place-items:center}.mf-last-feed-band svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mf-last-feed-band{display:grid;grid-template-columns:38px minmax(0,1fr) minmax(126px,auto);gap:11px;align-items:center;margin:0;padding:13px 14px;border-radius:23px 31px 25px 29px / 26px 22px 32px 25px;background:linear-gradient(135deg,#cfeeff,#dff3ff 55%,#d8f5ea);border:1px solid #a7d8e8;color:#234d68}
+.mf-last-feed-band .mf-last-feed-icon{width:38px;height:38px;border-radius:45% 55% 48% 52% / 58% 44% 56% 42%;background:rgba(255,255,255,.76);display:grid;place-items:center}.mf-last-feed-band svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .mf-last-feed-primary,.mf-last-feed-age{min-width:0}.mf-last-feed-band strong{display:block;font-size:15.5px;line-height:1.15;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mf-last-feed-band small{display:block;margin-top:4px;font-size:11.5px;line-height:1.2;color:var(--muted);font-weight:750}.mf-last-feed-age{text-align:right}.mf-last-feed-age strong{font-size:15.5px}.mf-last-feed-age small{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em}
+.mf-last-feed-band small{display:block;margin-top:4px;font-size:11.5px;line-height:1.2;color:#557087;font-weight:750}.mf-last-feed-age{text-align:right}.mf-last-feed-age strong{font-size:15.5px}.mf-last-feed-age small{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em}
 
-/* Feed actions are one visual family: same footprint, same radius, same internal hierarchy. */
-.mf-feed-zone{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-.mf-feed-card{position:relative;min-height:112px;border:0;border-radius:25px;padding:15px 12px 13px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(90,100,130,.05)}
-.mf-feed-card svg{position:absolute;right:11px;top:11px;width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
-.mf-feed-card strong{font-size:16px;font-weight:900;letter-spacing:-.015em;line-height:1.08;max-width:92%}.mf-feed-card small{display:block;font-size:11.5px;line-height:1.25;font-weight:700;opacity:.76;margin-top:5px}
-.mf-feed-card em{position:absolute;left:11px;top:11px;font-size:9.5px;font-style:normal;font-weight:850;padding:5px 7px;border-radius:999px;background:rgba(255,255,255,.58)}
-.mf-feed-card.milk{background:linear-gradient(145deg,#dcecff 0%,#eaf4ff 65%,#e9e6ff 100%);color:#294568}
-.mf-feed-card.nurse{background:linear-gradient(145deg,#fff1f6,#fde7f0);color:#8f4162}
-.mf-feed-card.formula{background:linear-gradient(145deg,#f0ecff,#e8e2ff);color:#5b4a82}
+/* Feed actions: equal footprint, but organic/freehand shapes instead of square tiles. */
+.mf-feed-zone{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mf-feed-card{position:relative;min-height:96px;border:0;padding:13px 11px 11px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--ink);box-shadow:0 7px 18px rgba(29,42,70,.08)}
+.mf-feed-card svg{position:absolute;right:10px;top:9px;width:31px;height:31px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
+.mf-feed-card strong{font-size:16px;font-weight:900;letter-spacing:-.015em;line-height:1.08;max-width:94%}.mf-feed-card small{display:block;font-size:11.5px;line-height:1.25;font-weight:750;opacity:.82;margin-top:4px}
+.mf-feed-card.milk{border-radius:54% 46% 58% 42% / 56% 46% 54% 44%;background:linear-gradient(145deg,#b8ddff 0%,#c5e3ff 58%,#c9cbff 100%);color:#153f61}
+.mf-feed-card.nurse{border-radius:58% 42% 49% 51% / 52% 62% 38% 48%;background:linear-gradient(145deg,#ffd1e2,#f5bad4);color:#7b244d}
+.mf-feed-card.formula{border-radius:44% 56% 60% 40% / 58% 43% 57% 42%;background:linear-gradient(145deg,#d8ccff,#c6b6f3);color:#432d73}
 
-/* Diapers: counts are real data, so badges are large, centered, and fully inset. */
-.mf-diaper-cluster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;align-items:stretch}
-.mf-diaper-blob{position:relative;min-height:116px;padding:16px 10px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.mf-diaper-blob svg{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:40px;height:40px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;opacity:.84}
-.mf-diaper-blob strong{font-size:16px;font-weight:900;line-height:1.15}.mf-diaper-blob span{font-size:11.5px;line-height:1.2;margin-top:4px;opacity:.76}
-.mf-diaper-blob b{position:absolute;right:12px;top:11px;min-width:30px;height:30px;padding:0 8px;border-radius:999px;background:rgba(255,255,255,.82);display:grid;place-items:center;font-size:12.5px;font-weight:900;line-height:1;box-shadow:0 1px 0 rgba(0,0,0,.03)}
-.mf-diaper-blob.wet{border-radius:34px 27px 32px 29px;background:var(--wet);color:var(--wet-ink)}.mf-diaper-blob.poop{border-radius:28px 35px 30px 33px;background:var(--poop);color:var(--poop-ink)}.mf-diaper-blob.both{border-radius:33px 29px 35px 27px;background:var(--mixed);color:var(--mixed-ink)}
+/* Diaper blobs stay playful, while count badges stay safely inset. */
+.mf-diaper-cluster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
+.mf-diaper-blob{position:relative;min-height:108px;padding:15px 9px 13px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 7px 18px rgba(29,42,70,.07)}
+.mf-diaper-blob svg{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.94}
+.mf-diaper-blob strong{font-size:16px;font-weight:900;line-height:1.15}.mf-diaper-blob span{font-size:11.5px;line-height:1.2;margin-top:4px;opacity:.82}
+.mf-diaper-blob b{position:absolute;right:11px;top:10px;min-width:30px;height:30px;padding:0 8px;border-radius:999px;background:rgba(255,255,255,.86);display:grid;place-items:center;font-size:12.5px;font-weight:900;line-height:1;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.mf-diaper-blob.wet{border-radius:56% 44% 62% 38% / 58% 46% 54% 42%;background:linear-gradient(145deg,#bfe7ff,#9fd7f4);color:#145b86}.mf-diaper-blob.poop{border-radius:42% 58% 45% 55% / 62% 45% 55% 38%;background:linear-gradient(145deg,#ffe1a8,#f4ca76);color:#7d5314}.mf-diaper-blob.both{border-radius:60% 40% 52% 48% / 43% 57% 44% 56%;background:linear-gradient(145deg,#d6c2ff,#bca5f4);color:#573a9f}
 
 .mf-care-ribbon{display:flex;gap:8px;overflow:auto;scrollbar-width:none;padding:1px 1px 2px}.mf-care-ribbon::-webkit-scrollbar{display:none}
-.mf-care-ribbon button{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:10px 14px;border:0;border-radius:999px;background:var(--surface-2);font-size:12.5px;font-weight:800;color:var(--muted);cursor:pointer}.mf-care-ribbon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mf-care-ribbon button{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:10px 14px;border:0;border-radius:999px;font-size:12.5px;font-weight:850;cursor:pointer;color:var(--ink-2)}
+.mf-care-ribbon button:nth-child(1){background:#e6e7ff;color:#4b4e9c}.mf-care-ribbon button:nth-child(2){background:#ffdce8;color:#963e62}.mf-care-ribbon button:nth-child(3){background:#d9efff;color:#246f96}.mf-care-ribbon button:nth-child(4){background:#d9f3e8;color:#27785f}.mf-care-ribbon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-/* ---------- dark mode contrast ---------- */
-:root[data-theme="dark"] .mf-top-orb.mom-pumps{--orb-ring:#b795ff;--orb-fill:#2b2344}:root[data-theme="dark"] .mf-top-orb.mom-goal{--orb-ring:#ef9fbe;--orb-fill:#3a2432}:root[data-theme="dark"] .mf-top-orb.mom-avg{--orb-ring:#73d2b6;--orb-fill:#17382f}
-:root[data-theme="dark"] .mf-top-orb.baby-milk{--orb-ring:#69c8f2;--orb-fill:#173447}:root[data-theme="dark"] .mf-top-orb.baby-usual{--orb-ring:#b09af5;--orb-fill:#2b2443}:root[data-theme="dark"] .mf-top-orb.baby-diaper{--orb-ring:#70d0b3;--orb-fill:#17372e}
-:root[data-theme="dark"] .mf-top-orb strong{color:#f7f9ff;text-shadow:0 1px 1px rgba(0,0,0,.22)}:root[data-theme="dark"] .mf-top-orb small{color:#d8deea!important}:root[data-theme="dark"] .mf-top-orb-wrap>span{color:#d0d6e2}
-:root[data-theme="dark"] .mf-last-feed-band{background:linear-gradient(135deg,#152634,#182635 55%,#142c28);border-color:#29434f;color:#edf7ff}:root[data-theme="dark"] .mf-last-feed-band .mf-last-feed-icon{background:#1d3542;color:#89d5f0}:root[data-theme="dark"] .mf-last-feed-band small{color:#c1c8d3}
-:root[data-theme="dark"] .mf-feed-card.milk{background:linear-gradient(145deg,#172b3c,#1b2a3c 65%,#28223c);color:#e3f2ff}:root[data-theme="dark"] .mf-feed-card.nurse{background:linear-gradient(145deg,#34202a,#2c1c25);color:#ffc6dd}:root[data-theme="dark"] .mf-feed-card.formula{background:linear-gradient(145deg,#2c2740,#242036);color:#e3dcff}
-:root[data-theme="dark"] .mf-feed-card em{background:rgba(255,255,255,.1);color:inherit}:root[data-theme="dark"] .mf-diaper-blob b{background:#2a303b;color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.1)}
-:root[data-theme="dark"] .mf-care-ribbon button{color:#d0d6e2}:root[data-theme="dark"] .mf-core-time{color:#eef1f7;border:1px solid var(--line)}:root[data-theme="dark"] .mf-mom-hero-photo{box-shadow:0 0 0 6px rgba(169,138,240,.2),0 10px 24px rgba(0,0,0,.35)}
+/* ---------- dark mode: richer, not washed out ---------- */
+:root[data-theme="dark"] body[data-screen="mom-home"] .main{background:radial-gradient(circle at 12% 8%,rgba(137,84,241,.18),transparent 32%),radial-gradient(circle at 88% 20%,rgba(220,73,137,.12),transparent 30%),var(--bg)}
+:root[data-theme="dark"] body[data-screen="baby-home"] .main{background:radial-gradient(circle at 12% 8%,rgba(38,151,214,.18),transparent 32%),radial-gradient(circle at 88% 22%,rgba(41,175,136,.12),transparent 30%),var(--bg)}
+:root[data-theme="dark"] body[data-screen="mom-home"] .mom-hero{background:linear-gradient(135deg,#211735 0%,#2b1a3d 48%,#1b2946 100%)}
+:root[data-theme="dark"] body[data-screen="mom-home"] .quick-tile.mom{background:linear-gradient(145deg,#2f214a,#432a68);color:#d6c2ff}:root[data-theme="dark"] body[data-screen="mom-home"] .quick-tile.nurse{background:linear-gradient(145deg,#3a1f2e,#54273d);color:#ffbad6}
+:root[data-theme="dark"] .mf-core-plan{background:linear-gradient(145deg,#1d1a2a,#261e35 58%,#1a2539);border-color:#3a2f4e}:root[data-theme="dark"] .mf-core-time{background:#29243a;color:#f1edff;border:1px solid #3b3450}
+:root[data-theme="dark"] .mf-top-orb.mom-pumps{--orb-ring:#b795ff;--orb-fill:#352654}:root[data-theme="dark"] .mf-top-orb.mom-goal{--orb-ring:#ef86b0;--orb-fill:#462338}:root[data-theme="dark"] .mf-top-orb.mom-avg{--orb-ring:#5ed5af;--orb-fill:#173d31}
+:root[data-theme="dark"] .mf-top-orb.baby-milk{--orb-ring:#57c4f3;--orb-fill:#173d56}:root[data-theme="dark"] .mf-top-orb.baby-usual{--orb-ring:#aa8df4;--orb-fill:#33264f}:root[data-theme="dark"] .mf-top-orb.baby-diaper{--orb-ring:#5ed5af;--orb-fill:#173d31}
+:root[data-theme="dark"] .mf-top-orb strong{color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25)}:root[data-theme="dark"] .mf-top-orb small{color:#e0e5ef!important}:root[data-theme="dark"] .mf-top-orb-wrap>span{color:#d7dce6}
+:root[data-theme="dark"] .mf-last-feed-band{background:linear-gradient(135deg,#123246,#17354e 55%,#153c33);border-color:#2a6070;color:#f0fbff}:root[data-theme="dark"] .mf-last-feed-band .mf-last-feed-icon{background:#1b4557;color:#9fe4ff}:root[data-theme="dark"] .mf-last-feed-band small{color:#ced9e3}
+:root[data-theme="dark"] .mf-feed-card.milk{background:linear-gradient(145deg,#143a56,#1b315b 62%,#31264f);color:#ccefff}:root[data-theme="dark"] .mf-feed-card.nurse{background:linear-gradient(145deg,#55263c,#442135);color:#ffc1da}:root[data-theme="dark"] .mf-feed-card.formula{background:linear-gradient(145deg,#433765,#332a56);color:#e8ddff}
+:root[data-theme="dark"] .mf-diaper-blob.wet{background:linear-gradient(145deg,#123a53,#174a65);color:#7ed4ff}:root[data-theme="dark"] .mf-diaper-blob.poop{background:linear-gradient(145deg,#44320e,#5a4211);color:#ffd487}:root[data-theme="dark"] .mf-diaper-blob.both{background:linear-gradient(145deg,#352653,#463169);color:#c9b4ff}
+:root[data-theme="dark"] .mf-diaper-blob b{background:#303846;color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+:root[data-theme="dark"] .mf-care-ribbon button:nth-child(1){background:#25294b;color:#bfc5ff}:root[data-theme="dark"] .mf-care-ribbon button:nth-child(2){background:#472437;color:#ffbfd7}:root[data-theme="dark"] .mf-care-ribbon button:nth-child(3){background:#17394b;color:#9fddff}:root[data-theme="dark"] .mf-care-ribbon button:nth-child(4){background:#183c31;color:#9be1c8}
+:root[data-theme="dark"] .mf-mom-hero-photo{box-shadow:0 0 0 6px rgba(169,138,240,.24),0 10px 24px rgba(0,0,0,.35)}
 
 body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #view>.act-strip,body[data-screen="baby-home"] #view>.feed-cta,body[data-screen="baby-home"] #view>.orb-row,body[data-screen="baby-home"] #view>.pill-row,body[data-screen="baby-home"] #view>.ring-row{display:none!important}
 
@@ -220,8 +236,8 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
   .mf-profile-photo{width:60px;height:60px}.mf-profile-copy h2{font-size:27px}
   .mf-top-orb-wrap{width:52px}.mf-top-orb{width:50px;height:50px}.mf-top-orb strong{font-size:14px}.mf-top-orb-wrap>span{font-size:9.5px}
   .mf-mom-orbs{margin-top:5px}.ring.mf-mom-photo-ring,.mf-mom-hero-photo{width:116px;height:116px}
-  .mf-feed-card{min-height:108px;padding:14px 10px 12px}.mf-feed-card strong{font-size:15px}.mf-feed-card small{font-size:11px}
-  .mf-diaper-blob{min-height:110px}.mf-care-ribbon button{padding:10px 13px}
+  .mf-feed-card{min-height:94px;padding:12px 10px 10px}.mf-feed-card strong{font-size:15px}.mf-feed-card small{font-size:11px}
+  .mf-diaper-blob{min-height:106px}.mf-care-ribbon button{padding:10px 13px}
 }
 @media(max-width:390px){
   .mf-profile-line.has-summary{grid-template-columns:auto minmax(0,1fr) auto;gap:7px}.mf-profile-photo{width:54px;height:54px}
@@ -230,8 +246,8 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
   .mf-mom-orbs{gap:6px}.mf-mom-orbs .mf-top-orb-wrap{width:52px}.mf-mom-orbs .mf-top-orb{width:50px;height:50px}
   .ring.mf-mom-photo-ring,.mf-mom-hero-photo{width:104px;height:104px}
   .mf-last-feed-band{grid-template-columns:34px minmax(0,1fr) minmax(112px,auto);gap:8px;padding:11px}.mf-last-feed-band strong,.mf-last-feed-age strong{font-size:14px}.mf-last-feed-band small{font-size:10.5px}
-  .mf-feed-zone{gap:7px}.mf-feed-card{min-height:106px;border-radius:22px;padding:13px 9px 11px}.mf-feed-card svg{width:30px;height:30px;right:9px;top:9px}.mf-feed-card em{left:9px;top:9px;font-size:9px;padding:4px 6px}.mf-feed-card strong{font-size:14px}.mf-feed-card small{font-size:10.5px}
-  .mf-diaper-cluster{gap:7px}.mf-diaper-blob{min-height:108px;padding-left:7px;padding-right:7px}.mf-diaper-blob b{right:9px;top:9px;min-width:29px;height:29px;font-size:12px}.mf-diaper-blob strong{font-size:15px}.mf-diaper-blob span{font-size:11px}
+  .mf-feed-zone{gap:6px}.mf-feed-card{min-height:92px;padding:12px 8px 10px}.mf-feed-card svg{width:29px;height:29px;right:8px;top:8px}.mf-feed-card strong{font-size:14px}.mf-feed-card small{font-size:10.5px}
+  .mf-diaper-cluster{gap:6px}.mf-diaper-blob{min-height:104px;padding-left:7px;padding-right:7px}.mf-diaper-blob b{right:8px;top:8px;min-width:29px;height:29px;font-size:12px}.mf-diaper-blob strong{font-size:15px}.mf-diaper-blob span{font-size:11px}
 }
 `;
   document.head.appendChild(s);
@@ -280,7 +296,7 @@ function renderBaby(s){
 
     <div class="mf-care-label"><span>Feed</span><small>Quick log</small></div>
     <div class="mf-feed-zone">
-      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${icon('bottle')}<em>Your usual</em><strong>Breast milk</strong><small>Log bottle</small></button>
+      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${icon('bottle')}<strong>Breast milk</strong><small>Log bottle</small></button>
       <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${icon('nursing')}<strong>Nurse</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button>
       <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${icon('bottle')}<strong>Formula</strong><small>${st.formulaCount?`${st.formulaCount} today`:'Log bottle'}</small></button>
     </div>
