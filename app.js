@@ -55,7 +55,9 @@ function normalizeSubtype(v){
 }
 function normalizeBabyEvent(raw){
   const e = {...raw};
-  e.id = e.migration_id || e.id || uid('baby');
+  // Explicit/local ids and Firestore document ids are authoritative.
+  // migration_id is only a fallback for older imports that truly have no id.
+  e.id = e.id || e.migration_id || uid('baby');
   e.babyId = e.baby_id || e.babyId || 'saahas-2026';
   e.eventType = e.event_type || e.eventType || null;
   e.date = e.date || '';
@@ -1423,48 +1425,71 @@ async function restoreRecord(kind,id){
 }
 let editing=null;
 let selectedStage=null;
+function setDialogEditTarget(dialogId,ref){
+  const d=$(dialogId); if(!d) return;
+  if(ref){ d.dataset.editKind=ref.kind; d.dataset.editId=ref.id; }
+  else { delete d.dataset.editKind; delete d.dataset.editId; }
+}
+function dialogEditTarget(){
+  for(const id of ['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog']){
+    const d=$(id);
+    if(d?.open && d.classList.contains('is-edit') && d.dataset.editKind && d.dataset.editId) return {kind:d.dataset.editKind,id:d.dataset.editId};
+  }
+  return editing;
+}
 function editRecord(kind,id){
   const e=findRecord(kind,id); if(!e) return;
   closeOverlays();
-  let handled=true;
+  let handled=true, dialogId=null;
   if(kind==='mom'){
+    dialogId='momDialog';
     openMomDialog(e.type,true);
     $('momDate').value=e.date||today(); $('momTime').value=e.time||now();
     $('momAmount').value=e.amountMl??''; $('momDuration').value=e.durationMin??'';
     $('momNote').value=e.note||''; if(e.side) $('momSide').value=e.side;
   } else if(e.eventType==='diaper'){
+    dialogId='diaperDialog';
     openDiaperDialog(e.subtype,true);
     $('diaperDate').value=e.date; $('diaperTime').value=e.time; $('diaperNote').value=e.note||'';
   } else if(e.eventType==='feeding'||e.eventType==='nursing'){
+    dialogId='feedDialog';
     openFeedDialog(e.eventType==='nursing'?'nursing':(e.feedingType||'expressed_milk'),true);
     $('feedDate').value=e.date; $('feedTime').value=e.time;
     $('feedAmount').value=e.amountOz??''; $('feedDuration').value=e.durationMinutes??e.totalMinutes??'';
     if(e.side) $('feedSide').value=e.side;
   } else if(e.eventType==='growth'){
+    dialogId='growthDialog';
     openGrowthDialog(true);
     $('growthDate').value=e.date; $('growthWeightLb').value=e.weightLb??''; $('growthWeightOz').value=e.weightOz??'';
     $('growthLength').value=e.lengthIn??''; $('growthHead').value=e.headIn??''; $('growthNote').value=e.note||'';
   } else if(e.eventType==='sleep'){
+    dialogId='sleepDialog';
     openSleepDialog(true);
     $('sleepDate').value=e.date; $('sleepTime').value=e.time; $('sleepMinutes').value=e.durationMinutes??'';
   } else handled=false;
   // Set AFTER opening: showDialog may close an already-open dialog, and that fires the
   // 'close' handler which clears `editing` - an edit would silently become a new record.
   editing = handled ? {kind,id} : null;
+  if(handled) setDialogEditTarget(dialogId,editing);
   if(!handled) toast('That entry type cannot be edited yet.');
 }
 // Dialogs are shared between "add" and "edit"; `editing` decides which one a submit means.
 function commitRecord(list,built){
-  if(editing){
-    const e=findRecord(editing.kind,editing.id);
-    if(e){ Object.assign(e,built,{id:e.id,createdAt:e.createdAt||built.createdAt,editedAt:new Date().toISOString(),synced:false}); editing=null; return e; }
+  const editRef=dialogEditTarget();
+  if(editRef){
+    const e=findRecord(editRef.kind,editRef.id);
     editing=null;
+    if(e){ Object.assign(e,built,{id:e.id,createdAt:e.createdAt||built.createdAt,editedAt:new Date().toISOString(),synced:false}); return e; }
+    // A failed edit lookup must never silently become a brand-new record.
+    toast('That entry changed while you were editing it. Reopen it and try again.');
+    return null;
   }
   list.push(built); return built;
 }
 // showModal() throws if the dialog is already open (double-tap), so always reset first.
 function showDialog(id,isEdit){
   const d=$(id); if(!d) return;
+  if(!isEdit) setDialogEditTarget(id,null);
   if(d.open){ try{ d.close(); }catch{} }
   d.classList.toggle('is-edit',!!isEdit);
   d.querySelectorAll('[data-save-label]').forEach(b => b.textContent = isEdit ? 'Save changes' : b.dataset.saveLabel);
@@ -1641,7 +1666,7 @@ function pickChoice(id,value){
   document.querySelectorAll(`[data-pick^="${id}:"]`).forEach(b => b.classList.toggle('on', b.dataset.pick === `${id}:${value}`));
 }
 // Closing a dialog by any route (Cancel, ×, Esc) must drop the pending edit.
-['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].forEach(id => $(id)?.addEventListener('close',()=>{ editing=null; }));
+['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].forEach(id => $(id)?.addEventListener('close',()=>{ editing=null; setDialogEditTarget(id,null); }));
 
 function bindViewInputs(){
   // A 30-day chart overflows: the most recent days matter most, so open scrolled to them.
@@ -1787,7 +1812,7 @@ async function repairRemoteBabyDocs(docs){
   if(!cloud||!S.cloud.userId) return;
   const fixes=[];
   docs.forEach(doc=>{
-    const raw={id:doc.id,...doc.data()}; const normalized=normalizeBabyEvent(raw);
+    const raw={...doc.data(),id:doc.id}; const normalized=normalizeBabyEvent(raw);
     const rawSubtype=String(raw.subtype||raw.status||'').toLowerCase();
     if(raw.eventType==='diaper' && normalized.subtype && normalized.subtype!==rawSubtype){ fixes.push({ref:doc.ref,subtype:normalized.subtype,sourceSubtype:raw.sourceSubtype||raw.subtype||raw.status||null}); }
   });
@@ -1797,8 +1822,8 @@ async function reconcile(){
   if(!cloud||!S.cloud.userId) return;
   const [ms,bs,ps]=await Promise.all([momRef().get(),babyRef().get(),profileRef().get()]);
   await repairRemoteBabyDocs(bs.docs);
-  const remoteMom=new Map(ms.docs.map(d=>[d.id,{id:d.id,...d.data(),synced:true}]));
-  const remoteBaby=new Map(bs.docs.map(d=>[d.id,{...normalizeBabyEvent({id:d.id,...d.data()}),synced:true}]));
+  const remoteMom=new Map(ms.docs.map(d=>[d.id,{...d.data(),id:d.id,synced:true}]));
+  const remoteBaby=new Map(bs.docs.map(d=>[d.id,{...normalizeBabyEvent({...d.data(),id:d.id}),synced:true}]));
   const localMom=new Map(S.entries.map(e=>[e.id,e])); for(const [id,r] of remoteMom) localMom.set(id,{...(localMom.get(id)||{}),...r,synced:true}); S.entries=[...localMom.values()];
   const localBaby=new Map(S.babyEvents.map(e=>[e.id,normalizeBabyEvent(e)])); for(const [id,r] of remoteBaby) localBaby.set(id,normalizeBabyEvent({...(localBaby.get(id)||{}),...r,synced:true})); S.babyEvents=[...localBaby.values()];
   if(ps.exists){ const p=ps.data(); S.profile={...S.profile,...(p.profile||{})}; S.baby={...S.baby,...(p.baby||{})}; if(Array.isArray(p.schedule))S.schedule=p.schedule; S.dailyOverrides={...S.dailyOverrides,...(p.dailyOverrides||{})}; S.reminders={...S.reminders,...(p.reminders||{})}; }
@@ -1819,7 +1844,7 @@ function startRealtime(){
     const current=new Map(S[key].map(e=>[e.id,e])); let changed=false;
     snap.docChanges().forEach(change=>{
       if(change.type==='removed') return;
-      let r={id:change.doc.id,...change.doc.data(),synced:true}; if(key==='babyEvents') r=normalizeBabyEvent(r);
+      let r={...change.doc.data(),id:change.doc.id,synced:true}; if(key==='babyEvents') r=normalizeBabyEvent(r);
       const old=current.get(r.id); const next={...(old||{}),...r};
       if(!old||JSON.stringify({...old,updatedAt:undefined})!==JSON.stringify({...next,updatedAt:undefined})){ current.set(r.id,next); changed=true; }
     });
