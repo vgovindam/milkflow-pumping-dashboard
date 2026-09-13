@@ -1,0 +1,105 @@
+name: One-time edit identity repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-edit-identity.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: contains(github.event.head_commit.message, 'Run edit identity repair')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Patch canonical edit identity
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('app.js')
+          s = p.read_text()
+
+          def repl(old, new, label):
+              global s
+              if old not in s:
+                  raise SystemExit(f'missing expected source for {label}')
+              s = s.replace(old, new, 1)
+
+          repl("  e.id = e.migration_id || e.id || uid('baby');",
+               "  // When a Firestore document supplies an id, that document id is authoritative.\n  // migration_id is only a fallback for older imported records that do not have an id.\n  e.id = e.id || e.migration_id || uid('baby');",
+               'baby id precedence')
+
+          repl("let editing=null;\nlet selectedStage=null;\nfunction editRecord(kind,id){",
+               "let editing=null;\nlet selectedStage=null;\nfunction setDialogEditTarget(dialogId,ref){\n  const d=$(dialogId); if(!d) return;\n  if(ref){ d.dataset.editKind=ref.kind; d.dataset.editId=ref.id; }\n  else { delete d.dataset.editKind; delete d.dataset.editId; }\n}\nfunction dialogEditTarget(){\n  for(const id of ['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog']){\n    const d=$(id);\n    if(d?.open && d.classList.contains('is-edit') && d.dataset.editKind && d.dataset.editId) return {kind:d.dataset.editKind,id:d.dataset.editId};\n  }\n  return editing;\n}\nfunction editRecord(kind,id){",
+               'dialog edit target helpers')
+
+          repl("  let handled=true;\n  if(kind==='mom'){\n    openMomDialog(e.type,true);",
+               "  let handled=true, dialogId=null;\n  if(kind==='mom'){\n    dialogId='momDialog';\n    openMomDialog(e.type,true);",
+               'mom edit dialog')
+          repl("  } else if(e.eventType==='diaper'){\n    openDiaperDialog(e.subtype,true);",
+               "  } else if(e.eventType==='diaper'){\n    dialogId='diaperDialog';\n    openDiaperDialog(e.subtype,true);",
+               'diaper edit dialog')
+          repl("  } else if(e.eventType==='feeding'||e.eventType==='nursing'){\n    openFeedDialog(e.eventType==='nursing'?'nursing':(e.feedingType||'expressed_milk'),true);",
+               "  } else if(e.eventType==='feeding'||e.eventType==='nursing'){\n    dialogId='feedDialog';\n    openFeedDialog(e.eventType==='nursing'?'nursing':(e.feedingType||'expressed_milk'),true);",
+               'feed edit dialog')
+          repl("  } else if(e.eventType==='growth'){\n    openGrowthDialog(true);",
+               "  } else if(e.eventType==='growth'){\n    dialogId='growthDialog';\n    openGrowthDialog(true);",
+               'growth edit dialog')
+          repl("  } else if(e.eventType==='sleep'){\n    openSleepDialog(true);",
+               "  } else if(e.eventType==='sleep'){\n    dialogId='sleepDialog';\n    openSleepDialog(true);",
+               'sleep edit dialog')
+          repl("  editing = handled ? {kind,id} : null;\n  if(!handled) toast('That entry type cannot be edited yet.');",
+               "  editing = handled ? {kind,id} : null;\n  if(handled) setDialogEditTarget(dialogId,editing);\n  if(!handled) toast('That entry type cannot be edited yet.');",
+               'persist edit target')
+
+          repl("function commitRecord(list,built){\n  if(editing){\n    const e=findRecord(editing.kind,editing.id);\n    if(e){ Object.assign(e,built,{id:e.id,createdAt:e.createdAt||built.createdAt,editedAt:new Date().toISOString(),synced:false}); editing=null; return e; }\n    editing=null;\n  }\n  list.push(built); return built;\n}",
+               "function commitRecord(list,built){\n  const editRef=dialogEditTarget();\n  if(editRef){\n    const e=findRecord(editRef.kind,editRef.id);\n    editing=null;\n    if(e){ Object.assign(e,built,{id:e.id,createdAt:e.createdAt||built.createdAt,editedAt:new Date().toISOString(),synced:false}); return e; }\n    // Never turn a failed edit lookup into a new record. That was the duplicate-entry bug.\n    toast('That entry changed while you were editing it. Reopen it and try again.');\n    return null;\n  }\n  list.push(built); return built;\n}",
+               'commit edit in place')
+
+          repl("function showDialog(id,isEdit){\n  const d=$(id); if(!d) return;\n  if(d.open){ try{ d.close(); }catch{} }",
+               "function showDialog(id,isEdit){\n  const d=$(id); if(!d) return;\n  if(!isEdit) setDialogEditTarget(id,null);\n  if(d.open){ try{ d.close(); }catch{} }",
+               'clear stale add target')
+
+          repl("['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].forEach(id => $(id)?.addEventListener('close',()=>{ editing=null; }));",
+               "['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].forEach(id => $(id)?.addEventListener('close',()=>{ editing=null; setDialogEditTarget(id,null); }));",
+               'clear closed edit target')
+
+          p.write_text(s)
+
+          for name in ['index.html','sw.js','.github/workflows/pages.yml']:
+              q=Path(name)
+              t=q.read_text()
+              if 'stable34r9' not in t:
+                  raise SystemExit(f'{name}: expected stable34r9 token missing')
+              q.write_text(t.replace('stable34r9','stable34r10'))
+
+          q=Path('.github/workflows/pages.yml')
+          t=q.read_text()
+          needle="          grep -q 'data-growth' core-ui.js\n"
+          extra=("          grep -q 'data-growth' core-ui.js\n"
+                 "          grep -q \"e.id = e.id || e.migration_id\" app.js\n"
+                 "          grep -q 'dialogEditTarget' app.js\n")
+          if needle not in t:
+              raise SystemExit('pages workflow insertion point missing')
+          q.write_text(t.replace(needle,extra,1))
+          PY
+          node --check app.js
+          grep -q "e.id = e.id || e.migration_id" app.js
+          grep -q "function dialogEditTarget" app.js
+          grep -q "stable34r10" index.html
+          grep -q "milkflow-stable34r10" sw.js
+      - name: Commit canonical fix
+        run: |
+          git config user.name "vgovindam"
+          git config user.email "102747047+vgovindam@users.noreply.github.com"
+          git add app.js index.html sw.js .github/workflows/pages.yml
+          git rm .github/workflows/fix-edit-identity.yml
+          git commit -m "Fix edit updates without duplicate records"
+          git push origin main
