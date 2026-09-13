@@ -50,12 +50,12 @@ jobs:
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
-          grep -q 'stable34-bridge.js?build=stable34r8' index.html
-          grep -q 'app.js?build=stable34r8' index.html
-          grep -q 'core-ui.js?build=stable34r8' index.html
-          grep -q 'family-chat.js?build=stable34r8' index.html
-          grep -q 'manifest.webmanifest?build=stable34r8' index.html
-          grep -q "milkflow-stable34r8" sw.js
+          grep -q 'stable34-bridge.js?build=stable34r9' index.html
+          grep -q 'app.js?build=stable34r9' index.html
+          grep -q 'core-ui.js?build=stable34r9' index.html
+          grep -q 'family-chat.js?build=stable34r9' index.html
+          grep -q 'manifest.webmanifest?build=stable34r9' index.html
+          grep -q "milkflow-stable34r9" sw.js
           grep -q 'familyChatEndpoints' config.js
           grep -q 'correctedPlan' stable34-bridge.js
           grep -q 'mf-r2-highlights{display:none' stable34-bridge.js
@@ -72,8 +72,9 @@ jobs:
           grep -q "'Pumps','mom-pumps'" core-ui.js
           grep -q "'Vs avg','baby-usual'" core-ui.js
           grep -q 'mf-feed-card milk' core-ui.js
-          grep -q 'grid-template-columns:repeat(3,minmax(0,1fr))' core-ui.js
+          grep -q '54% 46% 58% 42%' core-ui.js
           grep -q 'min-width:30px;height:30px' core-ui.js
+          grep -q 'body:not(\[data-screen\^="mom-"\]) #mfChatButton' core-ui.js
           grep -q 'milkflow:base-rendered' core-ui.js
           grep -q 'data-feed-type="expressed_milk"' core-ui.js
           grep -q 'mf-diaper-cluster' core-ui.js
