@@ -72,7 +72,8 @@ jobs:
           grep -q "'Pumps','mom-pumps'" core-ui.js
           grep -q "'Vs avg','baby-usual'" core-ui.js
           grep -q 'mf-feed-card milk' core-ui.js
-          grep -q '54% 46% 58% 42%' core-ui.js
+          grep -q 'min-height:108px' core-ui.js
+          grep -q 'border-radius:38px 29px 43px 32px' core-ui.js
           grep -q 'min-width:30px;height:30px' core-ui.js
           grep -q 'body:not(\[data-screen\^="mom-"\]) #mfChatButton' core-ui.js
           grep -q 'milkflow:base-rendered' core-ui.js
