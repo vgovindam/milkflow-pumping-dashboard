@@ -1,0 +1,172 @@
+/* MilkFlow stable45 layout/contrast corrections.
+   Purpose: use Baby hero space deliberately, align typography with the app,
+   and guarantee readable settings titles in dark mode for both realms. */
+
+/* ---------- Baby home hero balance ---------- */
+html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy h2{
+  font-family:var(--display)!important;
+  font-weight:800!important;
+  letter-spacing:-.035em!important;
+  color:inherit!important;
+}
+html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy .welcome{
+  font-family:var(--display)!important;
+  font-weight:750!important;
+}
+html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-copy-note{
+  max-width:none!important;
+}
+html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-stats{
+  width:100%!important;
+  max-width:none!important;
+}
+
+@media(max-width:760px){
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2{
+    min-height:0!important;
+    padding:16px 15px 15px!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-profile{
+    width:100%!important;
+    max-width:none!important;
+    padding:0!important;
+    display:grid!important;
+    grid-template-columns:82px minmax(0,1fr)!important;
+    grid-template-areas:
+      "greeting greeting"
+      "photo name"
+      "photo age"
+      "note note"!important;
+    column-gap:13px!important;
+    row-gap:0!important;
+    align-items:center!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy{
+    display:contents!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-profile .mf-profile-photo{
+    grid-area:photo!important;
+    width:82px!important;
+    height:82px!important;
+    align-self:center!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy .welcome{
+    grid-area:greeting!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:none!important;
+    min-height:39px!important;
+    margin:0 0 12px!important;
+    padding:7px 10px!important;
+    border:1px solid rgba(255,255,255,.52)!important;
+    border-radius:15px!important;
+    background:rgba(255,255,255,.28)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.45)!important;
+    color:#285e67!important;
+    font-size:13px!important;
+    line-height:1.22!important;
+    text-wrap:pretty!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-greeting-mark{
+    width:26px!important;
+    height:26px!important;
+    background:rgba(255,255,255,.62)!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy h2{
+    grid-area:name!important;
+    margin:0!important;
+    font-size:32px!important;
+    line-height:1!important;
+    max-width:none!important;
+    align-self:end!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy>small{
+    grid-area:age!important;
+    margin:5px 0 0!important;
+    font-size:11.5px!important;
+    align-self:start!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-copy-note{
+    grid-area:note!important;
+    margin:11px 1px 0!important;
+    max-width:none!important;
+    width:100%!important;
+    font-size:11.5px!important;
+    line-height:1.35!important;
+    text-wrap:pretty!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-glance-title{
+    margin:13px 2px 7px!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-stats{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-stat{
+    min-height:70px!important;
+    grid-template-columns:46px minmax(0,1fr)!important;
+    padding:8px 10px 8px 8px!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-summary-animal{
+    width:45px!important;
+    height:45px!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-stat-copy strong{
+    font-family:var(--display)!important;
+    font-size:17px!important;
+    font-weight:800!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-stat-copy span{
+    font-size:10px!important;
+  }
+}
+
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy .welcome{
+  background:rgba(8,26,34,.28)!important;
+  border-color:rgba(191,234,240,.15)!important;
+  color:#d8f5f7!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-greeting-mark{
+  background:rgba(255,255,255,.08)!important;
+}
+
+/* ---------- Settings: high-contrast dark mode for Mom + Baby ---------- */
+:root[data-theme="dark"] body[data-screen="settings"][data-realm="mom"] #view .page-head:before,
+:root[data-theme="dark"] body[data-screen^="set-"][data-realm="mom"] #view .page-head:before{
+  background:linear-gradient(135deg,#33244f,#4a2f65 58%,#293b58)!important;
+}
+:root[data-theme="dark"] body[data-screen="settings"][data-realm="baby"] #view .page-head:before,
+:root[data-theme="dark"] body[data-screen^="set-"][data-realm="baby"] #view .page-head:before{
+  background:linear-gradient(135deg,#173847,#1b4b46 58%,#4a422d)!important;
+}
+:root[data-theme="dark"] body[data-screen="settings"] #view .page-head h2,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head h2{
+  color:#f8f9fc!important;
+  text-shadow:0 2px 12px rgba(0,0,0,.28)!important;
+}
+:root[data-theme="dark"] body[data-screen="settings"] #view .page-head .eyebrow,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head .eyebrow{
+  color:#d9ddff!important;
+  opacity:1!important;
+}
+:root[data-theme="dark"] body[data-screen="settings"] #view .page-intro,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-intro{
+  color:#c7ccd8!important;
+}
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp-title,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-title{
+  color:#e9ecf4!important;
+  opacity:1!important;
+  font-weight:800!important;
+}
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp-label strong,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-label strong{
+  color:#f3f5f9!important;
+}
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp-label small,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-label small,
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp-value,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-value{
+  color:#bcc2cf!important;
+}
