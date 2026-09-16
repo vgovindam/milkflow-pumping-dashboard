@@ -1221,6 +1221,8 @@ function render(dir='none'){
   }
   const workspace=workspaceOf(view); S.ui.workspace=workspace; save();
   document.querySelectorAll('.sidebar [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+  const momTab=$('personaTabs')?.firstElementChild;
+  if(momTab) momTab.textContent=S.profile.momName||'Mom';
   const babyTab=$('personaTabs')?.lastElementChild;
   if(babyTab) babyTab.textContent=S.baby.name||'Baby';
   document.querySelectorAll('[data-workspace]').forEach(b=>b.classList.toggle('active',b.dataset.workspace===workspace));

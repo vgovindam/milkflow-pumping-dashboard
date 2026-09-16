@@ -75,6 +75,7 @@
      old-style serif it replaces - paired with Plus Jakarta Sans for dense UI text. */
   --font:"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --display:"Bricolage Grotesque","Plus Jakarta Sans",system-ui,sans-serif;
+  --editorial:"Fraunces","Bricolage Grotesque",serif;
 }
 
 /* Time-of-day tint. Only ambient surfaces change - ink, lines and accents stay put,
@@ -142,7 +143,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:var(--font);color:var(--ink);background:var(--bg);-webkit-text-size-adjust:100%;font-optical-sizing:auto}
 /* Every display headline gets optical sizing and a slightly tighter fit. */
-h1,h2,h3,.ring-label strong,.stat-ring-dial b,.donut-center strong{font-optical-sizing:auto;letter-spacing:-.02em}
+h1,h2,h3,.ring-label strong,.stat-ring-dial b,.donut-center strong{font-optical-sizing:auto;letter-spacing:-.02em;text-wrap:balance}
 /* Counts and volumes line up column to column. */
 .metric strong,.ring-label strong,.stat-ring-dial b,.donut-center strong,.daily-cell b,.cbar-v,.chart-rail,.qa-grid strong,.stash-hero strong,.donut-legend strong,.donut-legend small,.hbar b,.tl-ticks span,.stat-line b{font-variant-numeric:tabular-nums}
 body.locked{overflow:hidden}
@@ -843,10 +844,11 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
 }
 
 @media(max-width:760px){
-  body{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+  html{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-y:none}
+  body{width:100%;max-width:100%;padding-bottom:0;overflow-x:clip;-webkit-overflow-scrolling:touch}
   .shell{display:block}
   .sidebar{display:none}
-  .main{min-height:100vh}
+  .main{width:100%;max-width:100%;min-height:100dvh;overflow-x:clip}
   /* iOS large-title behaviour: the nav bar carries Back + status, the page carries the
      title. Showing both meant every screen printed its name twice. */
   /* One 54px row. Mom/Baby sits inline and centred here rather than as the full-width
@@ -860,8 +862,9 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
   .mobile-workspace button.active{background:var(--surface);box-shadow:0 2px 8px rgba(28,32,48,.1)}
   .mobile-workspace button:first-child.active{color:var(--mom-ink)}
   .mobile-workspace button:last-child.active{color:var(--baby-ink)}
-  .view{padding:14px 13px 20px}
-  .sync-foot{padding:0 13px 24px}
+  .view{width:100%;max-width:100%;padding:14px 13px calc(112px + env(safe-area-inset-bottom));overflow-x:clip}
+  .sync-foot{padding:0 13px calc(100px + env(safe-area-inset-bottom))}
+  .pills,.day-strip,.schedule-strip,.chart-scroll,.mf-care-ribbon,.mf-journey-track{max-width:100%;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}
 
   .hero{padding:18px;border-radius:22px;gap:16px}
   .hero h2{font-size:24px}
