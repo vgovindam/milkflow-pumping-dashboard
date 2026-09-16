@@ -32,8 +32,8 @@ function addStyles(){
     }
     :root:not([data-theme="dark"]) body[data-screen="mom-home"] .topbar{background:rgba(249,245,255,.88)}
     :root:not([data-theme="dark"]) body[data-screen="baby-home"] .topbar{background:rgba(243,249,255,.88)}
-    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .mom-hero{background:radial-gradient(circle at 88% 12%,rgba(255,255,255,.76),transparent 26%),linear-gradient(140deg,rgba(255,255,255,.96),rgba(239,230,255,.92) 52%,rgba(223,241,255,.91))!important;border-color:rgba(255,255,255,.76)!important}
-    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .mf-core-plan{background:radial-gradient(circle at 90% 8%,rgba(255,255,255,.72),transparent 28%),linear-gradient(145deg,rgba(253,249,255,.95),rgba(239,232,255,.92) 55%,rgba(230,244,255,.91))!important;border-color:rgba(255,255,255,.76)!important}
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .mom-hero:not(.mf-dream-hero){background:radial-gradient(circle at 88% 12%,rgba(255,255,255,.76),transparent 26%),linear-gradient(140deg,rgba(255,255,255,.96),rgba(239,230,255,.92) 52%,rgba(223,241,255,.91))!important;border-color:rgba(255,255,255,.76)!important}
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .mf-core-plan:not(.mf-dream-journey){background:radial-gradient(circle at 90% 8%,rgba(255,255,255,.72),transparent 28%),linear-gradient(145deg,rgba(253,249,255,.95),rgba(239,232,255,.92) 55%,rgba(230,244,255,.91))!important;border-color:rgba(255,255,255,.76)!important}
     :root:not([data-theme="dark"]) body[data-screen="mom-home"] .panel{background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(245,240,255,.82))!important;border-color:rgba(255,255,255,.78)!important}
     :root:not([data-theme="dark"]) body[data-screen="mom-home"] .schedule-card{background:rgba(255,255,255,.67)!important;border-color:rgba(118,94,171,.1)!important}
     :root:not([data-theme="dark"]) body[data-screen="mom-home"] .schedule-card.done{background:#e9f7f0!important;border-color:#cae9db!important}
