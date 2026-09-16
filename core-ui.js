@@ -140,11 +140,11 @@ function addStyles(){
 html{scroll-behavior:auto!important}#view{overflow-anchor:none}.nav-forward,.nav-back,.nav-swap{animation:none!important;transform:none!important}
 
 /* ---------- ambient color: stronger identity without sacrificing readability ---------- */
-body[data-screen="mom-home"] .main{background:radial-gradient(circle at 12% 8%,rgba(129,76,225,.16),transparent 30%),radial-gradient(circle at 88% 20%,rgba(231,106,157,.12),transparent 30%),var(--bg)}
-body[data-screen="baby-home"] .main{background:radial-gradient(circle at 12% 8%,rgba(52,165,224,.15),transparent 30%),radial-gradient(circle at 88% 24%,rgba(61,190,154,.12),transparent 30%),var(--bg)}
-body[data-screen="mom-home"] .mom-hero{background:linear-gradient(135deg,#fff9ff 0%,#eee2ff 48%,#dfe9ff 100%)}
-body[data-screen="mom-home"] .quick-tile.mom{background:linear-gradient(145deg,#f4e8ff,#d9c5ff);color:#5732a7}
-body[data-screen="mom-home"] .quick-tile.nurse{background:linear-gradient(145deg,#ffeaf3,#ffcfe2);color:#9a3864}
+body[data-screen="mom-home"] .main{background:radial-gradient(circle at 10% 8%,rgba(194,220,255,.55),transparent 29%),radial-gradient(circle at 89% 17%,rgba(226,193,255,.46),transparent 31%),radial-gradient(circle at 60% 76%,rgba(255,205,228,.24),transparent 29%),linear-gradient(155deg,var(--bg),color-mix(in srgb,var(--bg) 72%,#eaf7ff))}
+body[data-screen="baby-home"] .main{background:radial-gradient(circle at 10% 8%,rgba(186,226,255,.52),transparent 29%),radial-gradient(circle at 89% 17%,rgba(204,194,255,.4),transparent 31%),radial-gradient(circle at 62% 76%,rgba(184,241,226,.23),transparent 29%),linear-gradient(155deg,var(--bg),color-mix(in srgb,var(--bg) 70%,#e9fbf6))}
+body[data-screen="mom-home"] .mom-hero{background:radial-gradient(circle at 88% 12%,rgba(255,255,255,.72),transparent 26%),linear-gradient(140deg,rgba(255,255,255,.94),rgba(239,230,255,.91) 52%,rgba(223,241,255,.9))}
+body[data-screen="mom-home"] .quick-tile.mom{background:linear-gradient(145deg,#f8f1ff,#ddd1ff 58%,#dceeff);color:#5732a7}
+body[data-screen="mom-home"] .quick-tile.nurse{background:linear-gradient(145deg,#fff4fa,#ffdcea 58%,#f1dcff);color:#9a3864}
 
 /* Chat belongs to Mom. Keep it completely off Baby and non-Mom screens. */
 body:not([data-screen^="mom-"]) #mfChatButton,body:not([data-screen^="mom-"]) #mfChatPanel{display:none!important}
@@ -178,7 +178,7 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 .ring.mf-mom-photo-ring{width:124px;height:124px;border-radius:50%;overflow:visible}
 .mf-mom-hero-photo{width:124px;height:124px;border:0;padding:0;border-radius:50%;overflow:hidden;background:linear-gradient(145deg,#e6d4ff,#d7e9ff);box-shadow:0 0 0 6px rgba(255,255,255,.72),0 10px 24px rgba(75,60,115,.14);display:grid;place-items:center;color:var(--mom-ink);cursor:pointer}
 .mf-mom-hero-photo img{width:100%;height:100%;object-fit:cover;display:block}.mf-mom-hero-photo .placeholder{font-size:30px}.ring.mf-mom-photo-ring svg,.ring.mf-mom-photo-ring .ring-label{display:none!important}
-.mf-core-plan{margin:13px 0 16px;padding:19px 20px;border-radius:28px 42px 30px 38px / 34px 26px 42px 30px;background:linear-gradient(145deg,#fbf7ff,#f0eaff 55%,#edf4ff);border:1px solid #dfd4f4;box-shadow:none}
+.mf-core-plan{margin:13px 0 16px;padding:19px 20px;border-radius:28px 42px 30px 38px / 34px 26px 42px 30px;background:radial-gradient(circle at 90% 8%,rgba(255,255,255,.72),transparent 28%),linear-gradient(145deg,rgba(253,249,255,.94),rgba(239,232,255,.91) 55%,rgba(230,244,255,.9));border:1px solid rgba(255,255,255,.72);box-shadow:0 16px 38px rgba(78,64,132,.1),inset 0 1px 0 rgba(255,255,255,.86);backdrop-filter:blur(18px) saturate(1.1)}
 .mf-core-plan-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.mf-core-plan-head strong{font-size:17px}.mf-core-plan-head span{font-size:12.5px;color:var(--muted);font-weight:800}
 .mf-core-next{font:800 28px var(--display);letter-spacing:-.03em;margin:12px 0 7px}.mf-core-sub{font-size:13.5px;color:var(--muted);line-height:1.45}
 .mf-core-times{display:flex;gap:8px;overflow:auto;margin-top:14px;scrollbar-width:none}.mf-core-time{flex:0 0 auto;padding:9px 13px;border-radius:999px;background:#ece5f8;font-size:12.5px;font-weight:800}.mf-core-time.next{background:linear-gradient(135deg,#774ddd,#9b59d0);color:#fff}

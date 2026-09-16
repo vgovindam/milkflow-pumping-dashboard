@@ -980,6 +980,90 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
   .stat-ring span{font-size:9.5px}
 }
 
+/* ================================================= dream cloud theme ===== */
+/* A calm, airy visual layer inspired by sunrise clouds. The soft forms are CSS-only,
+   stay behind the content, and preserve the existing touch targets and contrast. */
+:root{
+  --bg:#f7f5ff;
+  --surface:rgba(255,255,255,.88);
+  --surface-2:rgba(249,247,255,.88);
+  --line:rgba(111,91,169,.13);
+  --line-soft:rgba(111,91,169,.08);
+  --mom:#8265dd;--mom-2:#d07fbd;--mom-ink:#6045b2;--mom-soft:#f0eaff;
+  --baby:#559ed8;--baby-2:#70c9ba;--baby-ink:#3478a9;--baby-soft:#e7f5ff;
+  --nav-bg:rgba(252,250,255,.78);
+  --chip-bg:rgba(255,255,255,.66);
+  --shadow:0 24px 58px rgba(79,63,132,.14),0 3px 14px rgba(85,112,159,.07);
+  --shadow-soft:0 14px 38px rgba(79,63,132,.09),inset 0 1px 0 rgba(255,255,255,.78);
+  --shadow-tile:0 13px 30px rgba(80,66,132,.10),inset 0 1px 0 rgba(255,255,255,.8);
+  --stage-a:#edf7ff;--stage-b:#f0ecff;--stage-c:#e9faf6;--mom-hero-b:#f5eaff;
+}
+:root[data-daypart="morning"]{--bg:#fbf7ff;--stage-a:#eff9ff;--stage-b:#f7edff;--stage-c:#fff4f7;--mom-hero-b:#fff0f7}
+:root[data-daypart="afternoon"]{--bg:#f5f7ff;--stage-a:#eaf6ff;--stage-b:#efedff;--stage-c:#eafaf6;--mom-hero-b:#f4eaff}
+:root[data-daypart="evening"]{--bg:#faf4fb;--stage-a:#f2ecff;--stage-b:#ffeef6;--stage-c:#edf5ff;--mom-hero-b:#ffedf6}
+:root[data-daypart="night"]{--bg:#f2f2fb;--stage-a:#edf0ff;--stage-b:#f0ebff;--stage-c:#eaf5fb;--mom-hero-b:#f1eaff}
+
+.main{position:relative;isolation:isolate;background:
+  radial-gradient(circle at 12% 7%,rgba(190,220,255,.58),transparent 27%),
+  radial-gradient(circle at 88% 13%,rgba(229,195,255,.48),transparent 29%),
+  radial-gradient(circle at 62% 72%,rgba(255,207,228,.28),transparent 31%),
+  linear-gradient(155deg,var(--bg),color-mix(in srgb,var(--bg) 72%,#eaf7ff));
+}
+.main::before,.main::after{content:"";position:fixed;z-index:-1;pointer-events:none;filter:blur(2px);opacity:.72}
+.main::before{width:430px;height:220px;left:clamp(-180px,-9vw,-70px);top:14vh;border-radius:50%;background:
+  radial-gradient(ellipse at 26% 66%,rgba(255,255,255,.88) 0 24%,transparent 25%),
+  radial-gradient(ellipse at 54% 44%,rgba(255,255,255,.78) 0 30%,transparent 31%),
+  radial-gradient(ellipse at 78% 67%,rgba(255,255,255,.7) 0 24%,transparent 25%)}
+.main::after{width:470px;height:230px;right:clamp(-220px,-12vw,-90px);bottom:12vh;border-radius:50%;background:
+  radial-gradient(ellipse at 24% 68%,rgba(255,255,255,.72) 0 23%,transparent 24%),
+  radial-gradient(ellipse at 52% 46%,rgba(255,255,255,.76) 0 31%,transparent 32%),
+  radial-gradient(ellipse at 80% 69%,rgba(255,255,255,.62) 0 22%,transparent 23%)}
+.view,.topbar,.bottom-nav{position:relative}.view{z-index:1}
+
+.hero,.baby-stage,.panel,.metric,.grp,.timeline-card,.daily-row,.act-row,.sheet,.dialog{
+  backdrop-filter:blur(18px) saturate(1.12);-webkit-backdrop-filter:blur(18px) saturate(1.12);
+}
+.hero,.baby-stage{border-color:rgba(255,255,255,.68);box-shadow:0 22px 52px rgba(78,68,132,.11),inset 0 1px 0 rgba(255,255,255,.92)}
+.mom-hero{background:
+  radial-gradient(circle at 88% 12%,rgba(255,255,255,.72),transparent 26%),
+  linear-gradient(140deg,rgba(255,255,255,.94),rgba(239,230,255,.91) 52%,rgba(223,241,255,.9))}
+.baby-stage{background:
+  radial-gradient(circle at 82% 12%,rgba(255,255,255,.74),transparent 24%),
+  linear-gradient(145deg,rgba(234,247,255,.92),rgba(240,234,255,.9) 48%,rgba(230,250,245,.9))}
+.panel,.metric,.grp,.timeline-card,.daily-row,.act-row{border-color:rgba(255,255,255,.74);box-shadow:var(--shadow-soft)}
+.quick-tile{border:1px solid rgba(255,255,255,.62);box-shadow:var(--shadow-tile)}
+.quick-tile::after{content:"";position:absolute;width:94px;height:52px;right:-20px;bottom:-23px;border-radius:50%;background:rgba(255,255,255,.26);filter:blur(1px);pointer-events:none}
+.brand-logo{border-radius:50% 50% 44% 56% / 48% 43% 57% 52%;background:linear-gradient(145deg,#8c70e8,#d47ebd 58%,#73b8e8);box-shadow:0 12px 28px rgba(132,96,211,.32),inset 0 1px 0 rgba(255,255,255,.4)}
+.chip,.segmented,.mobile-workspace{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.schedule-card{border-color:rgba(119,97,171,.1);background:rgba(255,255,255,.68);box-shadow:0 8px 20px rgba(85,70,131,.06)}
+.schedule-card.done{background:linear-gradient(145deg,rgba(229,249,240,.94),rgba(237,250,255,.9));border-color:rgba(74,169,134,.14)}
+.topbar{border-bottom-color:rgba(119,97,171,.1);box-shadow:0 7px 26px rgba(80,67,126,.05)}
+.bottom-nav{border-color:rgba(255,255,255,.74)!important;box-shadow:0 18px 42px rgba(68,58,110,.18),inset 0 1px 0 rgba(255,255,255,.85)!important}
+.dialog::backdrop{background:rgba(59,49,91,.36);backdrop-filter:blur(8px)}
+.page-head h2,.panel-head h3,.hero h2,.stage-copy h2{color:color-mix(in srgb,var(--ink) 90%,var(--mom) 10%)}
+
+:root[data-theme="dark"]{
+  --bg:#111222;--surface:rgba(27,28,47,.91);--surface-2:rgba(35,36,59,.9);
+  --line:rgba(188,177,238,.14);--line-soft:rgba(188,177,238,.08);
+  --nav-bg:rgba(20,21,38,.82);--chip-bg:rgba(255,255,255,.07);
+  --stage-a:#17283a;--stage-b:#25213f;--stage-c:#142e2b;--mom-hero-b:#2b203c;
+}
+:root[data-theme="dark"] .main{background:
+  radial-gradient(circle at 10% 8%,rgba(78,112,171,.25),transparent 28%),
+  radial-gradient(circle at 90% 16%,rgba(125,77,165,.24),transparent 31%),
+  linear-gradient(155deg,#111222,#15182a 56%,#111d28)}
+:root[data-theme="dark"] .main::before,:root[data-theme="dark"] .main::after{opacity:.11}
+:root[data-theme="dark"] .mom-hero{background:linear-gradient(140deg,rgba(35,32,54,.96),rgba(45,34,65,.93) 52%,rgba(27,48,68,.92))}
+:root[data-theme="dark"] .baby-stage{background:linear-gradient(145deg,rgba(24,45,60,.94),rgba(39,35,63,.92) 48%,rgba(21,49,45,.92))}
+:root[data-theme="dark"] .panel,:root[data-theme="dark"] .metric,:root[data-theme="dark"] .grp,:root[data-theme="dark"] .timeline-card,:root[data-theme="dark"] .daily-row,:root[data-theme="dark"] .act-row{border-color:rgba(195,184,239,.1)}
+:root[data-theme="dark"] .schedule-card{background:rgba(39,40,64,.78);border-color:rgba(194,182,239,.11)}
+
+@media(prefers-reduced-motion:no-preference){
+  .hero,.baby-stage,.panel,.quick-tile,.mf-core-plan{animation:dreamCloudIn .42s cubic-bezier(.2,.75,.25,1) both}
+  .quick-grid .quick-tile:nth-child(2),.metric-grid .metric:nth-child(2){animation-delay:.035s}.quick-grid .quick-tile:nth-child(3),.metric-grid .metric:nth-child(3){animation-delay:.07s}.quick-grid .quick-tile:nth-child(4),.metric-grid .metric:nth-child(4){animation-delay:.105s}
+  @keyframes dreamCloudIn{from{opacity:0;transform:translateY(7px) scale(.992)}to{opacity:1;transform:none}}
+}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
 }

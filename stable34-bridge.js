@@ -25,21 +25,21 @@ function addStyles(){
   style.id='mfStable34BridgeStyles';
   style.textContent=`
     :root:not([data-theme="dark"]) body[data-screen="mom-home"] .main{
-      background:radial-gradient(circle at 90% 7%,rgba(198,167,255,.24),transparent 27%),radial-gradient(circle at 8% 28%,rgba(255,203,220,.18),transparent 25%),linear-gradient(180deg,#f9f5ff 0%,#f7f7fc 48%,#f1f7ff 100%);
+      background:radial-gradient(circle at 10% 8%,rgba(194,220,255,.55),transparent 29%),radial-gradient(circle at 89% 17%,rgba(226,193,255,.46),transparent 31%),radial-gradient(circle at 60% 76%,rgba(255,205,228,.24),transparent 29%),linear-gradient(155deg,#faf7ff,#f3f6ff 58%,#edf8ff);
     }
     :root:not([data-theme="dark"]) body[data-screen="baby-home"] .main{
-      background:radial-gradient(circle at 90% 8%,rgba(167,220,255,.25),transparent 27%),radial-gradient(circle at 8% 36%,rgba(181,236,218,.20),transparent 25%),linear-gradient(180deg,#f3f9ff 0%,#f7f8fd 46%,#f1faf7 100%);
+      background:radial-gradient(circle at 10% 8%,rgba(186,226,255,.52),transparent 29%),radial-gradient(circle at 89% 17%,rgba(204,194,255,.4),transparent 31%),radial-gradient(circle at 62% 76%,rgba(184,241,226,.23),transparent 29%),linear-gradient(155deg,#f5f9ff,#f3f4ff 55%,#edf9f6);
     }
     :root:not([data-theme="dark"]) body[data-screen="mom-home"] .topbar{background:rgba(249,245,255,.88)}
     :root:not([data-theme="dark"]) body[data-screen="baby-home"] .topbar{background:rgba(243,249,255,.88)}
-    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .mom-hero{background:linear-gradient(135deg,#fff9fd 0%,#f6edff 48%,#e9efff 100%)!important;border-color:#e5d8fb!important}
-    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .mf-core-plan{background:linear-gradient(135deg,#f7efff 0%,#f3f0ff 45%,#edf6ff 100%)!important;border-color:#ddd3f3!important}
-    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .panel{background:linear-gradient(145deg,rgba(255,255,255,.90),rgba(244,240,255,.86))!important;border-color:#e3dcf1!important}
-    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .schedule-card{background:#f6f3fc!important;border-color:#e8e0f4!important}
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .mom-hero{background:radial-gradient(circle at 88% 12%,rgba(255,255,255,.76),transparent 26%),linear-gradient(140deg,rgba(255,255,255,.96),rgba(239,230,255,.92) 52%,rgba(223,241,255,.91))!important;border-color:rgba(255,255,255,.76)!important}
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .mf-core-plan{background:radial-gradient(circle at 90% 8%,rgba(255,255,255,.72),transparent 28%),linear-gradient(145deg,rgba(253,249,255,.95),rgba(239,232,255,.92) 55%,rgba(230,244,255,.91))!important;border-color:rgba(255,255,255,.76)!important}
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .panel{background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(245,240,255,.82))!important;border-color:rgba(255,255,255,.78)!important}
+    :root:not([data-theme="dark"]) body[data-screen="mom-home"] .schedule-card{background:rgba(255,255,255,.67)!important;border-color:rgba(118,94,171,.1)!important}
     :root:not([data-theme="dark"]) body[data-screen="mom-home"] .schedule-card.done{background:#e9f7f0!important;border-color:#cae9db!important}
     :root:not([data-theme="dark"]) body[data-screen="mom-home"] .schedule-card.mf-r2-next{background:#eee5ff!important;border-color:#cab5f2!important}
-    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .timeline-card{background:linear-gradient(135deg,#f7fbff 0%,#edf8ff 50%,#eefaf5 100%)!important;border-color:#d8e9ef!important}
-    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .panel{background:linear-gradient(145deg,rgba(255,255,255,.93),rgba(237,248,255,.82))!important;border-color:#dcebf2!important}
+    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .timeline-card{background:linear-gradient(135deg,rgba(255,255,255,.91),rgba(235,247,255,.84) 50%,rgba(235,250,245,.83))!important;border-color:rgba(255,255,255,.78)!important}
+    :root:not([data-theme="dark"]) body[data-screen="baby-home"] .panel{background:linear-gradient(145deg,rgba(255,255,255,.91),rgba(235,247,255,.8))!important;border-color:rgba(255,255,255,.78)!important}
     :root:not([data-theme="dark"]) body[data-screen="baby-home"] .mf-care-ribbon button:nth-child(1){background:#edf0ff!important;color:#565fad!important}
     :root:not([data-theme="dark"]) body[data-screen="baby-home"] .mf-care-ribbon button:nth-child(2){background:#fff0f5!important;color:#aa5576!important}
     :root:not([data-theme="dark"]) body[data-screen="baby-home"] .mf-care-ribbon button:nth-child(3){background:#eaf6ff!important;color:#397a9e!important}
