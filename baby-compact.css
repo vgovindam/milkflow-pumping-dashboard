@@ -1,5 +1,6 @@
-/* MilkFlow Baby home compact pass.
-   Reduce vertical stacking while preserving readable hierarchy and large tap targets. */
+/* MilkFlow Baby home compact pass v2.
+   Use the open right side for summary numbers, enlarge the baby photo,
+   and reduce overall hero height without shrinking important content. */
 
 body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2{
   min-height:0!important;
@@ -8,117 +9,161 @@ body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2{
 @media(max-width:760px){
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2{
     min-height:0!important;
-    padding:12px 13px 13px!important;
+    padding:11px 12px 12px!important;
+    display:grid!important;
+    grid-template-columns:94px minmax(0,1fr) minmax(126px,.92fr)!important;
+    grid-template-areas:
+      "greeting greeting greeting"
+      "photo name glance"
+      "photo age stats"!important;
+    column-gap:9px!important;
+    row-gap:5px!important;
+    align-items:center!important;
     border-radius:30px 38px 31px 36px / 34px 29px 39px 31px!important;
   }
 
-  /* One clean vertical rhythm: greeting -> identity -> glance -> stats. */
-  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-profile{
-    grid-template-columns:70px minmax(0,1fr)!important;
-    grid-template-areas:
-      "greeting greeting"
-      "photo name"
-      "photo age"!important;
-    column-gap:11px!important;
-    row-gap:0!important;
+  /* Flatten the old nested layout so every hero element can use the full card grid. */
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-profile,
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy{
+    display:contents!important;
   }
 
-  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-profile .mf-profile-photo{
-    width:70px!important;
-    height:70px!important;
-    border-width:4px!important;
-  }
-
+  /* Slim full-width greeting. */
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy .welcome{
-    min-height:32px!important;
-    margin:0 0 9px!important;
+    grid-area:greeting!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:none!important;
+    min-height:31px!important;
+    margin:0 0 4px!important;
     padding:5px 9px!important;
     border-radius:13px!important;
     font-size:12.5px!important;
     line-height:1.15!important;
   }
-
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-greeting-mark{
     width:22px!important;
     height:22px!important;
     font-size:11px!important;
   }
 
+  /* Larger photo is now the anchor of the left side. */
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-profile .mf-profile-photo{
+    grid-area:photo!important;
+    width:94px!important;
+    height:94px!important;
+    border-width:4px!important;
+    align-self:center!important;
+  }
+
+  /* Name and age occupy the middle instead of leaving the right side empty. */
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy h2{
-    font-size:30px!important;
+    grid-area:name!important;
+    margin:0!important;
+    font-size:28px!important;
     line-height:.98!important;
     align-self:end!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
   }
-
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy>small{
-    margin:4px 0 0!important;
-    font-size:11px!important;
-    line-height:1.2!important;
+    grid-area:age!important;
+    margin:1px 0 0!important;
+    font-size:10.5px!important;
+    line-height:1.15!important;
+    align-self:start!important;
   }
 
-  /* The sentence repeated information already represented by the controls below. */
+  /* Repeated explanatory copy is unnecessary on mobile. */
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-copy-note{
     display:none!important;
   }
 
+  /* Move the summary label + numbers into the previously empty right column. */
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-glance-title{
-    margin:9px 2px 5px!important;
-    gap:5px!important;
-    font-size:10px!important;
+    grid-area:glance!important;
+    align-self:end!important;
+    justify-self:stretch!important;
+    margin:0 1px 1px!important;
+    gap:4px!important;
+    font-size:8.8px!important;
     line-height:1!important;
+    white-space:nowrap!important;
   }
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-glance-title svg{
-    width:13px!important;
-    height:13px!important;
+    width:11px!important;
+    height:11px!important;
   }
-
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-stats{
-    gap:7px!important;
+    grid-area:stats!important;
+    align-self:start!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:5px!important;
   }
-
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-stat{
-    min-height:60px!important;
-    grid-template-columns:39px minmax(0,1fr)!important;
-    gap:7px!important;
-    padding:6px 9px 6px 7px!important;
-    border-radius:19px 16px 20px 17px / 18px 20px 16px 19px!important;
+    min-height:43px!important;
+    width:100%!important;
+    grid-template-columns:32px minmax(0,1fr)!important;
+    gap:6px!important;
+    padding:5px 7px 5px 6px!important;
+    border-radius:15px 13px 16px 14px / 14px 16px 13px 15px!important;
   }
-
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-summary-animal{
-    width:38px!important;
-    height:38px!important;
-    padding:4px!important;
+    width:31px!important;
+    height:31px!important;
+    padding:3px!important;
   }
-
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-stat-copy strong{
-    font-size:16px!important;
+    font-size:15px!important;
     line-height:1!important;
+    white-space:nowrap!important;
   }
   html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-baby-stat-copy span{
     margin-top:2px!important;
-    font-size:9.5px!important;
-    line-height:1.08!important;
+    font-size:8.8px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
   }
 
-  /* Keep decoration from consuming perceived space. */
-  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2>.bear{
-    width:68px!important;
-    height:68px!important;
-    right:-5px!important;
-    top:4px!important;
-    opacity:.07!important;
-  }
-  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-star.one{
-    right:34px!important;
-    top:15px!important;
-    opacity:.48!important;
-  }
-  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-star.two{
+  /* Decorative art should not compete with the data column. */
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2>.bear,
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2>.bunny,
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-star{
     display:none!important;
   }
 }
 
-/* Slight tightening on larger screens as well, without making the desktop card cramped. */
+/* Very narrow phones: keep the same structure but protect the center label. */
+@media(max-width:390px){
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2{
+    grid-template-columns:88px minmax(0,1fr) minmax(118px,.9fr)!important;
+    column-gap:7px!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-profile .mf-profile-photo{
+    width:88px!important;
+    height:88px!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-copy h2{
+    font-size:25px!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-animal-stat{
+    grid-template-columns:29px minmax(0,1fr)!important;
+    padding-left:5px!important;
+    padding-right:5px!important;
+  }
+  html body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2 .mf-summary-animal{
+    width:29px!important;
+    height:29px!important;
+  }
+}
+
+/* Desktop/tablet: keep a little more breathing room. */
 @media(min-width:761px){
   body[data-screen="baby-home"] .mf-animal-hero.mf-baby-experience-v2{
     padding:19px 22px 18px!important;
