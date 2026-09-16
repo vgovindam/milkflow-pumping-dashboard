@@ -25,7 +25,6 @@ jobs:
         uses: actions/checkout@v6
       - name: Validate production JavaScript
         run: |
-          node --check stable34-bridge.js
           node --check app.js
           node --check app-reliability.js
           node --check core-ui.js
@@ -40,7 +39,6 @@ jobs:
       - name: Verify canonical production surface
         run: |
           test -f index.html
-          test -f stable34-bridge.js
           test -f app.js
           test -f app-reliability.js
           test -f core-ui.js
@@ -51,52 +49,35 @@ jobs:
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
-          grep -q 'styles.css?build=stable45' index.html
-          grep -q 'stable34-bridge.js?build=stable45' index.html
-          grep -q 'app.js?build=stable45' index.html
-          grep -q 'core-ui.js?build=stable45' index.html
-          grep -q 'family-chat.js?build=stable45' index.html
-          grep -q 'manifest.webmanifest?build=stable45' index.html
-          grep -q "milkflow-stable45" sw.js
+          grep -q 'styles.css?build=stable46' index.html
+          grep -q 'app.js?build=stable46' index.html
+          grep -q 'core-ui.js?build=stable46' index.html
+          grep -q 'family-chat.js?build=stable46' index.html
+          grep -q 'manifest.webmanifest?build=stable46' index.html
+          grep -q "milkflow-stable46" sw.js
           grep -q 'familyChatEndpoints' config.js
-          grep -q 'correctedPlan' stable34-bridge.js
-          grep -q 'mf-r2-highlights{display:none' stable34-bridge.js
-          grep -q 'body\[data-screen="mom-home"\].*main' stable34-bridge.js
-          grep -q 'body\[data-screen="baby-home"\].*main' stable34-bridge.js
-          grep -q 'mf-top-orbs' core-ui.js
-          grep -q 'mf-mom-orbs' core-ui.js
-          grep -q 'mf-mom-hero-photo' core-ui.js
-          grep -q 'mf-last-feed-band' core-ui.js
-          grep -q 'mf-last-feed-age' core-ui.js
-          grep -q ':root\[data-theme="dark"\] .mf-top-orb' core-ui.js
-          grep -q 'relativeAgo' core-ui.js
-          grep -q 'lastFeedText' core-ui.js
-          grep -q 'mf-dream-hero' core-ui.js
-          grep -q 'mf-dream-journey' core-ui.js
-          grep -q 'mf-dream-progress' core-ui.js
+          ! grep -q 'stable34-bridge.js' index.html
+          grep -q 'milkflow:base-rendered' app.js
+          grep -q 'aria-label="Mom dashboard"' core-ui.js
+          grep -q 'aria-label="Baby dashboard"' core-ui.js
+          grep -q 'data-mf-target="5"' core-ui.js
+          grep -q 'data-mf-target="6"' core-ui.js
+          grep -q 'function openPlanDialog' core-ui.js
+          grep -q 'mf-x-feed-grid' core-ui.js
+          grep -q 'mf-x-diapers' core-ui.js
+          grep -q 'mf-x-list' core-ui.js
           grep -q 'function animalSticker' core-ui.js
-          grep -q 'mf-animal-hero' core-ui.js
-          grep -q ':root\[data-theme="dark"\] .mf-animal-hero' core-ui.js
           grep -q 'function decorateApp' core-ui.js
           grep -q 'data-realm="mom"' core-ui.js
-          grep -q 'mf-dream-mobile-summary' core-ui.js
-          grep -q 'width:138px;height:138px' core-ui.js
-          grep -q 'min-height:122px;padding:72px' core-ui.js
-          grep -q 'min-height:92px!important' core-ui.js
-          grep -q 'outline:0!important' core-ui.js
           grep -q "momTab.textContent=S.profile.momName||'Mom'" app.js
           grep -q 'padding:14px 13px calc(112px' styles.css
-          grep -q 'Your day, beautifully paced' core-ui.js
-          grep -q 'mf-feed-card milk' core-ui.js
-          grep -q 'min-height:108px' core-ui.js
-          grep -q 'border-radius:38px 29px 43px 32px' core-ui.js
-          grep -q 'min-width:30px;height:30px' core-ui.js
           grep -q 'body:not(\[data-screen\^="mom-"\]) #mfChatButton' core-ui.js
           grep -q 'milkflow:base-rendered' core-ui.js
           grep -q 'data-feed-type="expressed_milk"' core-ui.js
-          grep -q 'mf-diaper-cluster' core-ui.js
           grep -q 'data-sleep' core-ui.js
           grep -q 'data-growth' core-ui.js
+          grep -q 'for(const url of urls)' family-chat.js
+          grep -q '<strong>Pump coach</strong>' family-chat.js
           ! grep -q 'chat-reliability.js' index.html
           ! grep -q 'runtime-stability.js' index.html
           ! grep -q 'smart-pumping.js' index.html

@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>MilkFlow Family</title>
-  <link rel="manifest" href="manifest.webmanifest?build=stable45">
+  <link rel="manifest" href="manifest.webmanifest?build=stable46">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167.png">
@@ -18,18 +18,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?build=stable45">
+  <link rel="stylesheet" href="styles.css?build=stable46">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="config.js?build=stable45" defer></script>
-  <script src="stable34-bridge.js?build=stable45" defer></script>
-  <script src="app.js?build=stable45" defer></script>
-  <script src="app-reliability.js?build=stable45" defer></script>
-  <script src="core-ui.js?build=stable45" defer></script>
-  <script src="ai-coach-client.js?build=stable45" defer></script>
-  <script src="app-update-notice.js?build=stable45" defer></script>
-  <script src="family-chat.js?build=stable45" defer></script>
+  <script src="config.js?build=stable46" defer></script>
+  <script src="app.js?build=stable46" defer></script>
+  <script src="app-reliability.js?build=stable46" defer></script>
+  <script src="core-ui.js?build=stable46" defer></script>
+  <script src="ai-coach-client.js?build=stable46" defer></script>
+  <script src="app-update-notice.js?build=stable46" defer></script>
+  <script src="family-chat.js?build=stable46" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -75,7 +74,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?build=stable45', { updateViaCache: 'none' })
+      navigator.serviceWorker.register('./sw.js?build=stable46', { updateViaCache: 'none' })
         .then(reg => reg.update().catch(() => {}))
         .catch(err => console.warn('SW registration skipped', err));
     });
