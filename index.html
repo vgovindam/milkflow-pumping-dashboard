@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="styles.css?build=stable45">
   <link rel="stylesheet" href="care-polish.css?build=stable45-care1">
   <link rel="stylesheet" href="layout-fixes.css?build=stable45-baby3">
-  <link rel="stylesheet" href="baby-compact.css?build=stable45-baby4">
+  <link rel="stylesheet" href="baby-compact.css?build=stable45-baby5">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
@@ -79,7 +79,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?build=stable45-baby4', { updateViaCache: 'none' })
+      navigator.serviceWorker.register('./sw.js?build=stable45-baby5', { updateViaCache: 'none' })
         .then(reg => reg.update().catch(() => {}))
         .catch(err => console.warn('SW registration skipped', err));
     });
