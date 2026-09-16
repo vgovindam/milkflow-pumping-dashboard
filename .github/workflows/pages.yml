@@ -50,12 +50,12 @@ jobs:
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
-          grep -q 'stable34-bridge.js?build=stable39' index.html
-          grep -q 'app.js?build=stable39' index.html
-          grep -q 'core-ui.js?build=stable39' index.html
-          grep -q 'family-chat.js?build=stable39' index.html
-          grep -q 'manifest.webmanifest?build=stable39' index.html
-          grep -q "milkflow-stable39" sw.js
+          grep -q 'stable34-bridge.js?build=stable40' index.html
+          grep -q 'app.js?build=stable40' index.html
+          grep -q 'core-ui.js?build=stable40' index.html
+          grep -q 'family-chat.js?build=stable40' index.html
+          grep -q 'manifest.webmanifest?build=stable40' index.html
+          grep -q "milkflow-stable40" sw.js
           grep -q 'familyChatEndpoints' config.js
           grep -q 'correctedPlan' stable34-bridge.js
           grep -q 'mf-r2-highlights{display:none' stable34-bridge.js
@@ -75,6 +75,8 @@ jobs:
           grep -q 'function animalSticker' core-ui.js
           grep -q 'mf-animal-hero' core-ui.js
           grep -q ':root\[data-theme="dark"\] .mf-animal-hero' core-ui.js
+          grep -q 'function decorateApp' core-ui.js
+          grep -q 'data-realm="mom"' core-ui.js
           grep -q 'mf-feed-card milk' core-ui.js
           grep -q 'min-height:108px' core-ui.js
           grep -q 'border-radius:38px 29px 43px 32px' core-ui.js

@@ -1,6 +1,6 @@
 // MilkFlow service worker.
 // Network-first app shell; Firestore/Firebase traffic is left to Firebase.
-const VERSION = 'milkflow-stable39';
+const VERSION = 'milkflow-stable40';
 const SHELL = [
   './', './index.html', './styles.css', './stable34-bridge.js', './app.js', './app-reliability.js', './core-ui.js', './ai-coach-client.js', './app-update-notice.js', './family-chat.js', './config.js',
   './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'
