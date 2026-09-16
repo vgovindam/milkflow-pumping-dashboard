@@ -69,7 +69,9 @@ jobs:
           grep -q ':root\[data-theme="dark"\] .mf-top-orb' core-ui.js
           grep -q 'relativeAgo' core-ui.js
           grep -q 'lastFeedText' core-ui.js
-          grep -q "'Pumps','mom-pumps'" core-ui.js
+          grep -q 'mf-dream-hero' core-ui.js
+          grep -q 'mf-dream-journey' core-ui.js
+          grep -q 'mf-dream-progress' core-ui.js
           grep -q "'Vs avg','baby-usual'" core-ui.js
           grep -q 'mf-feed-card milk' core-ui.js
           grep -q 'min-height:108px' core-ui.js
