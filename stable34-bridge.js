@@ -103,7 +103,7 @@ function syncMomPlan(){
   const view=document.getElementById('view'),hero=view?.querySelector('.mom-hero');if(!view||!hero)return;
   const chip=hero.querySelector('.chips .chip');if(chip)chip.textContent=p.future?.[0]?`Next ${to12(p.future[0])}`:'Pump target complete';
   const core=document.getElementById('mfCorePlan');
-  if(core){
+  if(core&&!core.classList.contains('mf-dream-journey')){
     const next=p.future?.length?`${to12(p.future[0]-10)}–${to12(p.future[0]+10)}`:'Target reached for today',last=p.last||p.actual?.at?.(-1);
     core.innerHTML=`<div class="mf-core-plan-head"><strong>Today’s live plan</strong><span>${p.actual?.length||0} of ${p.target||6} done</span></div><div class="mf-core-next">${esc(next)}</div><div class="mf-core-sub">${last?`Updated from your ${to12(mins(last.time))} pump. If a planned time passes, the next session moves forward and the rest of today reflows.`:'Uses your saved baseline until today’s first pump is logged.'}</div>${p.future?.length?`<div class="mf-core-times">${p.future.map((m,i)=>`<span class="mf-core-time ${i===0?'next':''}">${to12(m)}</span>`).join('')}</div>`:''}`;
   }

@@ -1034,6 +1034,10 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
 .quick-tile{border:1px solid rgba(255,255,255,.62);box-shadow:var(--shadow-tile)}
 .quick-tile::after{content:"";position:absolute;width:94px;height:52px;right:-20px;bottom:-23px;border-radius:50%;background:rgba(255,255,255,.26);filter:blur(1px);pointer-events:none}
 .brand-logo{border-radius:50% 50% 44% 56% / 48% 43% 57% 52%;background:linear-gradient(145deg,#8c70e8,#d47ebd 58%,#73b8e8);box-shadow:0 12px 28px rgba(132,96,211,.32),inset 0 1px 0 rgba(255,255,255,.4)}
+.sidebar{background:radial-gradient(circle at 18% 5%,rgba(145,104,225,.25),transparent 24%),radial-gradient(circle at 82% 54%,rgba(66,129,174,.13),transparent 34%),linear-gradient(180deg,#171729,#111522 72%,#10131d)}
+.sidebar:after{content:"";position:absolute;left:-55px;bottom:9%;width:220px;height:70px;border-radius:999px;background:rgba(255,255,255,.035);box-shadow:70px -28px 0 12px rgba(255,255,255,.025);pointer-events:none}
+.sidebar nav button{position:relative;z-index:1;border:1px solid transparent}.sidebar nav button.active{background:linear-gradient(135deg,rgba(138,105,220,.26),rgba(100,142,197,.17));border-color:rgba(211,201,246,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 24px rgba(0,0,0,.1)}
+.side-status{position:relative;z-index:1;background:rgba(255,255,255,.025);backdrop-filter:blur(12px)}
 .chip,.segmented,.mobile-workspace{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .schedule-card{border-color:rgba(119,97,171,.1);background:rgba(255,255,255,.68);box-shadow:0 8px 20px rgba(85,70,131,.06)}
 .schedule-card.done{background:linear-gradient(145deg,rgba(229,249,240,.94),rgba(237,250,255,.9));border-color:rgba(74,169,134,.14)}
