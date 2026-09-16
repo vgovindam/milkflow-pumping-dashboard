@@ -29,6 +29,7 @@ jobs:
           node --check app.js
           node --check app-reliability.js
           node --check core-ui.js
+          node --check baby-experience.js
           node --check ai-coach-client.js
           node --check app-update-notice.js
           node --check family-chat.js
@@ -44,10 +45,12 @@ jobs:
           test -f app.js
           test -f app-reliability.js
           test -f core-ui.js
+          test -f baby-experience.js
           test -f ai-coach-client.js
           test -f app-update-notice.js
           test -f family-chat.js
           test -f styles.css
+          test -f care-polish.css
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
@@ -55,9 +58,11 @@ jobs:
           grep -q 'stable34-bridge.js?build=stable45' index.html
           grep -q 'app.js?build=stable45' index.html
           grep -q 'core-ui.js?build=stable45' index.html
+          grep -q 'baby-experience.js?build=stable45-baby2' index.html
           grep -q 'family-chat.js?build=stable45' index.html
           grep -q 'manifest.webmanifest?build=stable45' index.html
           grep -q "milkflow-stable45" sw.js
+          grep -q 'baby-experience.js' sw.js
           grep -q 'familyChatEndpoints' config.js
           grep -q 'correctedPlan' stable34-bridge.js
           grep -q 'mf-r2-highlights{display:none' stable34-bridge.js
@@ -97,6 +102,9 @@ jobs:
           grep -q 'mf-diaper-cluster' core-ui.js
           grep -q 'data-sleep' core-ui.js
           grep -q 'data-growth' core-ui.js
+          grep -q 'function greetingFor' baby-experience.js
+          grep -q 'mf-stat-milk' baby-experience.js
+          grep -q 'mf-label-icon' baby-experience.js
           ! grep -q 'chat-reliability.js' index.html
           ! grep -q 'runtime-stability.js' index.html
           ! grep -q 'smart-pumping.js' index.html
