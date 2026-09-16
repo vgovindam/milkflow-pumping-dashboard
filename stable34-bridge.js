@@ -84,11 +84,13 @@ function installPlannerReconciler(){
   if(plannerInstalled||!window.MilkFlowDynamicPump?.getPlan)return;
   plannerInstalled=true;
   const api=window.MilkFlowDynamicPump,original={
-    getPlan:api.getPlan.bind(api),previewTarget:api.previewTarget?.bind(api),setTodayTarget:api.setTodayTarget?.bind(api),setTodayNextTime:api.setTodayNextTime?.bind(api),clearTodayNextTime:api.clearTodayNextTime?.bind(api)
+    getPlan:api.getPlan.bind(api),previewTarget:api.previewTarget?.bind(api),setTodayTarget:api.setTodayTarget?.bind(api),setDayTarget:api.setDayTarget?.bind(api),setTomorrowTarget:api.setTomorrowTarget?.bind(api),setTodayNextTime:api.setTodayNextTime?.bind(api),clearTodayNextTime:api.clearTodayNextTime?.bind(api)
   };
   api.getPlan=()=>correctedPlan(original.getPlan());
   if(original.previewTarget)api.previewTarget=n=>correctedPlan(original.previewTarget(n));
   if(original.setTodayTarget)api.setTodayTarget=n=>correctedPlan(original.setTodayTarget(n));
+  if(original.setDayTarget)api.setDayTarget=(d,n)=>original.setDayTarget(d,n);
+  if(original.setTomorrowTarget)api.setTomorrowTarget=n=>original.setTomorrowTarget(n);
   if(original.setTodayNextTime)api.setTodayNextTime=v=>correctedPlan(original.setTodayNextTime(v));
   if(original.clearTodayNextTime)api.clearTodayNextTime=()=>correctedPlan(original.clearTodayNextTime());
 }

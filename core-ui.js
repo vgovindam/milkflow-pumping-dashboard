@@ -21,7 +21,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const read=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{}')||{};}catch{return {};}};
 
 function rawPrefs(){try{return JSON.parse(localStorage.getItem(COACH_KEY)||'{}')||{};}catch{return {};}}
-function prefs(){const p=rawPrefs(),d=today(),daily=Number(p.dayTargets?.[d]);return{target:Number.isFinite(daily)?daily:(+p.target||6),mode:p.mode||'normal',nextOverrideByDate:p.nextOverrideByDate||{},dayTargets:p.dayTargets||{}};}
+function prefs(){const p=rawPrefs(),d=today(),daily=Number(p.dayTargets?.[d]);return{target:Number.isFinite(daily)?daily:6,mode:p.mode||'normal',nextOverrideByDate:p.nextOverrideByDate||{},dayTargets:p.dayTargets||{}};}
 function savePrefs(mutator){const old=localStorage.getItem(COACH_KEY),p=rawPrefs(),next=mutator({...p,dayTargets:{...(p.dayTargets||{})},nextOverrideByDate:{...(p.nextOverrideByDate||{})}})||p;localStorage.setItem(COACH_KEY,JSON.stringify(next));try{window.dispatchEvent(new StorageEvent('storage',{key:COACH_KEY,oldValue:old,newValue:JSON.stringify(next),storageArea:localStorage,url:location.href}));}catch{window.dispatchEvent(new CustomEvent('milkflow:coach-change'));}return next;}
 
 const livePumps=s=>(Array.isArray(s.entries)?s.entries:[]).filter(e=>e?.type==='pump'&&!e?.voidedAt&&e?.date&&e?.time);
@@ -66,9 +66,10 @@ function plan(s=read(),p=prefs()){
   return{target,actual,remaining,future,source:Number.isFinite(override)&&override>lastM?'override':'actual',last};
 }
 function setTodayTarget(n){n=clamp(Math.round(Number(n)||6),4,8);savePrefs(p=>{p.dayTargets[today()]=n;return p;});return plan(read(),prefs());}
+function setDayTarget(day,n){n=clamp(Math.round(Number(n)||6),4,8);savePrefs(p=>{p.dayTargets[day]=n;delete p.target;return p;});return n;}
 function setTodayNextTime(value){const m=Number.isFinite(Number(value))?Number(value):mins(value);if(!Number.isFinite(m))return plan(read(),prefs());savePrefs(p=>{p.nextOverrideByDate[today()]=clamp(Math.round(m),0,1439);return p;});return plan(read(),prefs());}
 function clearTodayNextTime(){savePrefs(p=>{delete p.nextOverrideByDate[today()];return p;});return plan(read(),prefs());}
-window.MilkFlowDynamicPump={getPlan:()=>plan(read(),prefs()),previewTarget:n=>plan(read(),{...prefs(),target:clamp(Math.round(Number(n)||6),4,8)}),setTodayTarget,setTodayNextTime,clearTodayNextTime};
+window.MilkFlowDynamicPump={getPlan:()=>plan(read(),prefs()),previewTarget:n=>plan(read(),{...prefs(),target:clamp(Math.round(Number(n)||6),4,8)}),setTodayTarget,setDayTarget,setTomorrowTarget:n=>setDayTarget(dateShift(1),n),setTodayNextTime,clearTodayNextTime};
 
 function icon(kind){
   const p={
@@ -169,6 +170,7 @@ body:not([data-screen^="mom-"]) #mfChatButton,body:not([data-screen^="mom-"]) #m
 .mf-top-orb-wrap>span{display:block;margin-top:5px;font-size:10px;line-height:1.05;font-weight:850;color:var(--muted);white-space:nowrap}
 .mf-top-orb.mom-pumps{--orb-ring:#7044dd;--orb-fill:#eadcff}.mf-top-orb.mom-goal{--orb-ring:#c94f86;--orb-fill:#ffe0ec}.mf-top-orb.mom-avg{--orb-ring:#278e72;--orb-fill:#d9f4e9}
 .mf-top-orb.baby-milk{--orb-ring:#198fc8;--orb-fill:#d6efff}.mf-top-orb.baby-usual{--orb-ring:#7255c9;--orb-fill:#e7defd}.mf-top-orb.baby-diaper{--orb-ring:#288f72;--orb-fill:#d8f3e8}
+.mf-target-dialog{width:min(430px,calc(100vw - 28px));border:0;border-radius:24px;padding:0;background:var(--surface);color:var(--ink);box-shadow:0 24px 80px rgba(25,22,42,.28)}.mf-target-dialog::backdrop{background:rgba(25,22,42,.42);backdrop-filter:blur(3px)}.mf-target-dialog form{padding:20px}.mf-target-dialog .dialog-head{padding:0;display:flex;align-items:flex-start;gap:12px}.mf-target-dialog .dialog-head div{flex:1}.mf-target-dialog .dialog-head small{display:block;color:var(--mom);font-size:10px;font-weight:900;letter-spacing:.12em;margin-bottom:5px}.mf-target-dialog .dialog-head h2{margin:0;font-size:22px}.mf-target-dialog .dialog-head>button{border:0;background:var(--surface-2);color:var(--muted);width:38px;height:38px;border-radius:12px;font-size:22px}.mf-target-dialog p{color:var(--muted);font-size:13px;line-height:1.5;margin:14px 0}.mf-target-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mf-target-options button{border:1px solid var(--line);border-radius:18px;background:var(--surface-2);color:var(--ink);padding:16px 12px;text-align:left}.mf-target-options strong,.mf-target-options span{display:block}.mf-target-options strong{font-size:16px}.mf-target-options span{font-size:11px;color:var(--muted);margin-top:4px}.mf-target-options button:first-child{border-color:color-mix(in srgb,var(--mom) 40%,var(--line));background:color-mix(in srgb,var(--mom) 9%,var(--surface))}.mf-target-later{width:100%;margin-top:10px;border:0;background:transparent;color:var(--muted);padding:11px;font-weight:800}
 
 /* ---------- Mom ---------- */
 .mf-mom-copy-line{margin-bottom:2px}.mf-mom-orbs{display:flex;gap:10px;align-items:flex-start;margin:5px 0 10px;padding-left:1px}.mf-mom-orbs .mf-top-orb-wrap{width:60px}.mf-mom-orbs .mf-top-orb{width:56px;height:56px}.mf-mom-orbs .mf-top-orb strong{font-size:15px}.mf-mom-orbs .mf-top-orb-wrap>span{font-size:10px}
@@ -270,6 +272,22 @@ function renderMom(s){
   if(!card){card=document.createElement('section');card.id='mfCorePlan';card.className='mf-core-plan';hero.insertAdjacentElement('afterend',card);}
   const next=x.remaining&&x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:'Target reached for today';
   card.innerHTML=`<div class="mf-core-plan-head"><strong>Today’s live plan</strong><span>${x.actual.length} of ${x.target} done</span></div><div class="mf-core-next">${esc(next)}</div><div class="mf-core-sub">${x.source==='override'?'Adjusted for how today is going.':x.source==='actual'&&x.last?`Updated from your ${to12(mins(x.last.time))} pump and your recent time-of-day spacing.`:'Uses your saved baseline until today’s first pump is logged.'}</div>${x.future.length?`<div class="mf-core-times">${x.future.map((m,i)=>`<span class="mf-core-time ${i===0?'next':''}">${to12(m)}</span>`).join('')}</div>`:''}`;
+  maybeAskTomorrow(x);
+}
+
+function tomorrowPromptKey(){return `milkflow-pump-choice-${today()}`;}
+function closeTomorrowPrompt(){const d=document.getElementById('mfTomorrowTargetDialog');if(d?.open)d.close();}
+function maybeAskTomorrow(x){
+  if(x.remaining>0||!x.actual.length||localStorage.getItem(tomorrowPromptKey()))return;
+  let d=document.getElementById('mfTomorrowTargetDialog');
+  if(!d){
+    d=document.createElement('dialog');d.id='mfTomorrowTargetDialog';d.className='dialog mf-target-dialog';
+    d.innerHTML=`<form method="dialog"><div class="dialog-head"><div><small>TODAY COMPLETE</small><h2>How many pumps tomorrow?</h2></div><button value="cancel" aria-label="Decide later">×</button></div><p>Today’s choice will not carry over. Pick tomorrow’s plan, or decide tomorrow.</p><div class="mf-target-options"><button type="button" data-tomorrow-target="6"><strong>6 pumps</strong><span>Usual plan</span></button><button type="button" data-tomorrow-target="5"><strong>5 pumps</strong><span>One-day plan</span></button></div><button class="mf-target-later" value="cancel">Decide tomorrow</button></form>`;
+    document.body.appendChild(d);
+    d.addEventListener('click',e=>{const b=e.target.closest('[data-tomorrow-target]');if(!b)return;const n=Number(b.dataset.tomorrowTarget);setDayTarget(dateShift(1),n);localStorage.setItem(tomorrowPromptKey(),String(n));closeTomorrowPrompt();window.dispatchEvent(new CustomEvent('milkflow:tomorrow-target',{detail:{date:dateShift(1),target:n}}));});
+    d.addEventListener('close',()=>{if(!localStorage.getItem(tomorrowPromptKey()))localStorage.setItem(tomorrowPromptKey(),'later');});
+  }
+  if(!d.open)try{d.showModal();}catch{}
 }
 
 function renderBaby(s){

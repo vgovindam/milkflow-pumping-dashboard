@@ -14,7 +14,7 @@ let pending=null;
 const cfg=()=>window.MILKFLOW_CONFIG||{};
 function read(key,fallback={}){try{return JSON.parse(localStorage.getItem(key)||'null')||fallback}catch{return fallback}}
 const state=()=>read(STATE_KEY,{});
-const coach=()=>({target:6,mode:'normal',...read(COACH_KEY,{})});
+const coach=()=>{const p=read(COACH_KEY,{}),daily=Number(p.dayTargets?.[dayKey(new Date())]);return{...p,target:Number.isFinite(daily)?daily:6,mode:p.mode||'normal'};};
 const coachDays=()=>read(HISTORY_KEY,{});
 const user=()=>{try{return window.firebase?.auth?.().currentUser||null}catch{return null}};
 const pad=n=>String(n).padStart(2,'0');
