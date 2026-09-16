@@ -337,90 +337,47 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
   .mf-animal-copy .welcome{font-size:11px!important;line-height:1.25!important;letter-spacing:.01em!important}.mf-animal-copy h2{font-size:27px!important}.mf-animal-copy small{font-size:11px!important;line-height:1.25}.mf-animal-stat strong{font-size:14px!important}.mf-animal-stat span{font-size:10px!important;line-height:1.2}.mf-care-label{font:750 15px/1.2 var(--display)!important;letter-spacing:-.01em}.mf-care-label small{font-size:12px!important;color:var(--ink-2)}.mf-animal-checkin strong{font-size:15px}.mf-animal-checkin small{font-size:11px;opacity:.9}.mf-feed-card strong{font-size:15px!important;font-weight:800}.mf-feed-card small,.mf-diaper-blob span{font-size:11px!important}.mf-diaper-blob strong{font-size:16px!important}
   body[data-realm] .page-head h2{font-family:var(--display)!important;font-weight:750!important;line-height:1.05!important}body[data-realm] .panel-head h3{font-family:var(--display)!important;font-weight:750!important;font-size:20px!important;line-height:1.15}.page-head .eyebrow{font-size:11px!important;letter-spacing:.07em!important}.row-main strong{font-size:15px}.row-main span{font-size:11.5px!important;color:var(--ink-2)!important;line-height:1.35}.pills button{font-size:13px;font-weight:750}.bottom-nav button{font-size:10.5px!important;color:var(--ink-2)}.schedule-card strong{font-size:14px}.schedule-card small{font-size:11px}.schedule-card em{font-size:10px}.metric span{font-size:11px!important;text-transform:none!important;letter-spacing:.01em!important}.metric small{font-size:11px!important}.daily-cell span,.daily-cell b small{font-size:10.5px!important}.qa-grid span{font-size:10.5px;text-transform:none;letter-spacing:.01em}.qa-grid small{font-size:11px}.stat-ring span,.stat-ring small{font-size:10px!important}.tl-ticks span,.cbar small,.chart-rail.dim,.donut-center span,.hbar small,.journey-legend span,.band em{font-size:10px!important;color:var(--ink-2)!important}.sheet-actions button span{font-size:10.5px;color:var(--ink-2)}
 }
-
-/* ---------- MilkFlow Experience 3: one coherent mobile dashboard ---------- */
-.mf-x{display:grid;gap:14px;max-width:1080px;margin:0 auto}.mf-x button{font-family:var(--font)}
-.mf-x-card{background:color-mix(in srgb,var(--surface) 92%,transparent);border:1px solid color-mix(in srgb,var(--line) 74%,transparent);border-radius:28px;padding:19px;box-shadow:0 14px 38px rgba(54,49,92,.09);backdrop-filter:blur(18px)}
-.mf-x-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}.mf-x-section-head>div{min-width:0}.mf-x-section-head span{display:block;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:3px}.mf-x-section-head h2{margin:0;font:750 21px/1.12 var(--display);letter-spacing:-.025em}.mf-x-section-head a,.mf-x-section-head button{border:0;background:transparent;color:var(--realm-ink,var(--mom-ink));font-size:12px;font-weight:800;padding:7px 0}
-.mf-x-hero{position:relative;overflow:hidden;isolation:isolate;border-radius:32px;padding:20px;color:#fff;box-shadow:0 22px 52px rgba(64,48,115,.22)}.mf-x-hero:before,.mf-x-hero:after{content:"";position:absolute;z-index:-1;border-radius:50%;filter:blur(.2px)}.mf-x-hero:before{width:260px;height:260px;right:-92px;top:-116px;background:rgba(255,255,255,.18)}.mf-x-hero:after{width:190px;height:90px;left:-45px;bottom:-45px;background:rgba(255,255,255,.13)}
-.mf-x-hero.mom{background:linear-gradient(140deg,#7257c7 0%,#a16fd3 42%,#db83b1 73%,#6aaed4 110%)}.mf-x-hero.baby{background:linear-gradient(140deg,#267ca2 0%,#49a99d 45%,#7acb9d 70%,#e4bd77 120%)}
-.mf-x-profile{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:14px}.mf-x-greeting{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:rgba(255,255,255,.9)}.mf-x-greeting i{font-style:normal;width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.16)}.mf-x-name{margin:9px 0 0;font:650 34px/.98 var(--editorial);letter-spacing:-.035em;color:#fff}.mf-x-profile-copy>small{display:block;margin-top:7px;color:rgba(255,255,255,.82);font-size:12px;font-weight:650;line-height:1.4}
-.mf-x-photo{position:relative;width:116px;height:116px;border:6px solid rgba(255,255,255,.5);border-radius:31px 44px 35px 40px / 41px 33px 45px 35px;overflow:hidden;padding:0;background:rgba(255,255,255,.18);color:#fff;display:grid;place-items:center;box-shadow:0 14px 30px rgba(38,32,74,.2)}.mf-x-photo img{width:100%;height:100%;object-fit:cover}.mf-x-photo .placeholder{font-size:34px}
-.mf-x-glance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:16px}.mf-x-glance>div{min-width:0;padding:10px 9px;border:1px solid rgba(255,255,255,.22);border-radius:16px;background:rgba(37,27,83,.16)}.mf-x-glance span,.mf-x-glance strong{display:block}.mf-x-glance span{font-size:10px;font-weight:750;color:rgba(255,255,255,.8)}.mf-x-glance strong{margin-top:3px;font:800 18px/1.1 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mf-x-next{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;margin-top:10px;padding:14px 14px 14px 16px;border:1px solid rgba(255,255,255,.25);border-radius:21px;background:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.13)}.mf-x-next span,.mf-x-next strong,.mf-x-next small{display:block}.mf-x-next span{font-size:10px;font-weight:800;color:#fff1ca}.mf-x-next strong{margin-top:3px;font:800 20px/1.12 var(--display)}.mf-x-next small{margin-top:4px;font-size:11px;font-weight:650;color:rgba(255,255,255,.84)}.mf-x-primary{min-height:48px;border:0;border-radius:15px;padding:0 14px;background:#fff;color:#6044aa;font-size:12px;font-weight:850;box-shadow:0 10px 24px rgba(49,31,92,.2)}
-.mf-x-plan-choice{display:flex;align-items:center;gap:6px;margin-top:10px;padding:5px;border-radius:16px;background:rgba(43,29,88,.18)}.mf-x-plan-choice>span{padding-left:8px;margin-right:auto;font-size:10px;font-weight:750;color:rgba(255,255,255,.82)}.mf-x-plan-choice button{min-height:36px;border:1px solid transparent;border-radius:11px;padding:0 11px;background:transparent;color:#fff;font-size:11px;font-weight:800}.mf-x-plan-choice button.on{background:#fff;color:#5c419e;box-shadow:0 4px 14px rgba(51,31,94,.16)}.mf-x-plan-choice button.adjust{border-color:rgba(255,255,255,.25)}
-.mf-x-path{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(78px,1fr);gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 1px}.mf-x-path::-webkit-scrollbar{display:none}.mf-x-stop{position:relative;min-width:78px;text-align:center}.mf-x-stop:before{content:"";position:absolute;top:21px;left:-50%;right:50%;height:2px;background:var(--line);z-index:0}.mf-x-stop:first-child:before{display:none}.mf-x-stop i{position:relative;z-index:1;width:43px;height:43px;margin:auto;border-radius:50%;display:grid;place-items:center;border:5px solid var(--surface);background:var(--surface-2);color:var(--muted);font-style:normal;font-weight:900;box-shadow:0 5px 15px rgba(44,38,74,.08)}.mf-x-stop.done i{background:var(--good-soft);color:var(--good)}.mf-x-stop.next i{background:linear-gradient(145deg,#7853d0,#c56dad);color:#fff;box-shadow:0 7px 20px rgba(108,66,171,.25)}.mf-x-stop strong,.mf-x-stop small{display:block}.mf-x-stop strong{margin-top:7px;font-size:12px}.mf-x-stop small{margin-top:2px;font-size:10px;font-weight:700;color:var(--muted)}.mf-x-path-note{margin:12px 0 0;font-size:12px;line-height:1.5;color:var(--ink-2)}
-.mf-x-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.mf-x-action{position:relative;min-height:100px;border:0;border-radius:26px;padding:17px;text-align:left;overflow:hidden}.mf-x-action strong,.mf-x-action span{display:block}.mf-x-action strong{font:750 20px/1.1 var(--display)}.mf-x-action span{margin-top:4px;font-size:11px;font-weight:700;opacity:.8}.mf-x-action .mf-animal-sticker{position:absolute;right:8px;top:5px;width:62px;height:62px}.mf-x-action svg:not(.mf-animal-sticker svg){position:absolute;right:15px;top:15px;width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:2}.mf-x-action.pump{background:linear-gradient(145deg,#eee5ff,#d9d6ff 58%,#d9ecff);color:#54359f}.mf-x-action.nurse{background:linear-gradient(145deg,#fff0f7,#ffd8e8 60%,#f0dcff);color:#933b68}
-.mf-x-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.mf-x-metric{min-width:0;padding:14px;border-radius:20px;background:color-mix(in srgb,var(--surface) 88%,var(--realm-soft));border:1px solid color-mix(in srgb,var(--line) 76%,transparent)}.mf-x-metric span,.mf-x-metric strong,.mf-x-metric small{display:block}.mf-x-metric span{font-size:10px;font-weight:750;color:var(--ink-2)}.mf-x-metric strong{margin-top:5px;font:800 20px/1.1 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mf-x-metric small{margin-top:4px;font-size:10px;font-weight:650;color:var(--muted);line-height:1.35}
-.mf-x-list{display:grid;gap:7px}.mf-x-row{width:100%;border:0;border-radius:17px;padding:11px 12px;display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;background:var(--surface-2);text-align:left;color:var(--ink)}.mf-x-row-icon{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--realm-soft);color:var(--realm-ink)}.mf-x-row-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2}.mf-x-row strong,.mf-x-row small{display:block}.mf-x-row strong{font-size:13px}.mf-x-row small{margin-top:3px;font-size:10.5px;line-height:1.35;color:var(--muted)}.mf-x-row>em{font-style:normal;font-size:16px;color:var(--muted)}
-.mf-x-empty{padding:18px 12px;text-align:center;color:var(--ink-2)}.mf-x-empty strong,.mf-x-empty span{display:block}.mf-x-empty strong{font-size:14px}.mf-x-empty span{margin-top:5px;font-size:11px;line-height:1.45}.mf-x-empty button{margin-top:12px;min-height:42px;border:0;border-radius:13px;padding:0 15px;background:var(--realm);color:#fff;font-weight:800}
-.mf-x-baby-summary{display:grid;grid-template-columns:1.2fr repeat(2,minmax(0,.8fr));gap:8px;margin-top:16px}.mf-x-baby-summary>div{padding:11px;border-radius:16px;background:rgba(13,60,66,.18);border:1px solid rgba(255,255,255,.23)}.mf-x-baby-summary span,.mf-x-baby-summary strong,.mf-x-baby-summary small{display:block}.mf-x-baby-summary span{font-size:9.5px;font-weight:750;color:rgba(255,255,255,.78)}.mf-x-baby-summary strong{margin-top:3px;font:800 15px/1.14 var(--display)}.mf-x-baby-summary small{margin-top:3px;font-size:10px;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mf-x-feed-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.mf-x-feed{position:relative;min-height:126px;border:0;border-radius:27px;padding:74px 12px 14px;text-align:left;overflow:hidden}.mf-x-feed .mf-animal-sticker{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:66px;height:66px}.mf-x-feed strong,.mf-x-feed small{display:block;text-align:center}.mf-x-feed strong{font-size:14px}.mf-x-feed small{margin-top:3px;font-size:10.5px;font-weight:700;opacity:.82}.mf-x-feed.milk{background:linear-gradient(145deg,#bce3ff,#c9d8ff);color:#174f71}.mf-x-feed.nursing{background:linear-gradient(145deg,#ffd2e4,#f6bed8);color:#7c2851}.mf-x-feed.formula{background:linear-gradient(145deg,#ddd2ff,#c8b9f4);color:#4c377c}
-.mf-x-diapers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.mf-x-diaper{position:relative;min-height:88px;border:0;border-radius:22px;padding:48px 8px 10px;text-align:center}.mf-x-diaper .mf-animal-sticker{position:absolute;top:3px;left:50%;transform:translateX(-50%);width:49px;height:49px}.mf-x-diaper b{position:absolute;right:7px;top:7px;min-width:27px;height:27px;padding:0 6px;border-radius:99px;background:rgba(255,255,255,.8);display:grid;place-items:center;font-size:11px}.mf-x-diaper strong,.mf-x-diaper span{display:block}.mf-x-diaper strong{font-size:13px}.mf-x-diaper span{margin-top:2px;font-size:9.5px;opacity:.8}.mf-x-diaper.wet{background:#bde5fb;color:#145b86}.mf-x-diaper.poop{background:#ffdda0;color:#68420d}.mf-x-diaper.both{background:#d0bcfb;color:#46307f}
-.mf-x-more{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.mf-x-more button{min-height:52px;border:0;border-radius:16px;background:var(--surface-2);color:var(--ink-2);font-size:11px;font-weight:750}.mf-x-more svg{width:18px;height:18px;vertical-align:middle;margin-right:4px;fill:none;stroke:currentColor;stroke-width:2}
-.mf-plan-dialog{width:min(420px,calc(100vw - 24px));border:0;border-radius:25px;padding:0;background:var(--surface);color:var(--ink);box-shadow:0 30px 90px rgba(24,20,44,.3)}.mf-plan-dialog::backdrop{background:rgba(20,17,40,.48);backdrop-filter:blur(5px)}.mf-plan-dialog form{padding:20px}.mf-plan-dialog h2{margin:0;font:750 23px var(--display)}.mf-plan-dialog p{margin:7px 0 17px;color:var(--ink-2);font-size:12px;line-height:1.5}.mf-plan-dialog label span{display:block;margin-bottom:7px;font-size:11px;font-weight:800}.mf-plan-dialog input{width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;padding:0 13px;background:var(--surface-2);font-size:18px;color:var(--ink)}.mf-plan-dialog-actions{display:grid;grid-template-columns:.8fr 1.2fr;gap:8px;margin-top:14px}.mf-plan-dialog-actions button{min-height:48px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink-2);font-weight:800}.mf-plan-dialog-actions .save{border:0;background:linear-gradient(135deg,var(--btn-mom-a),var(--btn-mom-b));color:#fff}
-:root[data-theme="dark"] .mf-x-hero.mom{background:linear-gradient(140deg,#2b2154,#51336f 48%,#6b385f 76%,#28506a)}:root[data-theme="dark"] .mf-x-hero.baby{background:linear-gradient(140deg,#143a55,#245e63 48%,#276a54 74%,#6e5633)}
-:root[data-theme="dark"] .mf-x-card{background:rgba(27,28,47,.91);border-color:rgba(198,188,238,.13)}:root[data-theme="dark"] .mf-x-action.pump{background:linear-gradient(145deg,#2f2449,#3a315f);color:#d9c9ff}:root[data-theme="dark"] .mf-x-action.nurse{background:linear-gradient(145deg,#422231,#532b42);color:#ffc2dc}
-:root[data-theme="dark"] .mf-x-feed.milk{background:linear-gradient(145deg,#143b56,#263c64);color:#d2efff}:root[data-theme="dark"] .mf-x-feed.nursing{background:linear-gradient(145deg,#4c2638,#5a2c45);color:#ffc6dd}:root[data-theme="dark"] .mf-x-feed.formula{background:linear-gradient(145deg,#3b315c,#4a3b6b);color:#eadfff}
-:root[data-theme="dark"] .mf-x-diaper.wet{background:#17465f;color:#9edfff}:root[data-theme="dark"] .mf-x-diaper.poop{background:#533d14;color:#ffe0a2}:root[data-theme="dark"] .mf-x-diaper.both{background:#41305f;color:#dac9ff}:root[data-theme="dark"] .mf-x-diaper b{background:#272b3b;color:#fff}
-@media(min-width:761px){.mf-x{grid-template-columns:1.12fr .88fr}.mf-x-hero,.mf-x-card.wide{grid-column:1/-1}.mf-x-actions{align-self:start}.mf-x-photo{width:142px;height:142px}.mf-x-name{font-size:43px}}
-@media(max-width:760px){.mf-x{gap:11px}.mf-x-card{padding:15px;border-radius:23px}.mf-x-hero{padding:16px;border-radius:27px}.mf-x-photo{width:112px;height:112px}.mf-x-name{font-size:29px;max-width:200px}.mf-x-glance{margin-top:12px}.mf-x-glance strong{font-size:16px}.mf-x-next{padding:12px 11px 12px 14px}.mf-x-next strong{font-size:18px}.mf-x-primary{min-height:46px;padding:0 12px}.mf-x-plan-choice button{padding:0 9px}.mf-x-section-head h2{font-size:19px}.mf-x-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.mf-x-metric:last-child:nth-child(odd){grid-column:1/-1}.mf-x-baby-summary{grid-template-columns:1.2fr .8fr .8fr}.mf-x-baby-summary>div{padding:9px}.mf-x-baby-summary strong{font-size:13px}.mf-x-more{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:390px){.mf-x-profile{gap:9px}.mf-x-photo{width:100px;height:100px}.mf-x-name{font-size:27px;max-width:180px}.mf-x-glance>div{padding:9px 7px}.mf-x-glance strong{font-size:15px}.mf-x-plan-choice>span{display:none}.mf-x-plan-choice{justify-content:space-between}.mf-x-plan-choice button{flex:1}.mf-x-feed{padding-left:7px;padding-right:7px}.mf-x-feed strong{font-size:13px}}
 `;
   document.head.appendChild(s);
 }
 
 function profilePhoto(src,kind){if(src)return `<img src="${esc(src)}" alt="${kind==='mom'?'Mom':'Baby'} profile photo">`;return `<span class="placeholder">${kind==='mom'?'♡':'☁︎'}</span>`;}
 
-function friendlyDate(date){if(!date)return'';try{return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric'}).format(new Date(`${date}T12:00:00`));}catch{return date;}}
-function momRecent(s,limit=4){
-  const rows=(Array.isArray(s.entries)?s.entries:[]).filter(e=>!e?.voidedAt).sort((a,b)=>`${b.date||''}${b.time||''}`.localeCompare(`${a.date||''}${a.time||''}`)).slice(0,limit);
-  if(!rows.length)return`<div class="mf-x-empty"><strong>Your history starts with the first log</strong><span>Pumps and nursing sessions will appear here automatically.</span><button type="button" data-mom="pump">Log first pump</button></div>`;
-  return`<div class="mf-x-list">${rows.map(e=>{const pump=e.type==='pump',title=pump?`${Number(e.amountMl)||0} mL pump`:`${Number(e.durationMin)||0} min nursing`,meta=`${friendlyDate(e.date)} · ${to12(mins(e.time))}${e.note?` · ${e.note}`:''}`;return`<button type="button" class="mf-x-row" data-record="mom:${esc(e.id)}"><span class="mf-x-row-icon">${icon(pump?'bottle':'nursing')}</span><span><strong>${esc(title)}</strong><small>${esc(meta)}</small></span><em>›</em></button>`;}).join('')}</div>`;
-}
-function babyEventCopy(e){
-  if(e.eventType==='feeding'){const oz=Number(e.amountOz??e.amount_oz)||0,type=String(e.feedingType||e.feeding_type||'').includes('formula')?'formula':'breast milk';return{icon:'bottle',title:`${oz.toFixed(1)} oz ${type}`};}
-  if(e.eventType==='nursing')return{icon:'nursing',title:`Nursed ${Number(e.durationMinutes??e.totalMinutes)||0} min`};
-  if(e.eventType==='diaper'){const k=diaperKind(e);return{icon:k==='wet'?'wet':k==='poop'?'poop':'both',title:k==='wet'?'Wet diaper':k==='poop'?'Poopy diaper':'Mixed diaper'};}
-  if(e.eventType==='sleep')return{icon:'moon',title:`Slept ${Number(e.durationMinutes)||0} min`};
-  if(e.eventType==='growth')return{icon:'growth',title:'Growth measurement'};
-  return{icon:'growth',title:String(e.eventType||'Care').replace(/^./,c=>c.toUpperCase())};
-}
-function babyRecent(s,limit=5){
-  const rows=[...babyEvents(s)].reverse().filter(e=>!e.exactSourceDuplicate).slice(0,limit);
-  if(!rows.length)return`<div class="mf-x-empty"><strong>No care logged yet</strong><span>Use the quick actions above; each entry will build today’s rhythm.</span></div>`;
-  return`<div class="mf-x-list">${rows.map(e=>{const c=babyEventCopy(e),meta=`${friendlyDate(e.date)} · ${to12(mins(e.time))}`;return`<button type="button" class="mf-x-row" data-record="baby:${esc(e.id)}"><span class="mf-x-row-icon">${icon(c.icon)}</span><span><strong>${esc(c.title)}</strong><small>${esc(meta)}</small></span><em>›</em></button>`;}).join('')}</div>`;
-}
-
 function renderMom(s){
-  const view=document.getElementById('view');if(!view)return;
-  const g=positiveGreeting(),name=s.profile?.momName||'Mom',photo=s.profile?.momPhoto||'',x=plan(s,prefs()),snap=momSnapshot(s,x),next=x.remaining&&x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:'Completed for today',last=x.last?`${Number(x.last.amountMl)||0} mL at ${to12(mins(x.last.time))}`:'No pump yet',pace=snap.avg?Math.round(snap.total/snap.avg*100):null;
-  const stops=[...(x.actual||[]).map(e=>({kind:'done',time:mins(e.time),amount:Number(e.amountMl)||0})),...(x.future||[]).map((m,i)=>({kind:i===0?'next':'future',time:m}))].filter(v=>Number.isFinite(v.time));
-  const pathNote=x.source==='override'?'The next time was adjusted; the remaining plan rebuilt around it.':x.source==='actual'&&x.last?`Reflowed from your ${to12(mins(x.last.time))} pump to keep the rest of the day realistic.`:'Starts with your saved schedule and adapts after every pump.';
-  view.innerHTML=`<main class="mf-x" aria-label="Mom dashboard">
-    <section class="mf-x-hero mom wide">
-      <div class="mf-x-profile"><div class="mf-x-profile-copy"><div class="mf-x-greeting"><i>${g.mark}</i><span>${g.text}</span></div><h1 class="mf-x-name">${esc(name)}’s pumping day</h1><small>${x.remaining?`${x.remaining} session${x.remaining===1?'':'s'} remaining · plan updates from what you actually log`:'Today’s target is complete. Choose tomorrow when you’re ready.'}</small></div><button type="button" class="mf-x-photo" data-core-mom-photo aria-label="${photo?'Change profile photo':'Add profile photo'}">${profilePhoto(photo,'mom')}</button></div>
-      <div class="mf-x-glance" aria-label="Today at a glance"><div><span>Milk today</span><strong>${snap.total} mL</strong></div><div><span>Progress</span><strong>${x.actual.length} / ${x.target}</strong></div><div><span>Last pump</span><strong>${esc(last)}</strong></div></div>
-      <div class="mf-x-next"><div><span>${x.remaining?'NEXT PUMP':'TODAY'}</span><strong>${esc(next)}</strong><small>${x.remaining?'A comfortable 20-minute window':'Nice work—your plan is complete'}</small></div><button type="button" class="mf-x-primary" data-mom="pump">Log pump</button></div>
-      <div class="mf-x-plan-choice"><span>Today only</span><button type="button" data-mf-target="5" class="${x.target===5?'on':''}">5 pumps</button><button type="button" data-mf-target="6" class="${x.target===6?'on':''}">6 pumps</button><button type="button" class="adjust" data-mf-adjust ${x.remaining?'':'disabled'}>Adjust time</button></div>
-    </section>
-    <section class="mf-x-card wide"><div class="mf-x-section-head"><div><span>TODAY’S LIVE PLAN</span><h2>${x.remaining?'One session at a time':'Completed beautifully'}</h2></div><button type="button" data-view="set-pumping">Edit baseline</button></div><div class="mf-x-path">${stops.map(stop=>`<div class="mf-x-stop ${stop.kind}"><i>${stop.kind==='done'?'✓':stop.kind==='next'?'●':'○'}</i><strong>${to12(stop.time)}</strong><small>${stop.kind==='done'?`${stop.amount} mL`:stop.kind==='next'?'Next':'Later'}</small></div>`).join('')}</div><p class="mf-x-path-note">${esc(pathNote)}</p></section>
-    <section class="mf-x-actions" aria-label="Quick log"><button type="button" class="mf-x-action pump" data-mom="pump">${icon('bottle')}<strong>Pump</strong><span>Log milk</span></button><button type="button" class="mf-x-action nurse" data-mom="nursing">${icon('nursing')}<strong>Nursing</strong><span>Log session</span></button></section>
-    <section class="mf-x-card"><div class="mf-x-section-head"><div><span>YOUR PATTERN</span><h2>Useful, not noisy</h2></div><button type="button" data-view="mom-trends">All trends</button></div><div class="mf-x-metrics"><div class="mf-x-metric"><span>7-day average</span><strong>${snap.avg||'—'}${snap.avg?' mL':''}</strong><small>per pumping day</small></div><div class="mf-x-metric"><span>Today vs average</span><strong>${pace==null?'—':`${pace}%`}</strong><small>${pace==null?'after your first pump':'of recent average'}</small></div><div class="mf-x-metric"><span>Freezer stash</span><strong>${(Number(s.profile?.stashMl)||0).toLocaleString()} mL</strong><small>saved milk</small></div></div></section>
-    <section class="mf-x-card wide"><div class="mf-x-section-head"><div><span>RECENT</span><h2>Your latest logs</h2></div><button type="button" data-view="mom-history">See history</button></div>${momRecent(s)}</section>
-  </main>`;
+  const view=document.getElementById('view'),hero=view?.querySelector('.mom-hero');if(!view||!hero)return;
+  const g=positiveGreeting(),name=s.profile?.momName||'Mom',photo=s.profile?.momPhoto||'',x=plan(s,prefs()),snap=momSnapshot(s,x),next=x.remaining&&x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:'All done for today',progress=x.target?Math.min(100,Math.round(x.actual.length/x.target*100)):0;
+  hero.classList.add('mf-dream-hero');
+  hero.innerHTML=`
+    <span class="mf-sky-orb" aria-hidden="true"></span><span class="mf-cloud cloud-one" aria-hidden="true"></span><span class="mf-cloud cloud-two" aria-hidden="true"></span><span class="mf-sparkles" aria-hidden="true">✦ · ✧</span>
+    <div class="mf-dream-main">
+      <div class="mf-dream-welcome"><span>${g.mark}</span><b>${g.text}, ${esc(name)}</b></div>
+      <div class="mf-dream-mobile-summary" aria-label="Today at a glance"><span><strong>${snap.total}</strong>mL today</span><span><strong>${x.remaining}</strong>remaining</span></div>
+      <div class="mf-dream-kicker">Today’s rhythm</div>
+      <h2>${x.remaining?'Your day, beautifully paced':'Today’s rhythm is complete'}</h2>
+      <p>${x.remaining?'Schedule, progress and output—all together and easy to follow.':'Rest, hydrate, and choose tomorrow’s pace when you’re ready.'}</p>
+      <div class="mf-dream-next">
+        <div><span>${x.remaining?'Next pump':'Today'}</span><strong>${esc(next)}</strong><small>${x.remaining?`${snap.total} mL · ${x.actual.length} complete · ${x.remaining} remaining`:`${snap.total} mL · ${x.actual.length} pumps complete`}</small></div>
+        <button type="button" data-mom="pump">${icon('plus')}<span>Log pump</span></button>
+      </div>
+    </div>
+    <div class="mf-dream-side">
+      <button type="button" class="mf-dream-photo" data-core-mom-photo aria-label="${photo?'Change Mom photo':'Add Mom photo'}">${profilePhoto(photo,'mom')}</button>
+      <div class="mf-dream-progress" style="--dream-p:${progress}%"><div><strong>${x.actual.length}<i>/${x.target}</i></strong><span>pumps</span></div></div>
+      <div class="mf-dream-volume"><strong>${snap.total}</strong><span>mL today</span></div>
+      <div class="mf-dream-side-note"><span>Last pump</span><strong>${x.last?`${Number(x.last.amountMl)||0} mL`:'Not logged'}</strong></div>
+    </div>`;
+  view.querySelector('.mom-grid')?.classList.add('mf-dream-actions');
+  view.querySelector('.mom-summary')?.classList.add('mf-dream-metrics');
+  let card=document.getElementById('mfCorePlan');
+  if(!card){card=document.createElement('section');card.id='mfCorePlan';card.className='mf-core-plan';hero.insertAdjacentElement('afterend',card);}
+  card.className='mf-core-plan mf-dream-journey';
+  const stops=[...(x.actual||[]).map(e=>({kind:'done',time:mins(e.time),amount:Number(e.amountMl)||0})),...(x.future||[]).map((m,i)=>({kind:i===0?'next':'future',time:m}))];
+  card.innerHTML=`<div class="mf-journey-head"><div><span>Today’s journey</span><strong>${x.remaining?'One gentle session at a time':'Today’s rhythm is complete'}</strong></div><em>${x.actual.length} of ${x.target}</em></div><div class="mf-journey-track">${stops.map((stop,i)=>`<div class="mf-journey-stop ${stop.kind}"><i>${stop.kind==='done'?'✓':stop.kind==='next'?'●':'○'}</i><strong>${to12(stop.time)}</strong><small>${stop.kind==='done'?`${stop.amount} mL`:stop.kind==='next'?'Next up':'Later'}</small></div>`).join('')}</div><p>${x.source==='override'?'Today’s path was adjusted for you.':x.source==='actual'&&x.last?`Reflowed from your ${to12(mins(x.last.time))} pump so sessions stay comfortably spaced.`:'Your path starts from the saved schedule and reshapes after each pump.'}</p>`;
   maybeAskTomorrow(x);
 }
 
 function tomorrowPromptKey(){return `milkflow-pump-choice-${today()}`;}
 function closeTomorrowPrompt(){const d=document.getElementById('mfTomorrowTargetDialog');if(d?.open)d.close();}
-function planTimeValue(m){if(!Number.isFinite(m))return'';const n=((Math.round(m)%1440)+1440)%1440;return`${pad(Math.floor(n/60))}:${pad(n%60)}`;}
-function openPlanDialog(){
-  const x=plan(read(),prefs());if(!x.remaining||!x.future.length)return;
-  let d=document.getElementById('mfPlanDialog');
-  if(!d){d=document.createElement('dialog');d.id='mfPlanDialog';d.className='mf-plan-dialog';d.innerHTML=`<form id="mfPlanForm"><h2>Adjust the next pump</h2><p>Move only the next session. MilkFlow will rebuild the remaining times for today.</p><label><span>Next pump time</span><input id="mfPlanTime" type="time" required></label><div class="mf-plan-dialog-actions"><button type="button" data-mf-plan-reset>Use live plan</button><button class="save">Update today</button></div></form>`;document.body.appendChild(d);d.querySelector('#mfPlanForm').addEventListener('submit',e=>{e.preventDefault();const value=d.querySelector('#mfPlanTime')?.value;if(value)setTodayNextTime(value);d.close();apply();});d.addEventListener('click',e=>{if(!e.target.closest('[data-mf-plan-reset]'))return;clearTodayNextTime();d.close();apply();});}
-  d.querySelector('#mfPlanTime').value=planTimeValue(x.future[0]);if(!d.open)try{d.showModal();}catch{}
-}
 function maybeAskTomorrow(x){
   if(x.remaining>0||!x.actual.length||localStorage.getItem(tomorrowPromptKey()))return;
   let d=document.getElementById('mfTomorrowTargetDialog');
@@ -437,16 +394,48 @@ function maybeAskTomorrow(x){
 function renderBaby(s){
   const view=document.getElementById('view');if(!view)return;
   const st=babyCareStats(s),snap=babySnapshot(s,st),g=positiveGreeting(),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate),lf=lastFeedText(lastFeed(s));
-  view.innerHTML=`<main class="mf-x" aria-label="Baby dashboard">
-    <section class="mf-x-hero baby wide">
-      <div class="mf-x-profile"><div class="mf-x-profile-copy"><div class="mf-x-greeting"><i>${g.mark}</i><span>${g.text}</span></div><h1 class="mf-x-name">${esc(babyName)}</h1><small>${age?`${esc(age)} · `:''}Today’s care in one calm view</small></div><button type="button" class="mf-x-photo" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}</button></div>
-      <div class="mf-x-baby-summary" aria-label="Today at a glance"><div><span>Last feed</span><strong>${esc(lf.main)}</strong><small>${esc(lf.age||lf.clock)}</small></div><div><span>Bottles today</span><strong>${snap.todayOz.toFixed(1)} oz</strong><small>${st.milkCount+st.formulaCount} logged</small></div><div><span>Diapers</span><strong>${snap.diapers}</strong><small>${st.wet} wet · ${st.poop+st.both} poop</small></div></div>
-    </section>
-    <section class="mf-x-card wide"><div class="mf-x-section-head"><div><span>QUICK LOG</span><h2>How did ${esc(babyName)} feed?</h2></div><span>Tap once to start</span></div><div class="mf-x-feed-grid"><button type="button" class="mf-x-feed milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${animalSticker('whale')}<strong>Breast milk</strong><small>Bottle</small></button><button type="button" class="mf-x-feed nursing" data-feed-type="nursing" aria-label="Log nursing">${animalSticker('bunny')}<strong>Nursing</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button><button type="button" class="mf-x-feed formula" data-feed-type="formula" aria-label="Log formula">${animalSticker('fox')}<strong>Formula</strong><small>${st.formulaCount?`${st.formulaCount} today`:'Bottle'}</small></button></div></section>
-    <section class="mf-x-card"><div class="mf-x-section-head"><div><span>DIAPERS</span><h2>${st.diaperCount?`${st.diaperCount} changes today`:'Ready to log'}</h2></div></div><div class="mf-x-diapers"><button type="button" class="mf-x-diaper wet" data-diaper="wet" aria-label="Log wet diaper">${animalSticker('whale')}<b>${st.wet}</b><strong>Wet</strong><span>diaper</span></button><button type="button" class="mf-x-diaper poop" data-diaper="poop" aria-label="Log poopy diaper">${animalSticker('bear')}<b>${st.poop}</b><strong>Poopy</strong><span>diaper</span></button><button type="button" class="mf-x-diaper both" data-diaper="both" aria-label="Log mixed diaper">${animalSticker('owl')}<b>${st.both}</b><strong>Mixed</strong><span>wet + poopy</span></button></div></section>
-    <section class="mf-x-card"><div class="mf-x-section-head"><div><span>MORE CARE</span><h2>Everything else</h2></div></div><div class="mf-x-more"><button type="button" data-sleep>${icon('moon')}Sleep</button><button type="button" data-growth>${icon('growth')}Growth</button><button type="button" data-view="development">Milestones</button><button type="button" data-view="doctor">Doctor view</button></div></section>
-    <section class="mf-x-card wide"><div class="mf-x-section-head"><div><span>RECENT CARE</span><h2>What happened lately</h2></div><button type="button" data-view="baby-history">See history</button></div>${babyRecent(s)}</section>
-  </main>`;
+  let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}
+  const babyMeta=[age,!photo?'Add a photo':''].filter(Boolean).join(' · ');
+  box.innerHTML=`
+    <div class="mf-animal-hero">
+      <span class="mf-animal-star one" aria-hidden="true">✦</span><span class="mf-animal-star two" aria-hidden="true">✧</span>
+      <div class="mf-animal-profile">
+        <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}</button>
+        <div class="mf-animal-copy"><div class="welcome">${g.mark} ${g.text}</div><h2>${esc(babyName)}</h2>${babyMeta?`<small>${esc(babyMeta)}</small>`:''}</div>
+      </div>
+      <div class="mf-animal-stats" aria-label="Baby today summary">
+        <span class="mf-animal-stat" title="Bottle ounces today"><strong>${snap.todayOz.toFixed(1)} oz</strong><span>Milk today</span></span>
+        <span class="mf-animal-stat" title="Diapers today"><strong>${snap.diapers}</strong><span>Diapers</span></span>
+      </div>
+      ${animalSticker('bear')}${animalSticker('bunny')}
+    </div>
+
+    <div class="mf-animal-checkin" aria-label="Last feeding">
+      ${animalSticker('owl')}
+      <span class="mf-last-feed-primary"><strong>${esc(lf.main)}</strong><small>${esc(lf.clock)}</small></span>
+      <span class="mf-last-feed-age"><strong>${esc(lf.age)}</strong><small>Last fed</small></span>
+    </div>
+
+    <div class="mf-care-label"><span>Feed</span><small>Quick log</small></div>
+    <div class="mf-feed-zone">
+      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${animalSticker('whale')}<strong>Breast milk</strong><small>Log bottle</small></button>
+      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${animalSticker('bunny')}<strong>Nurse</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button>
+      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${animalSticker('fox')}<strong>Formula</strong><small>${st.formulaCount?`${st.formulaCount} today`:'Log bottle'}</small></button>
+    </div>
+
+    <div class="mf-care-label"><span>Diapers</span><small>${st.diaperCount?`${st.diaperCount} today`:'Quick log'}</small></div>
+    <div class="mf-diaper-cluster">
+      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper">${animalSticker('whale')}<b>${st.wet}</b><strong>Wet</strong><span>diaper</span></button>
+      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper">${animalSticker('bear')}<b>${st.poop}</b><strong>Poopy</strong><span>diaper</span></button>
+      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper">${animalSticker('owl')}<b>${st.both}</b><strong>Mixed</strong><span>wet + poopy</span></button>
+    </div>
+
+    <div class="mf-care-ribbon" aria-label="More baby care">
+      <button type="button" data-sleep>${icon('moon')} Sleep</button>
+      <button type="button" data-growth>${icon('growth')} Growth</button>
+      <button type="button" data-view="baby-history">History</button>
+      <button type="button" data-view="baby-trends">Trends</button>
+    </div>`;
 }
 
 function cleanup(){
@@ -474,11 +463,11 @@ function chooseMomPhoto(){
   input.click();
 }
 
-document.addEventListener('click',e=>{
-  const target=e.target.closest('[data-mf-target]');if(target){setTodayTarget(Number(target.dataset.mfTarget));apply();return;}
-  if(e.target.closest('[data-mf-adjust]')){openPlanDialog();return;}
-  if(e.target.closest('[data-core-mom-photo]')){chooseMomPhoto();return;}
-});
+document.addEventListener('click',e=>{if(e.target.closest('[data-core-mom-photo]')){chooseMomPhoto();return;}if(e.target.closest('[data-view],[data-workspace],[data-feed-type],[data-diaper],[data-mom],[data-photo],[data-sleep],[data-growth]'))afterApp();});
+document.addEventListener('submit',e=>{if(['momForm','feedForm','diaperForm','sleepForm','growthForm'].includes(e.target?.id))setTimeout(apply,0);});
+window.addEventListener('hashchange',afterApp);
+window.addEventListener('popstate',afterApp);
+window.addEventListener('pageshow',afterApp);
 window.addEventListener('milkflow:base-rendered',afterApp);
 window.addEventListener('storage',e=>{if(e.key===STATE_KEY||e.key===COACH_KEY)afterApp();});
 window.addEventListener('milkflow:coach-change',afterApp);

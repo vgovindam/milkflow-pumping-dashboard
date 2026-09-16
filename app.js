@@ -1227,10 +1227,6 @@ function render(dir='none'){
   if(babyTab) babyTab.textContent=S.baby.name||'Baby';
   document.querySelectorAll('[data-workspace]').forEach(b=>b.classList.toggle('active',b.dataset.workspace===workspace));
   renderSideNav(); renderBottomNav(); syncBadge(); bindViewInputs();
-  // One explicit render lifecycle. Presentation controllers subscribe here instead of
-  // intercepting Element.innerHTML or watching the DOM, which keeps navigation and
-  // post-render enhancements deterministic.
-  window.dispatchEvent(new CustomEvent('milkflow:base-rendered',{detail:{view,workspace}}));
 }
 const IN_MORE=new Set(['more','settings','doctor','baby-growth','development','mom-stash']);
 const SIDE_NAV=[

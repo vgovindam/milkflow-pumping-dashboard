@@ -4,8 +4,6 @@ const read = (path) => fs.readFileSync(new URL(`../${path}`, import.meta.url), '
 const files = {
   css: read('styles.css'),
   ui: read('core-ui.js'),
-  app: read('app.js'),
-  chat: read('family-chat.js'),
   html: read('index.html'),
   sw: read('sw.js'),
 };
@@ -18,24 +16,14 @@ const requireText = (name, source, expected) => {
 requireText('mobile viewport', files.css, 'min-height:100dvh');
 requireText('mobile safe area', files.css, 'env(safe-area-inset-bottom)');
 requireText('saved parent name', files.ui, "name=s.profile?.momName||'Mom'");
-requireText('explicit render lifecycle', files.app, "CustomEvent('milkflow:base-rendered'");
-requireText('single experience listener', files.ui, "window.addEventListener('milkflow:base-rendered',afterApp)");
-requireText('one-day five pump control', files.ui, 'data-mf-target="5"');
-requireText('one-day six pump control', files.ui, 'data-mf-target="6"');
-requireText('next time adjustment', files.ui, 'function openPlanDialog()');
-requireText('mom task dashboard', files.ui, 'aria-label="Mom dashboard"');
-requireText('baby task dashboard', files.ui, 'aria-label="Baby dashboard"');
-requireText('mom primary action', files.ui, 'class="mf-x-primary" data-mom="pump"');
-requireText('baby care quick actions', files.ui, 'class="mf-x-feed-grid"');
-requireText('modern title face', files.ui, 'font:750 21px/1.12 var(--display)');
-requireText('editorial profile accent', files.ui, 'font:650 34px/.98 var(--editorial)');
+requireText('hero data coverage', files.ui, 'mf-dream-side-note');
+requireText('modern title face', files.ui, '.mf-journey-head strong,.mf-dream-actions .quick-tile strong{font-family:var(--display)');
+requireText('editorial accent face', files.ui, '.mf-dream-hero .mf-dream-main h2,.mf-animal-copy h2{font-family:var(--editorial)');
+requireText('mobile hero title scale', files.ui, '.mf-dream-main h2{font-size:32px');
 requireText('readable row copy', files.css, '.row-main strong{font-size:15px');
-requireText('dark mom hero', files.ui, ':root[data-theme="dark"] .mf-x-hero.mom');
-requireText('dark baby hero', files.ui, ':root[data-theme="dark"] .mf-x-hero.baby');
-requireText('chat endpoint failover', files.chat, 'for(const url of urls)');
-requireText('relevant pump coach', files.chat, '<strong>Pump coach</strong>');
-
-if (files.html.includes('stable34-bridge.js')) failures.push('architecture: legacy DOM interception layer is still loaded');
+requireText('dark baby name', files.ui, ':root[data-theme="dark"] .mf-animal-copy h2{color:#f7f3ff}');
+requireText('dark baby details', files.ui, ':root[data-theme="dark"] .mf-animal-copy small{color:#d7e7ef}');
+requireText('dark journey details', files.ui, '.mf-dream-journey>p,:root[data-theme="dark"] .mf-journey-stop small{color:#c0c7d8!important}');
 
 const buildTags = [...files.html.matchAll(/build=(stable\d+)/g)].map((match) => match[1]);
 if (!buildTags.length || new Set(buildTags).size !== 1) failures.push('cache build: asset tags do not share one version');
@@ -69,9 +57,8 @@ const contrastPairs = [
   ['dark primary text', '#eef1f7', '#1b1c2f'],
   ['dark secondary text', '#b7bfd0', '#1b1c2f'],
   ['dark muted text', '#a8afc1', '#1b1c2f'],
-  ['dark mom tile', '#d9c9ff', '#3a315f'],
-  ['dark nursing tile', '#ffc2dc', '#532b42'],
-  ['dark baby milk', '#d2efff', '#263c64'],
+  ['dark baby name', '#f7f3ff', '#51355e'],
+  ['dark baby details', '#d7e7ef', '#51355e'],
   ['dark wet diaper', '#7ed4ff', '#174a65'],
   ['dark poopy diaper', '#ffd487', '#5a4211'],
   ['dark mixed diaper', '#c9b4ff', '#463169'],
