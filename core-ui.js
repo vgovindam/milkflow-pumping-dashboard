@@ -84,6 +84,17 @@ function icon(kind){
   return `<svg viewBox="0 0 48 48" aria-hidden="true">${p[kind]||p.bottle}</svg>`;
 }
 
+function animalSticker(kind){
+  const art={
+    bear:'<circle class="a-ear" cx="18" cy="18" r="9"/><circle class="a-ear" cx="46" cy="18" r="9"/><path class="a-base" d="M12 34c0-14 8-23 20-23s20 9 20 23c0 13-8 21-20 21S12 47 12 34Z"/><ellipse class="a-soft" cx="32" cy="38" rx="12" ry="9"/><circle class="a-dot" cx="25" cy="31" r="2.2"/><circle class="a-dot" cx="39" cy="31" r="2.2"/><path class="a-line" d="M29 38c2 2 4 2 6 0M32 36v4"/>',
+    bunny:'<path class="a-base" d="M19 27C13 18 14 7 19 6c5-1 8 9 9 17M45 27c6-9 5-20 0-21-5-1-8 9-9 17"/><path class="a-soft" d="M20 12c2 3 3 8 4 12M44 12c-2 3-3 8-4 12"/><path class="a-base" d="M12 38c0-12 8-20 20-20s20 8 20 20c0 11-8 18-20 18s-20-7-20-18Z"/><circle class="a-dot" cx="25" cy="35" r="2.2"/><circle class="a-dot" cx="39" cy="35" r="2.2"/><path class="a-line" d="M29 42c2 2 4 2 6 0M32 39v4"/>',
+    fox:'<path class="a-base" d="m10 18 13 5c6-3 12-3 18 0l13-5-5 18c0 12-7 20-17 20S15 48 15 36L10 18Z"/><path class="a-soft" d="M18 31c7 1 11 5 14 14 3-9 7-13 14-14-1 13-5 20-14 20s-13-7-14-20Z"/><circle class="a-dot" cx="25" cy="33" r="2.1"/><circle class="a-dot" cx="39" cy="33" r="2.1"/><path class="a-line" d="M29 45c2 2 4 2 6 0"/>',
+    whale:'<path class="a-base" d="M8 36c5-12 15-18 29-16 7 1 12 5 14 11 3-3 5-7 5-12 5 6 4 13-1 18-1 11-10 18-23 18-12 0-21-7-24-19Z"/><path class="a-soft" d="M10 39c9 2 19 2 29-1-3 8-9 12-17 11-5-1-9-4-12-10Z"/><circle class="a-dot" cx="39" cy="29" r="2.2"/><path class="a-line" d="M14 28c-4-4-4-8-1-11M18 27c1-5-1-9-5-11"/>',
+    owl:'<path class="a-base" d="M13 30c0-13 7-21 19-21s19 8 19 21v18l-9-4-10 11-10-11-9 4V30Z"/><circle class="a-soft" cx="24" cy="29" r="9"/><circle class="a-soft" cx="40" cy="29" r="9"/><circle class="a-dot" cx="24" cy="29" r="3"/><circle class="a-dot" cx="40" cy="29" r="3"/><path class="a-line" d="m29 36 3 3 3-3"/>'
+  };
+  return `<span class="mf-animal-sticker ${esc(kind)}" aria-hidden="true"><svg viewBox="0 0 64 64">${art[kind]||art.bear}</svg></span>`;
+}
+
 function diaperKind(e){const x=String(e?.subtype||'').toLowerCase();return x==='poop'||x==='dirty'?'poop':x==='both'||x==='mixed'?'both':'wet';}
 function babyEvents(s){const id=s.baby?.id||'saahas-2026';return(Array.isArray(s.babyEvents)?s.babyEvents:[]).filter(e=>!e?.voidedAt&&!e?.exactSourceDuplicate&&(!e.babyId||e.babyId===id)).sort((a,b)=>`${a.date||''}${a.time||''}`.localeCompare(`${b.date||''}${b.time||''}`));}
 function feedKind(e){
@@ -198,6 +209,14 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 
 /* ---------- Baby ---------- */
 .mf-core-baby{display:grid;gap:12px;margin-bottom:16px}.mf-core-baby .mf-profile-line{margin-bottom:0}
+.mf-animal-hero{position:relative;min-height:176px;padding:22px 25px;border-radius:38px 48px 35px 44px / 42px 34px 48px 38px;overflow:hidden;isolation:isolate;background:linear-gradient(135deg,#a8ddf4 0%,#c9ebdf 48%,#ffe0b9 100%);box-shadow:0 20px 45px rgba(47,91,102,.14);color:#214c57}
+.mf-animal-hero:before{content:"";position:absolute;z-index:-2;inset:0;background:radial-gradient(circle at 15% 8%,rgba(255,255,255,.72),transparent 27%),radial-gradient(circle at 87% 20%,rgba(255,247,202,.9),transparent 17%)}
+.mf-animal-hero:after{content:"";position:absolute;z-index:-1;left:-5%;right:-5%;bottom:-42px;height:106px;border-radius:50% 50% 0 0;background:linear-gradient(180deg,#8fd7ad,#60be91)}
+.mf-animal-profile{position:relative;z-index:2;display:flex;align-items:center;gap:13px;max-width:58%}.mf-animal-profile .mf-profile-photo{width:72px;height:72px;border:5px solid rgba(255,255,255,.72);background:#fff6e4;box-shadow:0 10px 24px rgba(38,99,102,.14)}.mf-animal-copy .welcome{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;opacity:.72}.mf-animal-copy h2{margin:3px 0 0;font:850 28px/.98 var(--display);letter-spacing:-.035em}.mf-animal-copy small{display:block;margin-top:6px;font-size:11px;font-weight:800;opacity:.72}
+.mf-animal-stats{position:absolute;z-index:3;top:18px;right:19px;display:grid;gap:7px}.mf-animal-stat{min-width:92px;padding:8px 11px;border:1px solid rgba(255,255,255,.55);border-radius:15px;background:rgba(255,255,255,.56);backdrop-filter:blur(12px);text-align:right}.mf-animal-stat strong,.mf-animal-stat span{display:block}.mf-animal-stat strong{font:900 15px var(--display)}.mf-animal-stat span{margin-top:2px;font-size:9px;font-weight:850;opacity:.68;text-transform:uppercase;letter-spacing:.06em}
+.mf-animal-sticker{--a:#a96c4b;--b:#ffe7c7;--line:#60402f;display:grid;place-items:center}.mf-animal-sticker svg{width:100%;height:100%;overflow:visible}.mf-animal-sticker .a-base,.mf-animal-sticker .a-ear{fill:var(--a)}.mf-animal-sticker .a-soft{fill:var(--b)}.mf-animal-sticker .a-dot{fill:var(--line)}.mf-animal-sticker .a-line{fill:none;stroke:var(--line);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.mf-animal-sticker.bunny{--a:#f7f1ed;--b:#f1b6c6;--line:#625361}.mf-animal-sticker.fox{--a:#ee8b54;--b:#fff0dc;--line:#673a32}.mf-animal-sticker.whale{--a:#62b7d5;--b:#dff6f8;--line:#28566a}.mf-animal-sticker.owl{--a:#9170c9;--b:#f3dd9e;--line:#493b67}
+.mf-animal-hero>.mf-animal-sticker{position:absolute;z-index:2}.mf-animal-hero>.bear{width:76px;height:76px;right:116px;bottom:8px;transform:rotate(-4deg)}.mf-animal-hero>.bunny{width:62px;height:62px;right:47px;bottom:7px;transform:rotate(5deg)}.mf-animal-star{position:absolute;color:#fff8c7;font-size:15px;filter:drop-shadow(0 2px 4px rgba(72,86,70,.14))}.mf-animal-star.one{left:47%;top:25px}.mf-animal-star.two{right:34%;top:66px;font-size:10px}
+.mf-animal-checkin{display:grid;grid-template-columns:48px minmax(0,1fr) auto;align-items:center;gap:11px;padding:12px 14px;border-radius:22px;background:linear-gradient(135deg,#fff5df,#ffe8cf 52%,#eadffd);color:#664f45;box-shadow:0 8px 22px rgba(96,72,66,.08)}.mf-animal-checkin>.mf-animal-sticker{width:45px;height:45px}.mf-animal-checkin strong,.mf-animal-checkin small{display:block}.mf-animal-checkin strong{font-size:14px}.mf-animal-checkin small{margin-top:3px;font-size:10.5px;opacity:.72}.mf-animal-checkin>span:last-child{text-align:right}
 .mf-care-label{display:flex;align-items:center;justify-content:space-between;margin:0 3px -1px;font-size:13px;font-weight:850;letter-spacing:.025em;text-transform:uppercase;color:var(--muted)}
 .mf-care-label small{font-size:12px;font-weight:750;letter-spacing:0;text-transform:none}
 
@@ -210,6 +229,7 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 .mf-feed-zone{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .mf-feed-card{box-sizing:border-box;position:relative;min-height:108px;border:0;padding:14px 14px 21px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--ink);box-shadow:0 7px 18px rgba(29,42,70,.08)}
 .mf-feed-card svg{position:absolute;right:11px;top:10px;width:31px;height:31px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
+.mf-feed-card>.mf-animal-sticker{position:absolute;right:7px;top:5px;width:48px;height:48px;opacity:.98}.mf-feed-card>.mf-animal-sticker svg{position:static;width:100%;height:100%;fill:initial;stroke:initial;opacity:1}
 .mf-feed-card strong,.mf-feed-card small{position:relative;z-index:1;max-width:100%}.mf-feed-card strong{font-size:16px;font-weight:900;letter-spacing:-.015em;line-height:1.1}.mf-feed-card small{display:block;font-size:11.5px;line-height:1.18;font-weight:750;opacity:.84;margin-top:4px}
 .mf-feed-card.milk{border-radius:38px 29px 43px 32px / 30px 40px 28px 37px;background:linear-gradient(145deg,#b8ddff 0%,#c5e3ff 58%,#c9cbff 100%);color:#153f61}
 .mf-feed-card.nurse{border-radius:43px 31px 35px 42px / 35px 42px 29px 37px;background:linear-gradient(145deg,#ffd1e2,#f5bad4);color:#7b244d}
@@ -219,6 +239,7 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 .mf-diaper-cluster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
 .mf-diaper-blob{position:relative;min-height:108px;padding:15px 9px 13px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 7px 18px rgba(29,42,70,.07)}
 .mf-diaper-blob svg{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.94}
+.mf-diaper-blob>.mf-animal-sticker{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:52px;height:52px}.mf-diaper-blob>.mf-animal-sticker svg{position:static;width:100%;height:100%;transform:none;fill:initial;stroke:initial;opacity:1}
 .mf-diaper-blob strong{font-size:16px;font-weight:900;line-height:1.15}.mf-diaper-blob span{font-size:11.5px;line-height:1.2;margin-top:4px;opacity:.82}
 .mf-diaper-blob b{position:absolute;right:11px;top:10px;min-width:30px;height:30px;padding:0 8px;border-radius:999px;background:rgba(255,255,255,.86);display:grid;place-items:center;font-size:12.5px;font-weight:900;line-height:1;box-shadow:0 1px 0 rgba(0,0,0,.04)}
 .mf-diaper-blob.wet{border-radius:56% 44% 62% 38% / 58% 46% 54% 42%;background:linear-gradient(145deg,#bfe7ff,#9fd7f4);color:#145b86}.mf-diaper-blob.poop{border-radius:42% 58% 45% 55% / 62% 45% 55% 38%;background:linear-gradient(145deg,#ffe1a8,#f4ca76);color:#7d5314}.mf-diaper-blob.both{border-radius:60% 40% 52% 48% / 43% 57% 44% 56%;background:linear-gradient(145deg,#d6c2ff,#bca5f4);color:#573a9f}
@@ -241,6 +262,7 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 :root[data-theme="dark"] .mf-diaper-blob.wet{background:linear-gradient(145deg,#123a53,#174a65);color:#7ed4ff}:root[data-theme="dark"] .mf-diaper-blob.poop{background:linear-gradient(145deg,#44320e,#5a4211);color:#ffd487}:root[data-theme="dark"] .mf-diaper-blob.both{background:linear-gradient(145deg,#352653,#463169);color:#c9b4ff}
 :root[data-theme="dark"] .mf-diaper-blob b{background:#303846;color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
 :root[data-theme="dark"] .mf-care-ribbon button:nth-child(1){background:#25294b;color:#bfc5ff}:root[data-theme="dark"] .mf-care-ribbon button:nth-child(2){background:#472437;color:#ffbfd7}:root[data-theme="dark"] .mf-care-ribbon button:nth-child(3){background:#17394b;color:#9fddff}:root[data-theme="dark"] .mf-care-ribbon button:nth-child(4){background:#183c31;color:#9be1c8}
+:root[data-theme="dark"] .mf-animal-hero{background:linear-gradient(145deg,#162b4c 0%,#2b315d 48%,#51355e 100%);color:#f4f1ff;box-shadow:0 22px 48px rgba(5,12,29,.32)}:root[data-theme="dark"] .mf-animal-hero:before{background:radial-gradient(circle at 15% 9%,rgba(126,190,255,.22),transparent 28%),radial-gradient(circle at 88% 19%,rgba(255,232,153,.8),transparent 12%)}:root[data-theme="dark"] .mf-animal-hero:after{background:linear-gradient(180deg,#315f59,#21453f)}:root[data-theme="dark"] .mf-animal-stat{background:rgba(18,29,55,.55);border-color:rgba(222,226,255,.17)}:root[data-theme="dark"] .mf-animal-checkin{background:linear-gradient(135deg,#27233f,#382744 54%,#1e3843);color:#f4eaf3}:root[data-theme="dark"] .mf-animal-sticker.bear{--a:#b77c58;--b:#f4d3a9;--line:#493127}:root[data-theme="dark"] .mf-animal-sticker.bunny{--a:#ddd7e7;--b:#d895ad;--line:#55485d}
 :root[data-theme="dark"] .mf-mom-hero-photo{box-shadow:0 0 0 6px rgba(169,138,240,.24),0 10px 24px rgba(0,0,0,.35)}
 :root[data-theme="dark"] .mf-dream-hero{background:linear-gradient(145deg,#29204d 0%,#493166 40%,#693a61 69%,#274e69 100%)!important}:root[data-theme="dark"] .mf-dream-progress>div{background:linear-gradient(145deg,rgba(35,27,69,.96),rgba(67,42,82,.9))}:root[data-theme="dark"] .mf-dream-journey{background:rgba(28,28,48,.86)!important;border-color:rgba(200,185,245,.12)!important}:root[data-theme="dark"] .mf-journey-stop i{border-color:#26243d;background:#34304c}:root[data-theme="dark"] .mf-journey-stop.done i{background:#173f33}:root[data-theme="dark"] .mf-dream-metrics .metric{background:rgba(31,31,51,.84)}
 
@@ -249,7 +271,8 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 /* ---------- responsive ---------- */
 @media(max-width:760px){
   #view{transition:none!important}.mf-core-plan{border-radius:24px 34px 25px 31px / 28px 23px 34px 26px}
-  .mf-dream-hero{min-height:510px;padding:27px 22px 23px;grid-template-columns:minmax(0,1fr) 108px;gap:10px;border-radius:31px!important;align-items:start}.mf-sky-orb{width:112px;height:112px;right:15px;top:42px}.mf-sparkles{right:25%;top:18%;font-size:18px}.cloud-one{right:-94px;bottom:28px}.cloud-two{left:15%;top:-24px}.mf-dream-main{display:contents}.mf-dream-welcome{grid-column:1/2;font-size:12px}.mf-dream-kicker{grid-column:1/-1;margin-top:54px;align-self:end}.mf-dream-main h2{grid-column:1/-1;font-size:39px;margin:0;align-self:start}.mf-dream-main>p{grid-column:1/-1;font-size:13px;margin-top:-2px}.mf-dream-next{grid-column:1/-1;margin-top:12px;padding:13px 13px 13px 15px;align-self:end}.mf-dream-next>div strong{font-size:19px}.mf-dream-next button{min-height:50px;padding:0 14px}.mf-dream-next button span{display:none}.mf-dream-side{grid-column:2/3;grid-row:1/2;justify-self:end}.mf-dream-photo{width:74px;height:74px;border-width:5px}.mf-dream-photo .placeholder{font-size:24px}.mf-dream-progress{position:absolute;top:71px;right:0;width:88px;height:88px;padding:7px;margin:0}.mf-dream-progress strong{font-size:24px}.mf-dream-progress strong i{font-size:12px}.mf-dream-progress span{font-size:7px;margin-top:4px}.mf-dream-volume{position:absolute;top:164px;right:0;width:100px;margin:0;padding:7px 8px}.mf-dream-volume strong{font-size:13px}.mf-dream-volume span{display:block;margin:1px 0 0;font-size:8px}.mf-dream-journey{padding:19px 17px!important}.mf-journey-track{margin-top:16px;grid-auto-columns:86px}.mf-dream-actions .quick-tile{min-height:116px!important;padding:18px!important}.mf-dream-actions .quick-tile strong{font-size:19px}.mf-dream-actions .quick-tile .tile-art{width:50px;height:50px}
+  .mf-dream-hero{display:block;min-height:0;padding:19px 18px 18px;border-radius:29px!important}.mf-sky-orb{width:96px;height:96px;right:10px;top:26px}.mf-sparkles{right:27%;top:19%;font-size:15px}.cloud-one{right:-115px;bottom:12px}.cloud-two{left:18%;top:-40px}.mf-dream-main{display:block;max-width:none}.mf-dream-welcome{min-height:26px;padding-right:82px;font-size:11.5px}.mf-dream-welcome>span{width:25px;height:25px}.mf-dream-kicker{margin-top:18px;font-size:9px}.mf-dream-main h2{max-width:82%;font-size:29px;line-height:1;margin:5px 0 0}.mf-dream-main>p{display:none}.mf-dream-next{width:100%;margin-top:15px;padding:11px 11px 11px 14px;border-radius:19px;gap:10px}.mf-dream-next>div strong{font-size:17px}.mf-dream-next>div small{font-size:9.5px}.mf-dream-next button{min-height:46px;width:46px;padding:0;justify-content:center;border-radius:15px}.mf-dream-next button span{display:none}.mf-dream-side{position:absolute;top:15px;right:17px;display:grid}.mf-dream-photo{width:60px;height:60px;border-width:4px}.mf-dream-photo .placeholder{font-size:21px}.mf-dream-progress{width:65px;height:65px;padding:5px;margin-top:-5px}.mf-dream-progress strong{font-size:18px}.mf-dream-progress strong i{font-size:9px}.mf-dream-progress span{font-size:6px;margin-top:3px}.mf-dream-volume{display:none}.mf-dream-journey{padding:17px 15px!important}.mf-journey-track{margin-top:14px;grid-auto-columns:82px}.mf-dream-actions .quick-tile{min-height:116px!important;padding:18px!important}.mf-dream-actions .quick-tile strong{font-size:19px}.mf-dream-actions .quick-tile .tile-art{width:50px;height:50px}
+  .mf-animal-hero{min-height:158px;padding:17px 16px;border-radius:29px 36px 28px 34px / 33px 28px 37px 30px}.mf-animal-profile{gap:9px;max-width:58%}.mf-animal-profile .mf-profile-photo{width:57px;height:57px;border-width:4px}.mf-animal-copy h2{font-size:23px}.mf-animal-copy small{font-size:9.5px}.mf-animal-stats{top:14px;right:13px;gap:5px}.mf-animal-stat{min-width:79px;padding:6px 8px}.mf-animal-stat strong{font-size:13px}.mf-animal-stat span{font-size:7.5px}.mf-animal-hero>.bear{width:62px;height:62px;right:88px;bottom:3px}.mf-animal-hero>.bunny{width:50px;height:50px;right:30px;bottom:4px}.mf-animal-star.one{left:44%;top:20px}.mf-animal-checkin{grid-template-columns:40px minmax(0,1fr) auto;padding:10px 11px}.mf-animal-checkin>.mf-animal-sticker{width:38px;height:38px}
   .mf-profile-photo{width:60px;height:60px}.mf-profile-copy h2{font-size:27px}
   .mf-top-orb-wrap{width:52px}.mf-top-orb{width:50px;height:50px}.mf-top-orb strong{font-size:14px}.mf-top-orb-wrap>span{font-size:9.5px}
   .mf-mom-orbs{margin-top:5px}.ring.mf-mom-photo-ring,.mf-mom-hero-photo{width:116px;height:116px}
@@ -257,7 +280,7 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
   .mf-diaper-blob{min-height:106px}.mf-care-ribbon button{padding:10px 13px}
 }
 @media(max-width:390px){
-  .mf-dream-hero{min-height:525px;padding-left:18px;padding-right:18px}.mf-dream-main h2{font-size:35px}.mf-dream-next>div strong{font-size:17px}.mf-dream-next>div small{max-width:180px}.mf-journey-head strong{font-size:16px}
+  .mf-dream-hero{min-height:0;padding-left:16px;padding-right:16px}.mf-dream-main h2{font-size:27px}.mf-dream-next>div strong{font-size:16px}.mf-dream-next>div small{max-width:190px}.mf-journey-head strong{font-size:16px}
   .mf-profile-line.has-summary{grid-template-columns:auto minmax(0,1fr) auto;gap:7px}.mf-profile-photo{width:54px;height:54px}
   .mf-profile-copy .welcome{font-size:13px}.mf-profile-copy h2{font-size:25px}.mf-profile-copy small{font-size:11px}
   .mf-top-orbs{gap:4px}.mf-top-orb-wrap{width:47px}.mf-top-orb{width:46px;height:46px}.mf-top-orb strong{font-size:13px}.mf-top-orb small{font-size:9px!important}.mf-top-orb-wrap>span{font-size:9px}
@@ -285,7 +308,7 @@ function renderMom(s){
       <h2>${x.remaining?'A gentle rhythm for today':'You completed today’s journey'}</h2>
       <p>${x.remaining?'Your plan moves with your real day—never against it.':'Rest, hydrate, and choose tomorrow’s pace when you’re ready.'}</p>
       <div class="mf-dream-next">
-        <div><span>${x.remaining?'NEXT CLOUD':'TODAY'}</span><strong>${esc(next)}</strong><small>${x.remaining?`${x.actual.length} complete · ${x.remaining} remaining`:`${x.actual.length} pumps complete`}</small></div>
+        <div><span>${x.remaining?'NEXT CLOUD':'TODAY'}</span><strong>${esc(next)}</strong><small>${x.remaining?`${snap.total} mL · ${x.actual.length} complete · ${x.remaining} remaining`:`${snap.total} mL · ${x.actual.length} pumps complete`}</small></div>
         <button type="button" data-mom="pump">${icon('plus')}<span>Log pump</span></button>
       </div>
     </div>
@@ -323,36 +346,39 @@ function renderBaby(s){
   const view=document.getElementById('view');if(!view)return;
   const st=babyCareStats(s),snap=babySnapshot(s,st),g=positiveGreeting(),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate),lf=lastFeedText(lastFeed(s));
   let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}
-  const babyMeta=[age,!photo?'Tap the photo spot to add one':''].filter(Boolean).join(' · ');
+  const babyMeta=[age,!photo?'Add a photo':''].filter(Boolean).join(' · ');
   box.innerHTML=`
-    <div class="mf-profile-line has-summary">
-      <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}</button>
-      <div class="mf-profile-copy"><div class="welcome"><b>${g.mark}</b><span>${g.text}</span></div><h2>${esc(babyName)}</h2>${babyMeta?`<small>${esc(babyMeta)}</small>`:''}</div>
-      <div class="mf-top-orbs" aria-label="Baby today summary">
-        ${topOrb(snap.todayOz.toFixed(1),'oz','Today','baby-milk',snap.pct,`${snap.todayOz.toFixed(1)} ounces from bottles today`)}
-        ${topOrb(snap.recentAvg?snap.pct:'—',snap.recentAvg?'%':'','Vs avg','baby-usual',snap.recentAvg?snap.pct:null,snap.recentAvg?`${snap.pct}% of recent daily average; ${snap.recentAvg.toFixed(1)} ounces recent average, ${snap.allAvg.toFixed(1)} overall`:'Comparison builds from logged days')}
-        ${topOrb(snap.diapers,'','Diapers','baby-diaper',null,`${st.wet} wet, ${st.poop} poopy, ${st.both} mixed today`)}
+    <div class="mf-animal-hero">
+      <span class="mf-animal-star one" aria-hidden="true">✦</span><span class="mf-animal-star two" aria-hidden="true">✧</span>
+      <div class="mf-animal-profile">
+        <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}</button>
+        <div class="mf-animal-copy"><div class="welcome">${g.mark} ${g.text}</div><h2>${esc(babyName)}</h2>${babyMeta?`<small>${esc(babyMeta)}</small>`:''}</div>
       </div>
+      <div class="mf-animal-stats" aria-label="Baby today summary">
+        <span class="mf-animal-stat" title="Bottle ounces today"><strong>${snap.todayOz.toFixed(1)} oz</strong><span>Milk today</span></span>
+        <span class="mf-animal-stat" title="Diapers today"><strong>${snap.diapers}</strong><span>Diapers</span></span>
+      </div>
+      ${animalSticker('bear')}${animalSticker('bunny')}
     </div>
 
-    <div class="mf-last-feed-band" aria-label="Last feeding">
-      <span class="mf-last-feed-icon">${icon('bottle')}</span>
+    <div class="mf-animal-checkin" aria-label="Last feeding">
+      ${animalSticker('owl')}
       <span class="mf-last-feed-primary"><strong>${esc(lf.main)}</strong><small>${esc(lf.clock)}</small></span>
       <span class="mf-last-feed-age"><strong>${esc(lf.age)}</strong><small>Last fed</small></span>
     </div>
 
     <div class="mf-care-label"><span>Feed</span><small>Quick log</small></div>
     <div class="mf-feed-zone">
-      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${icon('bottle')}<strong>Breast milk</strong><small>Log bottle</small></button>
-      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${icon('nursing')}<strong>Nurse</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button>
-      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${icon('bottle')}<strong>Formula</strong><small>${st.formulaCount?`${st.formulaCount} today`:'Log bottle'}</small></button>
+      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${animalSticker('whale')}<strong>Breast milk</strong><small>Log bottle</small></button>
+      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${animalSticker('bunny')}<strong>Nurse</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button>
+      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${animalSticker('fox')}<strong>Formula</strong><small>${st.formulaCount?`${st.formulaCount} today`:'Log bottle'}</small></button>
     </div>
 
     <div class="mf-care-label"><span>Diapers</span><small>${st.diaperCount?`${st.diaperCount} today`:'Quick log'}</small></div>
     <div class="mf-diaper-cluster">
-      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper">${icon('wet')}<b>${st.wet}</b><strong>Wet</strong><span>diaper</span></button>
-      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper">${icon('poop')}<b>${st.poop}</b><strong>Poopy</strong><span>diaper</span></button>
-      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper">${icon('both')}<b>${st.both}</b><strong>Mixed</strong><span>wet + poopy</span></button>
+      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper">${animalSticker('whale')}<b>${st.wet}</b><strong>Wet</strong><span>diaper</span></button>
+      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper">${animalSticker('bear')}<b>${st.poop}</b><strong>Poopy</strong><span>diaper</span></button>
+      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper">${animalSticker('owl')}<b>${st.both}</b><strong>Mixed</strong><span>wet + poopy</span></button>
     </div>
 
     <div class="mf-care-ribbon" aria-label="More baby care">
