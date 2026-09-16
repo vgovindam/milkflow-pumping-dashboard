@@ -36,6 +36,7 @@ jobs:
           node --check functions/index-entry.js
           node --check functions/family-chat.js
           node --check functions/pump-context.js
+          node scripts/ui-audit.mjs
       - name: Verify canonical production surface
         run: |
           test -f index.html
@@ -50,12 +51,13 @@ jobs:
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
-          grep -q 'stable34-bridge.js?build=stable44' index.html
-          grep -q 'app.js?build=stable44' index.html
-          grep -q 'core-ui.js?build=stable44' index.html
-          grep -q 'family-chat.js?build=stable44' index.html
-          grep -q 'manifest.webmanifest?build=stable44' index.html
-          grep -q "milkflow-stable44" sw.js
+          grep -q 'styles.css?build=stable45' index.html
+          grep -q 'stable34-bridge.js?build=stable45' index.html
+          grep -q 'app.js?build=stable45' index.html
+          grep -q 'core-ui.js?build=stable45' index.html
+          grep -q 'family-chat.js?build=stable45' index.html
+          grep -q 'manifest.webmanifest?build=stable45' index.html
+          grep -q "milkflow-stable45" sw.js
           grep -q 'familyChatEndpoints' config.js
           grep -q 'correctedPlan' stable34-bridge.js
           grep -q 'mf-r2-highlights{display:none' stable34-bridge.js
