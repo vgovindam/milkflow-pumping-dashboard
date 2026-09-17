@@ -4,9 +4,8 @@ const read = (path) => fs.readFileSync(new URL(`../${path}`, import.meta.url), '
 const app = read('app.js');
 const core = read('core-ui.js');
 const css = read('component-theme.css');
-const experienceCss = read('experience-themes.css');
-const jungleCss = read('jungle-theme.css');
-const experienceJs = read('experience-theme.js');
+const experienceCss = read('experience-art-v2.css');
+const experienceJs = read('experience-theme-v2.js');
 const doctorJs = read('doctor-summary.js');
 const doctorCss = read('doctor-summary.css');
 const html = read('index.html');
@@ -81,44 +80,43 @@ for (const text of [
 
 for (const text of [
   "const KEY='milkflow-experience-theme-v1'",
-  "new Set(['storybook','jungle','clean'])",
-  'data-experience-theme-pick="storybook"',
-  'data-experience-theme-pick="jungle"',
+  "new Set(['safari','butterfly','princess','unicorn','clean'])",
+  "value==='jungle'||value==='storybook'",
+  'data-experience-theme-pick="${key}"',
+  "themeCard('safari','Safari Adventure'",
+  "themeCard('butterfly','Butterfly Garden'",
+  "themeCard('princess','Princess Palace'",
+  "themeCard('unicorn','Unicorn Dreams'",
   'data-experience-theme-pick="clean"',
-  'Jungle Canopy for Baby',
   'decorateThemeArtwork',
   'mf-theme-animal',
 ]) need('experience theme controller', experienceJs, text);
 if (experienceJs.includes('MutationObserver')) failures.push('experience theme controller: observer loop is not allowed');
 
 for (const text of [
-  'assets/themes/cloud-island.svg','assets/themes/forest-clearing.svg',
-  'mf-last-feed-band + .mf-care-label','mf-feed-zone + .mf-care-label',
-  'content:"PUMPING"','content:"NURSING"',
-]) need('Storybook experience surface', experienceCss, text);
-for (const text of [
-  'assets/themes/jungle-canopy.svg','data-experience-theme="jungle"',
-  'has-jungle-art>.mf-theme-animal','content:"DIAPERS · "',
-  'body[data-screen="mom-home"] .mf-dream-hero',
-]) need('Jungle experience surface', jungleCss, text);
-for (const text of [
-  'assets/animals/elephant.svg','assets/animals/monkey.svg','assets/animals/tiger.svg','assets/animals/parrot.svg','assets/animals/hippo.svg',
-]) need('Jungle animal family', experienceJs, text);
-need('Jungle stylesheet loaded', html, 'jungle-theme.css?build=stable45-human11');
-if (experienceCss.includes('.bottom-nav svg{display:none') || jungleCss.includes('.bottom-nav svg{display:none')) failures.push('experience themes must not hide functional navigation icons');
-if (experienceCss.includes('body[data-realm="family"] .main') || jungleCss.includes('body[data-realm="family"] .main')) failures.push('experience themes must not recolor Settings/family canvas');
+  'assets/themes/safari-adventure.svg','assets/themes/butterfly-garden.svg','assets/themes/princess-palace.svg','assets/themes/unicorn-dreams.svg',
+  'assets/themes/care-milk.svg','assets/themes/care-nurse.svg','assets/themes/care-formula.svg',
+  'assets/themes/care-wet.svg','assets/themes/care-poop.svg','assets/themes/care-mixed.svg',
+  'data-experience-theme="safari"','data-experience-theme="butterfly"','data-experience-theme="princess"','data-experience-theme="unicorn"',
+  '.mf-experience-preview img','body[data-screen="baby-home"] .mf-feed-card:before','body[data-screen="baby-home"] .mf-diaper-blob:before',
+  'padding-bottom:calc(174px + env(safe-area-inset-bottom))',
+]) need('immersive experience surface', experienceCss, text);
+for (const text of ['assets/animals/elephant.svg','assets/animals/monkey.svg','assets/animals/tiger.svg','assets/animals/parrot.svg','assets/animals/hippo.svg']) need('Safari fallback animal family', experienceJs, text);
+need('immersive stylesheet loaded', html, 'experience-art-v2.css?build=stable45-human14');
+need('immersive controller loaded', html, 'experience-theme-v2.js?build=stable45-human14');
+if (experienceCss.includes('.bottom-nav svg{display:none')) failures.push('experience themes must not hide functional navigation icons');
 
 for (const text of [
-  'body[data-realm="mom"] .panel,',
-  'background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important',
-  'body[data-screen="mom-home"] .mf-dream-journey{',
-  'body[data-screen="mom-home"] .mf-dream-actions .quick-tile.mom{',
-  'body[data-screen="mom-home"] .mf-dream-actions .quick-tile.nurse{',
-]) need('mom dark contrast', experienceCss + jungleCss, text);
+  ':root[data-theme="dark"] .mf-experience-panel',
+  ':root[data-theme="dark"][data-experience-theme="safari"] body[data-realm="baby"] .main',
+  ':root[data-theme="dark"][data-experience-theme="safari"] body[data-screen="baby-home"] .mf-animal-hero',
+  ':root[data-theme="dark"][data-experience-theme="safari"] body[data-screen="baby-home"] .mf-feed-zone',
+  ':root[data-theme="dark"][data-experience-theme="safari"] body[data-screen="baby-home"] .mf-diaper-cluster',
+]) need('theme dark contrast', experienceCss, text);
 
 for (const text of ['mf-doctor-print','mf-print-table','Clinical snapshot','Daily care log','prepareDoctorPrint']) need('clinician doctor report', doctorJs + doctorCss, text);
-need('doctor component loaded', html, 'doctor-summary.js?build=stable45-human11');
-need('doctor stylesheet loaded', html, 'doctor-summary.css?build=stable45-human11');
+need('doctor component loaded', html, 'doctor-summary.js?build=stable45-human14');
+need('doctor stylesheet loaded', html, 'doctor-summary.css?build=stable45-human14');
 
 for (const text of ['function resetRouteScroll', 'function exactRouteControl', 'mf-render-recovery']) need('navigation recovery', lifecycle, text);
 for (const text of ["STATE_KEY = 'milkflow-family-v4-state'", 'function unionById', 'function commitRecord']) need('data preservation', app, text);
@@ -128,4 +126,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, protected mobile navigation/icons, 5 entry forms, selected-state visibility, Storybook/Jungle/Clean themes, clinician report tables, dark contrast, diaper flow, navigation recovery, and data-preservation contracts.`);
+console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, protected navigation/icons, five entry forms, durable selected states, immersive Safari plus four visual choices, semantic care icons, dark contrast, clinician report tables, diaper flow, navigation recovery, and data-preservation contracts.`);
