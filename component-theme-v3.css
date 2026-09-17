@@ -1,0 +1,5 @@
+/* MilkFlow canonical visual composition v3.
+   Existing component contracts load first; the selected family-world contract is added
+   to the declared milkflow-experience layer rather than as a page-specific patch file. */
+@import url("./component-theme.css?build=stable45-human15");
+@import url("./experience-system-v3.css?build=stable45-human15") layer(milkflow-experience);
