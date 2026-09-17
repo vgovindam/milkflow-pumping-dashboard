@@ -2,11 +2,31 @@
    The established component system lives in component-theme-core.css. This file defines
    named cascade layers so focused component contracts have an explicit priority instead
    of relying on accidental source order or one-off patch stylesheets. */
-@layer milkflow-core, milkflow-controls, milkflow-selection, milkflow-experience;
-@import url("./component-theme-core.css?build=stable45-human7") layer(milkflow-core);
-@import url("./experience-themes.css?build=stable45-human7") layer(milkflow-experience);
+@layer milkflow-core, milkflow-experience, milkflow-controls, milkflow-selection;
+@import url("./component-theme-core.css?build=stable45-human8") layer(milkflow-core);
+@import url("./experience-themes.css?build=stable45-human8") layer(milkflow-experience);
 
 @layer milkflow-controls {
+  /* Core navigation and functional icons are structural UI, not theme artwork. The late
+     legacy dream-cloud declarations in styles.css must never be allowed to turn the fixed
+     mobile dock back into a document-flow footer. */
+  @media(max-width:760px){
+    .bottom-nav{
+      display:grid!important;position:fixed!important;z-index:70!important;
+      left:14px!important;right:14px!important;
+      bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))!important;
+      grid-template-columns:repeat(5,minmax(0,1fr))!important;
+      visibility:visible!important;opacity:1!important
+    }
+    .view{padding-bottom:calc(132px + env(safe-area-inset-bottom))!important}
+  }
+  .bottom-nav .ico,.bottom-nav .gly,
+  .topbar .ico,.back-btn .ico,.round-action .ico,
+  .row-icon .ico,.grp-icon .ico,.sheet .ico,.dialog .ico{
+    visibility:visible!important;opacity:1!important
+  }
+  .bottom-nav svg.ico,.bottom-nav svg.gly,.topbar svg.ico,.back-btn svg.ico{display:block!important}
+
   /* Entry sheets and dialogs must remain legible in both themes. The care picker uses
      the same semantic colours as the cards it creates, which also makes the choices
      easier to scan than six identical grey boxes. */
