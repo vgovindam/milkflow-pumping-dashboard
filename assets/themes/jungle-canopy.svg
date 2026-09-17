@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-label="Jungle canopy scene">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d9f0cf"/>
+      <stop offset=".52" stop-color="#b7d9a9"/>
+      <stop offset="1" stop-color="#8fbd82"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#fff9c7" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#fff1a3" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a9463"/>
+      <stop offset="1" stop-color="#3f7650"/>
+    </linearGradient>
+    <linearGradient id="near" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f6c48"/>
+      <stop offset="1" stop-color="#1d5139"/>
+    </linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+  <rect width="1200" height="720" fill="url(#sky)"/>
+  <circle cx="875" cy="145" r="160" fill="url(#sun)"/>
+  <ellipse cx="870" cy="150" rx="92" ry="58" fill="#fff6ba" opacity=".38" filter="url(#blur)"/>
+  <path d="M0 385C130 300 235 330 340 390c104 60 198 25 302-48 110-77 226-76 346-3 77 47 143 68 212 69v312H0Z" fill="url(#far)" opacity=".78"/>
+  <path d="M0 480c131-66 240-39 350 23 103 58 220 47 322-14 110-65 209-62 314-4 75 42 143 49 214 28v207H0Z" fill="url(#near)"/>
+  <g fill="#20543d" opacity=".96">
+    <path d="M0 0h175c-15 79-58 135-133 171L0 185Z"/>
+    <path d="M1200 0h-175c15 79 58 135 133 171l42 14Z"/>
+    <path d="M0 720V506c76-10 137 6 184 48-52 17-95 54-126 111 49-12 95-5 138 21-61 23-103 34-196 34Z"/>
+    <path d="M1200 720V494c-83-4-146 18-191 66 61 10 110 43 148 99-56-8-107 2-154 29 62 22 112 32 197 32Z"/>
+  </g>
+  <g fill="#2e6d49">
+    <path d="M68 81c56 9 103 35 141 79-63 3-117-11-163-42 4-15 11-27 22-37Z"/>
+    <path d="M1137 70c-54 14-99 43-133 88 62-2 114-20 157-55-6-14-14-25-24-33Z"/>
+    <path d="M42 564c53-21 103-18 150 8-53 17-99 17-140 0Z"/>
+    <path d="M1154 558c-53-18-103-12-149 16 54 14 100 11 140-8Z"/>
+  </g>
+  <g stroke="#2a6444" stroke-width="14" stroke-linecap="round" fill="none" opacity=".9">
+    <path d="M74 0c18 97 84 154 197 169"/>
+    <path d="M1128 0c-24 91-87 148-188 169"/>
+    <path d="M5 244c72-15 141-2 204 39"/>
+    <path d="M1195 255c-79-11-149 7-210 52"/>
+  </g>
+  <g fill="#ffe588" opacity=".8">
+    <circle cx="744" cy="180" r="6"/><circle cx="790" cy="205" r="4"/><circle cx="835" cy="172" r="5"/>
+    <circle cx="938" cy="223" r="4"/><circle cx="1004" cy="188" r="5"/>
+  </g>
+</svg>
