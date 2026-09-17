@@ -61,7 +61,7 @@ try{
         if(route==='doctor'&&m.doctorTables<2)failures.push(`${theme}/${mode}/${route}: doctor summary structure missing`);
         const art=expected[theme],detail=expectedDetails[theme],iconArt=expectedIcons[theme],themedRealm=momRoutes.has(route)||babyRoutes.has(route);
         if(art&&themedRealm&&!m.mainBg.includes(art))failures.push(`${theme}/${mode}/${route}: selected world is missing from real page canvas (${art})`);
-        if(detail&&document.body!==null&&theme!=='clean'&&!m.viewDetail.includes(detail))failures.push(`${theme}/${mode}/${route}: independent detail layer missing ${detail}`);
+        if(detail&&theme!=='clean'&&!m.viewDetail.includes(detail))failures.push(`${theme}/${mode}/${route}: independent detail layer missing ${detail}`);
         if(route==='baby-home'&&art&&!m.babyHeroBg.includes(art))failures.push(`${theme}/${mode}/${route}: selected world is missing from Baby hero (${art})`);
         if(route==='mom-home'&&art&&(!m.momHeroBg.includes(art)||!m.momHeroBg.includes('cloud-island.svg')))failures.push(`${theme}/${mode}/${route}: Mom hero must combine Cloud Island with ${art}`);
         if(art&&babyRoutes.has(route)&&route!=='baby-home'&&!m.pageHeadArt.includes(art))failures.push(`${theme}/${mode}/${route}: Baby page artwork layer is not themed with ${art}`);
