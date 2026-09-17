@@ -4,8 +4,8 @@ const read = (path) => fs.readFileSync(new URL(`../${path}`, import.meta.url), '
 const app = read('app.js');
 const core = read('core-ui.js');
 const css = read('component-theme.css');
-const experienceCss = read('experience-art-v2.css');
-const experienceJs = read('experience-theme-v2.js');
+const experienceCss = read('experience-system-v3.css');
+const experienceJs = read('experience-theme-v3.js');
 const doctorJs = read('doctor-summary.js');
 const doctorCss = read('doctor-summary.css');
 const html = read('index.html');
@@ -82,41 +82,42 @@ for (const text of [
   "const KEY='milkflow-experience-theme-v1'",
   "new Set(['safari','butterfly','princess','unicorn','clean'])",
   "value==='jungle'||value==='storybook'",
-  'data-experience-theme-pick="${key}"',
   "themeCard('safari','Safari Adventure'",
   "themeCard('butterfly','Butterfly Garden'",
   "themeCard('princess','Princess Palace'",
   "themeCard('unicorn','Unicorn Dreams'",
   'data-experience-theme-pick="clean"',
-  'decorateThemeArtwork',
-  'mf-theme-animal',
+  'Mom + Baby',
 ]) need('experience theme controller', experienceJs, text);
 if (experienceJs.includes('MutationObserver')) failures.push('experience theme controller: observer loop is not allowed');
+if (experienceJs.includes('mf-theme-animal') || experienceJs.includes('decorateThemeArtwork')) failures.push('experience theme controller must not replace semantic care icons with animal artwork');
 
 for (const text of [
-  'assets/themes/safari-adventure.svg','assets/themes/butterfly-garden.svg','assets/themes/princess-palace.svg','assets/themes/unicorn-dreams.svg',
+  'assets/themes/safari-world-v2.svg','assets/themes/butterfly-garden.svg','assets/themes/princess-palace.svg','assets/themes/unicorn-dreams.svg',
+  'body:is([data-realm="mom"],[data-realm="baby"]) .main',
+  'body[data-screen="mom-home"] .mf-dream-hero',
+  'body[data-screen="baby-home"] .mf-animal-checkin:before',
   'assets/themes/care-milk.svg','assets/themes/care-nurse.svg','assets/themes/care-formula.svg',
   'assets/themes/care-wet.svg','assets/themes/care-poop.svg','assets/themes/care-mixed.svg',
-  'data-experience-theme="safari"','data-experience-theme="butterfly"','data-experience-theme="princess"','data-experience-theme="unicorn"',
-  '.mf-experience-preview img','body[data-screen="baby-home"] .mf-feed-card:before','body[data-screen="baby-home"] .mf-diaper-blob:before',
-  'padding-bottom:calc(174px + env(safe-area-inset-bottom))',
-]) need('immersive experience surface', experienceCss, text);
-for (const text of ['assets/animals/elephant.svg','assets/animals/monkey.svg','assets/animals/tiger.svg','assets/animals/parrot.svg','assets/animals/hippo.svg']) need('Safari fallback animal family', experienceJs, text);
-need('immersive stylesheet loaded', html, 'experience-art-v2.css?build=stable45-human14');
-need('immersive controller loaded', html, 'experience-theme-v2.js?build=stable45-human14');
+  'body[data-screen="baby-home"] .mf-feed-card:before','body[data-screen="baby-home"] .mf-diaper-blob:before',
+  'padding-bottom:calc(164px + env(safe-area-inset-bottom))',
+]) need('realm-wide experience surface', experienceCss, text);
+need('canonical composition stylesheet loaded', html, 'component-theme-v3.css?build=stable45-human15');
+need('realm-wide controller loaded', html, 'experience-theme-v3.js?build=stable45-human15');
+if (html.includes('experience-system-v3.css?build=')) failures.push('experience stylesheet must be composed through component-theme-v3.css, not loaded as a late patch link');
+if (html.includes('experience-art-v2.css?build=')) failures.push('legacy home-only experience stylesheet must not be loaded');
+if (html.includes('experience-theme-v2.js?build=')) failures.push('legacy theme controller must not be loaded');
 if (experienceCss.includes('.bottom-nav svg{display:none')) failures.push('experience themes must not hide functional navigation icons');
 
 for (const text of [
-  ':root[data-theme="dark"] .mf-experience-panel',
-  ':root[data-theme="dark"][data-experience-theme="safari"] body[data-realm="baby"] .main',
-  ':root[data-theme="dark"][data-experience-theme="safari"] body[data-screen="baby-home"] .mf-animal-hero',
-  ':root[data-theme="dark"][data-experience-theme="safari"] body[data-screen="baby-home"] .mf-feed-zone',
-  ':root[data-theme="dark"][data-experience-theme="safari"] body[data-screen="baby-home"] .mf-diaper-cluster',
+  ':root[data-theme="dark"]:not([data-experience-theme="clean"])',
+  'body[data-screen="baby-home"] .mf-animal-copy h2',
+  'body[data-screen="baby-home"] .mf-animal-stat',
 ]) need('theme dark contrast', experienceCss, text);
 
 for (const text of ['mf-doctor-print','mf-print-table','Clinical snapshot','Daily care log','prepareDoctorPrint']) need('clinician doctor report', doctorJs + doctorCss, text);
-need('doctor component loaded', html, 'doctor-summary.js?build=stable45-human14');
-need('doctor stylesheet loaded', html, 'doctor-summary.css?build=stable45-human14');
+need('doctor component loaded', html, 'doctor-summary.js?build=stable45-human15');
+need('doctor stylesheet loaded', html, 'doctor-summary.css?build=stable45-human15');
 
 for (const text of ['function resetRouteScroll', 'function exactRouteControl', 'mf-render-recovery']) need('navigation recovery', lifecycle, text);
 for (const text of ["STATE_KEY = 'milkflow-family-v4-state'", 'function unionById', 'function commitRecord']) need('data preservation', app, text);
@@ -126,4 +127,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, protected navigation/icons, five entry forms, durable selected states, immersive Safari plus four visual choices, semantic care icons, dark contrast, clinician report tables, diaper flow, navigation recovery, and data-preservation contracts.`);
+console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, protected navigation/icons, five entry forms, realm-wide Mom/Baby worlds, semantic care artwork, dark contrast, clinician reports, navigation recovery, and data-preservation contracts.`);
