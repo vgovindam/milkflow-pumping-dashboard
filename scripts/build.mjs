@@ -15,7 +15,7 @@ const TEXT_FILES=[
   'index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-themes.css','experience-system.css','experience-components.css','doctor-summary.css',
   'config.js','app.js','cross-device-alerts.js','app-reliability.js','core-ui.js','experience-theme.js','render-lifecycle.js','plan-reliability.js','network-reliability.js','ai-coach-client.js','app-update-notice.js','family-chat.js','doctor-summary.js','release-info.js','manifest.webmanifest','icon.svg'
 ];
-const BINARY_FILES=['icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','apple-touch-icon-167.png','apple-touch-icon-152.png','favicon.ico'];
+const BINARY_FILES=['milkflow-family-icon-192.png','milkflow-family-icon-512.png','milkflow-family-maskable-512.png','milkflow-family-apple-touch.png'];
 
 function ensureDir(file){fs.mkdirSync(path.dirname(file),{recursive:true});}
 function transform(text){
@@ -32,7 +32,7 @@ function copyText(rel){
   ensureDir(dest);fs.writeFileSync(dest,transform(fs.readFileSync(src,'utf8')));
 }
 function copyBinary(rel){
-  const src=path.join(ROOT,rel);if(!fs.existsSync(src))return;
+  const src=path.join(ROOT,rel);if(!fs.existsSync(src))throw new Error(`Missing production binary: ${rel}`);
   const dest=path.join(DIST,rel);ensureDir(dest);fs.copyFileSync(src,dest);
 }
 function copyTree(srcDir,destDir){
@@ -76,8 +76,10 @@ function verifyIndexRefs(){
 fs.rmSync(DIST,{recursive:true,force:true});fs.mkdirSync(DIST,{recursive:true});
 TEXT_FILES.forEach(copyText);BINARY_FILES.forEach(copyBinary);
 copyTree(path.join(ROOT,'assets'),path.join(DIST,'assets'));
-const safari=path.join(ROOT,'assets/themes/safari-world.svg');
-if(!fs.existsSync(safari))throw new Error('Missing canonical assets/themes/safari-world.svg');
+for(const theme of ['safari','butterfly','princess','unicorn']){
+  const scene=path.join(ROOT,`assets/theme-composite/${theme}.svg`);
+  if(!fs.existsSync(scene))throw new Error(`Missing canonical self-contained ${theme} scene`);
+}
 verifyIndexRefs();
 
 const shellFiles=listFiles(DIST).filter(f=>!f.startsWith('visual-audit/')&&!['build-manifest.json','sw.js'].includes(f));
