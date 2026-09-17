@@ -59,16 +59,16 @@ jobs:
           test -f firebase.json
           test -f .firebaserc
 
-          grep -q 'styles.css?build=stable45-human2' index.html
-          grep -q 'component-theme.css?build=stable45-human2' index.html
-          grep -q 'app.js?build=stable45-human2' index.html
-          grep -q 'core-ui.js?build=stable45-human2' index.html
-          grep -q 'render-lifecycle.js?build=stable45-human2' index.html
-          grep -q 'plan-reliability.js?build=stable45-human2' index.html
-          grep -q 'network-reliability.js?build=stable45-human2' index.html
-          grep -q 'family-chat.js?build=stable45-human2' index.html
-          grep -q 'manifest.webmanifest?build=stable45-human2' index.html
-          grep -q 'milkflow-stable45-human2' sw.js
+          grep -q 'styles.css?build=stable45-human3' index.html
+          grep -q 'component-theme.css?build=stable45-human3' index.html
+          grep -q 'app.js?build=stable45-human3' index.html
+          grep -q 'core-ui.js?build=stable45-human3' index.html
+          grep -q 'render-lifecycle.js?build=stable45-human3' index.html
+          grep -q 'plan-reliability.js?build=stable45-human3' index.html
+          grep -q 'network-reliability.js?build=stable45-human3' index.html
+          grep -q 'family-chat.js?build=stable45-human3' index.html
+          grep -q 'manifest.webmanifest?build=stable45-human3' index.html
+          grep -q 'milkflow-stable45-human3' sw.js
 
           grep -q "STATE_KEY = 'milkflow-family-v4-state'" app.js
           grep -q "const STATE_KEY='milkflow-family-v4-state'" core-ui.js
@@ -77,6 +77,8 @@ jobs:
           grep -q 'familyChatEndpoints' network-reliability.js
           grep -q "new MutationObserver(publish).observe(view,{childList:true})" render-lifecycle.js
           grep -q 'function resetRouteScroll' render-lifecycle.js
+          grep -q 'function exactRouteControl' render-lifecycle.js
+          grep -q 'sessionStorage.setItem(retryKey' render-lifecycle.js
           grep -q 'mf-render-recovery' render-lifecycle.js
           ! grep -q 'subtree:true' render-lifecycle.js
           ! grep -q 'MutationObserver' app-reliability.js
