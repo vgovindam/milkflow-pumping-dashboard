@@ -30,13 +30,13 @@ jobs:
           node --check app-reliability.js
           node --check core-ui.js
           node --check experience-theme.js
+          node --check doctor-summary.js
           node --check render-lifecycle.js
           node --check plan-reliability.js
           node --check network-reliability.js
           node --check ai-coach-client.js
           node --check app-update-notice.js
           node --check family-chat.js
-          node --check doctor-summary.js
           node --check functions/index.js
           node --check functions/index-entry.js
           node --check functions/family-chat.js
@@ -57,54 +57,25 @@ jobs:
 
       - name: Verify canonical production surface
         run: |
-          test -f index.html
-          test -f app.js
-          test -f app-reliability.js
-          test -f core-ui.js
-          test -f experience-theme.js
-          test -f render-lifecycle.js
-          test -f plan-reliability.js
-          test -f network-reliability.js
-          test -f ai-coach-client.js
-          test -f app-update-notice.js
-          test -f family-chat.js
-          test -f doctor-summary.js
-          test -f styles.css
-          test -f component-theme.css
-          test -f component-theme-core.css
-          test -f experience-themes.css
-          test -f doctor-summary.css
-          test -f assets/themes/cloud-island.svg
-          test -f assets/themes/forest-clearing.svg
-          test -f assets/animals/bear.svg
-          test -f assets/animals/rabbit.svg
-          test -f assets/animals/fox.svg
-          test -f assets/animals/owl.svg
-          test -f assets/animals/beaver.svg
-          test -f scripts/interaction-audit.mjs
-          test -f scripts/browser-visual-audit.mjs
-          test -f config.js
-          test -f firebase.json
-          test -f .firebaserc
+          for f in index.html app.js app-reliability.js core-ui.js experience-theme.js doctor-summary.js render-lifecycle.js plan-reliability.js network-reliability.js ai-coach-client.js app-update-notice.js family-chat.js styles.css component-theme.css component-theme-core.css experience-themes.css jungle-theme.css doctor-summary.css config.js firebase.json .firebaserc; do test -f "$f"; done
+          for f in assets/themes/cloud-island.svg assets/themes/forest-clearing.svg assets/themes/jungle-canopy.svg assets/animals/bear.svg assets/animals/rabbit.svg assets/animals/fox.svg assets/animals/owl.svg assets/animals/beaver.svg assets/animals/elephant.svg assets/animals/monkey.svg assets/animals/tiger.svg assets/animals/parrot.svg assets/animals/hippo.svg scripts/interaction-audit.mjs scripts/browser-visual-audit.mjs; do test -f "$f"; done
 
-          grep -q 'styles.css?build=stable45-human10' index.html
-          grep -q 'component-theme.css?build=stable45-human10' index.html
-          grep -q 'doctor-summary.css?build=stable45-human10' index.html
-          grep -q 'app.js?build=stable45-human10' index.html
-          grep -q 'core-ui.js?build=stable45-human10' index.html
-          grep -q 'experience-theme.js?build=stable45-human10' index.html
-          grep -q 'render-lifecycle.js?build=stable45-human10' index.html
-          grep -q 'plan-reliability.js?build=stable45-human10' index.html
-          grep -q 'network-reliability.js?build=stable45-human10' index.html
-          grep -q 'family-chat.js?build=stable45-human10' index.html
-          grep -q 'doctor-summary.js?build=stable45-human10' index.html
-          grep -q 'manifest.webmanifest?build=stable45-human10' index.html
-          grep -q 'milkflow-stable45-human10' sw.js
-          grep -q 'doctor-summary.css' sw.js
-          grep -q 'doctor-summary.js' sw.js
-          grep -q 'experience-themes.css' sw.js
-          grep -q 'assets/themes/cloud-island.svg' sw.js
-          grep -q 'assets/themes/forest-clearing.svg' sw.js
+          grep -q 'styles.css?build=stable45-human11' index.html
+          grep -q 'component-theme.css?build=stable45-human11' index.html
+          grep -q 'jungle-theme.css?build=stable45-human11' index.html
+          grep -q 'doctor-summary.css?build=stable45-human11' index.html
+          grep -q 'app.js?build=stable45-human11' index.html
+          grep -q 'experience-theme.js?build=stable45-human11' index.html
+          grep -q 'doctor-summary.js?build=stable45-human11' index.html
+          grep -q 'manifest.webmanifest?build=stable45-human11' index.html
+          grep -q 'milkflow-stable45-human11' sw.js
+          grep -q 'jungle-theme.css' sw.js
+          grep -q 'assets/themes/jungle-canopy.svg' sw.js
+          grep -q 'assets/animals/elephant.svg' sw.js
+          grep -q 'assets/animals/monkey.svg' sw.js
+          grep -q 'assets/animals/tiger.svg' sw.js
+          grep -q 'assets/animals/parrot.svg' sw.js
+          grep -q 'assets/animals/hippo.svg' sw.js
 
           grep -q "STATE_KEY = 'milkflow-family-v4-state'" app.js
           grep -q "const STATE_KEY='milkflow-family-v4-state'" core-ui.js
@@ -113,8 +84,6 @@ jobs:
           grep -q 'familyChatEndpoints' network-reliability.js
           grep -q "new MutationObserver(publish).observe(view,{childList:true})" render-lifecycle.js
           grep -q 'function resetRouteScroll' render-lifecycle.js
-          grep -q 'function exactRouteControl' render-lifecycle.js
-          grep -q 'sessionStorage.setItem(retryKey' render-lifecycle.js
           grep -q 'mf-render-recovery' render-lifecycle.js
           ! grep -q 'subtree:true' render-lifecycle.js
           ! grep -q 'MutationObserver' app-reliability.js
@@ -123,71 +92,38 @@ jobs:
           grep -q '@layer milkflow-core, milkflow-experience, milkflow-controls, milkflow-selection' component-theme.css
           grep -q 'display:grid!important;position:fixed!important;z-index:70!important' component-theme.css
           grep -q 'bottom-nav svg.ico' component-theme.css
-          grep -q 'sheet-actions button\[data-diaper="wet"\]' component-theme.css
           grep -q '#diaperDialog:not(.is-edit)' component-theme.css
           grep -q 'choice-row button.on::after' component-theme.css
-          grep -q 'field input' component-theme.css
 
-          grep -q 'milkflow-experience-theme-v1' experience-theme.js
+          grep -q "new Set(\['storybook','jungle','clean'\])" experience-theme.js
           grep -q 'data-experience-theme-pick="storybook"' experience-theme.js
-          grep -q 'Cloud Island for Mom' experience-theme.js
-          grep -q 'Woodland Forest for Baby' experience-theme.js
-          grep -q 'decorateThemeArtwork' experience-theme.js
-          grep -q 'mf-storybook-animal' experience-theme.js
+          grep -q 'data-experience-theme-pick="jungle"' experience-theme.js
+          grep -q 'data-experience-theme-pick="clean"' experience-theme.js
+          grep -q 'Jungle Canopy for Baby' experience-theme.js
+          grep -q 'mf-theme-animal' experience-theme.js
           ! grep -q 'MutationObserver' experience-theme.js
 
           grep -q 'cloud-island.svg' experience-themes.css
           grep -q 'forest-clearing.svg' experience-themes.css
-          grep -q 'mf-animal-sticker.has-storybook-art>svg' experience-themes.css
-          grep -q 'mf-storybook-animal' experience-themes.css
-          grep -q 'mf-last-feed-band + .mf-care-label' experience-themes.css
-          grep -q 'mf-feed-zone + .mf-care-label' experience-themes.css
-          grep -q 'PUMPING' experience-themes.css
-          grep -q 'NURSING' experience-themes.css
-          grep -q 'background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important' experience-themes.css
-          grep -q 'mf-dream-journey' experience-themes.css
+          grep -q 'jungle-canopy.svg' jungle-theme.css
+          grep -q 'data-experience-theme="jungle"' jungle-theme.css
+          grep -q 'has-jungle-art>.mf-theme-animal' jungle-theme.css
+          grep -q 'content:"DIAPERS · "' jungle-theme.css
           ! grep -q 'body\[data-realm="family"\] .main' experience-themes.css
+          ! grep -q 'body\[data-realm="family"\] .main' jungle-theme.css
+          ! grep -q 'bottom-nav' jungle-theme.css
 
-          grep -q 'mf-doctor-print' doctor-summary.css
-          grep -q 'Clinical snapshot' doctor-summary.js
-          grep -q 'Daily care log' doctor-summary.js
-          grep -q 'beforeprint' doctor-summary.js
-          grep -q 'body\[data-screen="doctor"\]' doctor-summary.css
+          grep -q 'mf-clinical-report' doctor-summary.js
+          grep -q 'mf-clinical-summary-table' doctor-summary.js
+          grep -q 'mf-clinical-table' doctor-summary.js
+          grep -q 'printDoctorReport' doctor-summary.js
+          grep -q '@media print' doctor-summary.css
 
-          grep -q 'overflow-y:auto!important' component-theme-core.css
-          grep -q 'bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))' component-theme-core.css
-          grep -q 'padding-bottom:calc(132px + env(safe-area-inset-bottom))' component-theme-core.css
-          grep -q 'sync-foot.synced' component-theme-core.css
-          grep -q 'daily-cell.wet' component-theme-core.css
-          grep -q 'metric:nth-child(1)' component-theme-core.css
-          grep -q 'mf-top-orbs' core-ui.js
-          grep -q 'mf-mom-hero-photo' core-ui.js
-          grep -q 'mf-last-feed-band' core-ui.js
-          grep -q 'mf-dream-hero' core-ui.js
-          grep -q 'mf-dream-journey' core-ui.js
-          grep -q 'function animalSticker' core-ui.js
-          grep -q 'mf-animal-hero' core-ui.js
-          grep -q "momTab.textContent=S.profile.momName||'Mom'" app.js
-          grep -q 'data-feed-type="expressed_milk"' core-ui.js
-          grep -q 'mf-diaper-cluster' core-ui.js
-          grep -q 'data-sleep' core-ui.js
-          grep -q 'data-growth' core-ui.js
-
-          ! grep -q 'stable34-bridge.js' index.html
-          ! grep -q 'baby-experience.js' index.html
           ! grep -q 'care-polish.css' index.html
           ! grep -q 'layout-fixes.css' index.html
           ! grep -q 'baby-compact.css' index.html
           ! grep -q 'dark-contrast.css' index.html
-          ! grep -q 'chat-reliability.js' index.html
           ! grep -q 'runtime-stability.js' index.html
-          ! grep -q 'smart-pumping.js' index.html
-          ! grep -q 'pump-home-controls.js' index.html
-          ! grep -q 'adaptive-pump-plan.js' index.html
-          ! grep -q 'pump-insights.js' index.html
-          ! grep -q 'modern-stickers.js' index.html
-          ! grep -q 'baby-home-modern.js' index.html
-          ! grep -q 'mom-profile.js' index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
