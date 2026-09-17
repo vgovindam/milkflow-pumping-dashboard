@@ -40,6 +40,7 @@ jobs:
           node --check functions/family-chat.js
           node --check functions/pump-context.js
           node scripts/ui-audit.mjs
+          node scripts/interaction-audit.mjs
 
       - name: Verify canonical production surface
         run: |
@@ -56,20 +57,21 @@ jobs:
           test -f styles.css
           test -f component-theme.css
           test -f component-theme-core.css
+          test -f scripts/interaction-audit.mjs
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
 
-          grep -q 'styles.css?build=stable45-human4' index.html
-          grep -q 'component-theme.css?build=stable45-human4' index.html
-          grep -q 'app.js?build=stable45-human4' index.html
-          grep -q 'core-ui.js?build=stable45-human4' index.html
-          grep -q 'render-lifecycle.js?build=stable45-human4' index.html
-          grep -q 'plan-reliability.js?build=stable45-human4' index.html
-          grep -q 'network-reliability.js?build=stable45-human4' index.html
-          grep -q 'family-chat.js?build=stable45-human4' index.html
-          grep -q 'manifest.webmanifest?build=stable45-human4' index.html
-          grep -q 'milkflow-stable45-human5' sw.js
+          grep -q 'styles.css?build=stable45-human6' index.html
+          grep -q 'component-theme.css?build=stable45-human6' index.html
+          grep -q 'app.js?build=stable45-human6' index.html
+          grep -q 'core-ui.js?build=stable45-human6' index.html
+          grep -q 'render-lifecycle.js?build=stable45-human6' index.html
+          grep -q 'plan-reliability.js?build=stable45-human6' index.html
+          grep -q 'network-reliability.js?build=stable45-human6' index.html
+          grep -q 'family-chat.js?build=stable45-human6' index.html
+          grep -q 'manifest.webmanifest?build=stable45-human6' index.html
+          grep -q 'milkflow-stable45-human6' sw.js
           grep -q 'component-theme-core.css' sw.js
 
           grep -q "STATE_KEY = 'milkflow-family-v4-state'" app.js
@@ -86,9 +88,11 @@ jobs:
           ! grep -q 'MutationObserver' app-reliability.js
           ! grep -q "Object.defineProperty(Element.prototype,'innerHTML'" *.js
 
-          grep -q '@layer milkflow-core, milkflow-controls' component-theme.css
-          grep -q 'component-theme-core.css?build=stable45-human5' component-theme.css
+          grep -q '@layer milkflow-core, milkflow-controls, milkflow-selection' component-theme.css
+          grep -q 'component-theme-core.css?build=stable45-human6' component-theme.css
           grep -q 'sheet-actions button\[data-diaper="wet"\]' component-theme.css
+          grep -q '#diaperDialog:not(.is-edit)' component-theme.css
+          grep -q 'choice-row button.on::after' component-theme.css
           grep -q 'field input' component-theme.css
           grep -q 'overflow-y:auto!important' component-theme-core.css
           grep -q 'bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))' component-theme-core.css
