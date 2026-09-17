@@ -113,10 +113,11 @@ jobs:
           ! grep -q 'body\[data-realm="family"\] .main' jungle-theme.css
           ! grep -q 'bottom-nav' jungle-theme.css
 
-          grep -q 'mf-clinical-report' doctor-summary.js
-          grep -q 'mf-clinical-summary-table' doctor-summary.js
-          grep -q 'mf-clinical-table' doctor-summary.js
-          grep -q 'printDoctorReport' doctor-summary.js
+          grep -q 'mf-doctor-print' doctor-summary.js
+          grep -q 'mf-print-table' doctor-summary.js
+          grep -q 'Clinical snapshot' doctor-summary.js
+          grep -q 'Daily care log' doctor-summary.js
+          grep -q 'prepareDoctorPrint' doctor-summary.js
           grep -q '@media print' doctor-summary.css
 
           ! grep -q 'care-polish.css' index.html
