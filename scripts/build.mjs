@@ -12,7 +12,7 @@ let COMMIT=process.env.GITHUB_SHA||'';
 if(!COMMIT){try{COMMIT=execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim();}catch{COMMIT='local';}}
 
 const TEXT_FILES=[
-  'index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-themes.css','experience-system.css','doctor-summary.css',
+  'index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-themes.css','experience-system.css','experience-components.css','doctor-summary.css',
   'config.js','app.js','cross-device-alerts.js','app-reliability.js','core-ui.js','experience-theme.js','render-lifecycle.js','plan-reliability.js','network-reliability.js','ai-coach-client.js','app-update-notice.js','family-chat.js','doctor-summary.js','release-info.js','manifest.webmanifest','icon.svg'
 ];
 const BINARY_FILES=['icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','apple-touch-icon-167.png','apple-touch-icon-152.png','favicon.ico'];
@@ -76,7 +76,6 @@ function verifyIndexRefs(){
 fs.rmSync(DIST,{recursive:true,force:true});fs.mkdirSync(DIST,{recursive:true});
 TEXT_FILES.forEach(copyText);BINARY_FILES.forEach(copyBinary);
 copyTree(path.join(ROOT,'assets'),path.join(DIST,'assets'));
-// Canonical alias replaces the old version-suffixed Safari artwork in production.
 const safari=path.join(ROOT,'assets/themes/safari-world.svg');
 if(!fs.existsSync(safari))throw new Error('Missing canonical assets/themes/safari-world.svg');
 verifyIndexRefs();
