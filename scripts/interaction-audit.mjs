@@ -27,10 +27,14 @@ need('canonical experience layer',themeEntry,'layer(milkflow-experience)');
 
 for(const text of ["const KEY='milkflow-experience-theme-v1'","new Set(['safari','butterfly','princess','unicorn','clean'])","value==='jungle'||value==='storybook'","themeCard('safari','Safari Adventure'","themeCard('butterfly','Butterfly Garden'","themeCard('princess','Princess Palace'","themeCard('unicorn','Unicorn Dreams'",'data-experience-theme-pick="clean"'])need('experience theme controller',experienceJs,text);
 if(experienceJs.includes('MutationObserver'))failures.push('experience theme controller: observer loop is not allowed');
-needAny('safari world asset',experienceCss,['assets/themes/safari-world.svg','assets/themes/safari-world-v2.svg']);
-for(const text of ['assets/themes/butterfly-garden.svg','assets/themes/princess-palace.svg','assets/themes/unicorn-dreams.svg','body:is([data-realm="mom"],[data-realm="baby"]) .main','body[data-screen="mom-home"] .mf-dream-hero','body[data-screen="baby-home"] .mf-animal-checkin:before','assets/themes/care-milk.svg','assets/themes/care-nurse.svg','assets/themes/care-formula.svg','assets/themes/care-wet.svg','assets/themes/care-poop.svg','assets/themes/care-mixed.svg'])need('realm-wide experience surface',experienceCss,text);
+for(const theme of ['safari','butterfly','princess','unicorn']){
+  need('realm-wide detailed scene',experienceCss,`assets/theme-composite/${theme}.svg`);
+  need('detailed scene manifest',experienceJs,`theme-composite/${theme}.svg`);
+  need('theme icon manifest',experienceJs,`theme-icons/${theme}.svg`);
+}
+for(const text of ['body:is([data-realm="mom"],[data-realm="baby"]) .main','body[data-screen="mom-home"] .mf-dream-hero','body[data-screen="baby-home"] .mf-animal-hero','.mf-dream-hero::before','.mf-dream-hero::after','content:none!important'])need('realm-wide experience surface',experienceCss,text);
+if(experienceCss.includes('content:var(--mf-theme-name)'))failures.push('realm-wide experience surface: hero theme-name badges must not render');
 for(const text of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])need('independent themed components',experienceComponents,text);
-for(const theme of ['safari','butterfly','princess','unicorn']){need('detailed scene manifest',experienceJs,`theme-composite/${theme}.svg`);need('theme icon manifest',experienceJs,`theme-icons/${theme}.svg`);}
 
 need('canonical stylesheet loaded',html,'theme.css?v=__MILKFLOW_VERSION__');
 need('canonical controller loaded',html,'experience-theme.js?v=__MILKFLOW_VERSION__');
@@ -44,4 +48,4 @@ for(const text of ['function resetRouteScroll','function exactRouteControl','mf-
 for(const text of ["STATE_KEY = 'milkflow-family-v4-state'",'function unionById','function commitRecord'])need('data preservation',app,text);
 for(const text of ['milkflow-device-id-v1','sourceDeviceId',"collection('devices')"])need('cross-device alert identity',alerts,text);
 if(failures.length){console.error(`Interaction audit failed:\n- ${failures.join('\n- ')}`);process.exit(1);}
-console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, independent themed components, five entry forms, navigation recovery, notification identity, and data-preservation contracts.`);
+console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, detailed theme scenes, independent themed components, five entry forms, navigation recovery, notification identity, and data-preservation contracts.`);
