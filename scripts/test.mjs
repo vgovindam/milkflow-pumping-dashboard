@@ -20,6 +20,7 @@ const core=fs.readFileSync(path.join(ROOT,'core-ui.js'),'utf8');
 const alerts=fs.readFileSync(path.join(ROOT,'cross-device-alerts.js'),'utf8');
 const experience=fs.readFileSync(path.join(ROOT,'experience-theme.js'),'utf8');
 const themedComponents=fs.readFileSync(path.join(ROOT,'experience-components.css'),'utf8');
+const themeEntry=fs.readFileSync(path.join(ROOT,'theme.css'),'utf8');
 if(!app.includes("STATE_KEY = 'milkflow-family-v4-state'")&&!app.includes("STATE_KEY='milkflow-family-v4-state'"))throw new Error('Data-contract check failed: canonical localStorage state key changed.');
 if(!app.includes('function unionById'))throw new Error('Data-contract check failed: merge-by-id logic missing.');
 if(!core.includes("const STATE_KEY='milkflow-family-v4-state'"))throw new Error('Core UI is not bound to the canonical state key.');
@@ -33,4 +34,5 @@ for(const theme of themes){
 }
 for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
 for(const token of ['Choose a theme','Make this little adventure yours','Profile &amp; Personalization','Different themes.'])if(!experience.includes(token))throw new Error(`Settings storybook contract missing: ${token}`);
-console.log('MilkFlow test suite passed: syntax, UI contracts, independent theme assets, Settings experience, data preservation, and notification identity.');
+for(const token of ['.mf-animal-hero::before','.mf-animal-hero::after','.mf-feed-card::before','.mf-diaper-blob::before','.mf-animal-checkin::before','display:none!important'])if(!themeEntry.includes(token))throw new Error(`Single-layer Baby visual contract missing: ${token}`);
+console.log('MilkFlow test suite passed: syntax, UI contracts, single-layer theme ownership, independent theme assets, Settings experience, data preservation, and notification identity.');
