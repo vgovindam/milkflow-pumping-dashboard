@@ -30,7 +30,7 @@ jobs:
           node --check app-reliability.js
           node --check cross-device-alerts.js
           node --check core-ui.js
-          node --check experience-theme.js
+          node --check experience-theme-v2.js
           node --check doctor-summary.js
           node --check render-lifecycle.js
           node --check plan-reliability.js
@@ -60,29 +60,34 @@ jobs:
 
       - name: Verify canonical production surface
         run: |
-          for f in index.html app.js app-reliability.js cross-device-alerts.js core-ui.js experience-theme.js doctor-summary.js render-lifecycle.js plan-reliability.js network-reliability.js ai-coach-client.js app-update-notice.js family-chat.js styles.css component-theme.css component-theme-core.css experience-themes.css jungle-theme.css doctor-summary.css config.js firebase.json .firebaserc sw.js functions/cross-device-alerts.js; do test -f "$f"; done
-          for f in assets/themes/cloud-island.svg assets/themes/forest-clearing.svg assets/themes/jungle-canopy.svg assets/animals/bear.svg assets/animals/rabbit.svg assets/animals/fox.svg assets/animals/owl.svg assets/animals/beaver.svg assets/animals/elephant.svg assets/animals/monkey.svg assets/animals/tiger.svg assets/animals/parrot.svg assets/animals/hippo.svg scripts/interaction-audit.mjs scripts/browser-visual-audit.mjs; do test -f "$f"; done
+          for f in index.html app.js app-reliability.js cross-device-alerts.js core-ui.js experience-theme-v2.js doctor-summary.js render-lifecycle.js plan-reliability.js network-reliability.js ai-coach-client.js app-update-notice.js family-chat.js styles.css component-theme.css component-theme-core.css experience-themes.css experience-art-v2.css doctor-summary.css config.js firebase.json .firebaserc sw.js functions/cross-device-alerts.js; do test -f "$f"; done
+          for f in assets/themes/safari-adventure.svg assets/themes/butterfly-garden.svg assets/themes/princess-palace.svg assets/themes/unicorn-dreams.svg assets/themes/care-milk.svg assets/themes/care-nurse.svg assets/themes/care-formula.svg assets/themes/care-wet.svg assets/themes/care-poop.svg assets/themes/care-mixed.svg assets/animals/elephant.svg assets/animals/monkey.svg assets/animals/tiger.svg assets/animals/parrot.svg assets/animals/hippo.svg scripts/interaction-audit.mjs scripts/browser-visual-audit.mjs; do test -f "$f"; done
 
-          grep -q 'styles.css?build=stable45-human11' index.html
-          grep -q 'component-theme.css?build=stable45-human11' index.html
-          grep -q 'jungle-theme.css?build=stable45-human11' index.html
-          grep -q 'doctor-summary.css?build=stable45-human11' index.html
-          grep -q 'app.js?build=stable45-human11' index.html
-          grep -q 'experience-theme.js?build=stable45-human11' index.html
-          grep -q 'doctor-summary.js?build=stable45-human11' index.html
-          grep -q 'manifest.webmanifest?build=stable45-human11' index.html
-          grep -q 'milkflow-stable45-human13' sw.js
+          grep -q 'styles.css?build=stable45-human14' index.html
+          grep -q 'component-theme.css?build=stable45-human14' index.html
+          grep -q 'experience-art-v2.css?build=stable45-human14' index.html
+          grep -q 'doctor-summary.css?build=stable45-human14' index.html
+          grep -q 'app.js?build=stable45-human14' index.html
+          grep -q 'experience-theme-v2.js?build=stable45-human14' index.html
+          grep -q 'doctor-summary.js?build=stable45-human14' index.html
+          grep -q 'manifest.webmanifest?build=stable45-human14' index.html
+          ! grep -q 'jungle-theme.css?build=' index.html
+          ! grep -q 'experience-theme.js?build=' index.html
+
+          grep -q 'milkflow-stable45-human14' sw.js
           grep -q 'cross-device-alerts.js' sw.js
           grep -q 'firebase-messaging-compat.js' sw.js
           grep -q 'onBackgroundMessage' sw.js
           grep -q 'notificationclick' sw.js
-          grep -q 'jungle-theme.css' sw.js
-          grep -q 'assets/themes/jungle-canopy.svg' sw.js
-          grep -q 'assets/animals/elephant.svg' sw.js
-          grep -q 'assets/animals/monkey.svg' sw.js
-          grep -q 'assets/animals/tiger.svg' sw.js
-          grep -q 'assets/animals/parrot.svg' sw.js
-          grep -q 'assets/animals/hippo.svg' sw.js
+          grep -q 'experience-art-v2.css' sw.js
+          grep -q 'experience-theme-v2.js' sw.js
+          grep -q 'assets/themes/safari-adventure.svg' sw.js
+          grep -q 'assets/themes/butterfly-garden.svg' sw.js
+          grep -q 'assets/themes/princess-palace.svg' sw.js
+          grep -q 'assets/themes/unicorn-dreams.svg' sw.js
+          grep -q 'assets/themes/care-milk.svg' sw.js
+          grep -q 'assets/themes/care-wet.svg' sw.js
+          grep -q 'assets/themes/care-mixed.svg' sw.js
 
           grep -q "STATE_KEY = 'milkflow-family-v4-state'" app.js
           grep -q "const STATE_KEY='milkflow-family-v4-state'" core-ui.js
@@ -119,29 +124,25 @@ jobs:
           grep -q '#diaperDialog:not(.is-edit)' component-theme.css
           grep -q 'choice-row button.on::after' component-theme.css
 
-          grep -q "new Set(\['storybook','jungle','clean'\])" experience-theme.js
-          grep -q 'data-experience-theme-pick="storybook"' experience-theme.js
-          grep -q 'data-experience-theme-pick="jungle"' experience-theme.js
-          grep -q 'data-experience-theme-pick="clean"' experience-theme.js
-          grep -q 'Jungle Canopy for Baby' experience-theme.js
-          grep -q 'mf-theme-animal' experience-theme.js
-          grep -q 'function afterCanonicalRender' experience-theme.js
-          grep -q "milkflow:experience-theme-change',afterCanonicalRender" experience-theme.js
-          ! grep -q 'MutationObserver' experience-theme.js
+          grep -Fq "new Set(['safari','butterfly','princess','unicorn','clean'])" experience-theme-v2.js
+          grep -q "value==='jungle'||value==='storybook'" experience-theme-v2.js
+          grep -q "themeCard('safari','Safari Adventure'" experience-theme-v2.js
+          grep -q "themeCard('butterfly','Butterfly Garden'" experience-theme-v2.js
+          grep -q "themeCard('princess','Princess Palace'" experience-theme-v2.js
+          grep -q "themeCard('unicorn','Unicorn Dreams'" experience-theme-v2.js
+          grep -q 'mf-theme-animal' experience-theme-v2.js
+          ! grep -q 'MutationObserver' experience-theme-v2.js
 
-          grep -q 'cloud-island.svg' experience-themes.css
-          grep -q 'forest-clearing.svg' experience-themes.css
-          grep -q 'jungle-canopy.svg' jungle-theme.css
-          grep -q 'data-experience-theme="jungle"' jungle-theme.css
-          grep -q 'has-jungle-art>.mf-theme-animal' jungle-theme.css
-          grep -q 'content:"DIAPERS · "' jungle-theme.css
-          ! grep -q 'body\[data-realm="family"\] .main' experience-themes.css
-          ! grep -q 'body\[data-realm="family"\] .main' jungle-theme.css
-          ! grep -q 'bottom-nav' jungle-theme.css
-
-          grep -q 'expectedArt' scripts/browser-visual-audit.mjs
-          grep -q 'themed artwork is not visibly active' scripts/browser-visual-audit.mjs
-          grep -q 'naturalWidth' scripts/browser-visual-audit.mjs
+          grep -q 'safari-adventure.svg' experience-art-v2.css
+          grep -q 'butterfly-garden.svg' experience-art-v2.css
+          grep -q 'princess-palace.svg' experience-art-v2.css
+          grep -q 'unicorn-dreams.svg' experience-art-v2.css
+          grep -q 'care-milk.svg' experience-art-v2.css
+          grep -q 'care-wet.svg' experience-art-v2.css
+          grep -q 'care-poop.svg' experience-art-v2.css
+          grep -q 'care-mixed.svg' experience-art-v2.css
+          grep -q 'padding-bottom:calc(174px + env(safe-area-inset-bottom))' experience-art-v2.css
+          ! grep -q '.bottom-nav svg{display:none' experience-art-v2.css
 
           grep -q 'mf-doctor-print' doctor-summary.js
           grep -q 'mf-print-table' doctor-summary.js
