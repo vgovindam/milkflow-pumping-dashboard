@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Tiger">
+  <circle cx="60" cy="60" r="56" fill="#fff0cc"/>
+  <path d="M30 39 20 22l22 7M90 39l10-17-22 7" fill="#d9842f"/>
+  <circle cx="60" cy="59" r="37" fill="#e99a3d"/>
+  <ellipse cx="60" cy="69" rx="25" ry="20" fill="#ffe0a8"/>
+  <circle cx="46" cy="55" r="3.5" fill="#2d2b28"/><circle cx="74" cy="55" r="3.5" fill="#2d2b28"/>
+  <path d="M60 62 55 68h10Z" fill="#5c4032"/>
+  <path d="M52 73c5 4 11 4 16 0" fill="none" stroke="#6a4a36" stroke-width="3.5" stroke-linecap="round"/>
+  <g stroke="#5b432e" stroke-width="5" stroke-linecap="round">
+    <path d="M40 33l7 11M31 48l11 5M80 33l-7 11M89 48l-11 5M60 25v14"/>
+  </g>
+</svg>
