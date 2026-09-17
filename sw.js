@@ -1,17 +1,16 @@
 // MilkFlow service worker.
 // Network-first app shell; Firestore/Firebase traffic is left to Firebase.
-const VERSION = 'milkflow-stable45-human13';
+const VERSION = 'milkflow-stable45-human14';
 const SHELL = [
-  './', './index.html', './styles.css', './component-theme.css', './component-theme-core.css', './experience-themes.css', './jungle-theme.css', './doctor-summary.css',
-  './app.js', './app-reliability.js', './cross-device-alerts.js', './core-ui.js', './experience-theme.js', './render-lifecycle.js', './plan-reliability.js', './network-reliability.js', './ai-coach-client.js', './app-update-notice.js', './family-chat.js', './doctor-summary.js', './config.js',
-  './assets/themes/cloud-island.svg', './assets/themes/forest-clearing.svg', './assets/themes/jungle-canopy.svg',
+  './', './index.html', './styles.css', './component-theme.css', './component-theme-core.css', './experience-themes.css', './experience-art-v2.css', './doctor-summary.css',
+  './app.js', './app-reliability.js', './cross-device-alerts.js', './core-ui.js', './experience-theme-v2.js', './render-lifecycle.js', './plan-reliability.js', './network-reliability.js', './ai-coach-client.js', './app-update-notice.js', './family-chat.js', './doctor-summary.js', './config.js',
+  './assets/themes/cloud-island.svg', './assets/themes/forest-clearing.svg', './assets/themes/jungle-canopy.svg', './assets/themes/safari-adventure.svg', './assets/themes/butterfly-garden.svg', './assets/themes/princess-palace.svg', './assets/themes/unicorn-dreams.svg',
+  './assets/themes/care-milk.svg', './assets/themes/care-nurse.svg', './assets/themes/care-formula.svg', './assets/themes/care-wet.svg', './assets/themes/care-poop.svg', './assets/themes/care-mixed.svg',
   './assets/animals/bear.svg', './assets/animals/rabbit.svg', './assets/animals/fox.svg', './assets/animals/owl.svg', './assets/animals/beaver.svg',
   './assets/animals/elephant.svg', './assets/animals/monkey.svg', './assets/animals/tiger.svg', './assets/animals/parrot.svg', './assets/animals/hippo.svg',
   './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'
 ];
 
-// Firebase Messaging is optional. If its CDN is temporarily unavailable the service
-// worker still installs and MilkFlow keeps its normal offline/runtime behavior.
 try{
   importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
   importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
