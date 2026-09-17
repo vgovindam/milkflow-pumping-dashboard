@@ -2,7 +2,7 @@
 'use strict';
 
 /* First-class visual-theme controller. It owns only presentation preference and never
-   reads/writes MilkFlow records. No MutationObserver and no post-render restyling loop. */
+   reads/writes MilkFlow records. It uses explicit render events rather than DOM watching. */
 const KEY='milkflow-experience-theme-v1';
 const THEMES=new Set(['storybook','clean']);
 const root=document.documentElement;
