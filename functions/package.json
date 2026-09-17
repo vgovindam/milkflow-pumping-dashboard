@@ -6,7 +6,7 @@
     "node": "22"
   },
   "scripts": {
-    "check": "node --check index.js && node --check index-entry.js && node --check family-chat.js && node --check pump-context.js"
+    "check": "node --check index.js && node --check index-entry.js && node --check family-chat.js && node --check pump-context.js && node --check cross-device-alerts.js"
   },
   "dependencies": {
     "firebase-admin": "^13.0.0",
