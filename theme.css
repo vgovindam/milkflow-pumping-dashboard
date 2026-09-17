@@ -1,7 +1,7 @@
 /* MilkFlow canonical visual entry point.
    index.html loads only styles.css + this file + doctor-summary.css.
-   Do not add patch stylesheets. Core components own layout/interaction; the experience
-   layer owns artwork and theme tokens. Cascade priority is explicit inside the component
-   contract rather than depending on a chain of late overrides. */
+   Core components own layout/interaction; the experience layer owns artwork, tokens,
+   and independent themed component visuals. Cascade priority is explicit. */
 @import url("./component-theme.css?v=__MILKFLOW_VERSION__");
 @import url("./experience-system.css?v=__MILKFLOW_VERSION__") layer(milkflow-experience);
+@import url("./experience-components.css?v=__MILKFLOW_VERSION__") layer(milkflow-experience);
