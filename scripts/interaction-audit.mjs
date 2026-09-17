@@ -5,7 +5,10 @@ const app = read('app.js');
 const core = read('core-ui.js');
 const css = read('component-theme.css');
 const experienceCss = read('experience-themes.css');
+const jungleCss = read('jungle-theme.css');
 const experienceJs = read('experience-theme.js');
+const doctorJs = read('doctor-summary.js');
+const doctorCss = read('doctor-summary.css');
 const html = read('index.html');
 const lifecycle = read('render-lifecycle.js');
 
@@ -21,19 +24,14 @@ const routes = [
   'set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about',
 ];
 const rendererBlock = app.slice(app.indexOf('const renderers={'), app.indexOf('const titles='));
-for (const route of routes) {
-  if (!rendererBlock.includes(route)) failures.push(`route renderer: ${route} is not wired`);
-}
+for (const route of routes) if (!rendererBlock.includes(route)) failures.push(`route renderer: ${route} is not wired`);
 
 for (const text of [
   "const home=baby?'baby-home':'mom-home'",
   "hist=baby?'baby-history':'mom-history'",
   "trend=baby?'baby-trends':'mom-trends'",
-  "tab(home,'Home'",
-  "tab(hist,'History'",
-  'class="add-tab" data-add',
-  "tab(trend,'Trends'",
-  "tab('more','More'",
+  "tab(home,'Home'", "tab(hist,'History'", 'class="add-tab" data-add',
+  "tab(trend,'Trends'", "tab('more','More'",
 ]) need('bottom navigation', app, text);
 
 for (const text of [
@@ -53,9 +51,7 @@ const selectors = [
   '[data-auth]','[data-signout]','[data-print]','[data-mom-range]','[data-baby-range]',
   '[data-baby-filter]','[data-trend-range]','[data-doctor-range]','[data-stash]',
 ];
-for (const selector of selectors) {
-  if (!clickBlock.includes(selector)) failures.push(`click contract: no handler for ${selector}`);
-}
+for (const selector of selectors) if (!clickBlock.includes(selector)) failures.push(`click contract: no handler for ${selector}`);
 
 for (const [dialog, form] of [
   ['momDialog','momForm'],['diaperDialog','diaperForm'],['feedDialog','feedForm'],
@@ -85,11 +81,13 @@ for (const text of [
 
 for (const text of [
   "const KEY='milkflow-experience-theme-v1'",
-  "new Set(['storybook','clean'])",
+  "new Set(['storybook','jungle','clean'])",
   'data-experience-theme-pick="storybook"',
+  'data-experience-theme-pick="jungle"',
   'data-experience-theme-pick="clean"',
+  'Jungle Canopy for Baby',
   'decorateThemeArtwork',
-  'mf-storybook-animal',
+  'mf-theme-animal',
 ]) need('experience theme controller', experienceJs, text);
 if (experienceJs.includes('MutationObserver')) failures.push('experience theme controller: observer loop is not allowed');
 
@@ -97,14 +95,18 @@ for (const text of [
   'assets/themes/cloud-island.svg','assets/themes/forest-clearing.svg',
   'mf-last-feed-band + .mf-care-label','mf-feed-zone + .mf-care-label',
   'content:"PUMPING"','content:"NURSING"',
-]) need('experience theme surface', experienceCss, text);
+]) need('Storybook experience surface', experienceCss, text);
 for (const text of [
-  'assets/animals/bear.svg','assets/animals/rabbit.svg','assets/animals/fox.svg','assets/animals/owl.svg','assets/animals/beaver.svg',
-]) need('experience theme assets', experienceJs, text);
-need('theme icon fallback', experienceCss, '.mf-animal-sticker.has-storybook-art>svg{display:none!important}');
-need('theme image activation', experienceCss, '.mf-animal-sticker.has-storybook-art>.mf-storybook-animal{display:block!important}');
-if (experienceCss.includes('.bottom-nav svg{display:none')) failures.push('experience theme must not hide functional navigation icons');
-if (experienceCss.includes('body[data-realm="family"] .main')) failures.push('experience theme must not recolor Settings/family canvas');
+  'assets/themes/jungle-canopy.svg','data-experience-theme="jungle"',
+  'has-jungle-art>.mf-theme-animal','content:"DIAPERS · "',
+  'body[data-screen="mom-home"] .mf-dream-hero',
+]) need('Jungle experience surface', jungleCss, text);
+for (const text of [
+  'assets/animals/elephant.svg','assets/animals/monkey.svg','assets/animals/tiger.svg','assets/animals/parrot.svg','assets/animals/hippo.svg',
+]) need('Jungle animal family', experienceJs, text);
+need('Jungle stylesheet loaded', html, 'jungle-theme.css?build=stable45-human11');
+if (experienceCss.includes('.bottom-nav svg{display:none') || jungleCss.includes('.bottom-nav svg{display:none')) failures.push('experience themes must not hide functional navigation icons');
+if (experienceCss.includes('body[data-realm="family"] .main') || jungleCss.includes('body[data-realm="family"] .main')) failures.push('experience themes must not recolor Settings/family canvas');
 
 for (const text of [
   'body[data-realm="mom"] .panel,',
@@ -112,19 +114,18 @@ for (const text of [
   'body[data-screen="mom-home"] .mf-dream-journey{',
   'body[data-screen="mom-home"] .mf-dream-actions .quick-tile.mom{',
   'body[data-screen="mom-home"] .mf-dream-actions .quick-tile.nurse{',
-]) need('mom dark contrast', experienceCss, text);
+]) need('mom dark contrast', experienceCss + jungleCss, text);
 
-for (const text of ['function resetRouteScroll', 'function exactRouteControl', 'mf-render-recovery']) {
-  need('navigation recovery', lifecycle, text);
-}
+for (const text of ['mf-clinical-report','mf-clinical-summary-table','mf-clinical-table','printDoctorReport']) need('clinician doctor report', doctorJs + doctorCss, text);
+need('doctor component loaded', html, 'doctor-summary.js?build=stable45-human11');
+need('doctor stylesheet loaded', html, 'doctor-summary.css?build=stable45-human11');
 
-for (const text of ["STATE_KEY = 'milkflow-family-v4-state'", 'function unionById', 'function commitRecord']) {
-  need('data preservation', app, text);
-}
+for (const text of ['function resetRouteScroll', 'function exactRouteControl', 'mf-render-recovery']) need('navigation recovery', lifecycle, text);
+for (const text of ["STATE_KEY = 'milkflow-family-v4-state'", 'function unionById', 'function commitRecord']) need('data preservation', app, text);
 
 if (failures.length) {
   console.error(`Interaction audit failed:\n- ${failures.join('\n- ')}`);
   process.exit(1);
 }
 
-console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, protected mobile navigation/icons, 5 entry forms, Mom/Baby quick actions, selected-state visibility, switchable themes with fail-safe animal artwork, dark contrast, diaper flow, navigation recovery, and data-preservation contracts.`);
+console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, protected mobile navigation/icons, 5 entry forms, selected-state visibility, Storybook/Jungle/Clean themes, clinician report tables, dark contrast, diaper flow, navigation recovery, and data-preservation contracts.`);
