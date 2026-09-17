@@ -1,129 +1,120 @@
-/* MilkFlow experience themes.
-   This is a first-class visual theme layer, not a patch sheet. The base component system
-   remains authoritative for layout and behavior; this file only changes art direction. */
+/* MilkFlow first-class experience themes.
+   Scope rule: this file may change Mom/Baby art direction and the theme picker only.
+   It does not own navigation, Settings layout, forms, shared controls, routing or data. */
 
-/* ---------------------------------------------------------------- theme picker */
+/* ================================================================ theme picker */
 .mf-experience-panel{margin-bottom:14px}
 .mf-experience-panel .panel-head{margin-bottom:12px}
-.mf-experience-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.mf-experience-option{position:relative;min-height:116px;padding:12px;border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--ink);text-align:left;display:grid;align-content:end;overflow:hidden;box-shadow:0 7px 20px rgba(36,41,58,.06)}
-.mf-experience-option strong,.mf-experience-option small{position:relative;z-index:2;display:block}
-.mf-experience-option strong{font:800 14px var(--display)}
-.mf-experience-option small{margin-top:3px;color:var(--muted);font-size:10.5px;line-height:1.35;font-weight:650}
-.mf-experience-option[aria-pressed="true"]{border-color:var(--accent,var(--mom));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 28%,transparent),0 8px 22px rgba(36,41,58,.08)}
-.mf-experience-option[aria-pressed="true"]:after{content:"✓";position:absolute;right:10px;top:10px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--accent,var(--mom));color:white;font-size:13px;font-weight:900;z-index:3}
-.mf-experience-preview{position:absolute;inset:0 0 42px;display:grid;grid-template-columns:1fr 1fr;opacity:.96}
+.mf-experience-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mf-experience-option{
+  position:relative;min-height:148px;padding:0;border:1px solid var(--line);border-radius:20px;
+  background:var(--surface);color:var(--ink);text-align:left;display:flex;flex-direction:column;
+  overflow:hidden;box-shadow:0 7px 20px rgba(36,41,58,.06)
+}
+.mf-experience-preview{position:relative;display:grid;grid-template-columns:1fr 1fr;height:72px;flex:0 0 72px;width:100%;overflow:hidden}
 .mf-experience-preview.storybook .mom{background:linear-gradient(155deg,#7665d1,#c38ed0 58%,#9fd5ec);position:relative}
-.mf-experience-preview.storybook .mom:after{content:"";position:absolute;left:12%;right:12%;bottom:13px;height:23px;border-radius:50%;background:#fff;box-shadow:18px -9px 0 -3px rgba(255,255,255,.88),-13px -6px 0 -4px rgba(255,255,255,.82)}
+.mf-experience-preview.storybook .mom:after{content:"";position:absolute;left:10%;right:10%;bottom:13px;height:20px;border-radius:50%;background:#fff;box-shadow:18px -8px 0 -3px rgba(255,255,255,.88),-13px -5px 0 -4px rgba(255,255,255,.82)}
 .mf-experience-preview.storybook .baby{background:linear-gradient(#dff2e4,#8bc096);position:relative}
-.mf-experience-preview.storybook .baby:before,.mf-experience-preview.storybook .baby:after{content:"";position:absolute;top:0;width:19px;height:100%;background:#4e7d58}
-.mf-experience-preview.storybook .baby:before{left:10px}.mf-experience-preview.storybook .baby:after{right:10px}
-.mf-experience-preview.clean{grid-template-columns:1fr}
-.mf-experience-preview.clean .clean{background:linear-gradient(145deg,#f8f8fb,#ececf4);position:relative}
-.mf-experience-preview.clean .clean:before{content:"";position:absolute;left:15px;right:15px;top:17px;height:30px;border-radius:12px;background:white;box-shadow:0 40px 0 white}
+.mf-experience-preview.storybook .baby:before,.mf-experience-preview.storybook .baby:after{content:"";position:absolute;top:0;width:16px;height:100%;background:#4e7d58}
+.mf-experience-preview.storybook .baby:before{left:12px}.mf-experience-preview.storybook .baby:after{right:12px}
+.mf-experience-preview.clean{grid-template-columns:1fr;background:linear-gradient(145deg,#f5f6fa,#e8ebf1)}
+.mf-experience-preview.clean .clean{position:absolute;inset:15px 18px;border-radius:15px;background:#fff;border:1px solid #e4e7ee;box-shadow:0 9px 20px rgba(36,41,58,.08)}
+.mf-experience-copy{display:block;padding:11px 12px 12px;min-height:76px}
+.mf-experience-copy strong,.mf-experience-copy small{display:block}
+.mf-experience-copy strong{font:800 14px var(--display);color:var(--ink)}
+.mf-experience-copy small{margin-top:4px;color:var(--muted);font-size:10.5px;line-height:1.35;font-weight:650}
+.mf-experience-option[aria-pressed="true"]{border-color:var(--accent,var(--mom));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 28%,transparent),0 8px 22px rgba(36,41,58,.08)}
+.mf-experience-option[aria-pressed="true"]:after{content:"✓";position:absolute;right:9px;top:9px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--accent,var(--mom));color:#fff;font-size:13px;font-weight:900;z-index:3}
+:root[data-theme="dark"] .mf-experience-option{background:#202532;border-color:#394153;color:#f6f8fc}
+:root[data-theme="dark"] .mf-experience-copy strong{color:#f6f8fc}
+:root[data-theme="dark"] .mf-experience-copy small{color:#bac4d3}
+:root[data-theme="dark"] .mf-experience-preview.clean{background:linear-gradient(145deg,#292f3d,#181d27)}
+:root[data-theme="dark"] .mf-experience-preview.clean .clean{background:#202632;border-color:#394153}
 
-/* ---------------------------------------------------------------- shared Storybook canvas */
-:root[data-experience-theme="storybook"] body[data-realm] .main{background-image:none!important}
-:root[data-experience-theme="storybook"] body[data-realm] .main::before,
-:root[data-experience-theme="storybook"] body[data-realm] .main::after{display:none!important}
+/* ================================================================ shared Storybook */
+/* Family/Settings pages intentionally remain on the core visual system. */
+:root[data-experience-theme="storybook"] body[data-realm="mom"] .main,
+:root[data-experience-theme="storybook"] body[data-realm="baby"] .main{background-image:none!important}
+:root[data-experience-theme="storybook"] body[data-realm="mom"] .main::before,
+:root[data-experience-theme="storybook"] body[data-realm="mom"] .main::after,
+:root[data-experience-theme="storybook"] body[data-realm="baby"] .main::before,
+:root[data-experience-theme="storybook"] body[data-realm="baby"] .main::after{display:none!important}
 :root[data-experience-theme="storybook"] body[data-realm="mom"] .main{background:linear-gradient(180deg,#f3f0fb 0%,#eef5fb 52%,#f7f4fa 100%)!important}
 :root[data-experience-theme="storybook"] body[data-realm="baby"] .main{background:linear-gradient(180deg,#edf6ef 0%,#f6f5ec 56%,#f3f7f4 100%)!important}
-:root[data-experience-theme="storybook"] body[data-realm="family"] .main{background:linear-gradient(180deg,#f5f4f9,#f0f3f7)!important}
-:root[data-experience-theme="storybook"] body[data-realm] .panel,
-:root[data-experience-theme="storybook"] body[data-realm] .grp,
-:root[data-experience-theme="storybook"] body[data-realm] .row,
-:root[data-experience-theme="storybook"] body[data-realm] .metric{backdrop-filter:none!important}
+:root[data-experience-theme="storybook"] body[data-realm="mom"] .panel,
+:root[data-experience-theme="storybook"] body[data-realm="mom"] .grp,
+:root[data-experience-theme="storybook"] body[data-realm="mom"] .row,
+:root[data-experience-theme="storybook"] body[data-realm="mom"] .metric,
+:root[data-experience-theme="storybook"] body[data-realm="baby"] .panel,
+:root[data-experience-theme="storybook"] body[data-realm="baby"] .grp,
+:root[data-experience-theme="storybook"] body[data-realm="baby"] .row,
+:root[data-experience-theme="storybook"] body[data-realm="baby"] .metric{backdrop-filter:none!important}
 
-/* Page heads become small scene windows rather than generic gradient boxes. */
-:root[data-experience-theme="storybook"] body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head{
-  background-image:linear-gradient(90deg,rgba(83,68,153,.88),rgba(126,93,171,.70)),url("./assets/themes/cloud-island.svg")!important;
-  background-size:cover!important;background-position:center 42%!important;border-color:rgba(93,76,154,.18)!important
-}
-:root[data-experience-theme="storybook"] body[data-realm="baby"]:not([data-screen="baby-home"]) .page-head{
-  background-image:linear-gradient(90deg,rgba(28,76,55,.86),rgba(50,102,72,.64)),url("./assets/themes/forest-clearing.svg")!important;
-  background-size:cover!important;background-position:center 46%!important;border-color:rgba(48,103,72,.18)!important
-}
+/* Subpages use compact scene headers; the page content remains analytical/functional. */
+:root[data-experience-theme="storybook"] body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head{background-image:linear-gradient(90deg,rgba(65,52,128,.91),rgba(104,76,159,.70)),url("./assets/themes/cloud-island.svg")!important;background-size:cover!important;background-position:center 42%!important;border-color:rgba(93,76,154,.18)!important}
+:root[data-experience-theme="storybook"] body[data-realm="baby"]:not([data-screen="baby-home"]) .page-head{background-image:linear-gradient(90deg,rgba(24,70,49,.91),rgba(46,96,67,.67)),url("./assets/themes/forest-clearing.svg")!important;background-size:cover!important;background-position:center 46%!important;border-color:rgba(48,103,72,.18)!important}
 :root[data-experience-theme="storybook"] body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head h2,
 :root[data-experience-theme="storybook"] body[data-realm="baby"]:not([data-screen="baby-home"]) .page-head h2{color:#fff!important}
 :root[data-experience-theme="storybook"] body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head .eyebrow,
-:root[data-experience-theme="storybook"] body[data-realm="baby"]:not([data-screen="baby-home"]) .page-head .eyebrow{color:rgba(255,255,255,.82)!important}
+:root[data-experience-theme="storybook"] body[data-realm="baby"]:not([data-screen="baby-home"]) .page-head .eyebrow{color:rgba(255,255,255,.84)!important}
 
-/* ---------------------------------------------------------------- Mom: Cloud Island */
-:root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-hero{
-  background-image:linear-gradient(90deg,rgba(73,57,139,.84) 0%,rgba(96,70,153,.62) 48%,rgba(89,111,170,.24) 100%),url("./assets/themes/cloud-island.svg")!important;
-  background-size:cover!important;background-position:center!important;border:1px solid rgba(255,255,255,.32)!important;
-  box-shadow:0 24px 55px rgba(69,59,127,.20)!important
-}
-:root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-hero:before{display:none!important}
+/* ================================================================ Mom · Cloud Island */
+:root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-hero{background-image:linear-gradient(90deg,rgba(67,52,132,.87) 0%,rgba(95,69,151,.64) 48%,rgba(84,109,170,.24) 100%),url("./assets/themes/cloud-island.svg")!important;background-size:cover!important;background-position:center!important;border:1px solid rgba(255,255,255,.32)!important;box-shadow:0 24px 55px rgba(69,59,127,.20)!important}
+:root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-hero:before,
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-cloud,
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-sky-orb,
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-sparkles{display:none!important}
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-welcome>span{background:rgba(255,255,255,.24)}
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-next{background:rgba(70,52,128,.38);border-color:rgba(255,255,255,.34)}
-:root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey{
-  background:linear-gradient(180deg,#fff 0%,#f5f1ff 100%)!important;border:1px solid #e2daf6!important;box-shadow:0 14px 32px rgba(68,58,120,.10)!important
-}
+:root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey{background:linear-gradient(180deg,#fff 0%,#f5f1ff 100%)!important;border:1px solid #e2daf6!important;box-shadow:0 14px 32px rgba(68,58,120,.10)!important}
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile{position:relative;overflow:hidden;border:1px solid transparent!important;box-shadow:0 12px 27px rgba(54,57,99,.10)!important}
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile:before{position:absolute;left:15px;top:12px;padding:4px 7px;border-radius:999px;font-size:8px;line-height:1;font-weight:900;letter-spacing:.08em}
-:root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.mom{
-  background:linear-gradient(145deg,#dceaff 0%,#c9ddfb 58%,#b8d2f4 100%)!important;color:#294d7b!important;border-color:#b8cee9!important
-}
+:root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.mom{background:linear-gradient(145deg,#dceaff 0%,#c9ddfb 58%,#b8d2f4 100%)!important;color:#294d7b!important;border-color:#b8cee9!important}
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.mom:before{content:"PUMPING";background:#f7fbff;color:#446a98}
-:root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.nurse{
-  background:linear-gradient(145deg,#f8dce9 0%,#efc7dc 58%,#e4c0e8 100%)!important;color:#7e375d!important;border-color:#e1b6cf!important
-}
+:root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.nurse{background:linear-gradient(145deg,#f8dce9 0%,#efc7dc 58%,#e4c0e8 100%)!important;color:#7e375d!important;border-color:#e1b6cf!important}
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.nurse:before{content:"NURSING";background:#fff6fa;color:#9a4c70}
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile strong{margin-top:16px!important;color:inherit!important}
 :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-metrics .metric{background:#fff!important;border:1px solid #e6e1f2!important}
 
-/* ---------------------------------------------------------------- Baby: Woodland Forest */
-:root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-hero{
-  background-image:linear-gradient(90deg,rgba(238,249,240,.92) 0%,rgba(229,245,232,.66) 52%,rgba(224,242,225,.28) 100%),url("./assets/themes/forest-clearing.svg")!important;
-  background-size:cover!important;background-position:center bottom!important;color:#244b36!important;border:1px solid #b8d7be!important;box-shadow:0 18px 42px rgba(48,92,61,.13)!important
-}
+/* ================================================================ Baby · Woodland Forest */
+:root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-hero{background-image:linear-gradient(90deg,rgba(238,249,240,.92) 0%,rgba(229,245,232,.68) 52%,rgba(224,242,225,.30) 100%),url("./assets/themes/forest-clearing.svg")!important;background-size:cover!important;background-position:center bottom!important;color:#244b36!important;border:1px solid #b8d7be!important;box-shadow:0 18px 42px rgba(48,92,61,.13)!important}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-hero:before,
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-hero:after{display:none!important}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#244734!important}
-:root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:rgba(247,252,245,.78)!important;color:#356047!important;border:1px solid rgba(102,145,104,.18)!important}
+:root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:rgba(247,252,245,.82)!important;color:#356047!important;border:1px solid rgba(102,145,104,.18)!important}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-copy small{color:#486a55!important}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-stat{backdrop-filter:none!important}
 
-/* New woodland animal SVG set. The old inline stickers remain the clean-theme artwork.
-   Only the sticker's own inline SVG is replaced; functional app/navigation SVGs are never hidden. */
-:root[data-experience-theme="storybook"] .mf-animal-sticker{background-repeat:no-repeat;background-position:center;background-size:contain;filter:drop-shadow(0 3px 4px rgba(46,61,48,.12))}
-:root[data-experience-theme="storybook"] .mf-animal-sticker>svg{display:none!important}
-:root[data-experience-theme="storybook"] .mf-animal-sticker.bear{background-image:url("./assets/animals/bear.svg")}
-:root[data-experience-theme="storybook"] .mf-animal-sticker.bunny{background-image:url("./assets/animals/rabbit.svg")}
-:root[data-experience-theme="storybook"] .mf-animal-sticker.fox{background-image:url("./assets/animals/fox.svg")}
-:root[data-experience-theme="storybook"] .mf-animal-sticker.owl{background-image:url("./assets/animals/owl.svg")}
-:root[data-experience-theme="storybook"] .mf-animal-sticker.whale{background-image:url("./assets/animals/beaver.svg")}
+/* New woodland SVG family. The inline animal remains visible until the image actually
+   loads; this is a deliberate fallback contract, not a background-image replacement. */
+.mf-storybook-animal{display:none;width:100%;height:100%;object-fit:contain;pointer-events:none}
+:root[data-experience-theme="storybook"] .mf-animal-sticker.has-storybook-art>.mf-storybook-animal{display:block!important}
+:root[data-experience-theme="storybook"] .mf-animal-sticker.has-storybook-art>svg{display:none!important}
+:root[data-experience-theme="clean"] .mf-storybook-animal{display:none!important}
 
-/* Feeding and diapers are separate woodland stations, not two identical headings. */
+/* Feed and diaper sections are distinct forest stations, with their own hierarchy. */
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-care-label{padding:10px 12px;border-radius:15px;margin-top:3px}
-:root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-last-feed-band + .mf-care-label{
-  background:#e1f0dc;color:#315c39;border:1px solid #c4ddbc;box-shadow:0 6px 14px rgba(63,105,68,.06)
-}
+:root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-last-feed-band + .mf-care-label{background:#e1f0dc;color:#315c39;border:1px solid #c4ddbc;box-shadow:0 6px 14px rgba(63,105,68,.06)}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-last-feed-band + .mf-care-label span:before{content:"FEEDING · ";font-size:8px;letter-spacing:.10em;color:#6c9064;font-weight:900}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-feed-zone{padding:9px;border-radius:22px;background:#f1f7ec;border:1px solid #dcebd5}
-:root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-feed-zone + .mf-care-label{
-  background:#f6e8cf;color:#6d4d28;border:1px solid #e9d3ad;box-shadow:0 6px 14px rgba(108,80,45,.06)
-}
+:root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-feed-zone + .mf-care-label{background:#f6e8cf;color:#6d4d28;border:1px solid #e9d3ad;box-shadow:0 6px 14px rgba(108,80,45,.06)}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-feed-zone + .mf-care-label span:before{content:"CARE · ";font-size:8px;letter-spacing:.10em;color:#a17a49;font-weight:900}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-diaper-cluster{padding:9px;border-radius:22px;background:#fbf4e7;border:1px solid #efe1c8}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-feed-card{box-shadow:none!important;border:1px solid rgba(65,107,73,.10)!important}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-diaper-blob{box-shadow:none!important;border:1px solid rgba(109,78,43,.10)!important}
 
-/* Other pages carry the realm through restrained surfaces, not wallpaper. */
+/* Realm surfaces: restrained tint only. */
 :root[data-experience-theme="storybook"] body[data-realm="baby"] .panel{border-color:#d8e7d9!important;background:#fffef9!important;box-shadow:0 9px 24px rgba(54,92,63,.06)!important}
 :root[data-experience-theme="storybook"] body[data-realm="baby"] .metric{border-color:#d8e7d9!important;background:linear-gradient(145deg,#fffef9,#f1f7ef)!important}
 :root[data-experience-theme="storybook"] body[data-realm="mom"] .panel{border-color:#e4def0!important;background:#fff!important;box-shadow:0 9px 24px rgba(70,60,121,.06)!important}
 
-/* ---------------------------------------------------------------- dark Storybook */
+/* ================================================================ dark Storybook */
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .main{background:linear-gradient(180deg,#121426,#17182b 58%,#111b28)!important}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="baby"] .main{background:linear-gradient(180deg,#101b18,#15211d 58%,#111a18)!important}
-:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-hero{background-image:linear-gradient(90deg,rgba(39,30,83,.90),rgba(68,45,101,.74),rgba(36,62,90,.42)),url("./assets/themes/cloud-island.svg")!important}
-:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-hero{background-image:linear-gradient(90deg,rgba(16,46,32,.90),rgba(20,58,39,.74),rgba(20,53,37,.50)),url("./assets/themes/forest-clearing.svg")!important;color:#eff8f0!important;border-color:#315b43!important}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-hero{background-image:linear-gradient(90deg,rgba(39,30,83,.91),rgba(68,45,101,.76),rgba(36,62,90,.45)),url("./assets/themes/cloud-island.svg")!important}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-hero{background-image:linear-gradient(90deg,rgba(16,46,32,.91),rgba(20,58,39,.77),rgba(20,53,37,.52)),url("./assets/themes/forest-clearing.svg")!important;color:#eff8f0!important;border-color:#315b43!important}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#f2fbf2!important}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:rgba(13,42,29,.75)!important;color:#e6f7e9!important;border-color:#315c42!important}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-copy small{color:#cbe0ce!important}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-last-feed-band + .mf-care-label{background:#1c3828;color:#d8f0d9;border-color:#315e3e}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-feed-zone{background:#14271d;border-color:#274634}
@@ -132,14 +123,11 @@
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="baby"] .panel,
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="baby"] .metric{background:#18221f!important;border-color:#2b4035!important;color:#f1f7f3!important}
 
-/* Mom dark mode uses one explicit contrast contract. Theme art may change the surface,
-   but titles, labels, values and helper text always have readable foreground tokens. */
+/* One Mom dark contrast contract. */
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel,
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .metric,
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .grp,
-:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .row{
-  background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important;box-shadow:0 10px 28px rgba(0,0,0,.18)!important
-}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .row{background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important;box-shadow:0 10px 28px rgba(0,0,0,.18)!important}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel h2,
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel h3,
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel strong,
@@ -152,10 +140,7 @@
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .metric small,
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .row-main span,
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .grp-row span{color:#c7cfe0!important;opacity:1!important}
-
-:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey{
-  background:linear-gradient(180deg,#1b1e31,#20233a)!important;border-color:#393d58!important;color:#f7f8fd!important;box-shadow:0 14px 34px rgba(0,0,0,.24)!important
-}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey{background:linear-gradient(180deg,#1b1e31,#20233a)!important;border-color:#393d58!important;color:#f7f8fd!important;box-shadow:0 14px 34px rgba(0,0,0,.24)!important}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey .mf-journey-head strong,
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey .mf-journey-stop strong{color:#f7f9fd!important}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey p,
@@ -167,15 +152,13 @@
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile small{color:rgba(255,255,255,.82)!important}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-metrics .metric{background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important}
 
-:root[data-theme="dark"] .mf-experience-option{background:#202532;border-color:#394153;color:#f6f8fc}
-:root[data-theme="dark"] .mf-experience-option small{color:#bac4d3}
-:root[data-theme="dark"] .mf-experience-preview.clean .clean{background:linear-gradient(145deg,#222633,#171b25)}
-
 @media(max-width:760px){
-  .mf-experience-options{grid-template-columns:1fr 1fr}.mf-experience-option{min-height:108px;padding:10px}.mf-experience-preview{inset:0 0 40px}
+  .mf-experience-options{grid-template-columns:1fr 1fr;gap:10px}
+  .mf-experience-option{min-height:144px}.mf-experience-preview{height:68px;flex-basis:68px}.mf-experience-copy{padding:10px;min-height:76px}
   :root[data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-hero{background-position:58% center!important}
   :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-hero{background-position:center bottom!important}
   :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-care-label{padding:9px 10px!important}
   :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-feed-zone,
   :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-diaper-cluster{padding:7px}
 }
+@media(max-width:380px){.mf-experience-options{grid-template-columns:1fr}.mf-experience-option{min-height:132px}}
