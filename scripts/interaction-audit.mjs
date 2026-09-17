@@ -38,6 +38,13 @@ for (const text of [
   "tab('more','More'",
 ]) need('bottom navigation', app, text);
 
+// Structural navigation cannot be themed into a footer or disappear behind content.
+for (const text of [
+  'display:grid!important;position:fixed!important;z-index:70!important',
+  'grid-template-columns:repeat(5,minmax(0,1fr))!important',
+  '.bottom-nav svg.ico,.bottom-nav svg.gly,.topbar svg.ico,.back-btn svg.ico{display:block!important}',
+]) need('mobile shell contract', css, text);
+
 // All interaction families rendered by Mom/Baby screens must have one delegated owner.
 const clickBlock = app.slice(app.indexOf('function handleClick(e){'), app.indexOf("document.addEventListener('click',handleClick)"));
 const selectors = [
@@ -78,9 +85,8 @@ need('diaper selected value', app, "setWhen('diaperTime',0); pickChoice('diaperK
 // A direct Wet/Poopy/Mixed tap already chose the kind; only editing may ask again.
 need('no duplicate diaper question', css, '#diaperDialog:not(.is-edit) .form-section:has([data-choice="diaperKind"])');
 
-// Selected state is functional *and* visible. The controls layer may define dark surfaces,
-// but the later named selection layer owns .on/.active/.sel so specificity cannot erase it.
-need('cascade layer order', css, '@layer milkflow-core, milkflow-controls, milkflow-selection, milkflow-experience;');
+// Theme art sits below functional controls; selection is the final visual authority.
+need('cascade layer order', css, '@layer milkflow-core, milkflow-experience, milkflow-controls, milkflow-selection;');
 for (const text of [
   '.choice-row button.on{', '.choice-row button.on::after{', '.when-quick button.on,',
   '.segmented button.on,', '.pills button.active,', '.day-chip.sel,', '.theme-opt.on{',
@@ -94,13 +100,24 @@ for (const text of [
   'data-experience-theme-pick="storybook"',
   'data-experience-theme-pick="clean"',
 ]) need('experience theme controller', experienceJs, text);
-if (experienceJs.includes('MutationObserver')) failures.push('experience theme controller: MutationObserver is not allowed');
+if (experienceJs.includes('MutationObserver')) failures.push('experience theme controller: observer loop is not allowed');
 for (const text of [
   'assets/themes/cloud-island.svg','assets/themes/forest-clearing.svg',
   'mf-last-feed-band + .mf-care-label','mf-feed-zone + .mf-care-label',
   'content:"PUMPING"','content:"NURSING"',
   'assets/animals/bear.svg','assets/animals/rabbit.svg','assets/animals/fox.svg','assets/animals/owl.svg','assets/animals/beaver.svg',
 ]) need('experience theme surface', experienceCss, text);
+need('theme icon scoping', experienceCss, '.mf-animal-sticker>svg{display:none!important}');
+if (experienceCss.includes('.bottom-nav svg{display:none')) failures.push('experience theme must not hide functional navigation icons');
+
+// Mom dark mode has an explicit readable foreground/surface contract, including home cards.
+for (const text of [
+  'body[data-realm="mom"] .panel,',
+  'background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important',
+  'body[data-screen="mom-home"] .mf-dream-journey{',
+  'body[data-screen="mom-home"] .mf-dream-actions .quick-tile.mom{',
+  'body[data-screen="mom-home"] .mf-dream-actions .quick-tile.nurse{',
+]) need('mom dark contrast', experienceCss, text);
 
 // Navigation can never intentionally land on an empty viewport.
 for (const text of ['function resetRouteScroll', 'function exactRouteControl', 'mf-render-recovery']) {
@@ -117,4 +134,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, 5 entry forms, Mom/Baby quick actions, selected-state visibility, switchable experience themes, diaper flow, navigation recovery, and data-preservation contracts.`);
+console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, protected mobile navigation/icons, 5 entry forms, Mom/Baby quick actions, selected-state visibility, switchable experience themes, dark contrast, diaper flow, navigation recovery, and data-preservation contracts.`);
