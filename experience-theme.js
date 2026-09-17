@@ -67,11 +67,13 @@ function decorateThemeArtwork(){
     if(!img){
       img=document.createElement('img');
       // mf-storybook-animal is retained as a compatibility hook for the existing Storybook
-      // contract; mf-theme-animal is the generic contract used by all new themes.
+      // contract; mf-theme-animal is the generic contract used by all visual themes.
       img.className='mf-theme-animal mf-storybook-animal';
       img.alt='';
       img.setAttribute('aria-hidden','true');
       img.decoding='async';
+      img.loading='eager';
+      try{img.fetchPriority='high';}catch{}
       img.draggable=false;
       sticker.prepend(img);
     }
@@ -90,6 +92,8 @@ function decorateThemeArtwork(){
       img.onload=activate;
       img.onerror=fail;
       img.src=wanted;
+      // Safari can report a cached SVG as complete without dispatching a new load event.
+      if(img.complete&&img.naturalWidth)activate();
     }else if(img.complete&&img.naturalWidth){
       activate();
     }
@@ -134,16 +138,30 @@ function syncThemeUi(){
   decorateThemeArtwork();
 }
 
+/* app.js renders first and core-ui.js intentionally finishes its canonical home composition
+   in a microtask. Theme art must run after that composition, otherwise the freshly-created
+   animal cards replace the themed images. This is an explicit render phase, not polling. */
+let postRenderQueued=false;
+function afterCanonicalRender(){
+  if(postRenderQueued)return;
+  postRenderQueued=true;
+  queueMicrotask(()=>requestAnimationFrame(()=>{
+    postRenderQueued=false;
+    syncThemeUi();
+  }));
+}
+
 apply();
 document.addEventListener('click',e=>{
   const btn=e.target.closest('[data-experience-theme-pick]');
   if(!btn)return;
   save(btn.dataset.experienceThemePick);
 });
-window.addEventListener('storage',e=>{if(e.key===KEY)syncThemeUi();});
-window.addEventListener('milkflow:base-rendered',()=>{settingsPanel();decorateThemeArtwork();});
-window.addEventListener('pageshow',syncThemeUi);
-window.addEventListener('hashchange',()=>setTimeout(syncThemeUi,0));
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',syncThemeUi,{once:true});
-else syncThemeUi();
+window.addEventListener('storage',e=>{if(e.key===KEY)afterCanonicalRender();});
+window.addEventListener('milkflow:base-rendered',afterCanonicalRender);
+window.addEventListener('milkflow:experience-theme-change',afterCanonicalRender);
+window.addEventListener('pageshow',afterCanonicalRender);
+window.addEventListener('hashchange',afterCanonicalRender);
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',afterCanonicalRender,{once:true});
+else afterCanonicalRender();
 })();
