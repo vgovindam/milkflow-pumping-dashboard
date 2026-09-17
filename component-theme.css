@@ -2,8 +2,9 @@
    The established component system lives in component-theme-core.css. This file defines
    named cascade layers so focused component contracts have an explicit priority instead
    of relying on accidental source order or one-off patch stylesheets. */
-@layer milkflow-core, milkflow-controls, milkflow-selection;
-@import url("./component-theme-core.css?build=stable45-human6") layer(milkflow-core);
+@layer milkflow-core, milkflow-controls, milkflow-selection, milkflow-experience;
+@import url("./component-theme-core.css?build=stable45-human7") layer(milkflow-core);
+@import url("./experience-themes.css?build=stable45-human7") layer(milkflow-experience);
 
 @layer milkflow-controls {
   /* Entry sheets and dialogs must remain legible in both themes. The care picker uses
