@@ -22,8 +22,18 @@ function repairInteractionState(){
   normalizeStepperInputs(document);
 }
 
-window.addEventListener('DOMContentLoaded',()=>normalizeStepperInputs(document),{once:true});
-window.addEventListener('pageshow',repairInteractionState);
+function loadCrossDeviceAlerts(){
+  if(window.MilkFlowCrossDeviceAlerts||document.querySelector('script[data-milkflow-cross-device]'))return;
+  const script=document.createElement('script');
+  script.src='cross-device-alerts.js?build=stable45-human13';
+  script.async=true;
+  script.dataset.milkflowCrossDevice='1';
+  script.onerror=()=>console.warn('Cross-device alerts module did not load');
+  document.head.appendChild(script);
+}
+
+window.addEventListener('DOMContentLoaded',()=>{normalizeStepperInputs(document);loadCrossDeviceAlerts();},{once:true});
+window.addEventListener('pageshow',()=>{repairInteractionState();loadCrossDeviceAlerts();});
 document.addEventListener('focusin',e=>{
   const box=e.target?.closest?.('[data-stepper]');if(box)normalizeStepperInputs(box);
 });
