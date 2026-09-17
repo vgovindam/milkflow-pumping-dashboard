@@ -5,3 +5,24 @@
 @import url("./component-theme.css?v=__MILKFLOW_VERSION__");
 @import url("./experience-system.css?v=__MILKFLOW_VERSION__") layer(milkflow-experience);
 @import url("./experience-components.css?v=__MILKFLOW_VERSION__") layer(milkflow-experience);
+
+/* Pseudo-element ownership contract.
+   The legacy Baby hero used ::before/::after for decorative hills and the first immersive
+   theme pass reused ::after for a theme-name badge. Those two geometries cannot safely
+   share one pseudo element: inherited left/right/height values produced the large dark
+   overlay seen on iPhone. The canonical hero now has one visual owner: its background
+   image. Both legacy decorative pseudos are disabled for illustrated themes.
+
+   Care cards follow the same rule. The independent themed sprite is the visible icon;
+   the older semantic ::before illustration is disabled so two icons can never stack.
+   Build/QA guarantees the themed sprite assets are bundled, while Clean retains the
+   original semantic icons because these rules do not apply to it. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero::before,
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero::after{
+  display:none!important;
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card::before,
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob::before,
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin::before{
+  display:none!important;
+}
