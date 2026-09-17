@@ -23,13 +23,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Validate production JavaScript
         run: |
-          node --check stable34-bridge.js
           node --check app.js
           node --check app-reliability.js
           node --check core-ui.js
-          node --check baby-experience.js
+          node --check render-lifecycle.js
+          node --check plan-reliability.js
+          node --check network-reliability.js
           node --check ai-coach-client.js
           node --check app-update-notice.js
           node --check family-chat.js
@@ -38,73 +40,65 @@ jobs:
           node --check functions/family-chat.js
           node --check functions/pump-context.js
           node scripts/ui-audit.mjs
+
       - name: Verify canonical production surface
         run: |
           test -f index.html
-          test -f stable34-bridge.js
           test -f app.js
           test -f app-reliability.js
           test -f core-ui.js
-          test -f baby-experience.js
+          test -f render-lifecycle.js
+          test -f plan-reliability.js
+          test -f network-reliability.js
           test -f ai-coach-client.js
           test -f app-update-notice.js
           test -f family-chat.js
           test -f styles.css
-          test -f care-polish.css
+          test -f component-theme.css
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
-          grep -q 'styles.css?build=stable45' index.html
-          grep -q 'stable34-bridge.js?build=stable45' index.html
-          grep -q 'app.js?build=stable45' index.html
-          grep -q 'core-ui.js?build=stable45' index.html
-          grep -q 'baby-experience.js?build=stable45-baby2' index.html
-          grep -q 'family-chat.js?build=stable45' index.html
-          grep -q 'manifest.webmanifest?build=stable45' index.html
-          grep -q "milkflow-stable45" sw.js
-          grep -q 'baby-experience.js' sw.js
-          grep -q 'familyChatEndpoints' config.js
-          grep -q 'correctedPlan' stable34-bridge.js
-          grep -q 'mf-r2-highlights{display:none' stable34-bridge.js
-          grep -q 'body\[data-screen="mom-home"\].*main' stable34-bridge.js
-          grep -q 'body\[data-screen="baby-home"\].*main' stable34-bridge.js
+
+          grep -q 'styles.css?build=stable45-human1' index.html
+          grep -q 'component-theme.css?build=stable45-human1' index.html
+          grep -q 'app.js?build=stable45-human1' index.html
+          grep -q 'core-ui.js?build=stable45-human1' index.html
+          grep -q 'render-lifecycle.js?build=stable45-human1' index.html
+          grep -q 'plan-reliability.js?build=stable45-human1' index.html
+          grep -q 'network-reliability.js?build=stable45-human1' index.html
+          grep -q 'family-chat.js?build=stable45-human1' index.html
+          grep -q 'manifest.webmanifest?build=stable45-human1' index.html
+          grep -q 'milkflow-stable45-human1' sw.js
+
+          grep -q "STATE_KEY = 'milkflow-family-v4-state'" app.js
+          grep -q "const STATE_KEY='milkflow-family-v4-state'" core-ui.js
+          grep -q 'function unionById' app.js
+          grep -q 'correctedPlan' plan-reliability.js
+          grep -q 'familyChatEndpoints' network-reliability.js
+          grep -q "new MutationObserver(publish).observe(view,{childList:true})" render-lifecycle.js
+          ! grep -q 'subtree:true' render-lifecycle.js
+          ! grep -q 'MutationObserver' app-reliability.js
+          ! grep -q "Object.defineProperty(Element.prototype,'innerHTML'" *.js
+
           grep -q 'mf-top-orbs' core-ui.js
-          grep -q 'mf-mom-orbs' core-ui.js
           grep -q 'mf-mom-hero-photo' core-ui.js
           grep -q 'mf-last-feed-band' core-ui.js
-          grep -q 'mf-last-feed-age' core-ui.js
-          grep -q ':root\[data-theme="dark"\] .mf-top-orb' core-ui.js
-          grep -q 'relativeAgo' core-ui.js
-          grep -q 'lastFeedText' core-ui.js
           grep -q 'mf-dream-hero' core-ui.js
           grep -q 'mf-dream-journey' core-ui.js
-          grep -q 'mf-dream-progress' core-ui.js
           grep -q 'function animalSticker' core-ui.js
           grep -q 'mf-animal-hero' core-ui.js
-          grep -q ':root\[data-theme="dark"\] .mf-animal-hero' core-ui.js
-          grep -q 'function decorateApp' core-ui.js
-          grep -q 'data-realm="mom"' core-ui.js
-          grep -q 'mf-dream-mobile-summary' core-ui.js
-          grep -q 'width:138px;height:138px' core-ui.js
-          grep -q 'min-height:122px;padding:72px' core-ui.js
-          grep -q 'min-height:92px!important' core-ui.js
-          grep -q 'outline:0!important' core-ui.js
           grep -q "momTab.textContent=S.profile.momName||'Mom'" app.js
-          grep -q 'padding:14px 13px calc(112px' styles.css
-          grep -q 'Your day, beautifully paced' core-ui.js
-          grep -q 'mf-feed-card milk' core-ui.js
-          grep -q 'min-height:108px' core-ui.js
-          grep -q 'border-radius:38px 29px 43px 32px' core-ui.js
-          grep -q 'min-width:30px;height:30px' core-ui.js
-          grep -q 'body:not(\[data-screen\^="mom-"\]) #mfChatButton' core-ui.js
-          grep -q 'milkflow:base-rendered' core-ui.js
           grep -q 'data-feed-type="expressed_milk"' core-ui.js
           grep -q 'mf-diaper-cluster' core-ui.js
           grep -q 'data-sleep' core-ui.js
           grep -q 'data-growth' core-ui.js
-          grep -q 'function greetingFor' baby-experience.js
-          grep -q 'mf-stat-milk' baby-experience.js
-          grep -q 'mf-label-icon' baby-experience.js
+
+          ! grep -q 'stable34-bridge.js' index.html
+          ! grep -q 'baby-experience.js' index.html
+          ! grep -q 'care-polish.css' index.html
+          ! grep -q 'layout-fixes.css' index.html
+          ! grep -q 'baby-compact.css' index.html
+          ! grep -q 'dark-contrast.css' index.html
           ! grep -q 'chat-reliability.js' index.html
           ! grep -q 'runtime-stability.js' index.html
           ! grep -q 'smart-pumping.js' index.html
@@ -114,14 +108,17 @@ jobs:
           ! grep -q 'modern-stickers.js' index.html
           ! grep -q 'baby-home-modern.js' index.html
           ! grep -q 'mom-profile.js' index.html
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
           path: '.'
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
