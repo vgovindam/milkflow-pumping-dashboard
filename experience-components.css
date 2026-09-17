@@ -14,6 +14,15 @@
   --mf-sprite-nursing:100% 50%;
 }
 
+/* Rich scene details are an independent view layer. The base scene remains the safe
+   page background, so a detail asset can fail without hiding or breaking the app. */
+:root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) #view{position:relative;isolation:isolate}
+:root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) #view::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background-image:var(--mf-theme-detail);background-repeat:no-repeat;background-size:cover;background-position:center top;opacity:.74
+}
+:root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) #view>*{position:relative;z-index:1}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) #view::before{opacity:.42;filter:saturate(.82) brightness(.82)}
+
 /* Each care component gets its own themed illustration layer. The canonical semantic
    icon remains underneath as a safe fallback, so an art asset cannot break the action. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card::after,
@@ -107,7 +116,8 @@ body[data-screen="settings"] #view>.data-status,body[data-screen="settings"] #vi
 :root[data-theme="dark"] .mf-settings-row small{color:#c2cbc3}
 :root[data-theme="dark"] body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-option{background:rgba(31,36,39,.96)!important;border-color:rgba(229,236,230,.13)!important}
 :root[data-theme="dark"] .mf-settings-row{border-bottom-color:rgba(233,239,234,.10)}
-:root[data-theme="dark"] .mf-settings-row-icon{background:#243b31}.mf-settings-row-icon::before{background:#91d2ad}
+:root[data-theme="dark"] .mf-settings-row-icon{background:#243b31}
+:root[data-theme="dark"] .mf-settings-row-icon::before{background:#91d2ad}
 :root[data-theme="dark"] .mf-settings-motto{background:rgba(28,49,38,.90);border-color:rgba(142,196,157,.30);color:#cce6d4}
 
 @media(max-width:430px){
