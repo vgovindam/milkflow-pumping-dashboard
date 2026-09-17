@@ -1,11 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MilkFlow">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8b6ceb"/>
-      <stop offset="1" stop-color="#ef7fae"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="114" fill="url(#g)"/>
-  <path d="M256 118c56 62 92 112 92 152a92 92 0 1 1-184 0c0-40 36-90 92-152Z" fill="#fff" fill-opacity=".96"/>
-  <path d="M214 268c0 28 18 46 42 50" fill="none" stroke="#8b6ceb" stroke-width="17" stroke-linecap="round" stroke-opacity=".55"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MilkFlow family icon">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b68cf4"/><stop offset=".48" stop-color="#efb5df"/><stop offset="1" stop-color="#ffd8c8"/></linearGradient>
+  <linearGradient id="heart" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7f5bc9"/><stop offset="1" stop-color="#d45b9d"/></linearGradient>
+  <linearGradient id="wrap" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffdf8"/><stop offset="1" stop-color="#f4ecff"/></linearGradient>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#6b4f86" flood-opacity=".20"/></filter>
+</defs>
+<rect width="512" height="512" rx="118" fill="url(#bg)"/>
+<circle cx="410" cy="102" r="118" fill="#fff" opacity=".12"/>
+<circle cx="92" cy="422" r="144" fill="#fff7df" opacity=".18"/>
+<!-- heart frame -->
+<path d="M255 396C132 317 83 255 104 187c20-65 97-75 151-17 54-58 131-48 151 17 21 68-29 130-151 209Z" fill="none" stroke="url(#heart)" stroke-width="21" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
+<!-- mother -->
+<g filter="url(#shadow)"><circle cx="224" cy="183" r="70" fill="#f2bd98"/><path d="M159 181c-8-82 42-125 101-111 64 16 79 80 48 133-2-45-37-72-84-72-35 0-55 15-65 50Z" fill="#6e3e39"/><path d="M153 243c45-49 105-52 150-7 37 37 40 105 16 151H145c-24-44-20-104 8-144Z" fill="#9d78df"/><circle cx="201" cy="183" r="5.5" fill="#5b403d"/><circle cx="246" cy="183" r="5.5" fill="#5b403d"/><path d="M207 207q17 13 34 0" fill="none" stroke="#b76e6e" stroke-width="5" stroke-linecap="round"/></g>
+<!-- baby -->
+<g filter="url(#shadow)"><ellipse cx="306" cy="279" rx="72" ry="66" fill="#f4c4a4"/><path d="M252 266c5-43 33-72 73-72 32 0 54 16 67 40-37-10-86 1-140 32Z" fill="#5d3d3a"/><path d="M236 306c30-48 94-62 142-31 35 23 49 67 34 105H245c-20-22-24-48-9-74Z" fill="url(#wrap)"/><circle cx="284" cy="278" r="5" fill="#5b403d"/><circle cx="329" cy="278" r="5" fill="#5b403d"/><path d="M291 300q15 11 30 0" fill="none" stroke="#b76e6e" stroke-width="5" stroke-linecap="round"/><g fill="#f4c568"><path d="M276 333 282 347 297 353 282 359 276 374 270 359 255 353 270 347Z"/><path d="M331 330 336 342 348 347 336 352 331 364 326 352 314 347 326 342Z"/></g></g>
+<!-- pump -->
+<g transform="translate(68 274)" filter="url(#shadow)"><path d="M41 25h70l17 31H25Z" fill="#efe8ff" stroke="#fff" stroke-width="6"/><path d="M88 18 127 0l14 19-36 29Z" fill="#efe8ff" stroke="#fff" stroke-width="6"/><rect x="35" y="55" width="76" height="103" rx="22" fill="#fffdf5" stroke="#fff" stroke-width="7"/><rect x="48" y="77" width="50" height="58" rx="12" fill="#f8e8ad"/><path d="M72 101c14-18 36 3 19 19-8 8-19 15-19 15s-12-8-20-16c-17-16 5-36 20-18Z" fill="#e665a3"/></g>
+<!-- small leaves -->
+<g fill="#72a67c"><ellipse cx="87" cy="166" rx="18" ry="42" transform="rotate(-38 87 166)"/><ellipse cx="426" cy="344" rx="17" ry="40" transform="rotate(34 426 344)"/><ellipse cx="406" cy="385" rx="14" ry="34" transform="rotate(-34 406 385)"/></g>
 </svg>
