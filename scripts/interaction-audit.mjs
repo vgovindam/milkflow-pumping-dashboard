@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 const read=p=>fs.readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
-const app=read('app.js'),core=read('core-ui.js'),css=read('component-theme.css'),themeEntry=read('theme.css'),experienceCss=read('experience-system.css'),experienceJs=read('experience-theme.js'),doctorJs=read('doctor-summary.js'),doctorCss=read('doctor-summary.css'),html=read('index.html'),lifecycle=read('render-lifecycle.js'),alerts=read('cross-device-alerts.js');
+const app=read('app.js'),core=read('core-ui.js'),css=read('component-theme.css'),themeEntry=read('theme.css'),experienceCss=read('experience-system.css'),experienceComponents=read('experience-components.css'),experienceJs=read('experience-theme.js'),doctorJs=read('doctor-summary.js'),doctorCss=read('doctor-summary.css'),html=read('index.html'),lifecycle=read('render-lifecycle.js'),alerts=read('cross-device-alerts.js');
 const failures=[];
 const need=(scope,source,text)=>{if(!source.includes(text))failures.push(`${scope}: missing ${text}`);};
 const needAny=(scope,source,items)=>{if(!items.some(x=>source.includes(x)))failures.push(`${scope}: missing one of ${items.join(' | ')}`);};
@@ -22,12 +22,15 @@ need('mixed diaper direct action',core,'data-diaper="both"');
 need('diaper selected value',app,"setWhen('diaperTime',0); pickChoice('diaperKind',k)");
 need('cascade layer order',css,'@layer milkflow-core, milkflow-experience, milkflow-controls, milkflow-selection;');
 need('canonical theme composition',themeEntry,'experience-system.css');
+need('canonical component theme composition',themeEntry,'experience-components.css');
 need('canonical experience layer',themeEntry,'layer(milkflow-experience)');
 
 for(const text of ["const KEY='milkflow-experience-theme-v1'","new Set(['safari','butterfly','princess','unicorn','clean'])","value==='jungle'||value==='storybook'","themeCard('safari','Safari Adventure'","themeCard('butterfly','Butterfly Garden'","themeCard('princess','Princess Palace'","themeCard('unicorn','Unicorn Dreams'",'data-experience-theme-pick="clean"'])need('experience theme controller',experienceJs,text);
 if(experienceJs.includes('MutationObserver'))failures.push('experience theme controller: observer loop is not allowed');
 needAny('safari world asset',experienceCss,['assets/themes/safari-world.svg','assets/themes/safari-world-v2.svg']);
 for(const text of ['assets/themes/butterfly-garden.svg','assets/themes/princess-palace.svg','assets/themes/unicorn-dreams.svg','body:is([data-realm="mom"],[data-realm="baby"]) .main','body[data-screen="mom-home"] .mf-dream-hero','body[data-screen="baby-home"] .mf-animal-checkin:before','assets/themes/care-milk.svg','assets/themes/care-nurse.svg','assets/themes/care-formula.svg','assets/themes/care-wet.svg','assets/themes/care-poop.svg','assets/themes/care-mixed.svg'])need('realm-wide experience surface',experienceCss,text);
+for(const text of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])need('independent themed components',experienceComponents,text);
+for(const theme of ['safari','butterfly','princess','unicorn']){need('detailed scene manifest',experienceJs,`theme-composite/${theme}.svg`);need('theme icon manifest',experienceJs,`theme-icons/${theme}.svg`);}
 
 need('canonical stylesheet loaded',html,'theme.css?v=__MILKFLOW_VERSION__');
 need('canonical controller loaded',html,'experience-theme.js?v=__MILKFLOW_VERSION__');
@@ -41,4 +44,4 @@ for(const text of ['function resetRouteScroll','function exactRouteControl','mf-
 for(const text of ["STATE_KEY = 'milkflow-family-v4-state'",'function unionById','function commitRecord'])need('data preservation',app,text);
 for(const text of ['milkflow-device-id-v1','sourceDeviceId',"collection('devices')"])need('cross-device alert identity',alerts,text);
 if(failures.length){console.error(`Interaction audit failed:\n- ${failures.join('\n- ')}`);process.exit(1);}
-console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, canonical theme entrypoints, five entry forms, navigation recovery, notification identity, and data-preservation contracts.`);
+console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, independent themed components, five entry forms, navigation recovery, notification identity, and data-preservation contracts.`);
