@@ -1,0 +1,137 @@
+/* MilkFlow component theme
+   One intentional component layer for care colors, compact Baby identity,
+   accessible dark settings, and touch controls. No edge-accent card treatment. */
+
+/* ---------- human-scale interaction ---------- */
+button,.row,.grp-row,.mf-feed-card,.mf-diaper-blob{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.row,.grp-row,.mf-feed-card,.mf-diaper-blob{transition:transform .12s ease,filter .12s ease,box-shadow .12s ease}
+.row:active,.grp-row:active,.mf-feed-card:active,.mf-diaper-blob:active{transform:scale(.985);filter:saturate(1.03)}
+
+/* ---------- Baby hero: compact, balanced, no dead right-hand space ---------- */
+body[data-screen="baby-home"] .mf-animal-copy h2{font-family:var(--display)!important;font-weight:800!important;letter-spacing:-.035em!important}
+@media(max-width:760px){
+  body[data-screen="baby-home"] .mf-animal-hero{
+    min-height:0!important;
+    padding:11px 12px 12px!important;
+    display:grid!important;
+    grid-template-columns:104px minmax(0,1fr) minmax(122px,.88fr)!important;
+    grid-template-areas:"greeting greeting greeting" "photo name stats" "photo age stats"!important;
+    column-gap:10px!important;
+    row-gap:4px!important;
+    align-items:center!important;
+  }
+  body[data-screen="baby-home"] .mf-animal-profile,
+  body[data-screen="baby-home"] .mf-animal-copy{display:contents!important}
+  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{
+    grid-area:photo!important;width:104px!important;height:104px!important;border-width:5px!important;align-self:center!important
+  }
+  body[data-screen="baby-home"] .mf-animal-copy .welcome{
+    grid-area:greeting!important;box-sizing:border-box!important;width:100%!important;max-width:none!important;
+    min-height:31px!important;margin:0 0 5px!important;padding:5px 9px!important;border-radius:13px!important;
+    background:rgba(255,255,255,.34)!important;border:1px solid rgba(255,255,255,.5)!important;
+    font-family:var(--display)!important;font-size:12.5px!important;line-height:1.15!important;font-weight:750!important;
+    color:#285e67!important;white-space:normal!important
+  }
+  body[data-screen="baby-home"] .mf-animal-copy h2{
+    grid-area:name!important;position:static!important;width:auto!important;margin:0!important;font-size:29px!important;line-height:.98!important;
+    align-self:end!important;white-space:nowrap!important;overflow:visible!important;color:#163f52!important
+  }
+  body[data-screen="baby-home"] .mf-animal-copy>small{
+    grid-area:age!important;position:static!important;margin:3px 0 0!important;font-size:10.5px!important;line-height:1.15!important;
+    align-self:start!important;color:#456b71!important;opacity:.92!important
+  }
+  body[data-screen="baby-home"] .mf-animal-stats{
+    grid-area:stats!important;position:static!important;align-self:center!important;width:100%!important;margin:0!important;
+    display:grid!important;grid-template-columns:1fr!important;gap:6px!important
+  }
+  body[data-screen="baby-home"] .mf-animal-stat{
+    min-width:0!important;min-height:45px!important;padding:6px 8px!important;border-radius:16px!important;text-align:left!important;
+    display:grid!important;align-content:center!important
+  }
+  body[data-screen="baby-home"] .mf-animal-stat strong{font-family:var(--display)!important;font-size:15px!important;line-height:1!important}
+  body[data-screen="baby-home"] .mf-animal-stat span{font-size:9px!important;line-height:1.05!important;margin-top:3px!important}
+  body[data-screen="baby-home"] .mf-animal-hero>.bear,
+  body[data-screen="baby-home"] .mf-animal-hero>.bunny,
+  body[data-screen="baby-home"] .mf-animal-star{display:none!important}
+}
+@media(max-width:390px){
+  body[data-screen="baby-home"] .mf-animal-hero{grid-template-columns:96px minmax(0,1fr) minmax(116px,.86fr)!important;column-gap:8px!important}
+  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:96px!important;height:96px!important}
+  body[data-screen="baby-home"] .mf-animal-copy h2{font-size:26px!important}
+}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:rgba(8,26,34,.34)!important;border-color:rgba(191,234,240,.16)!important;color:#d8f5f7!important}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#f5fbff!important}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy>small{color:#c5dce3!important}
+
+/* ---------- full-surface care cards, never a colored side stripe ---------- */
+body[data-realm="baby"] .rows .row{box-shadow:0 7px 18px rgba(38,64,83,.055)!important}
+body[data-realm="baby"] .rows .row:has(.row-icon.kind-feeding){background:linear-gradient(135deg,#eaf8f1,#dff2e9)!important;border-color:#c9e7d9!important}
+body[data-realm="baby"] .rows .row:has(.row-icon.kind-nursing){background:linear-gradient(135deg,#fff0f6,#f9dfeb)!important;border-color:#f2cada!important}
+body[data-realm="baby"] .rows .row:has(.row-icon.sub-wet){background:linear-gradient(135deg,#eaf6ff,#dceef9)!important;border-color:#c7e2f2!important}
+body[data-realm="baby"] .rows .row:has(.row-icon.sub-poop){background:linear-gradient(135deg,#fff6e7,#f9e8c8)!important;border-color:#efd7ae!important}
+body[data-realm="baby"] .rows .row:has(.row-icon.sub-both){background:linear-gradient(135deg,#f4efff,#e9dfff)!important;border-color:#d9ccf3!important}
+body[data-realm="baby"] .rows .row:has(.row-icon.kind-sleep){background:linear-gradient(135deg,#eef0ff,#e1e4f8)!important;border-color:#d0d5ef!important}
+body[data-realm="baby"] .rows .row:has(.row-icon.kind-growth){background:linear-gradient(135deg,#edf9f5,#dff1eb)!important;border-color:#c9e4da!important}
+body[data-realm="baby"] .rows .row:has(.row-icon.kind-milestone){background:linear-gradient(135deg,#fbf0ff,#f0e1f5)!important;border-color:#e1cbe8!important}
+body[data-realm="mom"] .rows .row{background:linear-gradient(135deg,#f4efff,#e9e5fb)!important;border-color:#dad1f0!important;box-shadow:0 7px 18px rgba(73,57,113,.055)!important}
+body[data-realm] .rows .row:hover{filter:saturate(1.025) brightness(1.01)!important}
+
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-feeding){background:linear-gradient(135deg,#173128,#1c352f)!important;border-color:#294c40!important}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-nursing){background:linear-gradient(135deg,#3a2030,#452638)!important;border-color:#63364c!important}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-wet){background:linear-gradient(135deg,#173040,#1b3a4d)!important;border-color:#28536a!important}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-poop){background:linear-gradient(135deg,#3b2c15,#46351b)!important;border-color:#604b29!important}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-both){background:linear-gradient(135deg,#302643,#3a2c51)!important;border-color:#50406c!important}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-sleep){background:linear-gradient(135deg,#252941,#2c304c)!important;border-color:#3f4663!important}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-growth){background:linear-gradient(135deg,#1b332d,#203d35)!important;border-color:#315148!important}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-milestone){background:linear-gradient(135deg,#382641,#432d4d)!important;border-color:#5c3f67!important}
+:root[data-theme="dark"] body[data-realm="mom"] .rows .row{background:linear-gradient(135deg,#29243b,#322943)!important;border-color:#453a5c!important}
+
+/* ---------- Settings: explicit dark surfaces and readable hierarchy ---------- */
+:root[data-theme="dark"] body[data-screen="settings"] #view .page-head,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head{
+  isolation:isolate!important;background:linear-gradient(135deg,#242338,#2a2742 48%,#203341)!important;
+  border-color:#3a4053!important;box-shadow:0 14px 34px rgba(0,0,0,.24)!important
+}
+:root[data-theme="dark"] body[data-screen="settings"] #view .page-head:before,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head:before{background:none!important}
+:root[data-theme="dark"] body[data-screen="settings"] #view .page-head h2,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head h2{color:#fff!important;text-shadow:none!important}
+:root[data-theme="dark"] body[data-screen="settings"] #view .page-head .eyebrow,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head .eyebrow{color:#c9d2ff!important;opacity:1!important}
+:root[data-theme="dark"] body[data-screen="settings"] #view .data-status,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .data-status{background:linear-gradient(145deg,#202432,#26283c)!important;border-color:#353b4d!important;color:#f5f7fb!important}
+:root[data-theme="dark"] body[data-screen="settings"] #view .data-status.good,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .data-status.good{background:linear-gradient(145deg,#173029,#1c3531 58%,#252b3b)!important;border-color:#2d5147!important}
+:root[data-theme="dark"] body[data-screen="settings"] #view .data-status strong,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .data-status strong,
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp-label strong,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-label strong{color:#f7f8fb!important}
+:root[data-theme="dark"] body[data-screen="settings"] #view .data-status span,
+:root[data-theme="dark"] body[data-screen="settings"] #view .data-status small,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .data-status span,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .data-status small,
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp-label small,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-label small,
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp-value,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-value,
+:root[data-theme="dark"] body[data-screen="settings"] #view .page-intro,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-intro{color:#bac3d4!important;opacity:1!important}
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp{background:#202333!important;border-color:#34394b!important;box-shadow:0 12px 30px rgba(0,0,0,.18)!important}
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp-row,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-row{color:#f4f6fa!important;border-color:#313647!important}
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp-go,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-go{color:#aeb7ca!important}
+:root[data-theme="dark"] body[data-screen="settings"] #view .grp-title,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-title{color:#dce2ee!important;opacity:1!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .field input,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .field select,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .field textarea,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .setting-row>button,
+:root[data-theme="dark"] body[data-screen^="set-"] #view .setting-actions button{background:#252938!important;border-color:#3a4052!important;color:#edf1f7!important}
+:root[data-theme="dark"] body[data-screen="settings"] .back-btn,
+:root[data-theme="dark"] body[data-screen^="set-"] .back-btn{color:#d0d7e8!important}
+
+/* ---------- chat close is a real touch control ---------- */
+.mf-chat-panel .mf-chat-close{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid color-mix(in srgb,var(--mom) 18%,var(--line))!important;border-radius:15px!important;background:color-mix(in srgb,var(--mom) 7%,var(--surface))!important;color:color-mix(in srgb,var(--mom) 58%,var(--ink))!important;box-shadow:0 6px 16px rgba(45,34,78,.08)!important}
+:root[data-theme="dark"] .mf-chat-panel .mf-chat-close{background:#2a293a!important;border-color:#45405a!important;color:#eee9fb!important}
