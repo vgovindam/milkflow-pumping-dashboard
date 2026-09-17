@@ -3,7 +3,7 @@
 
 /* First-class visual-theme controller. It owns presentation preference and theme artwork
    only; MilkFlow records, routing and calculations stay with app.js. All updates are tied
-   to explicit render/theme events — no MutationObserver and no post-render polling. */
+   to explicit render/theme events, with no DOM-wide watching or post-render polling. */
 const KEY='milkflow-experience-theme-v1';
 const THEMES=new Set(['storybook','clean']);
 const root=document.documentElement;
@@ -38,7 +38,7 @@ function save(name){
 
 /* Storybook animals are real SVG assets, but the original inline SVG is retained as a
    fallback. We only hide the fallback after the replacement image has actually loaded,
-   so a cache/network failure can never create the empty circles seen in the broken build. */
+   so a cache/network failure can never create an empty icon circle. */
 function decorateThemeArtwork(){
   document.querySelectorAll('.mf-animal-sticker').forEach(sticker=>{
     const kind=Object.keys(ANIMAL_ASSETS).find(k=>sticker.classList.contains(k));
