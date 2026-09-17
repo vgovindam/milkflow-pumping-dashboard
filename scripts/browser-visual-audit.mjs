@@ -42,12 +42,15 @@ await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScale
 await sleep(3200);
 await evalJs("document.documentElement.classList.remove('mf-booting')");
 
-const routes=['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','more','settings','set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about'];
-const themes=['storybook','jungle','clean'];
-const expectedArt={
-  storybook:{bear:'bear.svg',bunny:'rabbit.svg',fox:'fox.svg',owl:'owl.svg',whale:'beaver.svg'},
-  jungle:{bear:'elephant.svg',bunny:'monkey.svg',fox:'tiger.svg',owl:'parrot.svg',whale:'hippo.svg'}
-};
+const allRoutes=['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','more','settings','set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about'];
+const passes=[
+  {theme:'safari',routes:allRoutes},
+  {theme:'clean',routes:allRoutes},
+  {theme:'butterfly',routes:['baby-home','set-appearance']},
+  {theme:'princess',routes:['baby-home','set-appearance']},
+  {theme:'unicorn',routes:['baby-home','set-appearance']},
+];
+const themeAsset={safari:'safari-adventure.svg',butterfly:'butterfly-garden.svg',princess:'princess-palace.svg',unicorn:'unicorn-dreams.svg'};
 const failures=[];const report=[];
 const initial=await evalJs(`(()=>({href:location.href,screen:document.body.dataset.screen||'',realm:document.body.dataset.realm||'',hash:location.hash,views:document.querySelectorAll('[data-view]').length,viewChildren:document.getElementById('view')?.children.length||0,text:(document.body.innerText||'').slice(0,160)}))()`);
 console.log('Browser audit initial state:',JSON.stringify(initial));
@@ -55,38 +58,56 @@ if(!initial.href.startsWith('http://127.0.0.1:4173/')) failures.push(`audit harn
 
 async function reach(route){
   await evalJs(`location.hash=${JSON.stringify('#'+route)}`);
-  for(let i=0;i<12;i++){
-    await sleep(80);
+  for(let i=0;i<14;i++){
+    await sleep(90);
     const s=await evalJs('document.body.dataset.screen||""');
     if(s===route)return true;
   }
   return false;
 }
 
-for(const theme of themes){
+for(const pass of passes){
+  const theme=pass.theme;
   await evalJs(`localStorage.setItem('milkflow-experience-theme-v1',${JSON.stringify(theme)});document.documentElement.dataset.experienceTheme=${JSON.stringify(theme)};window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{theme:${JSON.stringify(theme)}}}))`);
-  await sleep(180);
-  for(const route of routes){
+  await sleep(220);
+  for(const route of pass.routes){
     const ok=await reach(route);
     if(!ok){const current=await evalJs('document.body.dataset.screen||""');failures.push(`${theme}/${route}: route not reachable (screen=${current||'unset'})`);continue;}
     for(const mode of ['light','dark']){
-      await evalJs(`document.documentElement.dataset.theme=${JSON.stringify(mode)};document.querySelector('.main')?.scrollTo(0,0)`);await sleep(220);
-      const metrics=await evalJs(`(()=>{const v=document.getElementById('view'),n=document.getElementById('bottomNav'),main=document.querySelector('.main');const vr=v?.getBoundingClientRect(),nr=n?.getBoundingClientRect();const icons=[...document.querySelectorAll('#bottomNav .ico,#bottomNav .gly')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>8&&r.height>8&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0}).length;const animals=[...document.querySelectorAll('.mf-animal-sticker')].map(x=>{const img=x.querySelector(':scope>img.mf-theme-animal'),is=getComputedStyle(img||x);const kind=['bear','bunny','fox','owl','whale'].find(k=>x.classList.contains(k))||'';return{kind,art:x.classList.contains('has-theme-art'),storybook:x.classList.contains('has-storybook-art'),jungle:x.classList.contains('has-jungle-art'),svg:!!x.querySelector(':scope>svg'),img:!!img,imgVisible:!!img&&is.display!=='none'&&is.visibility!=='hidden'&&Number(is.opacity||1)>0,naturalWidth:img?.naturalWidth||0,src:img?.getAttribute('src')||'',w:x.getBoundingClientRect().width}});const visibleText=[...document.querySelectorAll('#view h1,#view h2,#view h3,#view strong')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'&&Number(s.opacity||1)>0}).length;const doctorTables=document.querySelectorAll('.qa-grid,.daily-table').length;return{screen:document.body.dataset.screen||'',realm:document.body.dataset.realm||'',viewChildren:v?.children.length||0,viewHeight:vr?.height||0,mainWidth:main?.clientWidth||0,scrollWidth:main?.scrollWidth||0,navVisible:!!nr&&nr.width>250&&nr.bottom<=innerHeight+2&&nr.top<innerHeight,navIcons:icons,visibleText,doctorTables,animals}})()`);
+      await evalJs(`document.documentElement.dataset.theme=${JSON.stringify(mode)};document.querySelector('.main')?.scrollTo(0,0)`);await sleep(240);
+      const metrics=await evalJs(`(()=>{
+        const v=document.getElementById('view'),n=document.getElementById('bottomNav'),main=document.querySelector('.main');
+        const vr=v?.getBoundingClientRect(),nr=n?.getBoundingClientRect();
+        const icons=[...document.querySelectorAll('#bottomNav .ico,#bottomNav .gly')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>8&&r.height>8&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0}).length;
+        const visibleText=[...document.querySelectorAll('#view h1,#view h2,#view h3,#view strong')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'&&Number(s.opacity||1)>0}).length;
+        const doctorTables=document.querySelectorAll('.qa-grid,.daily-table').length;
+        const paddingBottom=v?parseFloat(getComputedStyle(v).paddingBottom)||0:0;
+        const navHeight=nr?.height||0;
+        const backgroundImage=main?getComputedStyle(main).backgroundImage:'';
+        const previews=[...document.querySelectorAll('#mfExperiencePanel .mf-experience-preview img')].map(img=>({src:img.getAttribute('src')||'',naturalWidth:img.naturalWidth||0,w:img.getBoundingClientRect().width,h:img.getBoundingClientRect().height,fit:getComputedStyle(img).objectFit}));
+        const cards=document.querySelectorAll('#mfExperiencePanel .mf-experience-option').length;
+        const selected=document.querySelectorAll('#mfExperiencePanel [aria-pressed="true"]').length;
+        const diaper=[...document.querySelectorAll('.mf-diaper-blob')].map(x=>{const r=x.getBoundingClientRect(),b=x.querySelector('b'),br=b?.getBoundingClientRect(),p=getComputedStyle(x,'::before');const left=parseFloat(p.left)||0,width=parseFloat(p.width)||0;return{kind:[...x.classList].find(k=>['wet','poop','both'].includes(k))||'',iconRight:r.left+left+width,badgeLeft:br?.left||0,gap:(br?.left||0)-(r.left+left+width),w:r.width};});
+        const feed=[...document.querySelectorAll('.mf-feed-card')].map(x=>{const r=x.getBoundingClientRect(),strong=x.querySelector('strong')?.getBoundingClientRect(),p=getComputedStyle(x,'::before');const top=parseFloat(p.top)||0,height=parseFloat(p.height)||0;return{kind:[...x.classList].find(k=>['milk','nurse','formula'].includes(k))||'',iconBottom:r.top+top+height,textTop:strong?.top||0,gap:(strong?.top||0)-(r.top+top+height),w:r.width};});
+        return{screen:document.body.dataset.screen||'',realm:document.body.dataset.realm||'',theme:document.documentElement.dataset.experienceTheme||'',viewChildren:v?.children.length||0,viewHeight:vr?.height||0,mainWidth:main?.clientWidth||0,scrollWidth:main?.scrollWidth||0,navVisible:!!nr&&nr.width>250&&nr.bottom<=innerHeight+2&&nr.top<innerHeight,navIcons:icons,visibleText,doctorTables,paddingBottom,navHeight,backgroundImage,previews,cards,selected,diaper,feed};
+      })()`);
       if(metrics.viewChildren<1||metrics.viewHeight<40)failures.push(`${theme}/${mode}/${route}: empty view`);
       if(metrics.visibleText<1)failures.push(`${theme}/${mode}/${route}: no visible headings/content`);
       if(metrics.scrollWidth>metrics.mainWidth+2)failures.push(`${theme}/${mode}/${route}: horizontal overflow ${metrics.scrollWidth}>${metrics.mainWidth}`);
       if(!metrics.navVisible)failures.push(`${theme}/${mode}/${route}: bottom nav not visible`);
       if(metrics.navIcons<4)failures.push(`${theme}/${mode}/${route}: bottom nav icons missing (${metrics.navIcons})`);
-      if(theme!=='clean'&&route==='baby-home'){
-        for(const a of metrics.animals.filter(a=>a.w>20)){
-          const expected=expectedArt[theme]?.[a.kind];
-          if(!a.art||!a.img||!a.imgVisible||a.naturalWidth<1) failures.push(`${theme}/${mode}/${route}: ${a.kind||'animal'} themed artwork is not visibly active`);
-          else if(expected&&!a.src.endsWith(expected)) failures.push(`${theme}/${mode}/${route}: ${a.kind} uses ${a.src} instead of ${expected}`);
-          if(theme==='jungle'&&!a.jungle) failures.push(`${theme}/${mode}/${route}: ${a.kind} is missing Jungle activation state`);
-          if(theme==='storybook'&&!a.storybook) failures.push(`${theme}/${mode}/${route}: ${a.kind} is missing Storybook activation state`);
-        }
-      }
+      if(metrics.paddingBottom<metrics.navHeight+20)failures.push(`${theme}/${mode}/${route}: view bottom padding ${metrics.paddingBottom}px does not safely clear ${metrics.navHeight}px nav`);
       if(route==='doctor'&&metrics.doctorTables<2)failures.push(`${theme}/${mode}/${route}: Doctor summary blocks not rendered`);
+      if(route==='baby-home'&&themeAsset[theme]&&!metrics.backgroundImage.includes(themeAsset[theme])) failures.push(`${theme}/${mode}/${route}: expected ${themeAsset[theme]} is not the active page background`);
+      if(route==='baby-home'&&theme==='safari'){
+        for(const d of metrics.diaper){if(d.w>20&&d.gap<7)failures.push(`${theme}/${mode}/${route}: ${d.kind} diaper badge crowds semantic icon (${d.gap.toFixed(1)}px gap)`);}
+        for(const f of metrics.feed){if(f.w>20&&f.gap<5)failures.push(`${theme}/${mode}/${route}: ${f.kind} feed icon crowds its title (${f.gap.toFixed(1)}px gap)`);}
+      }
+      if(route==='set-appearance'){
+        if(metrics.cards!==4)failures.push(`${theme}/${mode}/${route}: expected 4 artwork theme cards, found ${metrics.cards}`);
+        if(metrics.previews.length!==4||metrics.previews.some(p=>p.naturalWidth<1||p.w<90||p.h<70||p.fit!=='cover')) failures.push(`${theme}/${mode}/${route}: theme previews are missing, poorly sized, or not cover-cropped`);
+        if(metrics.selected!==1)failures.push(`${theme}/${mode}/${route}: expected one selected experience option, found ${metrics.selected}`);
+      }
       const shot=await cdp('Page.captureScreenshot',{format:'png',fromSurface:true});
       const file=`${String(report.length+1).padStart(3,'0')}-${theme}-${mode}-${route}.png`;
       fs.writeFileSync(path.join(OUT,file),Buffer.from(shot.data,'base64'));report.push({theme,mode,route,file,...metrics});
@@ -95,5 +116,5 @@ for(const theme of themes){
 }
 fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify({initial,failures,report},null,2));
 console.log(`Browser visual audit rendered ${report.length} route/theme/mode views.`);
-if(failures.length){console.error(`Browser visual audit failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log('Browser visual audit passed: every Storybook, Jungle and Clean route rendered in light/dark mode with visible navigation, content, real themed animal assets and Doctor summary blocks.');
+if(failures.length){console.error(`Browser visual audit failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log('Browser visual audit passed: navigation clears content, Safari feed/diaper artwork does not overlap, theme preview art loads/crops correctly, all core routes render in light/dark mode, and every visual world renders on Baby Home/Appearance.');
 try{ws.close();}catch{}proc.kill();server.close();
