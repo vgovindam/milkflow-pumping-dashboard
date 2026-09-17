@@ -59,16 +59,16 @@ jobs:
           test -f firebase.json
           test -f .firebaserc
 
-          grep -q 'styles.css?build=stable45-human3' index.html
-          grep -q 'component-theme.css?build=stable45-human3' index.html
-          grep -q 'app.js?build=stable45-human3' index.html
-          grep -q 'core-ui.js?build=stable45-human3' index.html
-          grep -q 'render-lifecycle.js?build=stable45-human3' index.html
-          grep -q 'plan-reliability.js?build=stable45-human3' index.html
-          grep -q 'network-reliability.js?build=stable45-human3' index.html
-          grep -q 'family-chat.js?build=stable45-human3' index.html
-          grep -q 'manifest.webmanifest?build=stable45-human3' index.html
-          grep -q 'milkflow-stable45-human3' sw.js
+          grep -q 'styles.css?build=stable45-human4' index.html
+          grep -q 'component-theme.css?build=stable45-human4' index.html
+          grep -q 'app.js?build=stable45-human4' index.html
+          grep -q 'core-ui.js?build=stable45-human4' index.html
+          grep -q 'render-lifecycle.js?build=stable45-human4' index.html
+          grep -q 'plan-reliability.js?build=stable45-human4' index.html
+          grep -q 'network-reliability.js?build=stable45-human4' index.html
+          grep -q 'family-chat.js?build=stable45-human4' index.html
+          grep -q 'manifest.webmanifest?build=stable45-human4' index.html
+          grep -q 'milkflow-stable45-human4' sw.js
 
           grep -q "STATE_KEY = 'milkflow-family-v4-state'" app.js
           grep -q "const STATE_KEY='milkflow-family-v4-state'" core-ui.js
@@ -85,6 +85,8 @@ jobs:
           ! grep -q "Object.defineProperty(Element.prototype,'innerHTML'" *.js
 
           grep -q 'overflow-y:auto!important' component-theme.css
+          grep -q 'bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))' component-theme.css
+          grep -q 'padding-bottom:calc(132px + env(safe-area-inset-bottom))' component-theme.css
           grep -q 'sync-foot.synced' component-theme.css
           grep -q 'daily-cell.wet' component-theme.css
           grep -q 'metric:nth-child(1)' component-theme.css
