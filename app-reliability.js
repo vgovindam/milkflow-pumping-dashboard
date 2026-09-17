@@ -1,11 +1,12 @@
 (() => {
 'use strict';
 
-// Interaction reliability only. It never owns application state or layout.
+// Interaction reliability only. It never owns application state, routing, theme, or layout.
 function normalizeStepperInputs(root=document){
   const nodes=root?.matches?.('[data-stepper]')?[root]:root?.querySelectorAll?.('[data-stepper]')||[];
   for(const box of nodes){
-    const input=box.querySelector?.('input[type="number"]');if(!input)continue;
+    const input=box.querySelector?.('input[type="number"]');
+    if(!input)continue;
     const decimals=Number(box.dataset.dec||0);
     input.step=decimals>0?'any':'1';
     input.inputMode=decimals>0?'decimal':'numeric';
@@ -22,22 +23,14 @@ function repairInteractionState(){
   normalizeStepperInputs(document);
 }
 
-function loadCrossDeviceAlerts(){
-  if(window.MilkFlowCrossDeviceAlerts||document.querySelector('script[data-milkflow-cross-device]'))return;
-  const script=document.createElement('script');
-  script.src='cross-device-alerts.js?build=stable45-human13';
-  script.async=true;
-  script.dataset.milkflowCrossDevice='1';
-  script.onerror=()=>console.warn('Cross-device alerts module did not load');
-  document.head.appendChild(script);
-}
-
-window.addEventListener('DOMContentLoaded',()=>{normalizeStepperInputs(document);loadCrossDeviceAlerts();},{once:true});
-window.addEventListener('pageshow',()=>{repairInteractionState();loadCrossDeviceAlerts();});
+window.addEventListener('DOMContentLoaded',()=>normalizeStepperInputs(document),{once:true});
+window.addEventListener('pageshow',repairInteractionState);
 document.addEventListener('focusin',e=>{
-  const box=e.target?.closest?.('[data-stepper]');if(box)normalizeStepperInputs(box);
+  const box=e.target?.closest?.('[data-stepper]');
+  if(box)normalizeStepperInputs(box);
 });
 document.addEventListener('pointerdown',e=>{
-  const box=e.target?.closest?.('[data-stepper]');if(box)normalizeStepperInputs(box);
+  const box=e.target?.closest?.('[data-stepper]');
+  if(box)normalizeStepperInputs(box);
 },{passive:true});
 })();

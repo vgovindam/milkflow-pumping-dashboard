@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 2200" role="img" aria-label="Warm safari nursery world with giraffe lion tiger elephant and jungle foliage">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#dff2e7"/><stop offset=".34" stop-color="#edf4d8"/><stop offset=".72" stop-color="#f4e8c8"/><stop offset="1" stop-color="#e7d8b7"/></linearGradient>
+  <linearGradient id="hill1" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#9ebf86"/><stop offset="1" stop-color="#6f9366"/></linearGradient>
+  <linearGradient id="hill2" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#719b69"/><stop offset="1" stop-color="#4c7656"/></linearGradient>
+  <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4d7e5d"/><stop offset="1" stop-color="#254e3d"/></linearGradient>
+  <radialGradient id="sun"><stop stop-color="#fff6bf" stop-opacity=".92"/><stop offset="1" stop-color="#fff6bf" stop-opacity="0"/></radialGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+</defs>
+<rect width="1000" height="2200" fill="url(#sky)"/>
+<circle cx="760" cy="180" r="210" fill="url(#sun)"/>
+<path d="M0 560C150 468 290 468 423 548c129 77 251 65 370-24 78-59 148-76 207-53v430H0Z" fill="url(#hill1)" opacity=".38"/>
+<path d="M0 1360c146-83 285-75 417 23 129 95 262 91 390-12 74-59 138-75 193-48v475H0Z" fill="url(#hill2)" opacity=".25"/>
+
+<!-- giraffe, intentionally tall but narrow so the scene reads without swallowing the UI -->
+<g transform="translate(18 245) scale(.82)">
+  <path d="M119 98c0-66 37-98 88-98 50 0 88 34 88 92 0 52-29 83-72 94l-3 440c0 67-18 105-57 113-50 10-78-31-74-94l28-459C65 170 29 142 16 104c-11-33 2-57 29-54 28 3 49 33 74 48Z" fill="#e5aa61"/>
+  <ellipse cx="198" cy="86" rx="91" ry="67" fill="#efbd79"/>
+  <path d="M150 37c-35-44-62-45-72-18-8 24 15 55 65 72m108-49c35-43 63-43 72-16 8 25-17 55-66 70" fill="#d38b50"/>
+  <path d="M163 20c-10-46 6-73 28-72 22 2 30 32 15 77m48 4c9-46 32-67 53-58 21 9 20 39-5 75" fill="none" stroke="#68462f" stroke-width="14" stroke-linecap="round"/>
+  <g fill="#895634" opacity=".92"><ellipse cx="175" cy="77" rx="18" ry="24"/><ellipse cx="237" cy="68" rx="16" ry="22"/><ellipse cx="138" cy="155" rx="25" ry="35"/><ellipse cx="198" cy="205" rx="27" ry="20"/><ellipse cx="139" cy="300" rx="24" ry="35"/><ellipse cx="195" cy="383" rx="29" ry="21"/><ellipse cx="130" cy="480" rx="24" ry="36"/><ellipse cx="188" cy="558" rx="27" ry="20"/><ellipse cx="131" cy="645" rx="21" ry="31"/></g>
+  <circle cx="173" cy="91" r="6" fill="#3e2c24"/><circle cx="226" cy="91" r="6" fill="#3e2c24"/><path d="M181 123c13 9 27 9 39 0" fill="none" stroke="#634133" stroke-width="5" stroke-linecap="round"/>
+</g>
+
+<!-- lion top right -->
+<g transform="translate(742 250) scale(.68)">
+  <circle cx="160" cy="152" r="122" fill="#bd7d3d"/>
+  <circle cx="160" cy="152" r="87" fill="#efc279"/>
+  <circle cx="96" cy="93" r="30" fill="#a96b36"/><circle cx="224" cy="93" r="30" fill="#a96b36"/>
+  <ellipse cx="160" cy="177" rx="58" ry="45" fill="#f7d9a5"/>
+  <circle cx="133" cy="142" r="7" fill="#3e2d25"/><circle cx="187" cy="142" r="7" fill="#3e2d25"/>
+  <path d="M146 181c9 8 18 8 28 0m-14-11v22" fill="none" stroke="#6c4938" stroke-width="6" stroke-linecap="round"/>
+</g>
+
+<!-- elephant lower left -->
+<g transform="translate(36 1375) scale(.7)">
+  <ellipse cx="185" cy="160" rx="128" ry="105" fill="#8fa9a4"/>
+  <ellipse cx="72" cy="157" rx="79" ry="91" fill="#a8bbb6"/><ellipse cx="298" cy="157" rx="79" ry="91" fill="#a8bbb6"/>
+  <path d="M160 200c13 80 12 151-5 212 39 15 67-10 65-54-2-61-5-115 8-166Z" fill="#8fa9a4"/>
+  <circle cx="143" cy="151" r="7" fill="#33413f"/><circle cx="222" cy="151" r="7" fill="#33413f"/>
+  <path d="M164 180c12 8 26 8 39 0" fill="none" stroke="#566d69" stroke-width="5" stroke-linecap="round"/>
+</g>
+
+<!-- tiger lower right -->
+<g transform="translate(706 1425) scale(.72)">
+  <path d="M40 131C60 48 137 5 219 30c79 24 121 102 92 178-30 77-121 114-201 78-77-35-98-93-70-155Z" fill="#e8a14b"/>
+  <path d="M59 91 17 45l10 79m228-32 48-39-22 78" fill="#cb7b34"/>
+  <ellipse cx="178" cy="192" rx="70" ry="55" fill="#ffd49b"/>
+  <circle cx="139" cy="148" r="8" fill="#2d2927"/><circle cx="220" cy="148" r="8" fill="#2d2927"/>
+  <path d="M158 199c13 11 29 11 42 0m-21-13v24" fill="none" stroke="#714631" stroke-width="7" stroke-linecap="round"/>
+  <g stroke="#4b382e" stroke-width="12" stroke-linecap="round"><path d="M102 92l38 25"/><path d="M131 63l31 41"/><path d="M239 88l-37 29"/><path d="M264 117l-43 14"/><path d="M89 151l42 5"/><path d="M274 161l-44 3"/></g>
+</g>
+
+<!-- foreground foliage keeps animals in a world rather than floating -->
+<g fill="url(#leaf)">
+  <path d="M0 0h170C160 94 112 157 24 198L0 209Z"/><path d="M1000 0H830c11 92 60 157 145 196l25 12Z"/>
+  <path d="M0 740c93-16 167 7 221 68-75 8-137 43-185 102 73-8 136 12 188 58C128 997 62 1007 0 1000Z"/>
+  <path d="M1000 690c-96-9-172 19-225 82 77 4 142 37 194 99-77-3-142 20-193 70 91 24 161 31 224 23Z"/>
+  <path d="M0 1725c105-22 192 5 259 81-94 6-168 46-222 120 89-10 161 16 219 78-102 31-181 39-256 28Z"/>
+  <path d="M1000 1660c-102-16-190 17-262 99 97 1 176 38 237 112-91-5-166 25-223 91 99 27 181 31 248 19Z"/>
+  <path d="M0 2200v-255c73-12 143 5 211 50-55 28-99 69-132 122 58-14 114-8 167 19-62 33-135 54-246 64Z"/>
+  <path d="M1000 2200v-270c-79-4-149 21-212 75 61 19 111 55 150 108-64-8-124 4-179 37 72 30 151 47 241 50Z"/>
+</g>
+<g fill="#5f9262" opacity=".78"><ellipse cx="84" cy="846" rx="28" ry="84" transform="rotate(-34 84 846)"/><ellipse cx="914" cy="806" rx="30" ry="88" transform="rotate(32 914 806)"/><ellipse cx="117" cy="1912" rx="34" ry="106" transform="rotate(-29 117 1912)"/><ellipse cx="881" cy="1880" rx="36" ry="108" transform="rotate(28 881 1880)"/></g>
+<g fill="#f2d779" opacity=".74"><circle cx="548" cy="190" r="6"/><circle cx="610" cy="233" r="4"/><circle cx="676" cy="164" r="5"/><circle cx="486" cy="307" r="5"/><circle cx="602" cy="1167" r="6"/><circle cx="432" cy="1260" r="4"/></g>
+</svg>

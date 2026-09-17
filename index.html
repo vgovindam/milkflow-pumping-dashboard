@@ -6,16 +6,17 @@
   <meta name="theme-color" content="#f7f6fb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="MilkFlow">
+  <meta name="apple-mobile-web-app-title" content="MilkFlow">
   <title>MilkFlow Family</title>
-  <link rel="manifest" href="manifest.webmanifest?build=stable45-human15">
+  <link rel="manifest" href="manifest.webmanifest?v=__MILKFLOW_VERSION__">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167.png">
   <link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152.png">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="application-name" content="MilkFlow">
-  <meta name="apple-mobile-web-app-title" content="MilkFlow">
   <script>
+    window.MILKFLOW_BUILD=Object.freeze({version:'__MILKFLOW_VERSION__',commit:'__MILKFLOW_COMMIT__'});
     (()=>{
       const root=document.documentElement,h=new Date().getHours();
       root.classList.add('mf-booting');
@@ -29,7 +30,7 @@
         const experience=rawExperience==='jungle'||rawExperience==='storybook'?'safari':rawExperience;
         root.dataset.experienceTheme=['safari','butterfly','princess','unicorn','clean'].includes(experience)?experience:'safari';
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content',dark?'#0e1016':'#f4f4f9');
-      }catch{ root.dataset.experienceTheme='safari'; }
+      }catch{root.dataset.experienceTheme='safari';}
       const reveal=()=>requestAnimationFrame(()=>root.classList.remove('mf-booting'));
       window.addEventListener('DOMContentLoaded',()=>{
         const timeout=new Promise(resolve=>setTimeout(resolve,650));
@@ -42,24 +43,26 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?build=stable45-human15">
-  <link rel="stylesheet" href="component-theme-v3.css?build=stable45-human15">
-  <link rel="stylesheet" href="doctor-summary.css?build=stable45-human15">
+  <link rel="stylesheet" href="styles.css?v=__MILKFLOW_VERSION__">
+  <link rel="stylesheet" href="theme.css?v=__MILKFLOW_VERSION__">
+  <link rel="stylesheet" href="doctor-summary.css?v=__MILKFLOW_VERSION__">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="config.js?build=stable45-human15" defer></script>
-  <script src="app.js?build=stable45-human15" defer></script>
-  <script src="app-reliability.js?build=stable45-human15" defer></script>
-  <script src="core-ui.js?build=stable45-human15" defer></script>
-  <script src="experience-theme-v3.js?build=stable45-human15" defer></script>
-  <script src="render-lifecycle.js?build=stable45-human15" defer></script>
-  <script src="plan-reliability.js?build=stable45-human15" defer></script>
-  <script src="network-reliability.js?build=stable45-human15" defer></script>
-  <script src="ai-coach-client.js?build=stable45-human15" defer></script>
-  <script src="app-update-notice.js?build=stable45-human15" defer></script>
-  <script src="family-chat.js?build=stable45-human15" defer></script>
-  <script src="doctor-summary.js?build=stable45-human15" defer></script>
+  <script src="config.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="app.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="cross-device-alerts.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="app-reliability.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="core-ui.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="experience-theme.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="render-lifecycle.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="plan-reliability.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="network-reliability.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="ai-coach-client.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="app-update-notice.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="family-chat.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="doctor-summary.js?v=__MILKFLOW_VERSION__" defer></script>
+  <script src="release-info.js?v=__MILKFLOW_VERSION__" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -68,7 +71,6 @@
     <div id="sideNav" class="side-nav"></div>
     <div class="side-status"><strong id="syncTitle">On this device</strong><span id="syncSubtitle">Sign in to sync across devices</span></div>
   </aside>
-
   <main class="main">
     <header class="topbar">
       <button class="back-btn" data-back aria-label="Back"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 18-6-6 6-6"/></svg><span id="backLabel"></span></button>
@@ -79,17 +81,14 @@
     <footer id="syncFoot" class="sync-foot"></footer>
   </main>
 </div>
-
 <nav id="bottomNav" class="bottom-nav" aria-label="Primary navigation"></nav>
 <div id="scrim" class="scrim"></div>
 <div id="sheet" class="sheet"></div>
-
 <dialog id="momDialog" class="dialog"><form id="momForm"><div class="dialog-body" id="momFormBody"></div></form></dialog>
 <dialog id="diaperDialog" class="dialog baby-dialog"><form id="diaperForm"><div class="dialog-body" id="diaperFormBody"></div></form></dialog>
 <dialog id="feedDialog" class="dialog baby-dialog"><form id="feedForm"><div class="dialog-body" id="feedFormBody"></div></form></dialog>
 <dialog id="growthDialog" class="dialog baby-dialog"><form id="growthForm"><div class="dialog-body" id="growthFormBody"></div></form></dialog>
 <dialog id="sleepDialog" class="dialog baby-dialog"><form id="sleepForm"><div class="dialog-body" id="sleepFormBody"></div></form></dialog>
-
 <dialog id="authDialog" class="dialog">
   <form id="authForm">
     <div class="dialog-head"><h2>Family account</h2><button type="button" onclick="document.getElementById('authDialog').close()" aria-label="Close">×</button></div>
@@ -98,16 +97,15 @@
     <div class="auth-actions"><button type="button" id="createAccount">Create account</button><button class="save">Sign in</button></div>
   </form>
 </dialog>
-
 <input id="importFile" type="file" accept="application/json,.json" class="hidden">
 <input id="photoFile" type="file" accept="image/*" class="hidden">
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?build=stable45-human15', { updateViaCache: 'none' })
-        .then(reg => reg.update().catch(() => {}))
-        .catch(err => console.warn('SW registration skipped', err));
+  if('serviceWorker'in navigator){
+    window.addEventListener('load',()=>{
+      navigator.serviceWorker.register('./sw.js?v=__MILKFLOW_VERSION__',{updateViaCache:'none'})
+        .then(reg=>reg.update().catch(()=>{}))
+        .catch(err=>console.warn('SW registration skipped',err));
     });
   }
 </script>
