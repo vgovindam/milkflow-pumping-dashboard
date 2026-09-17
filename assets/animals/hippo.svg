@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Hippo">
+  <circle cx="60" cy="60" r="56" fill="#e8e1f0"/>
+  <circle cx="35" cy="41" r="12" fill="#8c7aa8"/><circle cx="85" cy="41" r="12" fill="#8c7aa8"/>
+  <ellipse cx="60" cy="57" rx="37" ry="32" fill="#9d8bb8"/>
+  <ellipse cx="60" cy="72" rx="31" ry="22" fill="#b9a8cf"/>
+  <circle cx="47" cy="54" r="3.5" fill="#332b3d"/><circle cx="73" cy="54" r="3.5" fill="#332b3d"/>
+  <circle cx="49" cy="69" r="3" fill="#6f6085"/><circle cx="71" cy="69" r="3" fill="#6f6085"/>
+  <path d="M48 81c8 5 16 5 24 0" fill="none" stroke="#6e5f84" stroke-width="4" stroke-linecap="round"/>
+</svg>
