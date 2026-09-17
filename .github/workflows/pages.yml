@@ -55,6 +55,7 @@ jobs:
           test -f family-chat.js
           test -f styles.css
           test -f component-theme.css
+          test -f component-theme-core.css
           test -f config.js
           test -f firebase.json
           test -f .firebaserc
@@ -68,7 +69,8 @@ jobs:
           grep -q 'network-reliability.js?build=stable45-human4' index.html
           grep -q 'family-chat.js?build=stable45-human4' index.html
           grep -q 'manifest.webmanifest?build=stable45-human4' index.html
-          grep -q 'milkflow-stable45-human4' sw.js
+          grep -q 'milkflow-stable45-human5' sw.js
+          grep -q 'component-theme-core.css' sw.js
 
           grep -q "STATE_KEY = 'milkflow-family-v4-state'" app.js
           grep -q "const STATE_KEY='milkflow-family-v4-state'" core-ui.js
@@ -84,12 +86,16 @@ jobs:
           ! grep -q 'MutationObserver' app-reliability.js
           ! grep -q "Object.defineProperty(Element.prototype,'innerHTML'" *.js
 
-          grep -q 'overflow-y:auto!important' component-theme.css
-          grep -q 'bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))' component-theme.css
-          grep -q 'padding-bottom:calc(132px + env(safe-area-inset-bottom))' component-theme.css
-          grep -q 'sync-foot.synced' component-theme.css
-          grep -q 'daily-cell.wet' component-theme.css
-          grep -q 'metric:nth-child(1)' component-theme.css
+          grep -q '@layer milkflow-core, milkflow-controls' component-theme.css
+          grep -q 'component-theme-core.css?build=stable45-human5' component-theme.css
+          grep -q 'sheet-actions button\[data-diaper="wet"\]' component-theme.css
+          grep -q 'field input' component-theme.css
+          grep -q 'overflow-y:auto!important' component-theme-core.css
+          grep -q 'bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))' component-theme-core.css
+          grep -q 'padding-bottom:calc(132px + env(safe-area-inset-bottom))' component-theme-core.css
+          grep -q 'sync-foot.synced' component-theme-core.css
+          grep -q 'daily-cell.wet' component-theme-core.css
+          grep -q 'metric:nth-child(1)' component-theme-core.css
           grep -q 'mf-top-orbs' core-ui.js
           grep -q 'mf-mom-hero-photo' core-ui.js
           grep -q 'mf-last-feed-band' core-ui.js
