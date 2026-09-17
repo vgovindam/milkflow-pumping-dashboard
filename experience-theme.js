@@ -2,17 +2,26 @@
 'use strict';
 
 /* First-class visual-theme controller. It owns presentation preference and theme artwork
-   only; MilkFlow records, routing and calculations stay with app.js. All updates are tied
-   to explicit render/theme events, with no DOM-wide watching or post-render polling. */
+   only; MilkFlow records, routing, forms and calculations stay with app.js. Theme modules
+   are explicit and switchable - no DOM-wide observers and no post-render polling. */
 const KEY='milkflow-experience-theme-v1';
-const THEMES=new Set(['storybook','clean']);
+const THEMES=new Set(['storybook','jungle','clean']);
 const root=document.documentElement;
-const ANIMAL_ASSETS={
-  bear:'./assets/animals/bear.svg',
-  bunny:'./assets/animals/rabbit.svg',
-  fox:'./assets/animals/fox.svg',
-  owl:'./assets/animals/owl.svg',
-  whale:'./assets/animals/beaver.svg'
+const ASSETS={
+  storybook:{
+    bear:'./assets/animals/bear.svg',
+    bunny:'./assets/animals/rabbit.svg',
+    fox:'./assets/animals/fox.svg',
+    owl:'./assets/animals/owl.svg',
+    whale:'./assets/animals/beaver.svg'
+  },
+  jungle:{
+    bear:'./assets/animals/elephant.svg',
+    bunny:'./assets/animals/monkey.svg',
+    fox:'./assets/animals/tiger.svg',
+    owl:'./assets/animals/parrot.svg',
+    whale:'./assets/animals/hippo.svg'
+  }
 };
 
 function read(){
@@ -36,30 +45,53 @@ function save(name){
   window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{theme:name}}));
 }
 
-/* Storybook animals are real SVG assets, but the original inline SVG is retained as a
-   fallback. We only hide the fallback after the replacement image has actually loaded,
-   so a cache/network failure can never create an empty icon circle. */
+/* The original inline animal SVG is always retained as a functional fallback. A themed
+   SVG is allowed to replace it only after the image has loaded successfully. Switching
+   themes clears the previous ready state until the new asset is ready, so blank circles
+   are impossible even with a stale PWA cache. */
 function decorateThemeArtwork(){
+  const theme=THEMES.has(root.dataset.experienceTheme)?root.dataset.experienceTheme:read();
+  const themeAssets=ASSETS[theme]||null;
   document.querySelectorAll('.mf-animal-sticker').forEach(sticker=>{
-    const kind=Object.keys(ANIMAL_ASSETS).find(k=>sticker.classList.contains(k));
+    const kind=['bear','bunny','fox','owl','whale'].find(k=>sticker.classList.contains(k));
     if(!kind)return;
-    let img=sticker.querySelector(':scope > img.mf-storybook-animal');
+    let img=sticker.querySelector(':scope > img.mf-theme-animal');
+    sticker.classList.remove('has-storybook-art','has-jungle-art','has-theme-art');
+
+    if(!themeAssets){
+      img?.remove();
+      return;
+    }
+
+    const wanted=themeAssets[kind];
     if(!img){
       img=document.createElement('img');
-      img.className='mf-storybook-animal';
-      img.src=ANIMAL_ASSETS[kind];
+      // mf-storybook-animal is retained as a compatibility hook for the existing Storybook
+      // contract; mf-theme-animal is the generic contract used by all new themes.
+      img.className='mf-theme-animal mf-storybook-animal';
       img.alt='';
       img.setAttribute('aria-hidden','true');
       img.decoding='async';
       img.draggable=false;
-      img.addEventListener('load',()=>sticker.classList.add('has-storybook-art'),{once:true});
-      img.addEventListener('error',()=>{
-        sticker.classList.remove('has-storybook-art');
-        img.remove();
-      },{once:true});
       sticker.prepend(img);
+    }
+
+    const activate=()=>{
+      if(img.dataset.asset!==wanted || root.dataset.experienceTheme!==theme)return;
+      sticker.classList.add('has-theme-art');
+      sticker.classList.add(theme==='jungle'?'has-jungle-art':'has-storybook-art');
+    };
+    const fail=()=>{
+      sticker.classList.remove('has-theme-art','has-storybook-art','has-jungle-art');
+    };
+
+    if(img.dataset.asset!==wanted){
+      img.dataset.asset=wanted;
+      img.onload=activate;
+      img.onerror=fail;
+      img.src=wanted;
     }else if(img.complete&&img.naturalWidth){
-      sticker.classList.add('has-storybook-art');
+      activate();
     }
   });
 }
@@ -79,12 +111,16 @@ function settingsPanel(){
           <span class="mf-experience-preview storybook" aria-hidden="true"><i class="mom"></i><i class="baby"></i></span>
           <span class="mf-experience-copy"><strong>Storybook</strong><small>Cloud Island for Mom · Woodland Forest for Baby</small></span>
         </button>
+        <button type="button" class="mf-experience-option" data-experience-theme-pick="jungle" aria-pressed="false">
+          <span class="mf-experience-preview jungle" aria-hidden="true"><i class="mom"></i><i class="baby"></i></span>
+          <span class="mf-experience-copy"><strong>Jungle</strong><small>Cloud Island for Mom · Jungle Canopy for Baby</small></span>
+        </button>
         <button type="button" class="mf-experience-option" data-experience-theme-pick="clean" aria-pressed="false">
           <span class="mf-experience-preview clean" aria-hidden="true"><i class="clean"></i></span>
-          <span class="mf-experience-copy"><strong>Clean</strong><small>The simpler MilkFlow visual system</small></span>
+          <span class="mf-experience-copy"><strong>Clean</strong><small>The restrained MilkFlow visual system</small></span>
         </button>
       </div>
-      <p class="chart-note">This changes artwork and surfaces only. Pumping, baby-care history, cloud sync and calculations are unchanged.</p>`;
+      <p class="chart-note">Experience themes change artwork and surfaces only. Pumping, baby-care history, doctor reports, cloud sync and calculations are unchanged.</p>`;
     const firstPanel=view.querySelector('.panel');
     if(firstPanel) firstPanel.insertAdjacentElement('beforebegin',panel);
     else view.appendChild(panel);
