@@ -43,6 +43,7 @@ await sleep(3200);
 await evalJs("document.documentElement.classList.remove('mf-booting')");
 
 const routes=['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','more','settings','set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about'];
+const themes=['storybook','jungle','clean'];
 const failures=[];const report=[];
 const initial=await evalJs(`(()=>({href:location.href,screen:document.body.dataset.screen||'',realm:document.body.dataset.realm||'',hash:location.hash,views:document.querySelectorAll('[data-view]').length,viewChildren:document.getElementById('view')?.children.length||0,text:(document.body.innerText||'').slice(0,160)}))()`);
 console.log('Browser audit initial state:',JSON.stringify(initial));
@@ -58,21 +59,22 @@ async function reach(route){
   return false;
 }
 
-for(const theme of ['storybook','clean']){
+for(const theme of themes){
   await evalJs(`localStorage.setItem('milkflow-experience-theme-v1',${JSON.stringify(theme)});document.documentElement.dataset.experienceTheme=${JSON.stringify(theme)};window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{theme:${JSON.stringify(theme)}}}))`);
-  await sleep(80);
+  await sleep(100);
   for(const route of routes){
     const ok=await reach(route);
     if(!ok){const current=await evalJs('document.body.dataset.screen||""');failures.push(`${theme}/${route}: route not reachable (screen=${current||'unset'})`);continue;}
     for(const mode of ['light','dark']){
-      await evalJs(`document.documentElement.dataset.theme=${JSON.stringify(mode)};document.querySelector('.main')?.scrollTo(0,0)`);await sleep(100);
-      const metrics=await evalJs(`(()=>{const v=document.getElementById('view'),n=document.getElementById('bottomNav'),main=document.querySelector('.main');const vr=v?.getBoundingClientRect(),nr=n?.getBoundingClientRect();const icons=[...document.querySelectorAll('#bottomNav .ico,#bottomNav .gly')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>8&&r.height>8&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0}).length;const animals=[...document.querySelectorAll('.mf-animal-sticker')].map(x=>({art:x.classList.contains('has-storybook-art'),svg:!!x.querySelector(':scope>svg'),img:!!x.querySelector(':scope>img.mf-storybook-animal'),w:x.getBoundingClientRect().width}));const visibleText=[...document.querySelectorAll('#view h1,#view h2,#view h3,#view strong')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'}).length;return{screen:document.body.dataset.screen||'',realm:document.body.dataset.realm||'',viewChildren:v?.children.length||0,viewHeight:vr?.height||0,mainWidth:main?.clientWidth||0,scrollWidth:main?.scrollWidth||0,navVisible:!!nr&&nr.width>250&&nr.bottom<=innerHeight+2&&nr.top<innerHeight,navIcons:icons,visibleText,animals}})()`);
+      await evalJs(`document.documentElement.dataset.theme=${JSON.stringify(mode)};document.querySelector('.main')?.scrollTo(0,0)`);await sleep(120);
+      const metrics=await evalJs(`(()=>{const v=document.getElementById('view'),n=document.getElementById('bottomNav'),main=document.querySelector('.main');const vr=v?.getBoundingClientRect(),nr=n?.getBoundingClientRect();const icons=[...document.querySelectorAll('#bottomNav .ico,#bottomNav .gly')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>8&&r.height>8&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0}).length;const animals=[...document.querySelectorAll('.mf-animal-sticker')].map(x=>({art:x.classList.contains('has-theme-art'),svg:!!x.querySelector(':scope>svg'),img:!!x.querySelector(':scope>img.mf-theme-animal'),w:x.getBoundingClientRect().width}));const visibleText=[...document.querySelectorAll('#view h1,#view h2,#view h3,#view strong')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'&&Number(s.opacity||1)>0}).length;const doctorTables=route==='doctor'?document.querySelectorAll('.mf-clinical-table,.mf-clinical-summary-table').length:0;return{screen:document.body.dataset.screen||'',realm:document.body.dataset.realm||'',viewChildren:v?.children.length||0,viewHeight:vr?.height||0,mainWidth:main?.clientWidth||0,scrollWidth:main?.scrollWidth||0,navVisible:!!nr&&nr.width>250&&nr.bottom<=innerHeight+2&&nr.top<innerHeight,navIcons:icons,visibleText,doctorTables,animals}})()`);
       if(metrics.viewChildren<1||metrics.viewHeight<40)failures.push(`${theme}/${mode}/${route}: empty view`);
       if(metrics.visibleText<1)failures.push(`${theme}/${mode}/${route}: no visible headings/content`);
       if(metrics.scrollWidth>metrics.mainWidth+2)failures.push(`${theme}/${mode}/${route}: horizontal overflow ${metrics.scrollWidth}>${metrics.mainWidth}`);
       if(!metrics.navVisible)failures.push(`${theme}/${mode}/${route}: bottom nav not visible`);
       if(metrics.navIcons<4)failures.push(`${theme}/${mode}/${route}: bottom nav icons missing (${metrics.navIcons})`);
-      if(theme==='storybook'&&route==='baby-home'&&metrics.animals.some(a=>a.w>20&&!a.art&&!a.svg))failures.push(`${theme}/${mode}/${route}: animal artwork has no fallback`);
+      if(theme!=='clean'&&route==='baby-home'&&metrics.animals.some(a=>a.w>20&&!a.art&&!a.svg))failures.push(`${theme}/${mode}/${route}: themed animal artwork has no fallback`);
+      if(route==='doctor'&&metrics.doctorTables<2)failures.push(`${theme}/${mode}/${route}: clinician table summary not rendered`);
       const shot=await cdp('Page.captureScreenshot',{format:'png',fromSurface:true});
       const file=`${String(report.length+1).padStart(3,'0')}-${theme}-${mode}-${route}.png`;
       fs.writeFileSync(path.join(OUT,file),Buffer.from(shot.data,'base64'));report.push({theme,mode,route,file,...metrics});
@@ -81,5 +83,5 @@ for(const theme of ['storybook','clean']){
 }
 fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify({initial,failures,report},null,2));
 console.log(`Browser visual audit rendered ${report.length} route/theme/mode views.`);
-if(failures.length){console.error(`Browser visual audit failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log('Browser visual audit passed: all routes rendered, mobile nav remained visible, icons were present, and no horizontal overflow was detected.');
+if(failures.length){console.error(`Browser visual audit failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log('Browser visual audit passed: every Storybook, Jungle and Clean route rendered in light/dark mode with visible navigation, content, theme fallbacks and clinician tables.');
 try{ws.close();}catch{}proc.kill();server.close();
