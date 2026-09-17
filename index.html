@@ -17,18 +17,25 @@
   <meta name="apple-mobile-web-app-title" content="MilkFlow">
   <script>
     (()=>{
-      const root=document.documentElement;root.classList.add('mf-booting');
+      const root=document.documentElement,h=new Date().getHours();
+      root.classList.add('mf-booting');
+      root.dataset.daypart=h>=5&&h<12?'morning':h>=12&&h<17?'afternoon':h>=17&&h<21?'evening':'night';
       try{
         const state=JSON.parse(localStorage.getItem('milkflow-family-v4-state')||'{}');
-        const pref=state?.ui?.theme||'auto',h=new Date().getHours();
-        const dark=pref==='dark'||(pref==='auto'&&(h>=21||h<5||matchMedia('(prefers-color-scheme: dark)').matches));
+        const pref=state?.ui?.theme||'auto';
+        const dark=pref==='dark'||(pref==='auto'&&(root.dataset.daypart==='night'||matchMedia('(prefers-color-scheme: dark)').matches));
         root.dataset.theme=dark?'dark':'light';
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content',dark?'#0e1016':'#f4f4f9');
       }catch{}
-      window.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(()=>root.classList.remove('mf-booting')),{once:true});
+      const reveal=()=>requestAnimationFrame(()=>root.classList.remove('mf-booting'));
+      window.addEventListener('DOMContentLoaded',()=>{
+        const timeout=new Promise(resolve=>setTimeout(resolve,650));
+        const fonts=document.fonts?.ready||Promise.resolve();
+        Promise.race([fonts,timeout]).then(reveal,reveal);
+      },{once:true});
     })();
   </script>
-  <style>html.mf-booting #view,html.mf-booting #bottomNav{visibility:hidden}</style>
+  <style>html.mf-booting .topbar,html.mf-booting #view,html.mf-booting #bottomNav{visibility:hidden}</style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
