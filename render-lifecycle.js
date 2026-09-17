@@ -7,13 +7,14 @@
  * app.js remains the only screen renderer. This module does three narrowly scoped jobs:
  * 1) publish one post-render event for other canonical controllers;
  * 2) reset the app's real mobile scroll container only when the route changes;
- * 3) replace a genuinely empty render with a small recovery surface instead of leaving
- *    the user on a blank page.
+ * 3) retry one genuinely empty render before replacing it with a recovery surface.
  *
  * It never rewrites DOM prototypes, never observes subtrees and never owns app data.
  */
 let queued=false;
 let lastScreen='';
+let retrying=false;
+const RETRY_PREFIX='milkflow-render-retry:';
 
 function appScroller(){
   return matchMedia('(max-width:760px)').matches
@@ -25,7 +26,7 @@ function resetRouteScroll(){
   const main=document.querySelector('.main');
   if(main) main.scrollTop=0;
   if(document.scrollingElement) document.scrollingElement.scrollTop=0;
-  window.scrollTo({top:0,left:0,behavior:'auto'});
+  try{window.scrollTo({top:0,left:0,behavior:'auto'});}catch{window.scrollTo(0,0);}
 }
 
 function recoveryMarkup(screen){
@@ -38,11 +39,41 @@ function recoveryMarkup(screen){
   </section>`;
 }
 
+function exactRouteControl(screen){
+  if(!screen)return null;
+  return [...document.querySelectorAll('[data-view]')].find(el=>el.dataset.view===screen)||null;
+}
+
+function retryKey(screen){return `${RETRY_PREFIX}${screen||'unknown'}`;}
+
+function clearRetry(screen){
+  try{sessionStorage.removeItem(retryKey(screen));}catch{}
+}
+
 function verifyScreen(screen){
   const view=document.getElementById('view');
   if(!view||document.documentElement.classList.contains('mf-booting'))return;
-  if(view.firstElementChild)return;
+  if(view.firstElementChild){clearRetry(screen);return;}
+
   console.error('MilkFlow render invariant: empty #view',screen);
+
+  // A top-level route can be rendered again by tapping the exact route control. Do that
+  // automatically once before exposing recovery UI. This covers iOS standalone cases in
+  // which a route change lands between history/scroll restoration and the DOM commit.
+  let alreadyRetried=false;
+  try{alreadyRetried=sessionStorage.getItem(retryKey(screen))==='1';}catch{}
+  const control=exactRouteControl(screen);
+  if(control&&!alreadyRetried&&!retrying){
+    try{sessionStorage.setItem(retryKey(screen),'1');}catch{}
+    retrying=true;
+    resetRouteScroll();
+    control.click();
+    setTimeout(()=>{retrying=false;requestAnimationFrame(()=>verifyScreen(screen));},180);
+    return;
+  }
+
+  // Deep routes do not always have a visible data-view control. A clear recovery surface
+  // is safer than an automatic reload loop; localStorage/Firestore are untouched either way.
   view.innerHTML=recoveryMarkup(screen);
   resetRouteScroll();
 }
@@ -65,6 +96,7 @@ function publish(){
         resetRouteScroll();
         requestAnimationFrame(resetRouteScroll);
       });
+      setTimeout(resetRouteScroll,120);
     }
     requestAnimationFrame(()=>verifyScreen(screen));
   });
@@ -79,5 +111,9 @@ function start(){
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-window.addEventListener('pageshow',()=>{publish();requestAnimationFrame(()=>{const s=appScroller();if(s&&s.scrollTop<0)s.scrollTop=0;});});
+window.addEventListener('pageshow',()=>{
+  document.documentElement.classList.remove('mf-booting');
+  publish();
+  requestAnimationFrame(()=>{const s=appScroller();if(s&&s.scrollTop<0)s.scrollTop=0;});
+});
 })();
