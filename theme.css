@@ -26,3 +26,5 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin::before{
   display:none!important;
 }
+
+/* 2.0.3 visual contract: exactly one themed illustration layer per Baby component. */
