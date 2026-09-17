@@ -38,6 +38,8 @@ try{
   await sleep(2800);await evalJs("document.documentElement.classList.remove('mf-booting')");
 
   const routes=['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','more','settings','set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about'];
+  const momRoutes=new Set(['mom-home','mom-history','mom-trends','mom-stash']);
+  const babyRoutes=new Set(['baby-home','baby-history','baby-trends','baby-growth','development','doctor']);
   const themes=['safari','butterfly','princess','unicorn','clean'];
   const expected={safari:'safari-world.svg',butterfly:'butterfly-garden.svg',princess:'princess-palace.svg',unicorn:'unicorn-dreams.svg'};
   const failures=[],report=[];
@@ -49,18 +51,18 @@ try{
       if(!await reach(route)){failures.push(`${theme}/${route}: route did not render`);continue;}
       for(const mode of ['light','dark']){
         await evalJs(`document.documentElement.dataset.theme=${JSON.stringify(mode)};document.querySelector('.main')?.scrollTo(0,0)`);await sleep(170);
-        const m=await evalJs(`(()=>{const v=document.getElementById('view'),n=document.getElementById('bottomNav'),main=document.querySelector('.main'),heroBaby=document.querySelector('.mf-animal-hero'),heroMom=document.querySelector('.mf-dream-hero'),head=document.querySelector('.page-head');const vr=v?.getBoundingClientRect(),nr=n?.getBoundingClientRect();const icons=[...document.querySelectorAll('#bottomNav .ico,#bottomNav .gly')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>8&&r.height>8&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0}).length;return{children:v?.children.length||0,height:vr?.height||0,mainWidth:main?.clientWidth||0,scrollWidth:main?.scrollWidth||0,navVisible:!!nr&&nr.width>250&&nr.bottom<=innerHeight+3&&nr.top<innerHeight,icons,padding:v?parseFloat(getComputedStyle(v).paddingBottom)||0:0,navHeight:nr?.height||0,realm:document.body.dataset.realm||'',mainBg:main?getComputedStyle(main).backgroundImage:'',sceneBg:main?getComputedStyle(main,'::before').backgroundImage:'',babyHeroBg:heroBaby?getComputedStyle(heroBaby).backgroundImage:'',momHeroBg:heroMom?getComputedStyle(heroMom).backgroundImage:'',pageHeadBg:head?getComputedStyle(head).backgroundImage:'',themeCards:document.querySelectorAll('#mfExperiencePanel .mf-experience-option').length,selected:document.querySelectorAll('#mfExperiencePanel [aria-pressed="true"]').length,doctorTables:document.querySelectorAll('.qa-grid,.daily-table,.mf-print-table').length}})()`);
+        const m=await evalJs(`(()=>{const v=document.getElementById('view'),n=document.getElementById('bottomNav'),main=document.querySelector('.main'),heroBaby=document.querySelector('.mf-animal-hero'),heroMom=document.querySelector('.mf-dream-hero'),head=document.querySelector('.page-head');const vr=v?.getBoundingClientRect(),nr=n?.getBoundingClientRect();const icons=[...document.querySelectorAll('#bottomNav .ico,#bottomNav .gly')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>8&&r.height>8&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0}).length;return{children:v?.children.length||0,height:vr?.height||0,mainWidth:main?.clientWidth||0,scrollWidth:main?.scrollWidth||0,navVisible:!!nr&&nr.width>250&&nr.bottom<=innerHeight+3&&nr.top<innerHeight,icons,padding:v?parseFloat(getComputedStyle(v).paddingBottom)||0:0,navHeight:nr?.height||0,realm:document.body.dataset.realm||'',mainBg:main?getComputedStyle(main).backgroundImage:'',babyHeroBg:heroBaby?getComputedStyle(heroBaby).backgroundImage:'',momHeroBg:heroMom?getComputedStyle(heroMom).backgroundImage:'',pageHeadArt:head?getComputedStyle(head,'::after').backgroundImage:'',themeCards:document.querySelectorAll('#mfExperiencePanel .mf-experience-option').length,selected:document.querySelectorAll('#mfExperiencePanel [aria-pressed="true"]').length,doctorTables:document.querySelectorAll('.qa-grid,.daily-table,.mf-print-table').length}})()`);
         if(m.children<1||m.height<40)failures.push(`${theme}/${mode}/${route}: blank view`);
         if(m.scrollWidth>m.mainWidth+2)failures.push(`${theme}/${mode}/${route}: horizontal overflow`);
         if(!m.navVisible||m.icons<4)failures.push(`${theme}/${mode}/${route}: bottom navigation/icons not visible`);
         if(m.padding<m.navHeight+15)failures.push(`${theme}/${mode}/${route}: content can sit behind bottom navigation`);
         if(route==='doctor'&&m.doctorTables<2)failures.push(`${theme}/${mode}/${route}: doctor summary structure missing`);
-        const art=expected[theme];
-        if(art&&m.realm&& !m.sceneBg.includes(art))failures.push(`${theme}/${mode}/${route}: selected world is missing from the page scene (${art})`);
+        const art=expected[theme],themedRealm=momRoutes.has(route)||babyRoutes.has(route);
+        if(art&&themedRealm&&!m.mainBg.includes(art))failures.push(`${theme}/${mode}/${route}: selected world is missing from the real page canvas (${art})`);
         if(route==='baby-home'&&art&&!m.babyHeroBg.includes(art))failures.push(`${theme}/${mode}/${route}: selected world is missing from Baby hero (${art})`);
         if(route==='mom-home'&&art&&(!m.momHeroBg.includes(art)||!m.momHeroBg.includes('cloud-island.svg')))failures.push(`${theme}/${mode}/${route}: Mom hero must combine Cloud Island with ${art}`);
-        if(art&&m.realm==='baby'&&route!=='baby-home'&&m.pageHeadBg&&!m.pageHeadBg.includes(art))failures.push(`${theme}/${mode}/${route}: Baby page header is not themed with ${art}`);
-        if(art&&m.realm==='mom'&&route!=='mom-home'&&m.pageHeadBg&&(!m.pageHeadBg.includes(art)||!m.pageHeadBg.includes('cloud-island.svg')))failures.push(`${theme}/${mode}/${route}: Mom page header must combine Cloud Island with ${art}`);
+        if(art&&babyRoutes.has(route)&&route!=='baby-home'&&!m.pageHeadArt.includes(art))failures.push(`${theme}/${mode}/${route}: Baby page artwork layer is not themed with ${art}`);
+        if(art&&momRoutes.has(route)&&route!=='mom-home'&&(!m.pageHeadArt.includes(art)||!m.pageHeadArt.includes('cloud-island.svg')))failures.push(`${theme}/${mode}/${route}: Mom page artwork layer must combine Cloud Island with ${art}`);
         if(route==='set-appearance'&&(m.themeCards!==4||m.selected!==1))failures.push(`${theme}/${mode}/${route}: theme selector state invalid cards=${m.themeCards} selected=${m.selected}`);
         const shot=await cdp('Page.captureScreenshot',{format:'png',fromSurface:true});const file=`${String(report.length+1).padStart(3,'0')}-${theme}-${mode}-${route}.png`;fs.writeFileSync(path.join(OUT,file),Buffer.from(shot.data,'base64'));report.push({theme,mode,route,file,...m});
       }
@@ -68,5 +70,5 @@ try{
   }
   fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify({failures,report},null,2));
   console.log(`Browser QA rendered ${report.length} route/theme/mode views.`);
-  if(failures.length){console.error(`Browser QA failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log('Browser QA passed 190 views with selected artwork verified on Mom/Baby page scenes, Home heroes, secondary headers, navigation, and light/dark mode.');
+  if(failures.length){console.error(`Browser QA failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log('Browser QA passed 190 views: selected artwork is present on real Mom/Baby canvases, Home heroes and secondary artwork layers in light/dark mode.');
 }finally{try{ws?.close();}catch{}proc?.kill();server.close();}
