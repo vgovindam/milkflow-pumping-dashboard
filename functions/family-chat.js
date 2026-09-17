@@ -33,17 +33,52 @@ Prefer a friendly answer first, then compact numbers/timing. For a newly logged 
 
   return onRequest({region:'us-central1',secrets:[OPENAI_API_KEY],timeoutSeconds:30,memory:'256MiB'},async(req,res)=>{
     cors(req,res);if(req.method==='OPTIONS')return res.status(204).send('');if(req.method!=='POST')return res.status(405).json({ok:false,error:'POST required'});
+    let requestRef=null,requestId=null;
     try{
-      const decoded=await auth(req),uid=decoded.uid,message=String(req.body?.message||'').trim().slice(0,3000);if(!message)return res.status(400).json({ok:false,error:'Message required'});
+      const decoded=await auth(req),uid=decoded.uid,rawId=String(req.body?.requestId||'').trim();
+      requestId=/^[A-Za-z0-9_-]{8,100}$/.test(rawId)?rawId:`legacy-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
+      const mode=req.body?.mode==='status'?'status':'run',root=db.collection('users').doc(uid);
+      requestRef=root.collection('familyChatRequests').doc(requestId);
+      if(mode==='status'){
+        const snap=await requestRef.get();
+        if(!snap.exists)return res.status(404).json({ok:false,status:'missing',requestId});
+        const saved=snap.data()||{};
+        if(saved.status==='completed'&&saved.result)return res.status(200).json({ok:true,status:'completed',requestId,...saved.result});
+        if(saved.status==='failed')return res.status(200).json({ok:false,status:'failed',requestId,error:saved.error||'Request failed'});
+        return res.status(202).json({ok:false,status:'processing',requestId});
+      }
+
+      const message=String(req.body?.message||'').trim().slice(0,3000);if(!message)return res.status(400).json({ok:false,error:'Message required'});
+      const now=Date.now();
+      const gate=await db.runTransaction(async tx=>{
+        const snap=await tx.get(requestRef),saved=snap.exists?(snap.data()||{}):{};
+        if(saved.status==='completed'&&saved.result)return{state:'completed',result:saved.result};
+        const age=now-Number(saved.startedAtMs||0);
+        if(saved.status==='processing'&&age>=0&&age<45000)return{state:'processing'};
+        tx.set(requestRef,{status:'processing',message,startedAtMs:now,updatedAtMs:now,attempts:Number(saved.attempts||0)+1,updatedAt:admin.firestore.FieldValue.serverTimestamp()},{merge:true});
+        return{state:'run'};
+      });
+      if(gate.state==='completed')return res.status(200).json({ok:true,status:'completed',requestId,...gate.result});
+      if(gate.state==='processing')return res.status(202).json({ok:false,status:'processing',requestId});
+
       const local=req.body?.context&&typeof req.body.context==='object'?req.body.context:{};
       let cloud={profile:{},pumpDays:[],recentMom:[],children:[],babyDays:[],recentBaby:[],history:[]};
       try{cloud=await load(uid);}catch(err){console.warn('Family chat cloud context unavailable; using device context',err?.message||err);}
       const localConversation=Array.isArray(local.localConversation)?local.localConversation.slice(-16).map(x=>({role:x.role==='assistant'?'assistant':'user',text:String(x.text||'').slice(0,1200)})):[];
       const payload={currentLocalTime:local.currentLocalTime||null,timeZone:local.timeZone||null,currentWorkspace:local.currentWorkspace||null,dynamicPlan:local.dynamicPlan||null,pumpChoices:local.pumpChoices||null,activeBaby:local.activeBaby||null,localRecentMom:Array.isArray(local.recentMom)?local.recentMom.slice(-24):[],profile:cloud.profile,pumpDays:cloud.pumpDays,recentMom:cloud.recentMom,conversation:cloud.history.slice(-24),deviceConversation:localConversation,userMessage:message};
       let out;try{out=await callModel(payload);}catch(err){console.warn('Using family chat tracker fallback',err?.message||err);out=rulesReply(payload);}
-      const col=db.collection('users').doc(uid).collection('familyChatMessages'),batch=db.batch();batch.set(col.doc(),{role:'user',text:message,createdAt:admin.firestore.FieldValue.serverTimestamp()});batch.set(col.doc(),{role:'assistant',text:out.reply,topic:out.topic,needsAttention:out.needs_attention,model:out.model||null,source:out.source||'rules',responseId:out.responseId||null,createdAt:admin.firestore.FieldValue.serverTimestamp()});await batch.commit().catch(err=>console.warn('Family chat history save skipped',err?.message||err));
-      return res.status(200).json({ok:true,...out,generatedAt:new Date().toISOString()});
-    }catch(err){const status=err?.status||500;console.error('familyChat request rejected',err?.message||err);return res.status(status).json({ok:false,error:status===401?'Please sign in again.':'MilkFlow chat could not be processed.'});}
+      const generatedAt=new Date().toISOString(),result={reply:out.reply,topic:out.topic,needs_attention:out.needs_attention,model:out.model||null,responseId:out.responseId||null,source:out.source||'rules',generatedAt};
+      await requestRef.set({status:'completed',result,completedAtMs:Date.now(),updatedAtMs:Date.now(),updatedAt:admin.firestore.FieldValue.serverTimestamp()},{merge:true});
+      const col=root.collection('familyChatMessages'),batch=db.batch();
+      batch.set(col.doc(`${requestId}-user`),{requestId,role:'user',text:message,createdAt:admin.firestore.FieldValue.serverTimestamp()},{merge:true});
+      batch.set(col.doc(`${requestId}-assistant`),{requestId,role:'assistant',text:out.reply,topic:out.topic,needsAttention:out.needs_attention,model:out.model||null,source:out.source||'rules',responseId:out.responseId||null,createdAt:admin.firestore.FieldValue.serverTimestamp()},{merge:true});
+      await batch.commit().catch(err=>console.warn('Family chat history save skipped',err?.message||err));
+      return res.status(200).json({ok:true,status:'completed',requestId,...result});
+    }catch(err){
+      const status=err?.status||500;console.error('familyChat request rejected',err?.message||err);
+      if(requestRef&&status!==401)await requestRef.set({status:'failed',error:'MilkFlow chat could not be processed.',updatedAtMs:Date.now(),updatedAt:admin.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
+      return res.status(status).json({ok:false,status:'failed',requestId,error:status===401?'Please sign in again.':'MilkFlow chat could not be processed.'});
+    }
   });
 }
 module.exports={createFamilyChat};
