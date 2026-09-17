@@ -1,0 +1,111 @@
+/* MilkFlow Jungle experience
+   First-class experience module. It may theme Mom/Baby scenery and themed cards only.
+   Navigation, Settings, forms, dialogs, routing and data remain in the core system. */
+
+/* Three switchable experiences in Appearance. */
+.mf-experience-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+.mf-experience-preview.jungle{grid-template-columns:1fr 1fr;background:#dcebd0}
+.mf-experience-preview.jungle .mom{position:relative;background:linear-gradient(155deg,#7665d1,#c38ed0 58%,#9fd5ec)}
+.mf-experience-preview.jungle .mom:after{content:"";position:absolute;left:10%;right:10%;bottom:13px;height:20px;border-radius:50%;background:#fff;box-shadow:18px -8px 0 -3px rgba(255,255,255,.88),-13px -5px 0 -4px rgba(255,255,255,.82)}
+.mf-experience-preview.jungle .baby{position:relative;background:linear-gradient(#cbe5b7,#4f8b5d)}
+.mf-experience-preview.jungle .baby:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 67% 29%,#fff0a4 0 7%,transparent 8%),linear-gradient(115deg,transparent 0 38%,#2e6544 39% 51%,transparent 52%),linear-gradient(245deg,transparent 0 42%,#24583d 43% 54%,transparent 55%);opacity:.92}
+
+/* Shared Jungle canvas. Family/Settings screens are intentionally untouched. */
+:root[data-experience-theme="jungle"] body[data-realm="mom"] .main,
+:root[data-experience-theme="jungle"] body[data-realm="baby"] .main{background-image:none!important}
+:root[data-experience-theme="jungle"] body[data-realm="mom"] .main::before,
+:root[data-experience-theme="jungle"] body[data-realm="mom"] .main::after,
+:root[data-experience-theme="jungle"] body[data-realm="baby"] .main::before,
+:root[data-experience-theme="jungle"] body[data-realm="baby"] .main::after{display:none!important}
+:root[data-experience-theme="jungle"] body[data-realm="mom"] .main{background:linear-gradient(180deg,#f3f0fb 0%,#eef5fb 52%,#f7f4fa 100%)!important}
+:root[data-experience-theme="jungle"] body[data-realm="baby"] .main{background:linear-gradient(180deg,#eaf3e4 0%,#f7f2e4 54%,#e9f1e8 100%)!important}
+
+/* Mom stays Cloud Island in both playful experiences. */
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-dream-hero{background-image:linear-gradient(90deg,rgba(67,52,132,.87) 0%,rgba(95,69,151,.64) 48%,rgba(84,109,170,.24) 100%),url("./assets/themes/cloud-island.svg")!important;background-size:cover!important;background-position:center!important;border:1px solid rgba(255,255,255,.32)!important;box-shadow:0 24px 55px rgba(69,59,127,.20)!important}
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-dream-hero:before,
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-cloud,
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-sky-orb,
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-sparkles{display:none!important}
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-dream-welcome>span{background:rgba(255,255,255,.24)}
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-dream-next{background:rgba(70,52,128,.38);border-color:rgba(255,255,255,.34)}
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-dream-journey{background:linear-gradient(180deg,#fff 0%,#f5f1ff 100%)!important;border:1px solid #e2daf6!important;box-shadow:0 14px 32px rgba(68,58,120,.10)!important}
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.mom{background:linear-gradient(145deg,#dceaff 0%,#c9ddfb 58%,#b8d2f4 100%)!important;color:#294d7b!important;border-color:#b8cee9!important}
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.nurse{background:linear-gradient(145deg,#f8dce9 0%,#efc7dc 58%,#e4c0e8 100%)!important;color:#7e375d!important;border-color:#e1b6cf!important}
+:root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile strong{color:inherit!important}
+:root[data-experience-theme="jungle"] body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head{background-image:linear-gradient(90deg,rgba(65,52,128,.91),rgba(104,76,159,.70)),url("./assets/themes/cloud-island.svg")!important;background-size:cover!important;background-position:center 42%!important;border-color:rgba(93,76,154,.18)!important}
+:root[data-experience-theme="jungle"] body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head h2{color:#fff!important}
+:root[data-experience-theme="jungle"] body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head .eyebrow{color:rgba(255,255,255,.84)!important}
+
+/* Baby · Jungle Canopy. */
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-hero{background-image:linear-gradient(90deg,rgba(239,249,226,.91) 0%,rgba(223,241,207,.70) 50%,rgba(180,216,165,.28) 100%),url("./assets/themes/jungle-canopy.svg")!important;background-size:cover!important;background-position:center 45%!important;color:#1e4c32!important;border:1px solid #9cc39e!important;box-shadow:0 20px 46px rgba(36,85,53,.16)!important}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-hero:before,
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-hero:after{display:none!important}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#173f2b!important}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:rgba(249,253,238,.86)!important;color:#315f3f!important;border:1px solid rgba(81,126,75,.22)!important}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-copy small{color:#456c50!important}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-stat{background:rgba(246,251,232,.82)!important;border-color:rgba(75,118,70,.18)!important;color:#244f34!important;backdrop-filter:none!important}
+
+/* A themed image may hide the inline fallback only after it loaded successfully. */
+:root[data-experience-theme="jungle"] .mf-theme-animal{display:none;width:100%;height:100%;object-fit:contain;pointer-events:none}
+:root[data-experience-theme="jungle"] .mf-animal-sticker.has-jungle-art>.mf-theme-animal{display:block!important}
+:root[data-experience-theme="jungle"] .mf-animal-sticker.has-jungle-art>svg{display:none!important}
+
+/* Feeding = green clearing; Diapers = warm riverbank. Full surfaces, not edge stripes. */
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-care-label{padding:10px 12px;border-radius:15px;margin-top:3px}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-last-feed-band + .mf-care-label{background:#dceccc;color:#285a36;border:1px solid #bbd5aa;box-shadow:0 6px 14px rgba(52,93,55,.07)}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-last-feed-band + .mf-care-label span:before{content:"FEEDING · ";font-size:8px;letter-spacing:.10em;color:#65885e;font-weight:900}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-feed-zone{padding:9px;border-radius:22px;background:#eaf3df;border:1px solid #c9ddba}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-feed-zone + .mf-care-label{background:#f1dfbd;color:#68481f;border:1px solid #dfc592;box-shadow:0 6px 14px rgba(102,72,37,.07)}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-feed-zone + .mf-care-label span:before{content:"DIAPERS · ";font-size:8px;letter-spacing:.10em;color:#9a733d;font-weight:900}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-diaper-cluster{padding:9px;border-radius:22px;background:#f8edda;border:1px solid #e6d2ae}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-feed-card{box-shadow:none!important;border:1px solid rgba(58,103,62,.11)!important}
+:root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-diaper-blob{box-shadow:none!important;border:1px solid rgba(112,79,38,.12)!important}
+
+/* Baby subpages use the jungle scene only in their compact page header. */
+:root[data-experience-theme="jungle"] body[data-realm="baby"]:not([data-screen="baby-home"]) .page-head{background-image:linear-gradient(90deg,rgba(24,74,47,.92),rgba(52,103,65,.66)),url("./assets/themes/jungle-canopy.svg")!important;background-size:cover!important;background-position:center 45%!important;border-color:rgba(40,93,56,.20)!important}
+:root[data-experience-theme="jungle"] body[data-realm="baby"]:not([data-screen="baby-home"]) .page-head h2{color:#fff!important}
+:root[data-experience-theme="jungle"] body[data-realm="baby"]:not([data-screen="baby-home"]) .page-head .eyebrow{color:rgba(255,255,255,.85)!important}
+:root[data-experience-theme="jungle"] body[data-realm="baby"] .panel{border-color:#d5e2cf!important;background:#fffef9!important;box-shadow:0 9px 24px rgba(54,92,63,.06)!important}
+:root[data-experience-theme="jungle"] body[data-realm="baby"] .metric{border-color:#d4e1cf!important;background:linear-gradient(145deg,#fffef9,#eef5e9)!important}
+
+/* Dark Jungle keeps contrast high instead of painting pale cards over a dark canvas. */
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="mom"] .main{background:linear-gradient(180deg,#121426,#17182b 58%,#111b28)!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .main{background:linear-gradient(180deg,#0d1a15,#142219 58%,#111b16)!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="mom"] .panel,
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="mom"] .grp,
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="mom"] .row,
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="mom"] .metric{background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .panel,
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .grp,
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .row,
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .metric{background:#18231e!important;border-color:#33493b!important;color:#f4f8f4!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .panel h3,
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .row strong,
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .metric strong{color:#f6faf6!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .row span,
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .metric span,
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-realm="baby"] .metric small{color:#b8c8ba!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-hero{background-image:linear-gradient(90deg,rgba(12,34,23,.78),rgba(20,50,31,.56)),url("./assets/themes/jungle-canopy.svg")!important;border-color:#365943!important;color:#f4f9f3!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#fff!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:rgba(9,28,18,.68)!important;color:#d9efd9!important;border-color:#41654b!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-copy small{color:#bdd5c1!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-stat{background:rgba(13,35,23,.82)!important;border-color:#3b5f46!important;color:#f6faf5!important}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-last-feed-band + .mf-care-label{background:#1a3523;color:#d6ecd8;border-color:#31583b}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-feed-zone{background:#15291c;border-color:#304c37}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-feed-zone + .mf-care-label{background:#342916;color:#f1d8a9;border-color:#574528}
+:root[data-theme="dark"][data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-diaper-cluster{background:#251f15;border-color:#4a3b23}
+
+@media(max-width:760px){
+  .mf-experience-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .mf-experience-option{min-height:138px}.mf-experience-preview{height:62px;flex-basis:62px}.mf-experience-copy{padding:9px;min-height:72px}
+  .mf-experience-copy strong{font-size:12.5px}.mf-experience-copy small{font-size:9.5px}
+  :root[data-experience-theme="jungle"] body[data-screen="mom-home"] .mf-dream-hero{background-position:58% center!important}
+  :root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-animal-hero{background-position:center 46%!important}
+  :root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-care-label{padding:9px 10px!important}
+  :root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-feed-zone,
+  :root[data-experience-theme="jungle"] body[data-screen="baby-home"] .mf-diaper-cluster{padding:7px}
+}
+@media(max-width:390px){
+  .mf-experience-options{grid-template-columns:1fr 1fr}
+  .mf-experience-option:last-child{grid-column:1/-1;min-height:116px}
+}
