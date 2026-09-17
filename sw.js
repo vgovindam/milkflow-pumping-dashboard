@@ -1,9 +1,9 @@
 // MilkFlow service worker.
 // Network-first app shell; Firestore/Firebase traffic is left to Firebase.
-const VERSION = 'milkflow-stable45-human9';
+const VERSION = 'milkflow-stable45-human10';
 const SHELL = [
-  './', './index.html', './styles.css', './component-theme.css', './component-theme-core.css', './experience-themes.css',
-  './app.js', './app-reliability.js', './core-ui.js', './experience-theme.js', './render-lifecycle.js', './plan-reliability.js', './network-reliability.js', './ai-coach-client.js', './app-update-notice.js', './family-chat.js', './config.js',
+  './', './index.html', './styles.css', './component-theme.css', './component-theme-core.css', './experience-themes.css', './doctor-summary.css',
+  './app.js', './app-reliability.js', './core-ui.js', './experience-theme.js', './render-lifecycle.js', './plan-reliability.js', './network-reliability.js', './ai-coach-client.js', './app-update-notice.js', './family-chat.js', './doctor-summary.js', './config.js',
   './assets/themes/cloud-island.svg', './assets/themes/forest-clearing.svg',
   './assets/animals/bear.svg', './assets/animals/rabbit.svg', './assets/animals/fox.svg', './assets/animals/owl.svg', './assets/animals/beaver.svg',
   './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'
