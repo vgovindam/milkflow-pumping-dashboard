@@ -49,7 +49,7 @@ need('doctor stylesheet loaded',html,'doctor-summary.css?v=__MILKFLOW_VERSION__'
 for(const text of ['function resetRouteScroll','function exactRouteControl','mf-render-recovery'])need('navigation recovery',lifecycle,text);
 for(const text of ["STATE_KEY = 'milkflow-family-v4-state'",'function unionById','function commitRecord'])need('data preservation',app,text);
 for(const text of ['milkflow-device-id-v1','sourceDeviceId',"collection('devices')"])need('cross-device alert identity',alerts,text);
-for(const text of ["PENDING_KEY='milkflow-family-chat-pending-v1'",'recoverCloudRequest','resumePending','retryRequest',"mode:'status'"])need('family chat recovery',familyChat,text);
+for(const text of ["PENDING_KEY='milkflow-family-chat-pending-v1'",'recoverCloudRequest','recoverLegacyHistory','resumePending','retryRequest',"mode:'status'"])need('family chat recovery',familyChat,text);
 for(const text of ["collection('familyChatRequests')","mode==='status'","status:'processing'","status:'completed'","${requestId}-user","${requestId}-assistant"])need('family chat server recovery',familyChatServer,text);
 if(failures.length){console.error(`Interaction audit failed:\n- ${failures.join('\n- ')}`);process.exit(1);}
 console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, four self-contained detailed theme scenes, independent themed components, five entry forms, navigation recovery, notification identity, app branding, and data-preservation contracts.`);
