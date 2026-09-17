@@ -41,8 +41,7 @@ try{
   const momRoutes=new Set(['mom-home','mom-history','mom-trends','mom-stash']);
   const babyRoutes=new Set(['baby-home','baby-history','baby-trends','baby-growth','development','doctor']);
   const themes=['safari','butterfly','princess','unicorn','clean'];
-  const expected={safari:'themes/safari-world.svg',butterfly:'themes/butterfly-garden.svg',princess:'themes/princess-palace.svg',unicorn:'themes/unicorn-dreams.svg'};
-  const expectedDetail={safari:'theme-details/safari.svg',butterfly:'theme-details/butterfly.svg',princess:'theme-details/princess.svg',unicorn:'theme-details/unicorn.svg'};
+  const expected={safari:'theme-composite/safari.svg',butterfly:'theme-composite/butterfly.svg',princess:'theme-composite/princess.svg',unicorn:'theme-composite/unicorn.svg'};
   const expectedIcons={safari:'theme-icons/safari.svg',butterfly:'theme-icons/butterfly.svg',princess:'theme-icons/princess.svg',unicorn:'theme-icons/unicorn.svg'};
   const failures=[],report=[];
   async function reach(route){await evalJs(`location.hash=${JSON.stringify('#'+route)}`);for(let i=0;i<20;i++){await sleep(100);if(await evalJs('document.body.dataset.screen||""')===route)return true;}return false;}
@@ -59,23 +58,23 @@ try{
         if(!m.navVisible||m.icons<4)failures.push(`${theme}/${mode}/${route}: bottom navigation/icons not visible`);
         if(m.padding<m.navHeight+15)failures.push(`${theme}/${mode}/${route}: content can sit behind bottom navigation`);
         if(route==='doctor'&&m.doctorTables<2)failures.push(`${theme}/${mode}/${route}: doctor summary structure missing`);
-        const art=expected[theme],detail=expectedDetail[theme],iconArt=expectedIcons[theme],themedRealm=momRoutes.has(route)||babyRoutes.has(route);
-        if(art&&themedRealm&&(!m.mainBg.includes(art)||!m.mainBg.includes(detail)))failures.push(`${theme}/${mode}/${route}: base/detail world is missing from real page canvas (${art} + ${detail})`);
-        if(route==='baby-home'&&art&&(!m.babyHeroBg.includes(art)||!m.babyHeroBg.includes(detail)))failures.push(`${theme}/${mode}/${route}: base/detail world is missing from Baby hero`);
-        if(route==='mom-home'&&art&&(!m.momHeroBg.includes(art)||!m.momHeroBg.includes(detail)))failures.push(`${theme}/${mode}/${route}: base/detail world is missing from Mom hero`);
-        if(art&&babyRoutes.has(route)&&route!=='baby-home'&&(!m.pageHeadArt.includes(art)||!m.pageHeadArt.includes(detail)))failures.push(`${theme}/${mode}/${route}: Baby page header is missing base/detail artwork`);
-        if(art&&momRoutes.has(route)&&route!=='mom-home'&&(!m.pageHeadArt.includes(art)||!m.pageHeadArt.includes(detail)))failures.push(`${theme}/${mode}/${route}: Mom page header is missing base/detail artwork`);
+        const art=expected[theme],iconArt=expectedIcons[theme],themedRealm=momRoutes.has(route)||babyRoutes.has(route);
+        if(art&&themedRealm&&!m.mainBg.includes(art))failures.push(`${theme}/${mode}/${route}: selected world is missing from real page canvas (${art})`);
+        if(route==='baby-home'&&art&&!m.babyHeroBg.includes(art))failures.push(`${theme}/${mode}/${route}: selected world is missing from Baby hero`);
+        if(route==='mom-home'&&art&&!m.momHeroBg.includes(art))failures.push(`${theme}/${mode}/${route}: selected world is missing from Mom hero`);
+        if(art&&babyRoutes.has(route)&&route!=='baby-home'&&!m.pageHeadArt.includes(art))failures.push(`${theme}/${mode}/${route}: Baby page header is missing selected artwork`);
+        if(art&&momRoutes.has(route)&&route!=='mom-home'&&!m.pageHeadArt.includes(art))failures.push(`${theme}/${mode}/${route}: Mom page header is missing selected artwork`);
         if(route==='mom-home'&&art&&![m.momHeroBefore,m.momHeroAfter].every(x=>!x||x==='none'||x==='normal'||x==='""'))failures.push(`${theme}/${mode}/${route}: Mom hero is rendering decorative/theme-name pseudo content`);
         if(route==='baby-home'&&art&&![m.babyHeroBefore,m.babyHeroAfter].every(x=>!x||x==='none'||x==='normal'||x==='""'))failures.push(`${theme}/${mode}/${route}: Baby hero is rendering decorative/theme-name pseudo content`);
         if(route==='baby-home'&&iconArt&&!m.feedArt.includes(iconArt))failures.push(`${theme}/${mode}/${route}: independent Baby component icon is not using ${iconArt}`);
         if(route==='mom-home'&&iconArt&&!m.pumpArt.includes(iconArt))failures.push(`${theme}/${mode}/${route}: independent Mom component icon is not using ${iconArt}`);
-        if(route==='set-appearance'&&(m.themeCards!==4||m.selected!==1||m.previewImages!==8||m.loadedPreviews!==8))failures.push(`${theme}/${mode}/${route}: theme selector previews invalid cards=${m.themeCards} selected=${m.selected} images=${m.previewImages} loaded=${m.loadedPreviews}`);
-        if(route==='settings'&&theme!=='clean'&&(!m.mainBg.includes(art)||!m.mainBg.includes(detail)||m.themeCards!==4||m.selected!==1||m.previewImages!==8||m.loadedPreviews!==8||m.settingsShortcuts!==4||!m.settingsMotto))failures.push(`${theme}/${mode}/${route}: immersive Settings invalid cards=${m.themeCards} selected=${m.selected} previews=${m.loadedPreviews}/${m.previewImages} shortcuts=${m.settingsShortcuts} motto=${m.settingsMotto}`);
+        if(route==='set-appearance'&&(m.themeCards!==4||m.selected!==1||m.previewImages!==4||m.loadedPreviews!==4))failures.push(`${theme}/${mode}/${route}: theme selector previews invalid cards=${m.themeCards} selected=${m.selected} images=${m.previewImages} loaded=${m.loadedPreviews}`);
+        if(route==='settings'&&theme!=='clean'&&(!m.mainBg.includes(art)||m.themeCards!==4||m.selected!==1||m.previewImages!==4||m.loadedPreviews!==4||m.settingsShortcuts!==4||!m.settingsMotto))failures.push(`${theme}/${mode}/${route}: immersive Settings invalid cards=${m.themeCards} selected=${m.selected} previews=${m.loadedPreviews}/${m.previewImages} shortcuts=${m.settingsShortcuts} motto=${m.settingsMotto}`);
         const shot=await cdp('Page.captureScreenshot',{format:'png',fromSurface:true});const file=`${String(report.length+1).padStart(3,'0')}-${theme}-${mode}-${route}.png`;fs.writeFileSync(path.join(OUT,file),Buffer.from(shot.data,'base64'));report.push({theme,mode,route,file,...m});
       }
     }
   }
   fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify({failures,report},null,2));
   console.log(`Browser QA rendered ${report.length} route/theme/mode views.`);
-  if(failures.length){console.error(`Browser QA failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log('Browser QA passed 190 views: self-contained base scenes + detail layers on Mom/Baby/Settings, loaded previews, no hero theme labels, independent component art, navigation and light/dark surfaces are rendered from production build.');
+  if(failures.length){console.error(`Browser QA failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log('Browser QA passed 190 views: self-contained theme scenes on Mom/Baby/Settings, loaded previews, no hero theme labels, independent component art, navigation and light/dark surfaces are rendered from production build.');
 }finally{try{ws?.close();}catch{}proc?.kill();server.close();}
