@@ -72,17 +72,17 @@ jobs:
           test -f firebase.json
           test -f .firebaserc
 
-          grep -q 'styles.css?build=stable45-human7' index.html
-          grep -q 'component-theme.css?build=stable45-human7' index.html
-          grep -q 'app.js?build=stable45-human7' index.html
-          grep -q 'core-ui.js?build=stable45-human7' index.html
-          grep -q 'experience-theme.js?build=stable45-human7' index.html
-          grep -q 'render-lifecycle.js?build=stable45-human7' index.html
-          grep -q 'plan-reliability.js?build=stable45-human7' index.html
-          grep -q 'network-reliability.js?build=stable45-human7' index.html
-          grep -q 'family-chat.js?build=stable45-human7' index.html
-          grep -q 'manifest.webmanifest?build=stable45-human7' index.html
-          grep -q 'milkflow-stable45-human7' sw.js
+          grep -q 'styles.css?build=stable45-human8' index.html
+          grep -q 'component-theme.css?build=stable45-human8' index.html
+          grep -q 'app.js?build=stable45-human8' index.html
+          grep -q 'core-ui.js?build=stable45-human8' index.html
+          grep -q 'experience-theme.js?build=stable45-human8' index.html
+          grep -q 'render-lifecycle.js?build=stable45-human8' index.html
+          grep -q 'plan-reliability.js?build=stable45-human8' index.html
+          grep -q 'network-reliability.js?build=stable45-human8' index.html
+          grep -q 'family-chat.js?build=stable45-human8' index.html
+          grep -q 'manifest.webmanifest?build=stable45-human8' index.html
+          grep -q 'milkflow-stable45-human8' sw.js
           grep -q 'experience-themes.css' sw.js
           grep -q 'assets/themes/cloud-island.svg' sw.js
           grep -q 'assets/themes/forest-clearing.svg' sw.js
@@ -101,9 +101,11 @@ jobs:
           ! grep -q 'MutationObserver' app-reliability.js
           ! grep -q "Object.defineProperty(Element.prototype,'innerHTML'" *.js
 
-          grep -q '@layer milkflow-core, milkflow-controls, milkflow-selection, milkflow-experience' component-theme.css
-          grep -q 'component-theme-core.css?build=stable45-human7' component-theme.css
-          grep -q 'experience-themes.css?build=stable45-human7' component-theme.css
+          grep -q '@layer milkflow-core, milkflow-experience, milkflow-controls, milkflow-selection' component-theme.css
+          grep -q 'component-theme-core.css?build=stable45-human8' component-theme.css
+          grep -q 'experience-themes.css?build=stable45-human8' component-theme.css
+          grep -q 'display:grid!important;position:fixed!important;z-index:70!important' component-theme.css
+          grep -q 'bottom-nav svg.ico' component-theme.css
           grep -q 'sheet-actions button\[data-diaper="wet"\]' component-theme.css
           grep -q '#diaperDialog:not(.is-edit)' component-theme.css
           grep -q 'choice-row button.on::after' component-theme.css
@@ -115,10 +117,13 @@ jobs:
           ! grep -q 'MutationObserver' experience-theme.js
           grep -q 'cloud-island.svg' experience-themes.css
           grep -q 'forest-clearing.svg' experience-themes.css
+          grep -q 'mf-animal-sticker>svg' experience-themes.css
           grep -q 'mf-last-feed-band + .mf-care-label' experience-themes.css
           grep -q 'mf-feed-zone + .mf-care-label' experience-themes.css
           grep -q 'PUMPING' experience-themes.css
           grep -q 'NURSING' experience-themes.css
+          grep -q 'background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important' experience-themes.css
+          grep -q 'mf-dream-journey' experience-themes.css
 
           grep -q 'overflow-y:auto!important' component-theme-core.css
           grep -q 'bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))' component-theme-core.css
