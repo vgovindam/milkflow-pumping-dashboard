@@ -26,6 +26,10 @@ if(!app.includes("STATE_KEY = 'milkflow-family-v4-state'")&&!app.includes("STATE
 if(!app.includes('function unionById'))throw new Error('Data-contract check failed: merge-by-id logic missing.');
 if(!core.includes("const STATE_KEY='milkflow-family-v4-state'"))throw new Error('Core UI is not bound to the canonical state key.');
 for(const token of ['milkflow-device-id-v1','sourceDeviceId',"collection('devices')"]){if(!alerts.includes(token))throw new Error(`Cross-device alert contract missing: ${token}`);}
+const familyChat=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+const familyChatServer=fs.readFileSync(path.join(ROOT,'functions/family-chat.js'),'utf8');
+for(const token of ["PENDING_KEY='milkflow-family-chat-pending-v1'",'recoverCloudRequest','resumePending','retryRequest',"mode:'status'",'requestId'])if(!familyChat.includes(token))throw new Error(`Family chat recovery contract missing: ${token}`);
+for(const token of ["collection('familyChatRequests')", "mode==='status'", "status:'processing'", "status:'completed'", "${requestId}-user", "${requestId}-assistant"] )if(!familyChatServer.includes(token))throw new Error(`Family chat server recovery contract missing: ${token}`);
 
 const themes=['safari','butterfly','princess','unicorn'];
 for(const theme of themes){
