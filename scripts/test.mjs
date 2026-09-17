@@ -25,12 +25,13 @@ if(!app.includes('function unionById'))throw new Error('Data-contract check fail
 if(!core.includes("const STATE_KEY='milkflow-family-v4-state'"))throw new Error('Core UI is not bound to the canonical state key.');
 for(const token of ['milkflow-device-id-v1','sourceDeviceId',"collection('devices')"]){if(!alerts.includes(token))throw new Error(`Cross-device alert contract missing: ${token}`);}
 
-const themes=['safari','butterfly','princess','unicorn'];
-for(const theme of themes){
-  for(const rel of [`assets/theme-icons/${theme}.svg`,`assets/theme-details/${theme}.svg`,`assets/theme-composite/${theme}.svg`])if(!fs.existsSync(path.join(ROOT,rel)))throw new Error(`Theme asset contract missing: ${rel}`);
-  if(!experience.includes(`theme-composite/${theme}.svg`))throw new Error(`Theme manifest is not using detailed ${theme} scene.`);
+const scene={safari:'assets/themes/safari-world.svg',butterfly:'assets/themes/butterfly-garden.svg',princess:'assets/themes/princess-palace.svg',unicorn:'assets/themes/unicorn-dreams.svg'};
+for(const theme of Object.keys(scene)){
+  for(const rel of [scene[theme],`assets/theme-icons/${theme}.svg`,`assets/theme-details/${theme}.svg`])if(!fs.existsSync(path.join(ROOT,rel)))throw new Error(`Theme asset contract missing: ${rel}`);
+  if(!experience.includes(scene[theme].replace('assets/','./assets/')))throw new Error(`Theme manifest is not using renderable ${theme} scene.`);
+  if(!experience.includes(`theme-details/${theme}.svg`))throw new Error(`Theme manifest is not using independent ${theme} detail layer.`);
   if(!experience.includes(`theme-icons/${theme}.svg`))throw new Error(`Theme manifest is not using independent ${theme} icon sprite.`);
 }
-for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
+for(const token of ['--mf-icon-sprite','--mf-theme-detail','#view::before','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
 for(const token of ['Choose a theme','Make this little adventure yours','Profile &amp; Personalization','Different themes.'])if(!experience.includes(token))throw new Error(`Settings storybook contract missing: ${token}`);
-console.log('MilkFlow test suite passed: syntax, UI contracts, independent theme assets, Settings experience, data preservation, and notification identity.');
+console.log('MilkFlow test suite passed: syntax, renderable theme scenes, independent component/details art, Settings experience, data preservation, and notification identity.');
