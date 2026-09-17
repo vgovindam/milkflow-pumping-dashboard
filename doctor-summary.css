@@ -1,0 +1,176 @@
+/* MilkFlow Doctor Summary component
+   Scoped to the Doctor screen and its print document only. This file does not theme
+   navigation, forms, Mom/Baby home, or shared controls. */
+
+body[data-screen="doctor"] .doctor-summary-card{
+  background:linear-gradient(135deg,#eef8fb 0%,#f4fbf7 100%);
+  border:1px solid #cfe3e5;
+  color:#173641;
+  box-shadow:0 8px 24px rgba(19,54,65,.08);
+}
+body[data-screen="doctor"] .doctor-summary-card>div:first-child{
+  background:#ffffff;
+  color:#227a91;
+  border:1px solid #d7e7eb;
+}
+body[data-screen="doctor"] .doctor-summary-card strong{color:#173641}
+body[data-screen="doctor"] .doctor-summary-card span{color:#59727c}
+body[data-screen="doctor"] .qa-grid>div{
+  background:#ffffff;
+  border-color:#dfe7ea;
+  box-shadow:0 5px 16px rgba(19,54,65,.055);
+}
+body[data-screen="doctor"] .qa-grid span{color:#61717d}
+body[data-screen="doctor"] .qa-grid strong{color:#182632}
+body[data-screen="doctor"] .qa-grid small{color:#657680}
+body[data-screen="doctor"] .panel:has(.daily-table){
+  border-color:#dbe5e8;
+}
+body[data-screen="doctor"] .daily-row:not(.daily-head){
+  background:#fff;
+}
+body[data-screen="doctor"] .daily-date strong{color:#1f2a35}
+body[data-screen="doctor"] .daily-date small,
+body[data-screen="doctor"] .daily-cell span{color:#65727d}
+
+:root[data-theme="dark"] body[data-screen="doctor"] .doctor-summary-card{
+  background:linear-gradient(135deg,#172936 0%,#182c29 100%)!important;
+  border-color:#34505a!important;
+  color:#f4f8fb!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.28)!important;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .doctor-summary-card>div:first-child{
+  background:#101a24!important;
+  color:#72d1ee!important;
+  border-color:#365160!important;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .doctor-summary-card strong{
+  color:#f7fbfd!important;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .doctor-summary-card span{
+  color:#b8cad2!important;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .qa-grid>div{
+  background:#181e2a!important;
+  border-color:#353d4e!important;
+  color:#f5f7fb!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.24)!important;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .qa-grid span{
+  color:#aeb9ca!important;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .qa-grid strong{
+  color:#ffffff!important;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .qa-grid small{
+  color:#bdc7d5!important;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .panel:has(.daily-table){
+  background:#141a24!important;
+  border-color:#313a4a!important;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .daily-row:not(.daily-head){
+  background:#1a202d!important;
+  border-color:#2e3747!important;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .daily-date strong,
+:root[data-theme="dark"] body[data-screen="doctor"] .daily-cell b{
+  color:#f4f7fb;
+}
+:root[data-theme="dark"] body[data-screen="doctor"] .daily-date small,
+:root[data-theme="dark"] body[data-screen="doctor"] .daily-cell span{
+  color:#aab5c5!important;
+}
+
+/* Dedicated print document. It is generated from the currently rendered Doctor Summary
+   so the selected date range and live family data are always the ones printed. */
+.mf-doctor-print{display:none}
+
+@media print{
+  @page{size:auto;margin:12mm}
+  body> .shell,
+  body> .bottom-nav,
+  body> .scrim,
+  body> .sheet,
+  body> .dialog,
+  body> .toast,
+  body> #syncFoot{display:none!important}
+  html,body{
+    background:#fff!important;
+    color:#111!important;
+    font-family:Arial,Helvetica,sans-serif!important;
+    font-size:10pt!important;
+  }
+  .mf-doctor-print{
+    display:block!important;
+    color:#111!important;
+    background:#fff!important;
+    width:100%;
+  }
+  .mf-doctor-print *{box-sizing:border-box;color:inherit!important}
+  .mf-print-header{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:16px;
+    align-items:end;
+    border-bottom:2px solid #111;
+    padding-bottom:8px;
+    margin-bottom:12px;
+  }
+  .mf-print-kicker{
+    font-size:8.5pt;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#444!important;
+  }
+  .mf-print-header h1{
+    font:700 18pt/1.1 Arial,Helvetica,sans-serif!important;
+    margin:2px 0 3px!important;
+    letter-spacing:0!important;
+  }
+  .mf-print-subtitle{font-size:9.5pt;color:#444!important}
+  .mf-print-meta{text-align:right;font-size:8.5pt;line-height:1.45;color:#444!important}
+  .mf-print-section{margin:0 0 12px;break-inside:avoid}
+  .mf-print-section h2{
+    font:700 11pt Arial,Helvetica,sans-serif!important;
+    margin:0 0 5px!important;
+    letter-spacing:0!important;
+  }
+  .mf-print-table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+  }
+  .mf-print-table th,
+  .mf-print-table td{
+    border:1px solid #b8b8b8;
+    padding:5px 6px;
+    vertical-align:top;
+    text-align:left;
+    line-height:1.28;
+  }
+  .mf-print-table th{
+    background:#ededed!important;
+    font-weight:700;
+    font-size:8.5pt;
+  }
+  .mf-print-table td{font-size:9pt}
+  .mf-print-table .metric{width:28%;font-weight:700}
+  .mf-print-table .value{width:27%;font-weight:700}
+  .mf-print-table .note{width:45%;color:#444!important}
+  .mf-print-daily th:nth-child(1){width:25%}
+  .mf-print-daily th:nth-child(n+2){width:auto;text-align:center}
+  .mf-print-daily td:nth-child(n+2){text-align:center}
+  .mf-print-daily td:first-child{font-weight:700}
+  .mf-print-note{
+    border-top:1px solid #999;
+    margin-top:10px;
+    padding-top:6px;
+    color:#555!important;
+    font-size:8pt;
+    line-height:1.35;
+  }
+  .mf-print-source{margin-top:3px;color:#666!important;font-size:7.8pt}
+  .mf-print-empty{padding:8px;border:1px solid #bbb;color:#555!important}
+}
