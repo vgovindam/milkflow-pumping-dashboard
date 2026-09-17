@@ -28,6 +28,7 @@ jobs:
         run: |
           node --check app.js
           node --check app-reliability.js
+          node --check cross-device-alerts.js
           node --check core-ui.js
           node --check experience-theme.js
           node --check doctor-summary.js
@@ -37,10 +38,12 @@ jobs:
           node --check ai-coach-client.js
           node --check app-update-notice.js
           node --check family-chat.js
+          node --check sw.js
           node --check functions/index.js
           node --check functions/index-entry.js
           node --check functions/family-chat.js
           node --check functions/pump-context.js
+          node --check functions/cross-device-alerts.js
           node --check scripts/browser-visual-audit.mjs
           node scripts/ui-audit.mjs
           node scripts/interaction-audit.mjs
@@ -57,7 +60,7 @@ jobs:
 
       - name: Verify canonical production surface
         run: |
-          for f in index.html app.js app-reliability.js core-ui.js experience-theme.js doctor-summary.js render-lifecycle.js plan-reliability.js network-reliability.js ai-coach-client.js app-update-notice.js family-chat.js styles.css component-theme.css component-theme-core.css experience-themes.css jungle-theme.css doctor-summary.css config.js firebase.json .firebaserc; do test -f "$f"; done
+          for f in index.html app.js app-reliability.js cross-device-alerts.js core-ui.js experience-theme.js doctor-summary.js render-lifecycle.js plan-reliability.js network-reliability.js ai-coach-client.js app-update-notice.js family-chat.js styles.css component-theme.css component-theme-core.css experience-themes.css jungle-theme.css doctor-summary.css config.js firebase.json .firebaserc sw.js functions/cross-device-alerts.js; do test -f "$f"; done
           for f in assets/themes/cloud-island.svg assets/themes/forest-clearing.svg assets/themes/jungle-canopy.svg assets/animals/bear.svg assets/animals/rabbit.svg assets/animals/fox.svg assets/animals/owl.svg assets/animals/beaver.svg assets/animals/elephant.svg assets/animals/monkey.svg assets/animals/tiger.svg assets/animals/parrot.svg assets/animals/hippo.svg scripts/interaction-audit.mjs scripts/browser-visual-audit.mjs; do test -f "$f"; done
 
           grep -q 'styles.css?build=stable45-human11' index.html
@@ -68,7 +71,11 @@ jobs:
           grep -q 'experience-theme.js?build=stable45-human11' index.html
           grep -q 'doctor-summary.js?build=stable45-human11' index.html
           grep -q 'manifest.webmanifest?build=stable45-human11' index.html
-          grep -q 'milkflow-stable45-human12' sw.js
+          grep -q 'milkflow-stable45-human13' sw.js
+          grep -q 'cross-device-alerts.js' sw.js
+          grep -q 'firebase-messaging-compat.js' sw.js
+          grep -q 'onBackgroundMessage' sw.js
+          grep -q 'notificationclick' sw.js
           grep -q 'jungle-theme.css' sw.js
           grep -q 'assets/themes/jungle-canopy.svg' sw.js
           grep -q 'assets/animals/elephant.svg' sw.js
@@ -88,6 +95,23 @@ jobs:
           ! grep -q 'subtree:true' render-lifecycle.js
           ! grep -q 'MutationObserver' app-reliability.js
           ! grep -q "Object.defineProperty(Element.prototype,'innerHTML'" *.js
+
+          grep -q 'cross-device-alerts.js?build=stable45-human13' app-reliability.js
+          grep -q 'milkflow-device-id-v1' cross-device-alerts.js
+          grep -q 'sourceDeviceId' cross-device-alerts.js
+          grep -q 'data-cross-device-alert-toggle' cross-device-alerts.js
+          grep -q "watchCollection('entries')" cross-device-alerts.js
+          grep -q "watchCollection('familyEvents')" cross-device-alerts.js
+          grep -q 'getToken(options)' cross-device-alerts.js
+          grep -q "collection('devices')" cross-device-alerts.js
+
+          grep -q 'onDocumentCreated' functions/cross-device-alerts.js
+          grep -q 'notifyMomEntry' functions/cross-device-alerts.js
+          grep -q 'notifyBabyEvent' functions/cross-device-alerts.js
+          grep -q 'sourceDeviceId' functions/cross-device-alerts.js
+          grep -q "collection('devices')" functions/cross-device-alerts.js
+          grep -q 'sendEachForMulticast' functions/cross-device-alerts.js
+          grep -q 'createCrossDeviceAlertFunctions' functions/index-entry.js
 
           grep -q '@layer milkflow-core, milkflow-experience, milkflow-controls, milkflow-selection' component-theme.css
           grep -q 'display:grid!important;position:fixed!important;z-index:70!important' component-theme.css
