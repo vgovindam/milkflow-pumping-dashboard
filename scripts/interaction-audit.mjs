@@ -116,7 +116,7 @@ for (const text of [
   'body[data-screen="mom-home"] .mf-dream-actions .quick-tile.nurse{',
 ]) need('mom dark contrast', experienceCss + jungleCss, text);
 
-for (const text of ['mf-clinical-report','mf-clinical-summary-table','mf-clinical-table','printDoctorReport']) need('clinician doctor report', doctorJs + doctorCss, text);
+for (const text of ['mf-doctor-print','mf-print-table','Clinical snapshot','Daily care log','prepareDoctorPrint']) need('clinician doctor report', doctorJs + doctorCss, text);
 need('doctor component loaded', html, 'doctor-summary.js?build=stable45-human11');
 need('doctor stylesheet loaded', html, 'doctor-summary.css?build=stable45-human11');
 
