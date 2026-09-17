@@ -88,9 +88,10 @@
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-copy small{color:#486a55!important}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-animal-stat{backdrop-filter:none!important}
 
-/* New woodland animal SVG set. The old inline stickers remain the clean-theme artwork. */
+/* New woodland animal SVG set. The old inline stickers remain the clean-theme artwork.
+   Only the sticker's own inline SVG is replaced; functional app/navigation SVGs are never hidden. */
 :root[data-experience-theme="storybook"] .mf-animal-sticker{background-repeat:no-repeat;background-position:center;background-size:contain;filter:drop-shadow(0 3px 4px rgba(46,61,48,.12))}
-:root[data-experience-theme="storybook"] .mf-animal-sticker svg{display:none!important}
+:root[data-experience-theme="storybook"] .mf-animal-sticker>svg{display:none!important}
 :root[data-experience-theme="storybook"] .mf-animal-sticker.bear{background-image:url("./assets/animals/bear.svg")}
 :root[data-experience-theme="storybook"] .mf-animal-sticker.bunny{background-image:url("./assets/animals/rabbit.svg")}
 :root[data-experience-theme="storybook"] .mf-animal-sticker.fox{background-image:url("./assets/animals/fox.svg")}
@@ -112,12 +113,12 @@
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-feed-card{box-shadow:none!important;border:1px solid rgba(65,107,73,.10)!important}
 :root[data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-diaper-blob{box-shadow:none!important;border:1px solid rgba(109,78,43,.10)!important}
 
-/* Other baby pages keep the woodland language through restrained greens, not wallpaper. */
+/* Other pages carry the realm through restrained surfaces, not wallpaper. */
 :root[data-experience-theme="storybook"] body[data-realm="baby"] .panel{border-color:#d8e7d9!important;background:#fffef9!important;box-shadow:0 9px 24px rgba(54,92,63,.06)!important}
 :root[data-experience-theme="storybook"] body[data-realm="baby"] .metric{border-color:#d8e7d9!important;background:linear-gradient(145deg,#fffef9,#f1f7ef)!important}
 :root[data-experience-theme="storybook"] body[data-realm="mom"] .panel{border-color:#e4def0!important;background:#fff!important;box-shadow:0 9px 24px rgba(70,60,121,.06)!important}
 
-/* ---------------------------------------------------------------- dark storybook */
+/* ---------------------------------------------------------------- dark Storybook */
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .main{background:linear-gradient(180deg,#121426,#17182b 58%,#111b28)!important}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="baby"] .main{background:linear-gradient(180deg,#101b18,#15211d 58%,#111a18)!important}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-hero{background-image:linear-gradient(90deg,rgba(39,30,83,.90),rgba(68,45,101,.74),rgba(36,62,90,.42)),url("./assets/themes/cloud-island.svg")!important}
@@ -129,8 +130,43 @@
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-feed-zone + .mf-care-label{background:#392d1d;color:#f4d9ac;border-color:#604b2f}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="baby-home"] .mf-diaper-cluster{background:#211d17;border-color:#453a29}
 :root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="baby"] .panel,
-:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="baby"] .metric{background:#18221f!important;border-color:#2b4035!important}
-:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel{background:#1c1c30!important;border-color:#34324b!important}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="baby"] .metric{background:#18221f!important;border-color:#2b4035!important;color:#f1f7f3!important}
+
+/* Mom dark mode uses one explicit contrast contract. Theme art may change the surface,
+   but titles, labels, values and helper text always have readable foreground tokens. */
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .metric,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .grp,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .row{
+  background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important;box-shadow:0 10px 28px rgba(0,0,0,.18)!important
+}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel h2,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel h3,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel strong,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .metric strong,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .row-main strong,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .grp-row strong{color:#f7f9fd!important}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel p,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .panel small,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .metric span,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .metric small,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .row-main span,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-realm="mom"] .grp-row span{color:#c7cfe0!important;opacity:1!important}
+
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey{
+  background:linear-gradient(180deg,#1b1e31,#20233a)!important;border-color:#393d58!important;color:#f7f8fd!important;box-shadow:0 14px 34px rgba(0,0,0,.24)!important
+}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey .mf-journey-head strong,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey .mf-journey-stop strong{color:#f7f9fd!important}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey p,
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-journey small{color:#c8d0e2!important}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.mom{background:linear-gradient(145deg,#18324c,#213f5e)!important;color:#e5f3ff!important;border-color:#34566f!important}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.mom:before{background:#253f58;color:#cfe9ff}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.nurse{background:linear-gradient(145deg,#402236,#512941)!important;color:#ffe1ed!important;border-color:#683b52!important}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile.nurse:before{background:#5b3048;color:#ffd8e8}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile small{color:rgba(255,255,255,.82)!important}
+:root[data-theme="dark"][data-experience-theme="storybook"] body[data-screen="mom-home"] .mf-dream-metrics .metric{background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important}
+
 :root[data-theme="dark"] .mf-experience-option{background:#202532;border-color:#394153;color:#f6f8fc}
 :root[data-theme="dark"] .mf-experience-option small{color:#bac4d3}
 :root[data-theme="dark"] .mf-experience-preview.clean .clean{background:linear-gradient(145deg,#222633,#171b25)}
