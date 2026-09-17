@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" role="img" aria-label="Soft woodland forest clearing">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#dff4e9"/><stop offset=".58" stop-color="#b8e0c8"/><stop offset="1" stop-color="#7fbd92"/></linearGradient>
+  <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#86bd78"/><stop offset="1" stop-color="#4f8b5e"/></linearGradient>
+  <radialGradient id="sun"><stop stop-color="#fff6bd"/><stop offset=".45" stop-color="#ffe89f"/><stop offset="1" stop-color="#ffe89f" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="1200" height="520" fill="url(#sky)"/>
+<circle cx="950" cy="86" r="120" fill="url(#sun)"/>
+<path d="M0 350c140-82 290-104 444-62 126 34 245 28 356-5 141-42 273-23 400 48v189H0Z" fill="url(#ground)"/>
+<g fill="#356c4b" opacity=".95">
+  <path d="M70 0h118v520H70z"/><path d="M1000 0h128v520h-128z"/>
+  <ellipse cx="116" cy="72" rx="175" ry="125"/><ellipse cx="1082" cy="86" rx="190" ry="136"/>
+</g>
+<g fill="#4f8c61" opacity=".96">
+  <ellipse cx="300" cy="84" rx="168" ry="90"/><ellipse cx="512" cy="48" rx="190" ry="98"/><ellipse cx="720" cy="72" rx="164" ry="94"/><ellipse cx="888" cy="48" rx="150" ry="88"/>
+</g>
+<g fill="#76a96f" opacity=".8"><circle cx="248" cy="208" r="54"/><circle cx="340" cy="222" r="64"/><circle cx="854" cy="232" r="62"/><circle cx="936" cy="211" r="50"/></g>
+<g fill="#e8f6d7"><circle cx="205" cy="331" r="7"/><circle cx="790" cy="343" r="6"/><circle cx="894" cy="315" r="5"/></g>
+<g fill="#f3d28f"><circle cx="230" cy="356" r="5"/><circle cx="812" cy="369" r="4"/><circle cx="923" cy="348" r="4"/></g>
+</svg>
