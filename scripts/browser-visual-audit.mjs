@@ -16,9 +16,20 @@ const chrome=candidates.find(c=>spawnSync('which',[c],{encoding:'utf8'}).status=
 if(!chrome){console.error('Browser visual audit failed: Chrome/Chromium not available');process.exitCode=1;server.close();process.exit();}
 const exe=spawnSync('which',[chrome],{encoding:'utf8'}).stdout.trim();
 const proc=spawn(exe,['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--remote-debugging-port=9222','--user-data-dir=/tmp/milkflow-visual-audit','--window-size=390,844','about:blank'],{stdio:'ignore'});
-let wsUrl;
-for(let i=0;i<60&&!wsUrl;i++){try{const list=await fetch('http://127.0.0.1:9222/json');const tabs=await list.json();wsUrl=tabs[0]?.webSocketDebuggerUrl;}catch{}if(!wsUrl)await sleep(100);}
-if(!wsUrl){proc.kill();server.close();throw new Error('Could not connect to Chrome DevTools');}
+
+let debugging=false;
+for(let i=0;i<60&&!debugging;i++){
+  try{const r=await fetch('http://127.0.0.1:9222/json/version');debugging=r.ok;}catch{}
+  if(!debugging)await sleep(100);
+}
+if(!debugging){proc.kill();server.close();throw new Error('Could not start Chrome DevTools');}
+
+const appUrl='http://127.0.0.1:4173/?visual-audit=1#mom-home';
+const targetRes=await fetch(`http://127.0.0.1:9222/json/new?${encodeURIComponent(appUrl)}`,{method:'PUT'});
+if(!targetRes.ok){proc.kill();server.close();throw new Error(`Could not create app page target (${targetRes.status})`);}
+const target=await targetRes.json();
+const wsUrl=target.webSocketDebuggerUrl;
+if(!wsUrl){proc.kill();server.close();throw new Error('App target has no DevTools websocket');}
 
 const ws=new WebSocket(wsUrl);await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject;});
 let seq=0;const pending=new Map();
@@ -28,13 +39,14 @@ const evalJs=async expression=>{const r=await cdp('Runtime.evaluate',{expression
 
 await cdp('Page.enable');await cdp('Runtime.enable');
 await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true,screenWidth:390,screenHeight:844});
-await cdp('Page.navigate',{url:'http://127.0.0.1:4173/?visual-audit=1#mom-home'});await sleep(3200);
+await sleep(3200);
 await evalJs("document.documentElement.classList.remove('mf-booting')");
 
 const routes=['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','more','settings','set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about'];
 const failures=[];const report=[];
-const initial=await evalJs(`(()=>({screen:document.body.dataset.screen||'',realm:document.body.dataset.realm||'',hash:location.hash,views:document.querySelectorAll('[data-view]').length,viewChildren:document.getElementById('view')?.children.length||0,text:(document.body.innerText||'').slice(0,160)}))()`);
+const initial=await evalJs(`(()=>({href:location.href,screen:document.body.dataset.screen||'',realm:document.body.dataset.realm||'',hash:location.hash,views:document.querySelectorAll('[data-view]').length,viewChildren:document.getElementById('view')?.children.length||0,text:(document.body.innerText||'').slice(0,160)}))()`);
 console.log('Browser audit initial state:',JSON.stringify(initial));
+if(!initial.href.startsWith('http://127.0.0.1:4173/')) failures.push(`audit harness attached to wrong page: ${initial.href}`);
 
 async function reach(route){
   await evalJs(`location.hash=${JSON.stringify('#'+route)}`);
