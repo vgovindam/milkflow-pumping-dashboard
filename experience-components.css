@@ -1,0 +1,127 @@
+/* MilkFlow themed component contract.
+   This file owns only new theme-aware component surfaces. It does not repair or override
+   unrelated core layout, routing, forms, data, navigation or notification behavior. */
+
+:root:not([data-experience-theme="clean"]){
+  --mf-sprite-size:800% 100%;
+  --mf-sprite-milk:0% 50%;
+  --mf-sprite-nurse:14.2857% 50%;
+  --mf-sprite-formula:28.5714% 50%;
+  --mf-sprite-wet:42.8571% 50%;
+  --mf-sprite-poop:57.1429% 50%;
+  --mf-sprite-mixed:71.4286% 50%;
+  --mf-sprite-pump:85.7143% 50%;
+  --mf-sprite-nursing:100% 50%;
+}
+
+/* Each care component gets its own themed illustration layer. The canonical semantic
+   icon remains underneath as a safe fallback, so an art asset cannot break the action. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card::after,
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob::after{
+  content:"";position:absolute;left:9px;top:9px;width:56px;height:56px;z-index:2;
+  border-radius:50%;background-color:rgba(255,255,255,.84);background-image:var(--mf-icon-sprite);
+  background-repeat:no-repeat;background-size:var(--mf-sprite-size);box-shadow:inset 0 0 0 1px rgba(255,255,255,.62),0 5px 12px rgba(42,55,52,.10);
+  pointer-events:none
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.milk::after{background-position:var(--mf-sprite-milk)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.nurse::after{background-position:var(--mf-sprite-nurse)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.formula::after{background-position:var(--mf-sprite-formula)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.wet::after{background-position:var(--mf-sprite-wet)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.poop::after{background-position:var(--mf-sprite-poop)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.both::after{background-position:var(--mf-sprite-mixed)}
+
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin{position:relative}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin::after{
+  content:"";position:absolute;left:10px;top:50%;width:43px;height:43px;transform:translateY(-50%);z-index:2;
+  border-radius:50%;background:rgba(255,255,255,.84) var(--mf-icon-sprite) no-repeat;
+  background-size:var(--mf-sprite-size);background-position:var(--mf-sprite-milk);box-shadow:inset 0 0 0 1px rgba(255,255,255,.62);pointer-events:none
+}
+
+/* Mom tiles keep their existing action contract but the visible art changes with the
+   selected family world. */
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile .tile-art{overflow:hidden;border-radius:50%}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile .tile-art::after{
+  content:"";position:absolute;inset:-2px;z-index:3;border-radius:50%;background-color:rgba(255,255,255,.88);
+  background-image:var(--mf-icon-sprite);background-repeat:no-repeat;background-size:var(--mf-sprite-size);pointer-events:none
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"] .tile-art::after{background-position:var(--mf-sprite-pump)}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"] .tile-art::after{background-position:var(--mf-sprite-nursing)}
+
+/* Settings is an immersive but readable scene, following the supplied storybook
+   reference while retaining all existing MilkFlow settings below it. */
+body[data-screen="settings"] .page-head{position:relative;min-height:124px;padding:22px 112px 18px 28px;display:grid;align-content:center;overflow:visible;background:transparent;border:0;box-shadow:none;text-align:center}
+body[data-screen="settings"] .page-head>div{position:relative;z-index:2}
+body[data-screen="settings"] .page-head .eyebrow{display:none}
+body[data-screen="settings"] .page-head h2{font-size:34px;line-height:1;color:var(--mf-world-text,var(--ink));text-shadow:0 2px 15px rgba(255,255,255,.45)}
+body[data-screen="settings"] .mf-settings-subtitle{position:relative;z-index:2;margin:8px -80px 0 0;color:var(--mf-world-muted,var(--muted));font-size:13px;font-weight:700;line-height:1.25}
+body[data-screen="settings"] .mf-settings-corner-art{position:absolute;right:8px;top:6px;width:92px;height:92px;border-radius:46% 54% 48% 52%;background:var(--mf-icon-sprite) no-repeat;background-size:var(--mf-sprite-size);background-position:var(--mf-sprite-milk);filter:drop-shadow(0 10px 16px rgba(40,56,44,.16));pointer-events:none}
+
+body[data-screen="settings"] .mf-settings-theme-panel{margin-top:0;padding:20px;border-radius:31px;background:rgba(255,253,245,.94);border:1px solid rgba(255,255,255,.70);box-shadow:0 18px 42px rgba(55,65,49,.15);backdrop-filter:blur(18px) saturate(1.04)}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-intro{margin-bottom:16px}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-intro h3{font-size:30px;color:#18372a}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-intro p{margin-top:5px;font-size:12.5px;color:#667066}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-options{gap:10px!important}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-option{border-radius:22px!important;background:rgba(255,253,247,.96)!important;border:1px solid rgba(81,105,81,.13)!important;box-shadow:0 8px 18px rgba(64,74,58,.09)!important}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-preview{height:132px!important;min-height:132px!important;flex-basis:132px!important;background:#eef2e8!important}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-preview img{object-position:center 28%}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-copy{min-height:65px!important;padding:10px 12px 12px!important}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-copy strong{font-size:14.5px;color:#202821}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-copy small{font-size:9.8px;color:#677067}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-option[aria-pressed="true"]{border-color:#3e7a59!important;box-shadow:inset 0 0 0 2px rgba(62,122,89,.62),0 9px 22px rgba(52,86,60,.13)!important}
+body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-option[aria-pressed="true"]::after{background:#3e7a59}
+
+.mf-settings-shortcuts{margin-top:13px;padding:8px 16px;border-radius:29px;background:rgba(255,253,245,.95);border:1px solid rgba(255,255,255,.72);box-shadow:0 16px 36px rgba(55,65,49,.13);backdrop-filter:blur(18px)}
+.mf-settings-row{width:100%;min-height:72px;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:13px;align-items:center;padding:10px 0;border:0;border-bottom:1px solid rgba(65,82,70,.10);background:transparent;color:#1e2b23;text-align:left;font:inherit}
+.mf-settings-row:last-child{border-bottom:0}
+.mf-settings-row>span:nth-child(2){min-width:0}
+.mf-settings-row strong{display:block;font-size:15px;font-weight:850;line-height:1.2}
+.mf-settings-row small{display:block;margin-top:3px;color:#6d746e;font-size:10.8px;font-weight:650;line-height:1.3}
+.mf-settings-row>b{font-size:30px;font-weight:400;color:#647068;line-height:1}
+.mf-settings-row-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:17px;background:#e5f0df;position:relative}
+.mf-settings-row-icon::before{content:"";width:25px;height:25px;display:block;background:#1f6545;mask-size:contain;mask-repeat:no-repeat;mask-position:center;-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;-webkit-mask-position:center}
+.mf-settings-row-icon.moon::before{mask-image:radial-gradient(circle at 68% 34%,transparent 0 34%,#000 35% 100%);-webkit-mask-image:radial-gradient(circle at 68% 34%,transparent 0 34%,#000 35% 100%)}
+.mf-settings-row-icon.bell::before{clip-path:polygon(42% 0,58% 0,63% 13%,72% 18%,80% 30%,83% 65%,95% 80%,95% 88%,5% 88%,5% 80%,17% 65%,20% 30%,28% 18%,37% 13%);background:#1f6545}
+.mf-settings-row-icon.profile::before{border-radius:50%;background:radial-gradient(circle at 50% 34%,#1f6545 0 21%,transparent 22%),radial-gradient(ellipse at 50% 92%,#1f6545 0 43%,transparent 44%)}
+.mf-settings-row-icon.family::before{background:radial-gradient(circle at 33% 32%,#1f6545 0 18%,transparent 19%),radial-gradient(circle at 72% 35%,#1f6545 0 15%,transparent 16%),radial-gradient(ellipse at 35% 92%,#1f6545 0 38%,transparent 39%),radial-gradient(ellipse at 73% 88%,#1f6545 0 31%,transparent 32%)}
+.mf-settings-switch{width:50px;height:30px;border-radius:999px;background:#e6e4dc;box-shadow:inset 0 0 0 1px rgba(54,66,57,.10);position:relative}
+.mf-settings-switch::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(43,52,45,.16);transition:transform .18s ease}
+.mf-settings-switch.on{background:#458464}.mf-settings-switch.on::after{transform:translateX(20px)}
+.mf-settings-motto{margin:14px auto 22px;max-width:520px;min-height:70px;display:grid;grid-template-columns:42px minmax(0,1fr) 28px;align-items:center;gap:8px;padding:13px 18px;border-radius:28px;background:rgba(235,247,231,.91);border:1px dashed rgba(64,112,76,.27);box-shadow:0 9px 24px rgba(48,71,51,.09);color:#356149}
+.mf-settings-motto>span{font-size:34px;line-height:1}.mf-settings-motto strong{font-size:13px;line-height:1.35;font-weight:760}.mf-settings-motto i{font:700 25px/1 var(--display);font-style:normal}
+
+/* Existing settings remain available below the storybook controls and inherit the same
+   cream surface rather than becoming a separate visual system. */
+body[data-screen="settings"] #view>.data-status,body[data-screen="settings"] #view>.grp{border-radius:24px;background:rgba(255,253,245,.90);border-color:rgba(78,100,80,.12);box-shadow:0 11px 27px rgba(57,68,53,.10);backdrop-filter:blur(15px)}
+
+:root[data-theme="dark"] body[data-screen="settings"] .page-head h2{color:#f6f7f3;text-shadow:0 2px 14px rgba(0,0,0,.28)}
+:root[data-theme="dark"] body[data-screen="settings"] .mf-settings-subtitle{color:#c7d0c7}
+:root[data-theme="dark"] body[data-screen="settings"] .mf-settings-theme-panel,
+:root[data-theme="dark"] .mf-settings-shortcuts,
+:root[data-theme="dark"] body[data-screen="settings"] #view>.data-status,
+:root[data-theme="dark"] body[data-screen="settings"] #view>.grp{background:rgba(22,27,28,.92);border-color:rgba(222,232,224,.13);color:#f3f6f3}
+:root[data-theme="dark"] body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-intro h3,
+:root[data-theme="dark"] body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-copy strong,
+:root[data-theme="dark"] .mf-settings-row{color:#f3f6f3}
+:root[data-theme="dark"] body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-intro p,
+:root[data-theme="dark"] body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-copy small,
+:root[data-theme="dark"] .mf-settings-row small{color:#c2cbc3}
+:root[data-theme="dark"] body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-option{background:rgba(31,36,39,.96)!important;border-color:rgba(229,236,230,.13)!important}
+:root[data-theme="dark"] .mf-settings-row{border-bottom-color:rgba(233,239,234,.10)}
+:root[data-theme="dark"] .mf-settings-row-icon{background:#243b31}.mf-settings-row-icon::before{background:#91d2ad}
+:root[data-theme="dark"] .mf-settings-motto{background:rgba(28,49,38,.90);border-color:rgba(142,196,157,.30);color:#cce6d4}
+
+@media(max-width:430px){
+  body[data-screen="settings"] .page-head{min-height:112px;padding:18px 92px 12px 16px}
+  body[data-screen="settings"] .page-head h2{font-size:31px}
+  body[data-screen="settings"] .mf-settings-subtitle{margin-right:-65px;font-size:12px}
+  body[data-screen="settings"] .mf-settings-corner-art{right:0;top:4px;width:82px;height:82px}
+  body[data-screen="settings"] .mf-settings-theme-panel{padding:15px;border-radius:27px}
+  body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-intro h3{font-size:27px}
+  body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-preview{height:116px!important;min-height:116px!important;flex-basis:116px!important}
+  body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-copy{min-height:62px!important;padding:9px 10px 10px!important}
+  body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-copy strong{font-size:13.5px}
+  .mf-settings-shortcuts{padding:6px 13px}.mf-settings-row{min-height:68px;grid-template-columns:48px minmax(0,1fr) auto;gap:11px}.mf-settings-row-icon{width:44px;height:44px;border-radius:15px}
+  .mf-settings-motto{margin-bottom:16px}
+  :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card::after,
+  :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob::after{width:52px;height:52px}
+}
