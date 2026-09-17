@@ -68,7 +68,7 @@ jobs:
           grep -q 'experience-theme.js?build=stable45-human11' index.html
           grep -q 'doctor-summary.js?build=stable45-human11' index.html
           grep -q 'manifest.webmanifest?build=stable45-human11' index.html
-          grep -q 'milkflow-stable45-human11' sw.js
+          grep -q 'milkflow-stable45-human12' sw.js
           grep -q 'jungle-theme.css' sw.js
           grep -q 'assets/themes/jungle-canopy.svg' sw.js
           grep -q 'assets/animals/elephant.svg' sw.js
@@ -101,6 +101,8 @@ jobs:
           grep -q 'data-experience-theme-pick="clean"' experience-theme.js
           grep -q 'Jungle Canopy for Baby' experience-theme.js
           grep -q 'mf-theme-animal' experience-theme.js
+          grep -q 'function afterCanonicalRender' experience-theme.js
+          grep -q "milkflow:experience-theme-change',afterCanonicalRender" experience-theme.js
           ! grep -q 'MutationObserver' experience-theme.js
 
           grep -q 'cloud-island.svg' experience-themes.css
@@ -112,6 +114,10 @@ jobs:
           ! grep -q 'body\[data-realm="family"\] .main' experience-themes.css
           ! grep -q 'body\[data-realm="family"\] .main' jungle-theme.css
           ! grep -q 'bottom-nav' jungle-theme.css
+
+          grep -q 'expectedArt' scripts/browser-visual-audit.mjs
+          grep -q 'themed artwork is not visibly active' scripts/browser-visual-audit.mjs
+          grep -q 'naturalWidth' scripts/browser-visual-audit.mjs
 
           grep -q 'mf-doctor-print' doctor-summary.js
           grep -q 'mf-print-table' doctor-summary.js
