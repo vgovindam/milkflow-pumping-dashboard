@@ -8,7 +8,8 @@ const version=JSON.parse(fs.readFileSync(path.join(ROOT,'version.json'),'utf8'))
 const fail=[];
 const must=['index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-themes.css','experience-system.css','experience-components.css','doctor-summary.css','app.js','cross-device-alerts.js','experience-theme.js','sw.js','manifest.webmanifest','build-manifest.json'];
 for(const f of must)if(!fs.existsSync(path.join(DIST,f)))fail.push(`missing dist/${f}`);
-for(const theme of ['safari','butterfly','princess','unicorn'])for(const rel of [`assets/theme-icons/${theme}.svg`,`assets/theme-details/${theme}.svg`,`assets/theme-composite/${theme}.svg`])if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
+const scene={safari:'assets/themes/safari-world.svg',butterfly:'assets/themes/butterfly-garden.svg',princess:'assets/themes/princess-palace.svg',unicorn:'assets/themes/unicorn-dreams.svg'};
+for(const theme of Object.keys(scene))for(const rel of [scene[theme],`assets/theme-icons/${theme}.svg`,`assets/theme-details/${theme}.svg`])if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
 const textFiles=[];
 function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())walk(p);else if(/\.(?:html|css|js|json|webmanifest|svg)$/.test(e.name))textFiles.push(p);}}
 if(fs.existsSync(DIST))walk(DIST);
@@ -31,4 +32,4 @@ for(const ref of [...index.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(m=>m[
   if(rel&&!fs.existsSync(path.join(DIST,rel)))fail.push(`broken index reference: ${ref}`);
 }
 if(fail.length){console.error(fail.map(x=>`- ${x}`).join('\n'));process.exit(1);}
-console.log(`Production audit passed for MilkFlow ${version}: canonical assets, independent theme components, service worker, data key, and notification contract are aligned.`);
+console.log(`Production audit passed for MilkFlow ${version}: renderable theme scenes, independent themed components, service worker, data key, and notification contract are aligned.`);
