@@ -36,6 +36,7 @@ jobs:
           node --check ai-coach-client.js
           node --check app-update-notice.js
           node --check family-chat.js
+          node --check doctor-summary.js
           node --check functions/index.js
           node --check functions/index-entry.js
           node --check functions/family-chat.js
@@ -67,10 +68,12 @@ jobs:
           test -f ai-coach-client.js
           test -f app-update-notice.js
           test -f family-chat.js
+          test -f doctor-summary.js
           test -f styles.css
           test -f component-theme.css
           test -f component-theme-core.css
           test -f experience-themes.css
+          test -f doctor-summary.css
           test -f assets/themes/cloud-island.svg
           test -f assets/themes/forest-clearing.svg
           test -f assets/animals/bear.svg
@@ -84,17 +87,21 @@ jobs:
           test -f firebase.json
           test -f .firebaserc
 
-          grep -q 'styles.css?build=stable45-human9' index.html
-          grep -q 'component-theme.css?build=stable45-human9' index.html
-          grep -q 'app.js?build=stable45-human9' index.html
-          grep -q 'core-ui.js?build=stable45-human9' index.html
-          grep -q 'experience-theme.js?build=stable45-human9' index.html
-          grep -q 'render-lifecycle.js?build=stable45-human9' index.html
-          grep -q 'plan-reliability.js?build=stable45-human9' index.html
-          grep -q 'network-reliability.js?build=stable45-human9' index.html
-          grep -q 'family-chat.js?build=stable45-human9' index.html
-          grep -q 'manifest.webmanifest?build=stable45-human9' index.html
-          grep -q 'milkflow-stable45-human9' sw.js
+          grep -q 'styles.css?build=stable45-human10' index.html
+          grep -q 'component-theme.css?build=stable45-human10' index.html
+          grep -q 'doctor-summary.css?build=stable45-human10' index.html
+          grep -q 'app.js?build=stable45-human10' index.html
+          grep -q 'core-ui.js?build=stable45-human10' index.html
+          grep -q 'experience-theme.js?build=stable45-human10' index.html
+          grep -q 'render-lifecycle.js?build=stable45-human10' index.html
+          grep -q 'plan-reliability.js?build=stable45-human10' index.html
+          grep -q 'network-reliability.js?build=stable45-human10' index.html
+          grep -q 'family-chat.js?build=stable45-human10' index.html
+          grep -q 'doctor-summary.js?build=stable45-human10' index.html
+          grep -q 'manifest.webmanifest?build=stable45-human10' index.html
+          grep -q 'milkflow-stable45-human10' sw.js
+          grep -q 'doctor-summary.css' sw.js
+          grep -q 'doctor-summary.js' sw.js
           grep -q 'experience-themes.css' sw.js
           grep -q 'assets/themes/cloud-island.svg' sw.js
           grep -q 'assets/themes/forest-clearing.svg' sw.js
@@ -140,6 +147,12 @@ jobs:
           grep -q 'background:#1c2030!important;border-color:#353b50!important;color:#f6f8fd!important' experience-themes.css
           grep -q 'mf-dream-journey' experience-themes.css
           ! grep -q 'body\[data-realm="family"\] .main' experience-themes.css
+
+          grep -q 'mf-doctor-print' doctor-summary.css
+          grep -q 'Clinical snapshot' doctor-summary.js
+          grep -q 'Daily care log' doctor-summary.js
+          grep -q 'beforeprint' doctor-summary.js
+          grep -q 'body\[data-screen="doctor"\]' doctor-summary.css
 
           grep -q 'overflow-y:auto!important' component-theme-core.css
           grep -q 'bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))' component-theme-core.css
