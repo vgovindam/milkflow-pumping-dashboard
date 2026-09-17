@@ -1,21 +1,62 @@
 (() => {
 'use strict';
 
-/* MilkFlow experience controller v3.
-   Theme selection is a realm-wide preference. It never replaces semantic icons or
-   modifies care data. Core UI owns interaction; this controller owns only the selected world. */
+/* MilkFlow experience controller.
+   One manifest owns the selected visual world. It does not own care data, routing,
+   form state, Firestore, notifications, or semantic care icons. */
 const KEY='milkflow-experience-theme-v1';
 const THEMES=new Set(['safari','butterfly','princess','unicorn','clean']);
 const root=document.documentElement;
+
+const THEME_MANIFEST={
+  safari:{
+    title:'Safari Adventure',
+    subtitle:'Wild days, bigger dreams',
+    preview:'./assets/themes/safari-world.svg',
+    babyScene:'./assets/themes/safari-world.svg',
+    momPortal:'./assets/themes/safari-adventure.svg'
+  },
+  butterfly:{
+    title:'Butterfly Garden',
+    subtitle:'Little moments, big magic',
+    preview:'./assets/themes/butterfly-garden.svg',
+    babyScene:'./assets/themes/butterfly-garden.svg',
+    momPortal:'./assets/themes/butterfly-garden.svg'
+  },
+  princess:{
+    title:'Princess Palace',
+    subtitle:'Kind hearts change the world',
+    preview:'./assets/themes/princess-palace.svg',
+    babyScene:'./assets/themes/princess-palace.svg',
+    momPortal:'./assets/themes/princess-palace.svg'
+  },
+  unicorn:{
+    title:'Unicorn Dreams',
+    subtitle:'Believe in brighter tomorrows',
+    preview:'./assets/themes/unicorn-dreams.svg',
+    babyScene:'./assets/themes/unicorn-dreams.svg',
+    momPortal:'./assets/themes/unicorn-dreams.svg'
+  },
+  clean:{
+    title:'Clean',
+    subtitle:'Quiet MilkFlow canvas',
+    preview:'',babyScene:'',momPortal:''
+  }
+};
 
 function normalize(value){
   if(value==='jungle'||value==='storybook')return 'safari';
   return THEMES.has(value)?value:'safari';
 }
 function read(){try{return normalize(localStorage.getItem(KEY));}catch{return 'safari';}}
+function assetUrl(path){return path?`url("${path}")`:'none';}
 function apply(name=read()){
-  const value=normalize(name);
+  const value=normalize(name),theme=THEME_MANIFEST[value];
   root.dataset.experienceTheme=value;
+  root.style.setProperty('--mf-theme-baby-scene',assetUrl(theme.babyScene));
+  root.style.setProperty('--mf-theme-mom-portal',assetUrl(theme.momPortal));
+  root.style.setProperty('--mf-theme-name',JSON.stringify(theme.title));
+  root.style.setProperty('--mf-theme-tagline',JSON.stringify(theme.subtitle));
   document.querySelectorAll('[data-experience-theme-pick]').forEach(btn=>{
     btn.setAttribute('aria-pressed',String(btn.dataset.experienceThemePick===value));
   });
@@ -43,16 +84,16 @@ function settingsPanel(){
     panel.className='panel mf-experience-panel';
     panel.innerHTML=`
       <div class="mf-experience-intro">
-        <div><h3>Choose your family world</h3><p>The selected world follows both Vinni and Saahas across Home, History, Trends, Growth, Stash, Development and Doctor pages.</p></div>
+        <div><h3>Choose your family world</h3><p>The artwork you choose is the artwork you see on the real Mom and Baby pages — not just a settings preview.</p></div>
         <span class="mf-experience-scope">Mom + Baby</span>
       </div>
       <div class="mf-experience-options" role="group" aria-label="Experience theme">
-        ${themeCard('safari','Safari Adventure','Giraffe, lion, tiger and warm jungle scenery','./assets/themes/safari-world-v2.svg')}
-        ${themeCard('butterfly','Butterfly Garden','Soft garden skies and butterfly magic','./assets/themes/butterfly-garden.svg')}
-        ${themeCard('princess','Princess Palace','A gentle palace world with warm jewel tones','./assets/themes/princess-palace.svg')}
-        ${themeCard('unicorn','Unicorn Dreams','Moonlight, clouds and dreamy pastel skies','./assets/themes/unicorn-dreams.svg')}
+        ${themeCard('safari','Safari Adventure','Wild days, bigger dreams','./assets/themes/safari-world.svg')}
+        ${themeCard('butterfly','Butterfly Garden','Little moments, big magic','./assets/themes/butterfly-garden.svg')}
+        ${themeCard('princess','Princess Palace','Kind hearts change the world','./assets/themes/princess-palace.svg')}
+        ${themeCard('unicorn','Unicorn Dreams','Believe in brighter tomorrows','./assets/themes/unicorn-dreams.svg')}
       </div>
-      <button type="button" class="mf-experience-clean" data-experience-theme-pick="clean" aria-pressed="false"><span>Minimal</span><small>Keep Mom and Baby pages on the clean MilkFlow canvas</small></button>`;
+      <button type="button" class="mf-experience-clean" data-experience-theme-pick="clean" aria-pressed="false"><span>Clean</span><small>Use the restrained MilkFlow canvas without illustrated scenery</small></button>`;
     const firstPanel=view.querySelector('.panel');
     if(firstPanel)firstPanel.insertAdjacentElement('beforebegin',panel);else view.appendChild(panel);
   }
@@ -66,6 +107,7 @@ function afterCanonicalRender(){
   queueMicrotask(()=>requestAnimationFrame(()=>{queued=false;syncThemeUi();}));
 }
 
+window.MilkFlowExperience={manifest:THEME_MANIFEST,current:read,apply,save};
 apply();
 document.addEventListener('click',e=>{
   const btn=e.target.closest('[data-experience-theme-pick]');
