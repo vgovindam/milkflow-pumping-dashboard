@@ -2,8 +2,8 @@
    The established component system lives in component-theme-core.css. This file defines
    named cascade layers so focused component contracts have an explicit priority instead
    of relying on accidental source order or one-off patch stylesheets. */
-@layer milkflow-core, milkflow-controls;
-@import url("./component-theme-core.css?build=stable45-human5") layer(milkflow-core);
+@layer milkflow-core, milkflow-controls, milkflow-selection;
+@import url("./component-theme-core.css?build=stable45-human6") layer(milkflow-core);
 
 @layer milkflow-controls {
   /* Entry sheets and dialogs must remain legible in both themes. The care picker uses
@@ -119,4 +119,77 @@
   :root[data-theme="dark"] .step-value input{color:#f8faff!important;-webkit-text-fill-color:#f8faff!important}
   :root[data-theme="dark"] .step-value span,
   :root[data-theme="dark"] .auth-helper{color:#b8c1d1!important}
+}
+
+@layer milkflow-selection {
+  /* A direct diaper quick action already answers Wet / Poopy / Mixed. Do not ask the
+     same question again. Editing still exposes Kind so an existing record can be corrected. */
+  #diaperDialog:not(.is-edit) .form-section:has([data-choice="diaperKind"]){display:none!important}
+
+  /* Durable selected-state contract. Controls set .on/.active/.sel in JavaScript; this
+     layer owns how that state looks so dark-mode base surfaces can never paint over it. */
+  .choice-row button{position:relative}
+  .choice-row button.on{
+    border-color:var(--accent,var(--mom))!important;
+    background:color-mix(in srgb,var(--accent,var(--mom)) 18%,var(--surface))!important;
+    color:var(--ink)!important;
+    box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 35%,transparent),0 5px 14px rgba(25,28,44,.10)!important
+  }
+  .choice-row button.on::after{
+    content:"✓";position:absolute;top:7px;right:8px;width:20px;height:20px;border-radius:50%;
+    display:grid;place-items:center;background:var(--accent,var(--mom));color:#fff;font-size:12px;font-weight:900;line-height:1
+  }
+  .when-quick button.on,
+  .segmented button.on,
+  .pills button.active,
+  .day-chip.sel,
+  .theme-opt.on{
+    border-color:var(--accent,var(--mom))!important;
+    box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 28%,transparent)!important
+  }
+  .when-quick button.on{background:color-mix(in srgb,var(--accent,var(--mom)) 14%,var(--surface))!important;color:var(--ink)!important}
+
+  /* Diaper correction while editing keeps semantic colour, not a generic black tile. */
+  #diaperDialog .choice-row button[data-pick="diaperKind:wet"].on{
+    background:#dff3ff!important;border-color:#55acd5!important;color:#155b7a!important
+  }
+  #diaperDialog .choice-row button[data-pick="diaperKind:poop"].on{
+    background:#fff0d2!important;border-color:#d59e46!important;color:#704918!important
+  }
+  #diaperDialog .choice-row button[data-pick="diaperKind:both"].on{
+    background:#eee6ff!important;border-color:#9073d6!important;color:#513890!important
+  }
+  #momDialog .choice-row button.on{background:#eee7ff!important;border-color:#8c6bd7!important;color:#52378f!important}
+  #feedDialog .choice-row button.on{background:#e0f5ed!important;border-color:#52a98d!important;color:#1f6653!important}
+
+  :root[data-theme="dark"] .choice-row button.on{
+    background:linear-gradient(145deg,#33394b,#3b4256)!important;border-color:#8b9ab6!important;
+    color:#fff!important;box-shadow:inset 0 0 0 2px rgba(220,230,248,.18),0 6px 18px rgba(0,0,0,.24)!important
+  }
+  :root[data-theme="dark"] .choice-row button.on::after{background:#eef4ff!important;color:#18202d!important}
+  :root[data-theme="dark"] #diaperDialog .choice-row button[data-pick="diaperKind:wet"].on{
+    background:linear-gradient(145deg,#1d4358,#23536d)!important;border-color:#77c8ed!important;color:#e9f9ff!important
+  }
+  :root[data-theme="dark"] #diaperDialog .choice-row button[data-pick="diaperKind:poop"].on{
+    background:linear-gradient(145deg,#4a351a,#5b4322)!important;border-color:#e1ad60!important;color:#fff3db!important
+  }
+  :root[data-theme="dark"] #diaperDialog .choice-row button[data-pick="diaperKind:both"].on{
+    background:linear-gradient(145deg,#3b2e55,#4c3a6e)!important;border-color:#b69ae9!important;color:#f7f1ff!important
+  }
+  :root[data-theme="dark"] #momDialog .choice-row button.on{
+    background:linear-gradient(145deg,#3b2e55,#4a386b)!important;border-color:#b497ee!important;color:#fbf8ff!important
+  }
+  :root[data-theme="dark"] #feedDialog .choice-row button.on{
+    background:linear-gradient(145deg,#1d4036,#235044)!important;border-color:#70c9aa!important;color:#effff9!important
+  }
+  :root[data-theme="dark"] .when-quick button.on,
+  :root[data-theme="dark"] .segmented button.on,
+  :root[data-theme="dark"] .pills button.active,
+  :root[data-theme="dark"] .day-chip.sel,
+  :root[data-theme="dark"] .theme-opt.on{
+    background:color-mix(in srgb,var(--accent,var(--mom)) 22%,#202634)!important;
+    border-color:color-mix(in srgb,var(--accent,var(--mom)) 70%,#697389)!important;
+    color:#f7f9fd!important;
+    box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 35%,transparent)!important
+  }
 }
