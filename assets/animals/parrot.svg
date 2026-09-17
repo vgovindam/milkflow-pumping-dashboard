@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Parrot">
+  <circle cx="60" cy="60" r="56" fill="#e5f1dd"/>
+  <path d="M39 84c-10-18-8-39 7-53 12-11 31-11 44 1 12 12 15 31 6 46-8 13-21 21-37 22Z" fill="#48a76b"/>
+  <path d="M57 34c13-3 26 2 34 13-10 4-18 11-23 21-8-7-12-18-11-34Z" fill="#e8574f"/>
+  <path d="M74 48c10 2 18 8 23 17-8 1-15 5-21 11-5-8-6-18-2-28Z" fill="#f2bf44"/>
+  <circle cx="70" cy="40" r="4" fill="#1f3130"/>
+  <path d="M82 45c9 1 16 4 21 10-8 4-15 5-23 2Z" fill="#37444b"/>
+  <path d="M48 91c8 4 16 5 25 2" fill="none" stroke="#2f6e49" stroke-width="5" stroke-linecap="round"/>
+</svg>
