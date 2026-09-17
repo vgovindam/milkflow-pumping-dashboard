@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-label="Unicorn dreams theme">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#9fc5ff"/><stop offset=".5" stop-color="#c9baff"/><stop offset="1" stop-color="#ffd7ef"/></linearGradient><linearGradient id="mane" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4a8d8"/><stop offset=".5" stop-color="#cbaaf7"/><stop offset="1" stop-color="#89c8ff"/></linearGradient></defs>
+<rect width="1000" height="700" fill="url(#sky)"/>
+<circle cx="167" cy="126" r="75" fill="#fff1b8"/><circle cx="199" cy="102" r="75" fill="#a9c9ff"/>
+<g fill="#fff" opacity=".8"><ellipse cx="180" cy="540" rx="170" ry="64"/><ellipse cx="340" cy="565" rx="180" ry="72"/><ellipse cx="690" cy="554" rx="210" ry="82"/><ellipse cx="900" cy="575" rx="165" ry="68"/></g>
+<g transform="translate(380 150)">
+  <path d="M160 60c73 0 126 48 126 116 0 72-59 129-139 129-78 0-133-50-133-119 0-40 16-73 47-96 25-19 58-30 99-30Z" fill="#fff9ff"/>
+  <path d="M75 106C38 64 35 32 57 30c27-2 50 39 62 70m117 4c36-42 39-74 17-76-27-2-49 39-61 70" fill="#f8e9f8"/>
+  <path d="M139 56 170-20l28 81" fill="#f0c75a"/>
+  <path d="M60 120c-40 68-30 129 28 182 23 22 47 37 72 47-12-34-10-68 8-103 15-29 40-53 76-73-42 5-76-3-102-24-24-19-51-29-82-29Z" fill="url(#mane)"/>
+  <path d="M206 170c42 45 72 91 88 140" fill="none" stroke="url(#mane)" stroke-width="32" stroke-linecap="round"/>
+  <circle cx="116" cy="170" r="7" fill="#51445b"/><circle cx="202" cy="170" r="7" fill="#51445b"/>
+  <path d="M136 214c16 11 31 11 45 0" fill="none" stroke="#9e6d92" stroke-width="6" stroke-linecap="round"/>
+</g>
+<g fill="#fff3ac"><path d="m330 100 12 28 30 3-23 19 7 30-26-16-26 16 7-30-23-19 30-3Z"/><path d="m760 155 10 22 25 3-19 16 6 25-22-13-21 13 5-25-18-16 25-3Z"/><path d="m805 350 8 19 21 2-16 13 5 21-18-11-18 11 5-21-16-13 21-2Z"/></g>
+<path d="M176 426c75-58 150-58 225 0s150 58 225 0 150-58 225 0" fill="none" stroke="#f5c2dc" stroke-width="22" stroke-linecap="round" opacity=".65"/>
+</svg>
