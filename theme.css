@@ -6,25 +6,38 @@
 @import url("./experience-system.css?v=__MILKFLOW_VERSION__") layer(milkflow-experience);
 @import url("./experience-components.css?v=__MILKFLOW_VERSION__") layer(milkflow-experience);
 
-/* Pseudo-element ownership contract.
-   The legacy Baby hero used ::before/::after for decorative hills and the first immersive
-   theme pass reused ::after for a theme-name badge. Those two geometries cannot safely
-   share one pseudo element: inherited left/right/height values produced the large dark
-   overlay seen on iPhone. The canonical hero now has one visual owner: its background
-   image. Both legacy decorative pseudos are disabled for illustrated themes.
-
-   Care cards follow the same rule. The independent themed sprite is the visible icon;
-   the older semantic ::before illustration is disabled so two icons can never stack.
-   Build/QA guarantees the themed sprite assets are bundled, while Clean retains the
-   original semantic icons because these rules do not apply to it. */
+/* Single-owner visual contract.
+   The Baby hero background is the only scene layer. Legacy decorative pseudos are not
+   allowed to retain geometry underneath a themed hero. Care actions likewise expose one
+   visible icon layer: the themed sprite. Clean mode is outside this contract and keeps the
+   original semantic presentation. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero::before,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero::after{
   display:none!important;
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card::before,
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob::before,
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin::before{
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob::before{
   display:none!important;
 }
 
-/* 2.0.3 visual contract: exactly one themed illustration layer per Baby component. */
+/* The check-in's first grid column is structural. Keep a transparent placeholder there
+   so the copy never collapses into the 42px icon column, while ::after owns the visible
+   themed icon. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin::before{
+  content:""!important;
+  display:block!important;
+  visibility:hidden!important;
+  background:none!important;
+}
+
+/* Reserve a real art zone. Theme icons are decoration above the action, never on top of
+   its label. These dimensions are part of the themed card component contract. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{
+  min-height:136px!important;
+  padding:78px 11px 15px!important;
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card strong,
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card small{
+  position:relative;
+  z-index:4;
+}
