@@ -9,10 +9,10 @@ const THEMES=new Set(['safari','butterfly','princess','unicorn','clean']);
 const root=document.documentElement;
 
 const THEME_MANIFEST={
-  safari:{title:'Safari Adventure',subtitle:'Wild days, bigger dreams',preview:'./assets/themes/safari-world.svg',babyScene:'./assets/themes/safari-world.svg',momScene:'./assets/themes/safari-adventure.svg',detail:'./assets/theme-details/safari.svg',iconSprite:'./assets/theme-icons/safari.svg'},
-  butterfly:{title:'Butterfly Garden',subtitle:'Little moments, big magic',preview:'./assets/themes/butterfly-garden.svg',babyScene:'./assets/themes/butterfly-garden.svg',momScene:'./assets/themes/butterfly-garden.svg',detail:'./assets/theme-details/butterfly.svg',iconSprite:'./assets/theme-icons/butterfly.svg'},
-  princess:{title:'Princess Palace',subtitle:'Kind hearts change the world',preview:'./assets/themes/princess-palace.svg',babyScene:'./assets/themes/princess-palace.svg',momScene:'./assets/themes/princess-palace.svg',detail:'./assets/theme-details/princess.svg',iconSprite:'./assets/theme-icons/princess.svg'},
-  unicorn:{title:'Unicorn Dreams',subtitle:'Believe in brighter tomorrows',preview:'./assets/themes/unicorn-dreams.svg',babyScene:'./assets/themes/unicorn-dreams.svg',momScene:'./assets/themes/unicorn-dreams.svg',detail:'./assets/theme-details/unicorn.svg',iconSprite:'./assets/theme-icons/unicorn.svg'},
+  safari:{title:'Safari Adventure',subtitle:'Wild days, bigger dreams',preview:'./assets/theme-composite/safari.svg',babyScene:'./assets/theme-composite/safari.svg',momScene:'./assets/theme-composite/safari.svg',detail:'./assets/theme-details/safari.svg',iconSprite:'./assets/theme-icons/safari.svg'},
+  butterfly:{title:'Butterfly Garden',subtitle:'Little moments, big magic',preview:'./assets/theme-composite/butterfly.svg',babyScene:'./assets/theme-composite/butterfly.svg',momScene:'./assets/theme-composite/butterfly.svg',detail:'./assets/theme-details/butterfly.svg',iconSprite:'./assets/theme-icons/butterfly.svg'},
+  princess:{title:'Princess Palace',subtitle:'Kind hearts change the world',preview:'./assets/theme-composite/princess.svg',babyScene:'./assets/theme-composite/princess.svg',momScene:'./assets/theme-composite/princess.svg',detail:'./assets/theme-details/princess.svg',iconSprite:'./assets/theme-icons/princess.svg'},
+  unicorn:{title:'Unicorn Dreams',subtitle:'Believe in brighter tomorrows',preview:'./assets/theme-composite/unicorn.svg',babyScene:'./assets/theme-composite/unicorn.svg',momScene:'./assets/theme-composite/unicorn.svg',detail:'./assets/theme-details/unicorn.svg',iconSprite:'./assets/theme-icons/unicorn.svg'},
   clean:{title:'Clean',subtitle:'Quiet MilkFlow canvas',preview:'',babyScene:'',momScene:'',detail:'',iconSprite:''}
 };
 
@@ -36,7 +36,7 @@ function apply(name=read()){
 }
 function save(name){const value=normalize(name);try{localStorage.setItem(KEY,value);}catch{}apply(value);window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{theme:value}}));}
 function themeCard(key,title,subtitle,src){return `<button type="button" class="mf-experience-option" data-experience-theme-pick="${key}" data-theme-card="${key}" aria-pressed="false"><span class="mf-experience-preview" aria-hidden="true"><img src="${src}" alt="" decoding="async" loading="eager"></span><span class="mf-experience-copy"><strong>${title}</strong><small>${subtitle}</small></span></button>`;}
-function themeCards(){return `${themeCard('safari','Safari Adventure','Wild days, bigger dreams','./assets/themes/safari-world.svg')}${themeCard('butterfly','Butterfly Garden','Little moments, big magic','./assets/themes/butterfly-garden.svg')}${themeCard('princess','Princess Palace','Kind hearts change the world','./assets/themes/princess-palace.svg')}${themeCard('unicorn','Unicorn Dreams','Believe in brighter tomorrows','./assets/themes/unicorn-dreams.svg')}`;}
+function themeCards(){return `${themeCard('safari','Safari Adventure','Wild days, bigger dreams','./assets/theme-composite/safari.svg')}${themeCard('butterfly','Butterfly Garden','Little moments, big magic','./assets/theme-composite/butterfly.svg')}${themeCard('princess','Princess Palace','Kind hearts change the world','./assets/theme-composite/princess.svg')}${themeCard('unicorn','Unicorn Dreams','Believe in brighter tomorrows','./assets/theme-composite/unicorn.svg')}`;}
 function experiencePanel(){
   const screen=document.body.dataset.screen;
   if(screen!=='settings'&&screen!=='set-appearance')return;
