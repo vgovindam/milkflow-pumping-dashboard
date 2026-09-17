@@ -4,6 +4,8 @@ const read = (path) => fs.readFileSync(new URL(`../${path}`, import.meta.url), '
 const app = read('app.js');
 const core = read('core-ui.js');
 const css = read('component-theme.css');
+const experienceCss = read('experience-themes.css');
+const experienceJs = read('experience-theme.js');
 const html = read('index.html');
 const lifecycle = read('render-lifecycle.js');
 
@@ -78,12 +80,27 @@ need('no duplicate diaper question', css, '#diaperDialog:not(.is-edit) .form-sec
 
 // Selected state is functional *and* visible. The controls layer may define dark surfaces,
 // but the later named selection layer owns .on/.active/.sel so specificity cannot erase it.
-need('cascade layer order', css, '@layer milkflow-core, milkflow-controls, milkflow-selection;');
+need('cascade layer order', css, '@layer milkflow-core, milkflow-controls, milkflow-selection, milkflow-experience;');
 for (const text of [
   '.choice-row button.on{', '.choice-row button.on::after{', '.when-quick button.on,',
   '.segmented button.on,', '.pills button.active,', '.day-chip.sel,', '.theme-opt.on{',
   ':root[data-theme="dark"] .choice-row button.on{',
 ]) need('selection visibility', css, text);
+
+// Experience theme is a first-class switch, not a record-state patch or observer loop.
+for (const text of [
+  "const KEY='milkflow-experience-theme-v1'",
+  "new Set(['storybook','clean'])",
+  'data-experience-theme-pick="storybook"',
+  'data-experience-theme-pick="clean"',
+]) need('experience theme controller', experienceJs, text);
+if (experienceJs.includes('MutationObserver')) failures.push('experience theme controller: MutationObserver is not allowed');
+for (const text of [
+  'assets/themes/cloud-island.svg','assets/themes/forest-clearing.svg',
+  'mf-last-feed-band + .mf-care-label','mf-feed-zone + .mf-care-label',
+  'content:"PUMPING"','content:"NURSING"',
+  'assets/animals/bear.svg','assets/animals/rabbit.svg','assets/animals/fox.svg','assets/animals/owl.svg','assets/animals/beaver.svg',
+]) need('experience theme surface', experienceCss, text);
 
 // Navigation can never intentionally land on an empty viewport.
 for (const text of ['function resetRouteScroll', 'function exactRouteControl', 'mf-render-recovery']) {
@@ -100,4 +117,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, 5 entry forms, Mom/Baby quick actions, selected-state visibility, diaper flow, navigation recovery, and data-preservation contracts.`);
+console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, 5 entry forms, Mom/Baby quick actions, selected-state visibility, switchable experience themes, diaper flow, navigation recovery, and data-preservation contracts.`);
