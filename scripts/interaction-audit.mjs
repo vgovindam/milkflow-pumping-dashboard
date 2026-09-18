@@ -28,11 +28,10 @@ need('canonical experience layer',themeEntry,'layer(milkflow-experience)');
 for(const text of ["const KEY='milkflow-experience-theme-v1'","new Set(['safari','butterfly','princess','unicorn','clean'])","value==='jungle'||value==='storybook'","themeCard('safari','Safari Adventure'","themeCard('butterfly','Butterfly Garden'","themeCard('princess','Princess Palace'","themeCard('unicorn','Unicorn Dreams'",'data-experience-theme-pick="clean"'])need('experience theme controller',experienceJs,text);
 if(experienceJs.includes('MutationObserver'))failures.push('experience theme controller: observer loop is not allowed');
 for(const theme of ['safari','butterfly','princess','unicorn']){
-  need('realm-wide detailed scene',experienceCss,`assets/theme-composite/${theme}.svg`);
-  need('detailed scene manifest',experienceJs,`theme-composite/${theme}.svg`);
+  need('theme asset matrix manifest',experienceJs,`assetSet('${theme}')`);
   need('theme icon manifest',experienceJs,`theme-icons/${theme}.svg`);
 }
-for(const text of ['body:is([data-realm="mom"],[data-realm="baby"]) .main','body[data-screen="settings"] .main','body[data-screen="mom-home"] .mf-dream-hero','body[data-screen="baby-home"] .mf-animal-hero','.mf-dream-hero::before','.mf-dream-hero::after','content:none!important'])need('realm-wide experience surface',experienceCss,text);
+for(const text of ['--mf-theme-baby-scene','--mf-theme-mom-scene','--mf-theme-baby-hero','--mf-theme-mom-hero','body[data-screen="settings"] .main','body[data-screen="mom-home"] .mf-dream-hero','body[data-screen="baby-home"] .mf-animal-hero','.mf-dream-hero::before','.mf-dream-hero::after','content:none!important'])need('realm-wide experience surface',experienceJs+experienceCss,text);
 if(experienceCss.includes('content:var(--mf-theme-name)'))failures.push('realm-wide experience surface: hero theme-name badges must not render');
 if(experienceJs.includes('theme-details/'))failures.push('experience controller must use one self-contained scene, not stacked detail SVGs');
 for(const text of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])need('independent themed components',experienceComponents,text);
