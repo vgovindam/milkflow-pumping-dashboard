@@ -80,6 +80,7 @@ body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-option[aria
 .mf-settings-row-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:17px;background:#e5f0df;position:relative}
 .mf-settings-row-icon::before{content:"";width:25px;height:25px;display:block;background:#1f6545;mask-size:contain;mask-repeat:no-repeat;mask-position:center;-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;-webkit-mask-position:center}
 .mf-settings-row-icon.moon::before{mask-image:radial-gradient(circle at 68% 34%,transparent 0 34%,#000 35% 100%);-webkit-mask-image:radial-gradient(circle at 68% 34%,transparent 0 34%,#000 35% 100%)}
+.mf-settings-row-icon.sound::before{clip-path:polygon(4% 37%,28% 37%,56% 12%,56% 88%,28% 63%,4% 63%)}
 .mf-settings-row-icon.bell::before{clip-path:polygon(42% 0,58% 0,63% 13%,72% 18%,80% 30%,83% 65%,95% 80%,95% 88%,5% 88%,5% 80%,17% 65%,20% 30%,28% 18%,37% 13%);background:#1f6545}
 .mf-settings-row-icon.profile::before{border-radius:50%;background:radial-gradient(circle at 50% 34%,#1f6545 0 21%,transparent 22%),radial-gradient(ellipse at 50% 92%,#1f6545 0 43%,transparent 44%)}
 .mf-settings-row-icon.family::before{background:radial-gradient(circle at 33% 32%,#1f6545 0 18%,transparent 19%),radial-gradient(circle at 72% 35%,#1f6545 0 15%,transparent 16%),radial-gradient(ellipse at 35% 92%,#1f6545 0 38%,transparent 39%),radial-gradient(ellipse at 73% 88%,#1f6545 0 31%,transparent 32%)}
