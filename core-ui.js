@@ -29,7 +29,14 @@ const pumpsOn=(s,d)=>livePumps(s).filter(e=>e.date===d).sort((a,b)=>String(a.tim
 const dayPumps=s=>pumpsOn(s,today());
 const round5=m=>Math.round(m/5)*5;
 
-function positiveGreeting(){const h=new Date().getHours();if(h>=5&&h<8)return{text:'Early bird',mark:'☀️'};if(h>=8&&h<12)return{text:'Good morning',mark:'☀️'};if(h>=12&&h<17)return{text:'Good afternoon',mark:'🌤️'};if(h>=17&&h<21)return{text:'Good evening',mark:'✨'};return{text:'Hey, night owl',mark:'🌙'};}
+function positiveGreeting(){const h=new Date().getHours();if(h>=5&&h<8)return{text:'Early start',mark:'☀️'};if(h>=8&&h<12)return{text:'Good morning',mark:'☀️'};if(h>=12&&h<17)return{text:'Good afternoon',mark:'🌤️'};if(h>=17&&h<21)return{text:'Good evening',mark:'✨'};return{text:'Good night',mark:'🌙'};}
+/* Greet the person reading, by name. The stored default is the literal word "Mom", which
+   reads colder than no name at all, so that case falls back to the bare greeting. */
+function greetingLine(savedName){
+  const g=positiveGreeting();
+  const n=String(savedName||'').trim();
+  return {mark:g.mark,text:n&&n!=='Mom'?`${g.text}, ${n}`:g.text};
+}
 function ageLabel(birthDate){if(!birthDate)return'';const b=new Date(`${birthDate}T12:00:00`),n=new Date(`${today()}T12:00:00`),days=Math.floor((n-b)/86400000);if(!Number.isFinite(days)||days<0)return'';if(days<14)return`${days} day${days===1?'':'s'} old`;if(days<70)return`${Math.floor(days/7)} weeks old`;let m=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());if(n.getDate()<b.getDate())m--;return m<24?`${m} months old`:`${Math.floor(m/12)}y ${m%12}m`;}
 function relativeAgo(date,time){
   if(!date||!time)return'';
@@ -80,9 +87,15 @@ function icon(kind){
     both:'<path d="M16 7c4 5 8 10 8 14a8 8 0 1 1-16 0c0-4 4-9 8-14Z"/><path d="M33 20c3 1 4 3 3 5h1c4 0 6 2 6 5 0 1-.4 2-1 3 2 1 3 3 3 5 0 3-3 5-7 5H27c-4 0-7-2-7-5 0-2 1-4 3-5-.6-1-1-2-1-3 0-3 2-5 6-5h1c-.5-3 1-5 4-5Z"/>',
     plus:'<path d="M24 9v30M9 24h30"/>',
     moon:'<path d="M34 35A15 15 0 0 1 18 12a15 15 0 1 0 16 23Z"/>',
-    growth:'<path d="M10 38h28"/><path d="M14 38V14h20v24"/><path d="M18 20h7M18 26h11M18 32h7"/>'
+    growth:'<path d="M10 38h28"/><path d="M14 38V14h20v24"/><path d="M18 20h7M18 26h11M18 32h7"/>',
+    formula:'<path d="M13 9h22v5H13z"/><path d="M15 14h18v26a4 4 0 0 1-4 4H19a4 4 0 0 1-4-4V14Z"/><path d="M20 24h8M20 31h8"/>',
+    clock:'<circle cx="24" cy="24" r="16"/><path d="M24 14v10l7 4"/>'
   };
   return `<svg viewBox="0 0 48 48" aria-hidden="true">${p[kind]||p.bottle}</svg>`;
+}
+
+function careMark(kind){
+  return `<span class="mf-care-mark ${esc(kind)}" aria-hidden="true">${icon(kind)}</span>`;
 }
 
 function animalSticker(kind){
@@ -149,7 +162,10 @@ function topOrb(value,unit,label,tone,pct=null,title=''){
 function addStyles(){
   if(document.getElementById('mfCoreUIStyles'))return;
   const s=document.createElement('style');s.id='mfCoreUIStyles';s.textContent=`
-html{scroll-behavior:auto!important}#view{overflow-anchor:none}.nav-forward,.nav-back,.nav-swap{animation:none!important;transform:none!important}
+html{scroll-behavior:auto!important}#view{overflow-anchor:none}/* Motion was switched off entirely to stop the slide transform jittering inside the
+   .main scroll owner. An opacity cross-fade cannot move layout, so navigation can feel
+   continuous again without reintroducing that jitter. */
+.nav-forward,.nav-back,.nav-swap{animation:mfViewFade .2s ease-out!important;transform:none!important}@keyframes mfViewFade{from{opacity:.35}to{opacity:1}}@media(prefers-reduced-motion:reduce){.nav-forward,.nav-back,.nav-swap{animation:none!important}}
 
 /* ---------- ambient color: stronger identity without sacrificing readability ---------- */
 body[data-screen="mom-home"] .main{background:radial-gradient(circle at 10% 8%,rgba(194,220,255,.55),transparent 29%),radial-gradient(circle at 89% 17%,rgba(226,193,255,.46),transparent 31%),radial-gradient(circle at 60% 76%,rgba(255,205,228,.24),transparent 29%),linear-gradient(155deg,var(--bg),color-mix(in srgb,var(--bg) 72%,#eaf7ff))}
@@ -232,6 +248,25 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 .mf-feed-card{box-sizing:border-box;position:relative;min-height:108px;border:0;padding:14px 14px 21px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--ink);box-shadow:0 7px 18px rgba(29,42,70,.08)}
 .mf-feed-card svg{position:absolute;right:11px;top:10px;width:31px;height:31px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
 .mf-feed-card>.mf-animal-sticker{position:absolute;right:8px;top:7px;width:58px;height:58px;padding:5px;border-radius:50%;background:rgba(255,255,255,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);opacity:1}.mf-feed-card>.mf-animal-sticker svg{position:static;width:100%;height:100%;fill:initial;stroke:initial;opacity:1}
+/* A care action is recognised by its symbol, so the symbol is the one thing a theme may not
+   replace. The disc is a neutral carrier and the mark inherits the card's own accent, which
+   gives each action its own colour instead of one flat ink across all six. */
+.mf-care-mark{position:absolute;display:grid;place-items:center;border-radius:50%;color:inherit;
+  background:rgba(255,255,255,.92);box-shadow:inset 0 0 0 1px rgba(255,255,255,.72),0 6px 15px rgba(30,44,66,.13)}
+.mf-care-mark svg{width:58%;height:58%;fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
+/* The mark is a span, and the rule .mf-diaper-blob span{position:relative} outranks a lone
+   .mf-care-mark, so these carry the element type to win the specificity contest. */
+.mf-feed-card>span.mf-care-mark{position:absolute;right:10px;top:10px;width:52px;height:52px}
+.mf-diaper-blob>span.mf-care-mark{position:absolute;left:50%;top:13px;transform:translateX(-50%);width:54px;height:54px}
+.mf-animal-checkin>span.mf-care-mark{position:relative;left:auto;top:auto;transform:none;width:44px;height:44px}
+:root[data-theme="dark"] .mf-animal-checkin>span.mf-care-mark{background:rgba(255,255,255,.15);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+/* Two tones per card: the title carries the accent, the caption steps back a measured
+   amount. Previously both sat on one colour at .84 opacity, which read as a single flat ink. */
+.mf-feed-card small,.mf-diaper-blob span{color:var(--mf-card-sub,currentColor);opacity:1;font-weight:800}
+.mf-feed-card.milk{--mf-card-sub:#3c6f93}.mf-feed-card.nurse{--mf-card-sub:#a64b78}.mf-feed-card.formula{--mf-card-sub:#6a51a6}
+.mf-diaper-blob.wet{--mf-card-sub:#2f7ba7}.mf-diaper-blob.poop{--mf-card-sub:#8d6420}.mf-diaper-blob.both{--mf-card-sub:#6a55a8}
+:root[data-theme="dark"] .mf-feed-card.milk{--mf-card-sub:#8fc4e4}:root[data-theme="dark"] .mf-feed-card.nurse{--mf-card-sub:#e59ebd}:root[data-theme="dark"] .mf-feed-card.formula{--mf-card-sub:#b9a5e8}
+:root[data-theme="dark"] .mf-diaper-blob.wet{--mf-card-sub:#8ccdec}:root[data-theme="dark"] .mf-diaper-blob.poop{--mf-card-sub:#dbb271}:root[data-theme="dark"] .mf-diaper-blob.both{--mf-card-sub:#b3a0e0}
 .mf-feed-card strong,.mf-feed-card small{position:relative;z-index:1;max-width:100%}.mf-feed-card strong{font-size:16px;font-weight:900;letter-spacing:-.015em;line-height:1.1}.mf-feed-card small{display:block;font-size:11.5px;line-height:1.18;font-weight:750;opacity:.84;margin-top:4px}
 .mf-feed-card.milk{border-radius:38px 29px 43px 32px / 30px 40px 28px 37px;background:linear-gradient(145deg,#b8ddff 0%,#c5e3ff 58%,#c9cbff 100%);color:#153f61}
 .mf-feed-card.nurse{border-radius:43px 31px 35px 42px / 35px 42px 29px 37px;background:linear-gradient(145deg,#ffd1e2,#f5bad4);color:#7b244d}
@@ -345,12 +380,12 @@ function profilePhoto(src,kind){if(src)return `<img src="${esc(src)}" alt="${kin
 
 function renderMom(s){
   const view=document.getElementById('view'),hero=view?.querySelector('.mom-hero');if(!view||!hero)return;
-  const g=positiveGreeting(),name=s.profile?.momName||'Mom',photo=s.profile?.momPhoto||'',x=plan(s,prefs()),snap=momSnapshot(s,x),next=x.remaining&&x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:'All done for today',progress=x.target?Math.min(100,Math.round(x.actual.length/x.target*100)):0;
+  const g=positiveGreeting(),name=s.profile?.momName||'Mom',gl=greetingLine(name),photo=s.profile?.momPhoto||'',x=plan(s,prefs()),snap=momSnapshot(s,x),next=x.remaining&&x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:'All done for today',progress=x.target?Math.min(100,Math.round(x.actual.length/x.target*100)):0;
   hero.classList.add('mf-dream-hero');
   hero.innerHTML=`
     <span class="mf-sky-orb" aria-hidden="true"></span><span class="mf-cloud cloud-one" aria-hidden="true"></span><span class="mf-cloud cloud-two" aria-hidden="true"></span><span class="mf-sparkles" aria-hidden="true">✦ · ✧</span>
     <div class="mf-dream-main">
-      <div class="mf-dream-welcome"><span>${g.mark}</span><b>${g.text}, ${esc(name)}</b></div>
+      <div class="mf-dream-welcome"><span>${g.mark}</span><b>${esc(gl.text)}</b></div>
       <div class="mf-dream-mobile-summary" aria-label="Today at a glance"><span><strong>${snap.total}</strong>mL today</span><span><strong>${x.remaining}</strong>remaining</span></div>
       <div class="mf-dream-kicker">Today’s rhythm</div>
       <h2>${x.remaining?'Your day, beautifully paced':'Today’s rhythm is complete'}</h2>
@@ -393,7 +428,7 @@ function maybeAskTomorrow(x){
 
 function renderBaby(s){
   const view=document.getElementById('view');if(!view)return;
-  const st=babyCareStats(s),snap=babySnapshot(s,st),g=positiveGreeting(),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate),lf=lastFeedText(lastFeed(s));
+  const st=babyCareStats(s),snap=babySnapshot(s,st),g=positiveGreeting(),gl=greetingLine(s.profile?.momName),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate),lf=lastFeedText(lastFeed(s));
   let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}
   const babyMeta=[age,!photo?'Add a photo':''].filter(Boolean).join(' · ');
   box.innerHTML=`
@@ -401,33 +436,32 @@ function renderBaby(s){
       <span class="mf-animal-star one" aria-hidden="true">✦</span><span class="mf-animal-star two" aria-hidden="true">✧</span>
       <div class="mf-animal-profile">
         <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}</button>
-        <div class="mf-animal-copy"><div class="welcome">${g.mark} ${g.text}</div><h2>${esc(babyName)}</h2>${babyMeta?`<small>${esc(babyMeta)}</small>`:''}</div>
+        <div class="mf-animal-copy"><div class="welcome">${g.mark} ${esc(gl.text)}</div><h2>${esc(babyName)}</h2>${babyMeta?`<small>${esc(babyMeta)}</small>`:''}</div>
       </div>
       <div class="mf-animal-stats" aria-label="Baby today summary">
         <span class="mf-animal-stat" title="Bottle ounces today"><strong>${snap.todayOz.toFixed(1)} oz</strong><span>Milk today</span></span>
         <span class="mf-animal-stat" title="Diapers today"><strong>${snap.diapers}</strong><span>Diapers</span></span>
       </div>
-      ${animalSticker('bear')}${animalSticker('bunny')}
     </div>
 
     <div class="mf-animal-checkin" aria-label="Last feeding">
-      ${animalSticker('owl')}
+      ${careMark('clock')}
       <span class="mf-last-feed-primary"><strong>${esc(lf.main)}</strong><small>${esc(lf.clock)}</small></span>
       <span class="mf-last-feed-age"><strong>${esc(lf.age)}</strong><small>Last fed</small></span>
     </div>
 
     <div class="mf-care-label"><span>Feed</span><small>Quick log</small></div>
     <div class="mf-feed-zone">
-      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${animalSticker('whale')}<strong>Breast milk</strong><small>Log bottle</small></button>
-      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${animalSticker('bunny')}<strong>Nurse</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button>
-      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${animalSticker('fox')}<strong>Formula</strong><small>${st.formulaCount?`${st.formulaCount} today`:'Log bottle'}</small></button>
+      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${careMark('bottle')}<strong>Breast milk</strong><small>Log bottle</small></button>
+      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${careMark('nursing')}<strong>Nurse</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button>
+      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${careMark('formula')}<strong>Formula</strong><small>${st.formulaCount?`${st.formulaCount} today`:'Log bottle'}</small></button>
     </div>
 
     <div class="mf-care-label"><span>Diapers</span><small>${st.diaperCount?`${st.diaperCount} today`:'Quick log'}</small></div>
     <div class="mf-diaper-cluster">
-      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper">${animalSticker('whale')}<b>${st.wet}</b><strong>Wet</strong><span>diaper</span></button>
-      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper">${animalSticker('bear')}<b>${st.poop}</b><strong>Poopy</strong><span>diaper</span></button>
-      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper">${animalSticker('owl')}<b>${st.both}</b><strong>Mixed</strong><span>wet + poopy</span></button>
+      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper">${careMark('wet')}<b>${st.wet}</b><strong>Wet</strong><span>diaper</span></button>
+      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper">${careMark('poop')}<b>${st.poop}</b><strong>Poopy</strong><span>diaper</span></button>
+      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper">${careMark('both')}<b>${st.both}</b><strong>Mixed</strong><span>wet + poopy</span></button>
     </div>
 
     <div class="mf-care-ribbon" aria-label="More baby care">

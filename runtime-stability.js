@@ -83,7 +83,9 @@ function addStyles(){
   s.textContent=`
     html{scroll-behavior:auto!important}
     #view{overflow-anchor:none}
-    #view.nav-forward,#view.nav-back,#view.nav-swap{animation:none!important;transform:none!important}
+    #view.nav-forward,#view.nav-back,#view.nav-swap{animation:mfViewFade .2s ease-out!important;transform:none!important}
+    @keyframes mfViewFade{from{opacity:.35}to{opacity:1}}
+    @media(prefers-reduced-motion:reduce){#view.nav-forward,#view.nav-back,#view.nav-swap{animation:none!important}}
     #bottomNav button,#personaTabs button,.side-nav button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     body.mf-nav-settling #bottomNav button,body.mf-nav-settling #personaTabs button{transition:none!important}
   `;

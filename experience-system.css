@@ -48,9 +48,22 @@
 /* Chrome floats over the world rather than replacing it. */
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .topbar,
 :root:not([data-experience-theme="clean"]) body:is([data-screen="settings"],[data-screen="set-appearance"]) .topbar{
-  background:color-mix(in srgb,var(--mf-world-surface-strong) 82%,transparent)!important;
-  border-bottom-color:var(--mf-world-line)!important;
-  backdrop-filter:blur(16px) saturate(1.08);-webkit-backdrop-filter:blur(16px) saturate(1.08)
+  /* The artwork runs under the bar to the physical top edge instead of being cut off by an
+     opaque strip. A downward scrim keeps the tabs legible without reintroducing that band,
+     and the safe-area inset keeps them clear of the notch on a phone. */
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--mf-world-surface-strong) 30%,transparent) 0%,
+    color-mix(in srgb,var(--mf-world-surface-strong) 12%,transparent) 64%,
+    transparent 100%)!important;
+  border-bottom-color:transparent!important;
+  padding-top:calc(8px + env(safe-area-inset-top))!important;
+  backdrop-filter:blur(14px) saturate(1.06);-webkit-backdrop-filter:blur(14px) saturate(1.06)
+}
+/* The scene is painted on .main, which starts below nothing — so it already reaches y=0.
+   The view just needs to stop adding its own gap under a now-transparent bar. */
+:root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .main,
+:root:not([data-experience-theme="clean"]) body:is([data-screen="settings"],[data-screen="set-appearance"]) .main{
+  background-position-y:calc(-1 * env(safe-area-inset-top))!important
 }
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .bottom-nav,
 :root:not([data-experience-theme="clean"]) body:is([data-screen="settings"],[data-screen="set-appearance"]) .bottom-nav{
@@ -92,8 +105,32 @@
   background-size:cover!important;background-position:var(--mf-mom-focus)!important;background-repeat:no-repeat!important;
   border:1px solid rgba(255,255,255,.68)!important;box-shadow:0 22px 48px var(--mf-world-shadow)!important
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero::before,
+/* The Mom headline, greeting and kicker sit straight on the hero art. On the painted plates
+   that band happens to be dark enough; on a pale scene it collapsed (measured 1.08:1 for the
+   headline on Unicorn dark). A scrim built from the world's own surface token — light in
+   light mode, dark in dark mode — pairs with --mf-world-text in both and holds regardless of
+   what artwork lands there. It fades out well before the right edge so the scene still reads. */
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero::before{
+  content:""!important;display:block!important;position:absolute!important;inset:0!important;
+  z-index:0!important;pointer-events:none!important;border-radius:inherit!important;
+  background:linear-gradient(163deg,
+    color-mix(in srgb,var(--mf-world-surface-strong) 82%,transparent) 0%,
+    color-mix(in srgb,var(--mf-world-surface-strong) 52%,transparent) 48%,
+    transparent 80%)!important;
+}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero::after{content:none!important;display:none!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-main,.mf-dream-side){position:relative;z-index:2}
+/* The painted worlds already clear contrast here unaided, so their scrim stays light and the
+   art keeps reading. A theme with no painted plate falls back to a pale generated SVG whose
+   luminance cannot be relied on, so it gets a scrim that stays above ~0.7 alpha for the whole
+   text column — enough to hold 4.5:1 for 12px copy even over a black pixel. */
+:root[data-experience-theme="unicorn"] body[data-screen="mom-home"] .mf-dream-hero::before{
+  background:linear-gradient(168deg,
+    color-mix(in srgb,var(--mf-world-surface-strong) 93%,transparent) 0%,
+    color-mix(in srgb,var(--mf-world-surface-strong) 84%,transparent) 44%,
+    color-mix(in srgb,var(--mf-world-surface-strong) 76%,transparent) 68%,
+    transparent 92%)!important;
+}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-cloud,.mf-sky-orb,.mf-sparkles){display:none!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-main h2,.mf-dream-main p,.mf-dream-welcome,.mf-dream-kicker){color:var(--mf-world-text)!important;text-shadow:none!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress>div,
@@ -270,9 +307,28 @@
    These live in this file, and last, on purpose: for !important declarations the cascade
    inverts layer order, so a layered rule beats an unlayered one and the only reliable way
    to override the rules above is to sit in the same layer, later. */
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat{
-  background:rgba(16,21,28,.76)!important;
-  color:#fff!important;
+/* A near-black pill clears contrast but fights every pastel world, and two identical white
+   ones say nothing. The base component already defines a blue milk pill and an amber diaper
+   pill; the experience layer was flattening both to one slab, so restore that pairing at an
+   opacity that survives sitting on artwork. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat:first-child{
+  background:linear-gradient(145deg,rgba(223,246,255,.96),rgba(184,228,250,.94))!important;
+  border-color:rgba(255,255,255,.82)!important;color:#0f4d6b!important;
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat:last-child{
+  background:linear-gradient(145deg,rgba(255,241,207,.97),rgba(255,219,170,.95))!important;
+  border-color:rgba(255,255,255,.82)!important;color:#6d4013!important;
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat :is(strong,span,small){
+  color:inherit!important;
+}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat:first-child{
+  background:linear-gradient(145deg,rgba(14,42,60,.9),rgba(17,52,74,.88))!important;
+  border-color:rgba(160,214,240,.26)!important;color:#bfe7fb!important;
+}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat:last-child{
+  background:linear-gradient(145deg,rgba(58,40,12,.9),rgba(74,50,14,.88))!important;
+  border-color:rgba(245,214,160,.26)!important;color:#ffdca6!important;
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label>:is(span,small){
   background:rgba(255,255,255,.9)!important;
@@ -295,4 +351,31 @@
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{
   background:rgba(12,16,24,.86)!important;
+}
+
+/* Unicorn ships no painted plate, so its generated night sky puts a bright patch exactly
+   where the baby's name sits and the name drops to 1.7:1. The painted worlds clear contrast
+   unaided, so this is scoped to the theme that needs it.
+   Placement matters: the rule that disables this pseudo-element lives earlier in THIS file,
+   and for !important the milkflow-experience layer outranks unlayered theme.css — so the
+   override has to sit in the same layer, after it. */
+:root[data-experience-theme="unicorn"] body[data-screen="baby-home"] .mf-animal-hero::before{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  border-radius:inherit!important;
+  background:linear-gradient(168deg,
+    color-mix(in srgb,var(--mf-world-surface-strong) 90%,transparent) 0%,
+    color-mix(in srgb,var(--mf-world-surface-strong) 80%,transparent) 64%,
+    color-mix(in srgb,var(--mf-world-surface-strong) 66%,transparent) 92%,
+    transparent 100%)!important;
+}
+/* .mf-animal-profile / .mf-animal-copy are display:contents on mobile, so the real grid
+   items are the ones that need lifting above the scrim. */
+:root[data-experience-theme="unicorn"] body[data-screen="baby-home"] :is(.mf-profile-photo,.mf-animal-copy .welcome,.mf-animal-copy h2,.mf-animal-copy>small,.mf-animal-stats,.mf-animal-stat){
+  position:relative!important;
+  z-index:2!important;
 }
