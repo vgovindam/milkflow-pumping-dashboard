@@ -93,9 +93,13 @@
   border-color:var(--mf-world-line)!important;box-shadow:0 17px 36px var(--mf-world-shadow)!important
 }
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]):not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head>*{position:relative;z-index:2}
+/* The title is white, so the artwork under it carries a scrim: dark where the words are,
+   clear on the right where the illustration should still read. Measured, not guessed - white
+   over a pale sky was 1.13:1. */
 :root:not([data-experience-theme="clean"]) body[data-realm="baby"]:not([data-screen="baby-home"]) .page-head::after{
   content:""!important;display:block!important;position:absolute!important;inset:0!important;z-index:0!important;pointer-events:none;
-  background-image:var(--mf-theme-baby-hero)!important;background-size:cover!important;background-position:var(--mf-baby-focus)!important;background-repeat:no-repeat!important
+  background-image:linear-gradient(101deg,rgba(14,20,30,.74) 0%,rgba(14,20,30,.58) 38%,rgba(14,20,30,.16) 68%,rgba(14,20,30,0) 86%),var(--mf-theme-baby-hero)!important;
+  background-size:auto,cover!important;background-position:0 0,var(--mf-baby-focus)!important;background-repeat:no-repeat!important
 }
 :root:not([data-experience-theme="clean"]) body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head::after{
   content:""!important;display:block!important;position:absolute!important;inset:0!important;z-index:0!important;pointer-events:none;
@@ -147,8 +151,11 @@
 
 /* Baby hero is the most immersive front layer. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-core-baby{gap:13px}
+/* No padding here on purpose: the hero's three columns are sized by the component layer, and
+   a theme widening the gutter pushed the stats column past the card's right edge on a phone.
+   A theme owns the picture, the tint and the corner - not the box model. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero{
-  position:relative;min-height:220px;padding:22px 23px;border-radius:31px!important;overflow:hidden;
+  position:relative;min-height:220px;border-radius:31px!important;overflow:hidden;
   background-image:var(--mf-theme-baby-hero)!important;
   background-size:cover!important;background-position:var(--mf-baby-focus)!important;background-repeat:no-repeat!important;
   border:1px solid rgba(255,255,255,.52)!important;box-shadow:0 20px 44px var(--mf-world-shadow)!important;color:#fff!important
@@ -157,9 +164,15 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero::after{content:none!important;display:none!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero>.mf-animal-sticker,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-star{display:none!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-profile{max-width:72%;gap:15px;position:relative;z-index:3}
+
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:98px;height:98px;border:5px solid rgba(255,255,255,.94);background:#f9f4e4;box-shadow:0 9px 22px rgba(20,24,31,.24)}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy .welcome{display:inline-block;padding:5px 8px;border-radius:999px;background:rgba(18,23,30,.38)!important;border:1px solid rgba(255,255,255,.28)!important;color:#fff!important;font-size:10px;font-weight:850;opacity:1;backdrop-filter:blur(8px)}
+/* The greeting was a dark glass pill from the days when it sat straight on the artwork. It
+   sits on the hero card now, where the Baby home composition wants it as plain text across
+   the top row - a pill there stretches the full width of the grid and reads as a grey bar.
+   The theme still owns the ink. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy .welcome{
+  color:var(--mf-world-deep);
+}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy h2{margin-top:7px;color:#fff!important;font-family:var(--display);font-size:31px;font-weight:850;line-height:1;letter-spacing:-.04em;text-shadow:0 2px 13px rgba(14,17,23,.42)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{margin-top:6px;color:rgba(255,255,255,.95)!important;font-size:10.5px;font-weight:750;opacity:1;text-shadow:0 2px 10px rgba(14,17,23,.36)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stats{top:20px;right:18px;gap:8px;z-index:4}
@@ -170,7 +183,7 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin>.mf-animal-sticker{display:none!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin small{color:var(--mf-world-muted)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label{margin:4px 2px 2px;padding:0 2px;background:none!important;border:0!important;box-shadow:none!important;color:var(--mf-world-text)!important;font:800 20px/1.1 var(--display);letter-spacing:-.025em;text-shadow:0 1px 10px rgba(255,255,255,.74)}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label small{color:var(--mf-world-muted)!important;font-size:11px;font-weight:800}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label small{color:var(--mf-world-muted)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label span:before{content:none!important}
 
 /* Feed/diaper sections are solid content zones; page scenery never competes inside them. */
@@ -189,7 +202,9 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob{border:1px solid rgba(255,255,255,.60)!important;box-shadow:0 7px 17px rgba(65,53,39,.07)!important;overflow:hidden}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>.mf-animal-sticker,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>svg{display:none!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob b{right:9px;top:10px;min-width:29px;height:29px;padding:0 7px;border-radius:999px;background:rgba(255,255,255,.94);font-size:12px;box-shadow:0 3px 8px rgba(50,50,50,.08);z-index:3}
+/* The count badge is the component layer's, in both light and dark. This rule used to restate
+   its geometry and hard-code a white pill with no dark variant, which in dark mode painted a
+   white circle with white text inside it. A theme does not own a badge. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.wet{background:linear-gradient(145deg,#c8eaff,#addeff)!important;color:#165278!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.poop{background:linear-gradient(145deg,#ffe7ac,#ffd17b)!important;color:#6d451a!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.both{background:linear-gradient(145deg,#e2d4ff,#c6aff6)!important;color:#4c3484!important}
@@ -287,7 +302,7 @@
   .mf-experience-panel .mf-experience-options{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.mf-experience-panel .mf-experience-preview{height:140px!important;min-height:140px!important;flex-basis:140px!important}
 }
 @media(max-width:410px){
-  :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-profile{max-width:69%}
+
   :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-zone,.mf-diaper-cluster){gap:7px;padding:8px}
   .mf-experience-panel .mf-experience-preview{height:128px!important;min-height:128px!important;flex-basis:128px!important}
 }
@@ -365,7 +380,16 @@
     color-mix(in srgb,var(--mf-world-accent) 18%,var(--mf-world-surface-strong)) 100%)!important;
   border:1px solid var(--mf-world-line)!important;
   box-shadow:0 18px 40px var(--mf-world-shadow)!important;
+  color:var(--mf-world-text)!important;
 }
+/* The hero's own copy inherits the surface's ink rather than the #fff it carried when it
+   was a saturated gradient. That mismatch is what made the summary numbers invisible. */
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero :is(h2,b,strong,small,span,p,i),
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero :is(h2,b,strong,small,span,p,i){
+  color:inherit!important;text-shadow:none!important;
+}
+/* The stat chips keep their own deliberate pairing. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat :is(strong,span,small){color:inherit!important}
 /* The ambient blurred blobs sit above the plate and wash it out. */
 :root:not([data-experience-theme="clean"]) body:is([data-screen="baby-home"],[data-screen="mom-home"]) .main::before,
 :root:not([data-experience-theme="clean"]) body:is([data-screen="baby-home"],[data-screen="mom-home"]) .main::after{
@@ -383,3 +407,156 @@
     color-mix(in srgb,var(--mf-world-accent) 16%,var(--mf-world-surface-strong)) 100%)!important;
   border:1px solid var(--mf-world-line)!important;
 }
+
+/* ------------------------------------------ one surface contract, on every themed screen */
+/* The plate is the page background everywhere, but only the two home screens had opaque
+   content surfaces. On History, Trends, Doctor and Settings the text sat directly on the
+   artwork, which is both the contrast failure and the reason the app looked themed on one
+   page and plain on the next. The homes are excluded because they already own their
+   surfaces above; this gives every other screen the same contract rather than a per-screen
+   patch each time one is noticed.
+
+   Scoped to .shell on purpose: the printable doctor summary is appended to <body>, outside
+   the shell, and must not inherit a themed surface. A report is a document, not a screen. */
+:root:not([data-experience-theme="clean"]) body[data-realm] .shell
+  :is(.panel,.grp,.metric,.timeline-card,.daily-row,.act-row,.mf-core-plan,.empty,.rows,.qa-grid,.daily-table,.mf-experience-panel,.mf-experience-option,.mf-settings-shortcuts,.mf-dream-journey){
+  background:var(--mf-world-surface-strong)!important;
+  border:1px solid var(--mf-world-line)!important;
+  box-shadow:0 10px 26px var(--mf-world-shadow)!important;
+}
+/* Section headings and helper copy sit on the page, not on a card. Give them the world's own
+   ink so they stay legible over whatever the plate is doing underneath.
+
+   .page-head is deliberately NOT in this list: it carries its own artwork and scrim, so its
+   title is light-on-scrim and is set with the rest of the head treatment below. Putting it
+   here painted a dark title straight onto the illustration. */
+:root:not([data-experience-theme="clean"]) body[data-realm]
+  #view > :is(.grp-title,.chart-note,.page-intro) :is(h2,h3,span,small,p,b,strong){
+  color:var(--mf-world-text)!important;text-shadow:none!important;
+}
+
+/* ------------------------------------------------------------- chrome legibility */
+/* The top bar is deliberately a soft scrim so the artwork reaches the screen edge, but the
+   Back label and the Mom/Baby tabs are navigation: they have to stay readable over whatever
+   the plate is doing there, not merely usually readable. Both get a real surface. */
+:root:not([data-experience-theme="clean"]) body[data-realm] .back-btn{
+  background:var(--mf-world-surface-strong)!important;
+  border:1px solid var(--mf-world-line)!important;
+  border-radius:999px!important;padding:0 13px 0 8px!important;
+  color:var(--mf-world-text)!important;
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs{
+  background:var(--mf-world-surface-strong)!important;
+  border:1px solid var(--mf-world-line)!important;
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button{color:var(--mf-world-muted)!important}
+:root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button.active{color:var(--mf-world-text)!important}
+
+/* A selected range pill puts white on the accent. Several accents are mid-tone, so white
+   lands between 3.0 and 4.4:1 - use the deep variant of the same hue instead of inventing a
+   new colour, so the pill still reads as the world's accent. */
+:root:not([data-experience-theme="clean"]) body[data-realm] .pills button:is(.on,.active){
+  background:var(--mf-world-deep)!important;color:#fff!important;border-color:transparent!important;
+}
+/* In dark mode the world's deep tone IS the light one - it is the tone that has to read
+   against a dark page - so the selected pill takes the world's base colour as its ink
+   instead of white on pale green. */
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .pills button:is(.on,.active){
+  color:var(--mf-world-base)!important;
+}
+
+/* The dock and the day-review stat lines were the last surfaces letting the plate through
+   behind small text. Both are read at a glance, so they get a real surface rather than a
+   slightly stronger tint each time a label lands somewhere awkward. */
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav{
+  background:var(--mf-world-surface-strong)!important;
+}
+/* :not(.sel) matters: the selected day chip is inverted ink-on-surface, and repainting its
+   background left white text on a near-white plate. Selection state is owned elsewhere; a
+   surface rule has no business touching it. */
+:root:not([data-experience-theme="clean"]) body[data-realm] :is(.review-stats,.stat-line,.day-strip .day-chip:not(.sel)){
+  background:var(--mf-world-surface-strong)!important;
+  border-color:var(--mf-world-line)!important;
+}
+
+/* ---------------------------------------------------------------- edge to edge */
+/* In standalone the page stopped short of both edges: a strip above the status bar the app
+   did not own, and a band below the dock. The scene is fixed to the viewport, so painting
+   the world colour on the root and letting the shell fill the dynamic viewport closes both
+   without the content itself moving. */
+:root:not([data-experience-theme="clean"]) body[data-realm]{background:var(--mf-world-base)!important}
+:root:not([data-experience-theme="clean"]) body[data-realm] .shell{min-height:100dvh}
+
+/* A small card centres its content; a wide row keeps it on the left where the eye starts.
+   The metric tiles are two-up and narrow, so they read as cards, not rows. */
+@media(max-width:760px){
+  :root:not([data-experience-theme="clean"]) body[data-realm] .metric-grid .metric{
+    flex-direction:column;text-align:center;justify-content:center;gap:7px;
+  }
+  :root:not([data-experience-theme="clean"]) body[data-realm] .metric-grid .metric>div{width:100%}
+  /* the icon is a badge, not a banner: centring the card must not stretch it edge to edge */
+  :root:not([data-experience-theme="clean"]) body[data-realm] .metric-grid .metric>.metric-icon{
+    width:36px;flex:0 0 auto;align-self:center;
+  }
+}
+
+/* ------------------------------------------------------------- measured text contrast */
+/* Every value below was measured against the real composited backdrop, not guessed. The
+   audit that produced them samples the actual plate pixels under each label, so these are
+   the smallest changes that clear WCAG AA rather than a blanket darkening of the palette. */
+
+/* The page-head eyebrow is 11px, so it needs 4.5:1. Realm ink measured 4.11-4.14 over the
+   light part of a plate; the world's deep tone is the same hue, further down. */
+:root:not([data-experience-theme="clean"]) body[data-realm] .page-head .eyebrow{
+  color:var(--mf-world-deep);
+}
+
+/* A themed surface is a shade off white, so an accent tuned on pure white loses about half a
+   point. --feed-ink and --wet-ink measured 4.2-4.4 on a history row; the rest of the accent
+   inks measured clear, so only these two move. Light mode only: in dark mode these tokens are
+   already the light end of the ramp, and darkening them would put navy on charcoal. */
+:root:not([data-theme="dark"]):not([data-experience-theme="clean"]) body[data-realm]{
+  --feed-ink:#226b52;
+  --wet-ink:#1b6089;
+}
+
+/* A themed page carries a picture behind its lists, so the two labels that sit on the page
+   rather than on a card take the world's own ink. Measured at 1.57 and 3.97 before. */
+/* The day heading sits straight on the plate, and a plate has dark passages, so the world's
+   ink alone is not enough: the same soft carrier the Baby hero caption uses gives it a floor.
+   Measured 1.57 bare, 2.94 with ink alone. */
+:root:not([data-experience-theme="clean"]) body[data-realm] :is(.review-head,.day-head,.panel-head,.rows-head){
+  background:color-mix(in srgb,var(--mf-world-surface-strong) 88%,transparent);
+  border-radius:14px;padding:6px 10px;margin-inline:-4px;
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] :is(.review-head,.day-head,.panel-head,.rows-head) :is(span,small,strong,h3){
+  color:var(--mf-world-text);
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] .segmented button{
+  color:var(--mf-world-text);
+}
+
+/* 11px helper copy under a chart or a clinical note measured 4.30 on a themed surface. The
+   world's text tone is the same family, one step down from the heading. */
+:root:not([data-experience-theme="clean"]) body[data-realm] :is(.clinical-note,.chart-note){
+  color:var(--mf-world-text);
+}
+
+/* ------------------------------------------------------------------- dark corrections */
+/* The page-head action is a pale glass pill. On a dark page its white label had 1.63:1, so
+   the pill goes dark and keeps the white. */
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .page-head .round-action{
+  background:rgba(16,20,30,.74)!important;
+  border-color:rgba(255,255,255,.26)!important;
+  color:#fff!important;
+}
+/* Same reasoning as the selected range pill: in dark the world's deep tone is the light one,
+   so the selected day takes it as its surface and the world's base as its ink. */
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .day-strip .day-chip.sel{
+  background:var(--mf-world-deep)!important;
+  border-color:transparent!important;
+}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .day-strip .day-chip.sel :is(b,span){
+  color:var(--mf-world-base)!important;opacity:1!important;
+}
+

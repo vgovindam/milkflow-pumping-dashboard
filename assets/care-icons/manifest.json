@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-18T04:44:15.851Z",
+  "generated": "2026-09-18T15:30:25.211Z",
   "actions": [
     "milk",
     "nurse",
@@ -10,41 +10,53 @@
     "pump"
   ],
   "themes": {
-    "safari": [
-      "milk",
-      "nurse",
-      "formula",
-      "wet",
-      "poop",
-      "mixed",
-      "pump"
-    ],
-    "butterfly": [
-      "milk",
-      "nurse",
-      "formula",
-      "wet",
-      "poop",
-      "mixed",
-      "pump"
-    ],
-    "princess": [
-      "milk",
-      "nurse",
-      "formula",
-      "wet",
-      "poop",
-      "mixed",
-      "pump"
-    ],
-    "unicorn": [
-      "milk",
-      "nurse",
-      "formula",
-      "wet",
-      "poop",
-      "mixed",
-      "pump"
-    ]
+    "safari": {
+      "label": "Safari friends",
+      "actions": [
+        "milk",
+        "nurse",
+        "formula",
+        "wet",
+        "poop",
+        "mixed",
+        "pump"
+      ]
+    },
+    "butterfly": {
+      "label": "Butterfly garden",
+      "actions": [
+        "milk",
+        "nurse",
+        "formula",
+        "wet",
+        "poop",
+        "mixed",
+        "pump"
+      ]
+    },
+    "princess": {
+      "label": "Princess palace",
+      "actions": [
+        "milk",
+        "nurse",
+        "formula",
+        "wet",
+        "poop",
+        "mixed",
+        "pump"
+      ]
+    },
+    "unicorn": {
+      "label": "Unicorn dream",
+      "actions": [
+        "milk",
+        "nurse",
+        "formula",
+        "wet",
+        "poop",
+        "mixed",
+        "pump"
+      ]
+    }
   }
 }

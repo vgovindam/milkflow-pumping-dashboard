@@ -71,6 +71,16 @@ if(!core.includes('MilkFlowExperience?.careIcon'))throw new Error('Baby care car
 if(!app.includes('MilkFlowExperience?.careIcon'))throw new Error('Mom action tiles do not resolve icons from the theme registry');
 if(!core.includes('CARE_GLYPH'))throw new Error('Care icon fallback glyph map is missing');
 {
+  /* The care icons are an illustrated cast, one character per action per theme, composed from
+     shared parts so the set stays consistent. A theme is a cast file plus a palette entry. */
+  const iconDir=path.join(ROOT,'scripts/care-icons');
+  for(const f of ['index.mjs','palette.mjs','props.mjs','parts.mjs','cast/safari.mjs','cast/butterfly.mjs','cast/princess.mjs','cast/unicorn.mjs'])
+    if(!fs.existsSync(path.join(iconDir,f)))throw new Error(`Care icon design system is missing: scripts/care-icons/${f}`);
+  const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'assets/care-icons/manifest.json'),'utf8'));
+  for(const theme of ['safari','butterfly','princess','unicorn'])
+    if(!manifest.themes?.[theme]?.label)throw new Error(`Care icon manifest has no cast label for ${theme} - run node scripts/generate-care-icons.mjs`);
+}
+{
   const iconRoot=path.join(ROOT,'assets/care-icons');
   const actions=['milk','nurse','formula','wet','poop','mixed','pump'];
   for(const theme of ['safari','butterfly','princess','unicorn']){

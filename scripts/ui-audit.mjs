@@ -15,7 +15,37 @@ requireText('mobile hero title scale',files.ui,'.mf-dream-main h2{font-size:32px
 requireText('readable row copy',files.css,'.row-main strong{font-size:15px');
 requireText('dark baby name',files.ui,':root[data-theme="dark"] .mf-animal-copy h2{color:#f7f3ff}');
 requireText('dark baby details',files.ui,':root[data-theme="dark"] .mf-animal-copy small{color:#d7e7ef}');
-requireText('dark journey details',files.ui,'.mf-dream-journey>p,:root[data-theme="dark"] .mf-journey-stop small{color:#c0c7d8!important}');
+requireText('dark journey details',files.ui,'.mf-dream-journey>p,:root[data-theme="dark"] .mf-journey-stop small{color:#c0c7d8}');
+
+/* ------------------------------------------------------------------ cascade contract --
+ * Layer order is the only thing deciding who wins, so it is a contract, not a convention.
+ * These checks exist because the alternative - a new rule added at the bottom with
+ * !important - is exactly how this stylesheet got to ~930 forced declarations. */
+const layers=read('styles.css');
+requireText('layer order declared once',layers,'@layer milkflow-base, milkflow-core, milkflow-components, milkflow-screens, milkflow-dark, milkflow-experience, milkflow-controls, milkflow-selection;');
+requireText('dark corrections are a layer',read('component-theme-core.css'),'@layer milkflow-dark {');
+requireText('base sheet is a layer',layers,'@layer milkflow-base {');
+requireText('component css is a layer',files.ui,'@layer milkflow-components {');
+{
+  /* Comments in these files explain what !important used to do here, so strip them first. */
+  const declarationsOnly=css=>css.replace(/\/\*[\s\S]*?\*\//g,'');
+  const componentCss=declarationsOnly(files.ui.slice(files.ui.indexOf('@layer milkflow-components {'),files.ui.indexOf('\n}\n`;')));
+  if(componentCss.includes('!important'))failures.push('component layer: !important is not allowed - move the rule to a later layer instead');
+  const core=read('component-theme-core.css');
+  if(declarationsOnly(core).includes('!important'))failures.push('component-theme-core.css: !important is not allowed - layer order decides');
+  if(!core.includes('@layer milkflow-screens {'))failures.push('component-theme-core.css: the Baby home composition must sit in milkflow-screens');
+  const doctor=read('doctor-summary.css');
+  if(!doctor.includes('@layer milkflow-screens {'))failures.push('doctor-summary.css: the on-screen block must sit in milkflow-screens');
+  if(doctor.indexOf('@media print{')<doctor.indexOf('@layer milkflow-screens {'))failures.push('doctor-summary.css: the print document must stay outside the layer system');
+}
+
+/* -------------------------------------------------------------- doctor report model --
+ * The screen and the printed summary read one model. Scraping the DOM back into a report is
+ * what made the print-out drift from what the app actually showed. */
+requireText('doctor report model',read('app.js'),'window.MilkFlowReports={doctorSummary:doctorReport}');
+requireText('doctor screen reads the model',read('app.js'),'const r=doctorReport();');
+requireText('print document reads the model',read('doctor-summary.js'),'window.MilkFlowReports?.doctorSummary?.()');
+if(read('doctor-summary.js').includes('.qa-grid > div'))failures.push('doctor-summary.js: the print document must not scrape the rendered screen');
 
 if(!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(files.version.version||''))failures.push('version.json: invalid semantic version');
 for(const asset of ['manifest.webmanifest','styles.css','theme.css','doctor-summary.css','app.js','experience-theme.js','sw.js']){

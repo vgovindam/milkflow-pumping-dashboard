@@ -42,7 +42,10 @@ need('cross-device alert module loaded',html,'cross-device-alerts.js?v=__MILKFLO
 need('new iPhone icon',html,'milkflow-family-v3-192.png?v=__MILKFLOW_VERSION__');
 for(const bad of ['component-theme-v3.css','experience-theme-v2.js','experience-theme-v3.js','experience-art-v2.css','jungle-theme.css'])if(html.includes(bad))failures.push(`legacy production entry loaded: ${bad}`);
 
-for(const text of ['mf-doctor-print','mf-print-table','Clinical snapshot','Daily care log','prepareDoctorPrint'])need('clinician doctor report',doctorJs+doctorCss,text);
+/* The printed summary is a document a pediatrician reads: an identity block, the measures,
+   the day-by-day log with a period total, and the footnote that says how the averages were
+   worked out. It is built from the report model - never from the rendered screen. */
+for(const text of ['mf-doctor-print','mf-print-table','mf-print-facts','At a glance','Day by day','mf-print-total','buildPrintDocument','mf-printing-report'])need('clinician doctor report',doctorJs+doctorCss,text);
 need('doctor component loaded',html,'doctor-summary.js?v=__MILKFLOW_VERSION__');
 need('doctor stylesheet loaded',html,'doctor-summary.css?v=__MILKFLOW_VERSION__');
 for(const text of ['function resetRouteScroll','function exactRouteControl','mf-render-recovery'])need('navigation recovery',lifecycle,text);

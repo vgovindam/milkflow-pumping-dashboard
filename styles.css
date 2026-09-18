@@ -1,7 +1,36 @@
 /* ==========================================================================
-   MilkFlow Family - single stylesheet (no competing layers).
+   MilkFlow Family - the base layer.
    Mobile-first, large touch targets, one colour per care action.
+
+   CASCADE CONTRACT. Everything the app paints lives in a named layer, and the order below
+   is the only thing that decides who wins. Later layer beats earlier layer, full stop - no
+   !important needed, and no rule has to be written last to take effect:
+
+     milkflow-base        this file: structure, type scale, the neutral look
+     milkflow-core        component-theme-core.css: the earlier component pass
+     milkflow-components  the component CSS core-ui.js injects: it owns card geometry and
+                          the type scale, so it has to outrank both sheets above
+     milkflow-screens     one-screen polish that must outrank the shared components but
+                          still give way to a theme (doctor-summary.css)
+     milkflow-dark        component-theme-core.css's dark-mode corrections, which have to
+                          outrank whatever the light design settled on
+     milkflow-experience  experience-system.css / experience-components.css: the themed
+                          worlds. Later than components on purpose - a theme decides colour
+                          and surface, and must not have to shout to do it
+     milkflow-controls    component-theme.css: controls that must survive a theme
+     milkflow-selection   component-theme.css: selected/active state, which outranks all
+
+   The order is declared here, in the first stylesheet the page loads, because that is what
+   fixes it. Later sheets re-declare their own names; those are no-ops.
+
+   !important is reserved for genuine utilities (.hidden, print, reduced-motion) - a class
+   whose ENTIRE job is to beat whatever else applies. Reaching for it anywhere else means
+   the rule is in the wrong layer.
    ========================================================================== */
+
+@layer milkflow-base, milkflow-core, milkflow-components, milkflow-screens, milkflow-dark, milkflow-experience, milkflow-controls, milkflow-selection;
+
+@layer milkflow-base {
 
 :root{
   --bg:#f4f4f9;
@@ -1025,7 +1054,8 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
   --line:rgba(111,91,169,.13);
   --line-soft:rgba(111,91,169,.08);
   --mom:#8265dd;--mom-2:#d07fbd;--mom-ink:#6045b2;--mom-soft:#f0eaff;
-  --baby:#559ed8;--baby-2:#70c9ba;--baby-ink:#3478a9;--baby-soft:#e7f5ff;
+  /* --baby-ink carries 8px chart labels on --baby-soft; #3478a9 measured 4.29:1 there. */
+  --baby:#559ed8;--baby-2:#70c9ba;--baby-ink:#2b6488;--baby-soft:#e7f5ff;
   --nav-bg:rgba(252,250,255,.78);
   --chip-bg:rgba(255,255,255,.66);
   --shadow:0 24px 58px rgba(79,63,132,.14),0 3px 14px rgba(85,112,159,.07);
@@ -1077,7 +1107,7 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
 .schedule-card{border-color:rgba(119,97,171,.1);background:rgba(255,255,255,.68);box-shadow:0 8px 20px rgba(85,70,131,.06)}
 .schedule-card.done{background:linear-gradient(145deg,rgba(229,249,240,.94),rgba(237,250,255,.9));border-color:rgba(74,169,134,.14)}
 .topbar{border-bottom-color:rgba(119,97,171,.1);box-shadow:0 7px 26px rgba(80,67,126,.05)}
-.bottom-nav{border-color:rgba(255,255,255,.74)!important;box-shadow:0 18px 42px rgba(68,58,110,.18),inset 0 1px 0 rgba(255,255,255,.85)!important}
+.bottom-nav{border-color:rgba(255,255,255,.74);box-shadow:0 18px 42px rgba(68,58,110,.18),inset 0 1px 0 rgba(255,255,255,.85)}
 .dialog::backdrop{background:rgba(59,49,91,.36);backdrop-filter:blur(8px)}
 .page-head h2,.panel-head h3,.hero h2,.stage-copy h2{color:color-mix(in srgb,var(--ink) 90%,var(--mom) 10%)}
 
@@ -1131,4 +1161,5 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
   .daily-row.daily-head{display:grid}
   .daily-row{grid-template-columns:1.55fr repeat(5,1fr);break-inside:avoid}
   body{background:var(--surface);padding-bottom:0}
+}
 }

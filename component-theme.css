@@ -3,7 +3,9 @@
    named cascade layers so focused component contracts have an explicit priority instead
    of relying on accidental source order or one-off patch stylesheets. */
 @layer milkflow-core, milkflow-experience, milkflow-controls, milkflow-selection;
-@import url("./component-theme-core.css?build=stable45-human8") layer(milkflow-core);
+/* No layer() here: component-theme-core.css declares its own layers, because most of it is
+   milkflow-core but the Baby home composition belongs in milkflow-screens. */
+@import url("./component-theme-core.css?build=stable45-human8");
 @import url("./experience-themes.css?build=stable45-human8") layer(milkflow-experience);
 
 @layer milkflow-controls {

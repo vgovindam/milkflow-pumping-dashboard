@@ -1,136 +1,144 @@
+/* MilkFlow — printable pediatric visit summary.
+ *
+ * This file owns ONE thing: turning the doctor report model into a document that prints
+ * well on a sheet of paper. It does not read the rendered screen and it does not compute
+ * any care figures of its own — app.js publishes window.MilkFlowReports.doctorSummary()
+ * and that is the single source for both the screen and this page. If the model is not
+ * available the file does nothing at all, and the browser prints the app normally, rather
+ * than printing a half-built report.
+ */
 (() => {
 'use strict';
 
 const PRINT_ID = 'mfDoctorPrint';
+const PRINTING_CLASS = 'mf-printing-report';
 
-function text(el){ return (el?.textContent || '').replace(/\s+/g,' ').trim(); }
-function escapeHtml(value){
-  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
-}
-function parseCount(line,label){
-  const m = String(line||'').match(new RegExp(`(\\d+)\\s+${label}`,'i'));
-  return m ? m[1] : '—';
-}
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const one = n => (Math.round((+n || 0) * 10) / 10).toFixed(1);
 
-function doctorData(){
-  if(document.body.dataset.screen !== 'doctor') return null;
-  const snapshot = document.querySelector('.doctor-summary-card');
-  const snapshotTitle = text(snapshot?.querySelector('strong')) || 'Baby care summary';
-  const snapshotSub = text(snapshot?.querySelector('span')) || 'Logged care summary';
+/* A clinician reads dates, not ISO strings. Noon avoids the timezone edge that turns
+   2026-09-05 into the 4th west of UTC. */
+const DAY_FMT = new Intl.DateTimeFormat(undefined, {weekday: 'short', month: 'short', day: 'numeric'});
+const FULL_FMT = new Intl.DateTimeFormat(undefined, {year: 'numeric', month: 'short', day: 'numeric'});
+const STAMP_FMT = new Intl.DateTimeFormat(undefined, {year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'});
+const day = iso => iso ? DAY_FMT.format(new Date(`${iso}T12:00:00`)) : '—';
+const full = iso => iso ? FULL_FMT.format(new Date(`${iso}T12:00:00`)) : '—';
 
-  const metrics = [...document.querySelectorAll('.qa-grid > div')].map(card => ({
-    label: text(card.querySelector('span')),
-    value: text(card.querySelector('strong')),
-    note: text(card.querySelector('small'))
-  })).filter(x => x.label || x.value);
-
-  const daily = [...document.querySelectorAll('.daily-table .daily-row:not(.daily-head)')].map(row => {
-    const date = text(row.querySelector('.daily-date strong'));
-    const rollup = text(row.querySelector('.daily-date small'));
-    const cells = [...row.querySelectorAll('.daily-cell')];
-    const byClass = cls => {
-      const c = cells.find(x => x.classList.contains(cls));
-      return text(c?.querySelector('b')) || '—';
-    };
-    return {
-      date,
-      wet: byClass('wet'),
-      poop: byClass('poop'),
-      mixed: byClass('mixed'),
-      diapers: parseCount(rollup,'diapers'),
-      feeds: byClass('feeds'),
-      milk: byClass('milk')
-    };
-  }).filter(r => r.date);
-
-  const range = snapshotTitle.match(/(\d+)-day/i)?.[1];
-  const babyName = snapshotTitle.split('·')[0]?.trim() || 'Baby';
-  return {snapshotTitle,snapshotSub,metrics,daily,range,babyName};
+function report(){
+  try { return window.MilkFlowReports?.doctorSummary?.() || null; }
+  catch { return null; }
 }
 
-function summaryRows(metrics){
-  if(!metrics.length) return '<tr><td colspan="3">No summary metrics available.</td></tr>';
-  return metrics.map(m => `<tr>
-    <td class="metric">${escapeHtml(m.label)}</td>
-    <td class="value">${escapeHtml(m.value)}</td>
-    <td class="note">${escapeHtml(m.note || '—')}</td>
-  </tr>`).join('');
+function identity(r){
+  const bits = [r.baby.name];
+  if(r.baby.age) bits.push(r.baby.age);
+  const born = r.baby.birthDate ? ` (born ${full(r.baby.birthDate)})` : '';
+  return `${bits.join(', ')}${born}`;
+}
+
+function periodLine(p){
+  const span = `${full(p.from)} – ${full(p.to)}`;
+  const kept = `${p.days} day${p.days === 1 ? '' : 's'}, ${p.daysWithRecords} with records`;
+  return `${span} · ${kept}`;
+}
+
+function measureRows(measures){
+  if(!measures.length) return '<tr><td colspan="3">No care has been logged in this period.</td></tr>';
+  return measures.map(m => `<tr>
+      <th scope="row">${esc(m.label)}</th>
+      <td class="value">${esc(m.value)}</td>
+      <td class="note">${esc([m.note, m.date ? full(m.date) : ''].filter(Boolean).join(' '))}</td>
+    </tr>`).join('');
 }
 
 function dailyRows(rows){
-  if(!rows.length) return '<tr><td colspan="7">No daily records available in this range.</td></tr>';
-  return rows.map(r => `<tr>
-    <td>${escapeHtml(r.date)}</td>
-    <td>${escapeHtml(r.wet)}</td>
-    <td>${escapeHtml(r.poop)}</td>
-    <td>${escapeHtml(r.mixed)}</td>
-    <td>${escapeHtml(r.diapers)}</td>
-    <td>${escapeHtml(r.feeds)}</td>
-    <td>${escapeHtml(r.milk)}</td>
-  </tr>`).join('');
+  if(!rows.length) return '<tr><td colspan="8">No daily records in this period.</td></tr>';
+  return rows.map(r => r.logged ? `<tr>
+      <th scope="row">${esc(day(r.date))}</th>
+      <td>${r.wetOnly}</td><td>${r.poopOnly}</td><td>${r.mixed}</td>
+      <td>${r.diapers}</td><td>${r.feeds}</td>
+      <td>${r.bottleOz ? one(r.bottleOz) : '—'}</td>
+      <td>${r.sleepMin ? one(r.sleepMin / 60) : '—'}</td>
+    </tr>` : `<tr class="mf-print-blank">
+      <th scope="row">${esc(day(r.date))}</th>
+      <td colspan="7">Nothing logged</td>
+    </tr>`).join('');
 }
 
-function prepareDoctorPrint(){
-  const data = doctorData();
-  if(!data) return false;
+function totalsRow(t){
+  return `<tr class="mf-print-total">
+      <th scope="row">Period total</th>
+      <td>${t.wetOnly}</td><td>${t.poopOnly}</td><td>${t.mixed}</td>
+      <td>${t.diapers}</td><td>${t.feeds}</td>
+      <td>${t.bottleOz ? one(t.bottleOz) : '—'}</td>
+      <td>${t.sleepMin ? one(t.sleepMin / 60) : '—'}</td>
+    </tr>`;
+}
+
+function buildPrintDocument(){
+  const r = report();
+  if(!r) return false;
+
   document.getElementById(PRINT_ID)?.remove();
-
-  const generated = new Intl.DateTimeFormat('en-US',{
-    year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'
-  }).format(new Date());
-  const first = data.daily.at(-1)?.date || '—';
-  const last = data.daily[0]?.date || '—';
-
   const el = document.createElement('section');
   el.id = PRINT_ID;
   el.className = 'mf-doctor-print';
-  el.setAttribute('aria-hidden','true');
+  el.setAttribute('aria-hidden', 'true');
   el.innerHTML = `
     <header class="mf-print-header">
-      <div>
-        <div class="mf-print-kicker">MilkFlow · Parent-entered care log</div>
-        <h1>${escapeHtml(data.babyName)} — Pediatric Care Summary</h1>
-        <div class="mf-print-subtitle">${escapeHtml(data.snapshotTitle)} · ${escapeHtml(data.snapshotSub)}</div>
-      </div>
-      <div class="mf-print-meta">
-        <div><strong>Report period:</strong> ${escapeHtml(first)} – ${escapeHtml(last)}</div>
-        <div><strong>Selected range:</strong> ${escapeHtml(data.range ? `${data.range} days` : 'Current range')}</div>
-        <div><strong>Generated:</strong> ${escapeHtml(generated)}</div>
-      </div>
+      <p class="mf-print-kicker">MilkFlow · care logged at home by the family</p>
+      <h1>Summary for ${esc(r.baby.name)}’s visit</h1>
+      <dl class="mf-print-facts">
+        <dt>Child</dt><dd>${esc(identity(r))}</dd>
+        <dt>Period covered</dt><dd>${esc(periodLine(r.period))}</dd>
+        <dt>Prepared</dt><dd>${esc(STAMP_FMT.format(new Date(r.generatedAt)))}</dd>
+      </dl>
     </header>
 
     <section class="mf-print-section">
-      <h2>Clinical snapshot</h2>
-      <table class="mf-print-table" aria-label="Clinical snapshot">
-        <thead><tr><th>Measure</th><th>Value</th><th>Context</th></tr></thead>
-        <tbody>${summaryRows(data.metrics)}</tbody>
+      <h2>At a glance</h2>
+      <table class="mf-print-table mf-print-measures">
+        <thead><tr><th scope="col">Measure</th><th scope="col">Value</th><th scope="col">Context</th></tr></thead>
+        <tbody>${measureRows(r.measures)}</tbody>
       </table>
     </section>
 
     <section class="mf-print-section">
-      <h2>Daily care log</h2>
-      <table class="mf-print-table mf-print-daily" aria-label="Daily care log">
-        <thead><tr><th>Date</th><th>Wet only</th><th>Poopy only</th><th>Mixed</th><th>Total diapers</th><th>Feeds</th><th>Bottle milk</th></tr></thead>
-        <tbody>${dailyRows(data.daily)}</tbody>
+      <h2>Day by day</h2>
+      <table class="mf-print-table mf-print-daily">
+        <thead><tr>
+          <th scope="col">Date</th><th scope="col">Wet</th><th scope="col">Dirty</th><th scope="col">Mixed</th>
+          <th scope="col">Nappies</th><th scope="col">Feeds</th><th scope="col">Bottle oz</th><th scope="col">Sleep h</th>
+        </tr></thead>
+        <tbody>${dailyRows(r.daily)}${totalsRow(r.totals)}</tbody>
       </table>
     </section>
 
     <footer class="mf-print-note">
-      This report summarizes care entered by the family and is intended to support a pediatric visit. It is not a diagnosis or a substitute for the clinician’s medical record.
-      <div class="mf-print-source">Wet and poopy averages shown in MilkFlow include mixed diapers where noted. Bottle milk reflects logged bottle volume only; nursing volume is not estimated.</div>
+      <p><strong>How to read this.</strong> Daily averages are worked out across the ${r.period.daysWithRecords} day${r.period.daysWithRecords === 1 ? '' : 's'} that have records, not across all ${r.period.days} days, so a day nobody had a chance to log does not read as a day with no wet nappies. “Wet” and “Dirty” counts include mixed changes. Bottle volume is logged bottles only — nursing volume is not estimated. Sleep is logged sleep only.</p>
+      <p class="mf-print-source">Entered by the family in the MilkFlow app. This is a record of care at home, not a clinical assessment or a diagnosis.</p>
     </footer>`;
   document.body.appendChild(el);
+  document.body.classList.add(PRINTING_CLASS);
   return true;
 }
 
-// The app owns the Print button. Capture its click first so the structured print document
-// exists before app.js calls window.print(). This stays isolated to the Doctor screen.
+function teardown(){
+  document.getElementById(PRINT_ID)?.remove();
+  document.body.classList.remove(PRINTING_CLASS);
+}
+
+/* The app owns the Print button. Capture its click first so the document exists before
+   app.js calls window.print(). beforeprint covers Cmd-P and the browser's own print menu. */
 document.addEventListener('click', e => {
   if(document.body.dataset.screen !== 'doctor') return;
   if(!e.target.closest('[data-print]')) return;
-  prepareDoctorPrint();
+  buildPrintDocument();
 }, true);
-window.addEventListener('beforeprint', prepareDoctorPrint);
-window.addEventListener('afterprint', () => document.getElementById(PRINT_ID)?.remove());
+window.addEventListener('beforeprint', () => { if(document.body.dataset.screen === 'doctor') buildPrintDocument(); });
+window.addEventListener('afterprint', teardown);
+
+/* Exposed so the build's checks (and a developer) can render the document without a printer. */
+window.MilkFlowDoctorPrint = {build: buildPrintDocument, teardown};
 
 })();

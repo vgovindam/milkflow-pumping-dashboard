@@ -10,10 +10,19 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
 const server=http.createServer((req,res)=>{let p=new URL(req.url,'http://localhost').pathname;if(p==='/'||p==='')p='/index.html';p=decodeURIComponent(p).replace(/^\/+/, '');const file=path.join(ROOT,p);if(!file.startsWith(ROOT)||!fs.existsSync(file)||fs.statSync(file).isDirectory()){res.writeHead(404);res.end('not found');return;}res.writeHead(200,{'content-type':mime[path.extname(file)]||'application/octet-stream','cache-control':'no-store'});fs.createReadStream(file).pipe(res);});
 await new Promise(r=>server.listen(4173,'127.0.0.1',r));
 
-const candidates=['google-chrome','google-chrome-stable','chromium','chromium-browser'];
-const chrome=candidates.find(c=>spawnSync('which',[c],{encoding:'utf8'}).status===0);
-if(!chrome){server.close();throw new Error('Chrome/Chromium not available');}
-const exe=spawnSync('which',[chrome],{encoding:'utf8'}).stdout.trim();
+/* CI has chrome on PATH; a Mac keeps it inside an .app bundle and nothing is on PATH at all.
+   Look in both places, or this gate can only ever run on the build machine - which is how a
+   release can be cut from a laptop without the visual QA having run once. */
+const onPath=['google-chrome','google-chrome-stable','chromium','chromium-browser'];
+const bundles=[
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  `${process.env.HOME||''}/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`,
+  '/Applications/Chromium.app/Contents/MacOS/Chromium',
+  '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+];
+const named=onPath.find(c=>spawnSync('which',[c],{encoding:'utf8'}).status===0);
+const exe=named?spawnSync('which',[named],{encoding:'utf8'}).stdout.trim():bundles.find(b=>b&&fs.existsSync(b));
+if(!exe){server.close();throw new Error('Chrome/Chromium not available');}
 let proc=null,debugPort=0;
 for(const port of [9222,9223,9224]){
   const p=spawn(exe,['--headless=new','--no-sandbox','--disable-gpu','--disable-dev-shm-usage',`--remote-debugging-port=${port}`,`--user-data-dir=/tmp/milkflow-browser-qa-${process.pid}-${port}`,'--window-size=390,844','about:blank'],{stdio:'ignore'});

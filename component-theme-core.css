@@ -1,8 +1,17 @@
 /* MilkFlow component system
    This is the single component-level visual contract layered on the base tokens in
    styles.css. It owns semantic card colour, compact mobile composition, dark page heads,
-   navigation scrolling and touch treatment. No edge-accent cards or one-off patch files. */
+   navigation scrolling and touch treatment. No edge-accent cards or one-off patch files.
 
+   This file is the milkflow-core layer (see the cascade contract at the top of styles.css).
+   It sits BELOW the component layer core-ui.js injects and below the themed experience layer,
+   which is the point: it is the earlier pass, and where a newer one disagrees the newer one
+   should win. The one exception is the Baby home composition, which is newer than the
+   component layer and says so by sitting in milkflow-screens. It used to carry ~300 !important declarations to hold that ground, which made
+   it outrank every sheet loaded after it and meant a theme could not repaint a page head
+   without shouting back. Layer order decides now, so there is not one left. */
+
+@layer milkflow-core {
 /* ---------------------------------------------------------------- interaction */
 button,.row,.grp-row,.mf-feed-card,.mf-diaper-blob{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 /* Every surface you can press answers the same way. Previously the care cards and list rows
@@ -21,45 +30,45 @@ button,.row,.grp-row,.mf-feed-card,.mf-diaper-blob{touch-action:manipulation;-we
 
 /* A successful sync is background infrastructure, not page content. Surface only errors;
    account state remains fully visible in Settings. */
-.sync-foot.synced,.sync-foot.device{display:none!important}
+.sync-foot.synced,.sync-foot.device{display:none}
 
 /* Decorative ambient clouds belong on the two home experiences. On analytical screens
    they compete with charts and exaggerate empty space. */
 body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .main::before,
-body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .main::after{display:none!important}
+body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .main::after{display:none}
 
 /* ---------------------------------------------------------------- mobile frame */
 @media(max-width:760px){
   /* One explicit scroll owner fixes iOS standalone/history restoring an old body offset
      after a tab change. The persistent nav remains fixed to the viewport. */
-  html,body{height:100%;min-height:100%;overflow:hidden!important}
+  html,body{height:100%;min-height:100%;overflow:hidden}
   .shell{height:100dvh;min-height:100dvh;overflow:hidden}
   .main{
-    height:100dvh!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;
+    height:100dvh;min-height:0;overflow-y:auto;overflow-x:hidden;
     overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scroll-behavior:auto
   }
-  body.locked .main{overflow:hidden!important}
-  .topbar{position:sticky!important;top:0!important;z-index:45!important}
+  body.locked .main{overflow:hidden}
+  .topbar{position:sticky;top:0;z-index:45}
   .view{
-    min-height:calc(100dvh - 54px);overflow-anchor:none!important;
-    padding-bottom:calc(132px + env(safe-area-inset-bottom))!important
+    min-height:calc(100dvh - 54px);overflow-anchor:none;
+    padding-bottom:calc(132px + env(safe-area-inset-bottom))
   }
 
   /* The dock always has a real visual gutter. Some iOS standalone sessions report a
      zero bottom inset; max() prevents the bar from looking glued to the device edge. */
   .bottom-nav{
-    left:14px!important;right:14px!important;
-    bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))!important;
-    padding:5px 6px!important;border-radius:24px!important
+    left:14px;right:14px;
+    bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px));
+    padding:5px 6px;border-radius:24px
   }
-  .bottom-nav button{min-height:52px!important}
-  .bottom-nav .add-tab{top:-16px!important}
-  .bottom-nav .add-tab .ico{width:28px!important;height:28px!important;padding:11px!important}
-  .sync-foot:not(.synced):not(.device){padding-bottom:calc(124px + env(safe-area-inset-bottom))!important}
+  .bottom-nav button{min-height:52px}
+  .bottom-nav .add-tab{top:-16px}
+  .bottom-nav .add-tab .ico{width:28px;height:28px;padding:11px}
+  .sync-foot:not(.synced):not(.device){padding-bottom:calc(124px + env(safe-area-inset-bottom))}
 
   /* The base theme previously animated every card on every navigation. A native-feeling
      app should move only the screen transition, not make each box independently arrive. */
-  .view .hero,.view .baby-stage,.view .panel,.view .quick-tile,.view .mf-core-plan,.view .metric{animation:none!important}
+  .view .hero,.view .baby-stage,.view .panel,.view .quick-tile,.view .mf-core-plan,.view .metric{animation:none}
 }
 
 /* Render failure should never look like an empty application. */
@@ -72,153 +81,125 @@ body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .main::after{d
 /* ---------------------------------------------------------------- page heads */
 /* Subpage headers use stronger text and less height. The artwork remains a small accent,
    not the dominant object in an analytical view. */
-body[data-realm="baby"] .page-head h2{color:#18495d!important;text-shadow:none!important}
-body[data-realm="baby"] .page-head .eyebrow{color:#2d7086!important;opacity:1!important}
-body[data-realm="family"] .page-head h2{color:#302b55!important;text-shadow:none!important}
-body[data-realm="family"] .page-head .eyebrow{color:#5e5792!important;opacity:1!important}
+body[data-realm="baby"] .page-head h2{color:#18495d;text-shadow:none}
+body[data-realm="baby"] .page-head .eyebrow{color:#2d7086;opacity:1}
+body[data-realm="family"] .page-head h2{color:#302b55;text-shadow:none}
+body[data-realm="family"] .page-head .eyebrow{color:#5e5792;opacity:1}
 
-:root[data-theme="dark"] body[data-realm="baby"] .page-head{
-  background:linear-gradient(135deg,#173142,#1d3849 55%,#243b38)!important;border-color:#355264!important;box-shadow:0 14px 34px rgba(0,0,0,.22)!important
-}
-:root[data-theme="dark"] body[data-realm="baby"] .page-head:before{background:linear-gradient(135deg,#173142,#1d3849 55%,#243b38)!important}
-:root[data-theme="dark"] body[data-realm="mom"] .page-head{background:linear-gradient(135deg,#28213e,#35254a 55%,#27384d)!important;border-color:#493c61!important}
-:root[data-theme="dark"] body[data-realm="mom"] .page-head:before{background:linear-gradient(135deg,#28213e,#35254a 55%,#27384d)!important}
-:root[data-theme="dark"] body[data-realm="family"] .page-head{background:linear-gradient(135deg,#242338,#2a2742 48%,#203341)!important;border-color:#3a4053!important}
-:root[data-theme="dark"] body[data-realm="family"] .page-head:before{background:linear-gradient(135deg,#242338,#2a2742 48%,#203341)!important}
-:root[data-theme="dark"] body[data-realm] .page-head h2{color:#f7f9fc!important;text-shadow:none!important}
-:root[data-theme="dark"] body[data-realm] .page-head .eyebrow{color:#c8d5e7!important;opacity:1!important}
 
 @media(max-width:760px){
-  body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head{min-height:88px!important;padding:14px 16px!important;margin-bottom:11px!important;border-radius:24px!important}
-  body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head h2{font-size:25px!important;line-height:1.02!important}
-  .mf-section-animal{width:62px!important;height:62px!important;right:68px!important;bottom:2px!important;opacity:.92}
+  body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head{min-height:88px;padding:14px 16px;margin-bottom:11px;border-radius:24px}
+  body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head h2{font-size:25px;line-height:1.02}
+  .mf-section-animal{width:62px;height:62px;right:68px;bottom:2px;opacity:.92}
 }
-
-/* ---------------------------------------------------------------- Baby home */
-body[data-screen="baby-home"] .mf-animal-copy h2{font-family:var(--display)!important;font-weight:800!important;letter-spacing:-.035em!important}
-@media(max-width:760px){
-  body[data-screen="baby-home"] .mf-animal-hero{
-    min-height:0!important;padding:14px 14px 16px!important;display:grid!important;
-    grid-template-columns:124px minmax(0,1fr) minmax(116px,.8fr)!important;
-    grid-template-areas:"greeting greeting greeting" "photo name stats" "photo age stats"!important;
-    column-gap:10px!important;row-gap:4px!important;align-items:center!important
-  }
-  body[data-screen="baby-home"] .mf-animal-profile,body[data-screen="baby-home"] .mf-animal-copy{display:contents!important}
-  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{grid-area:photo!important;width:124px!important;height:124px!important;border-width:6px!important;align-self:center!important}
-  body[data-screen="baby-home"] .mf-animal-copy .welcome{
-    grid-area:greeting!important;box-sizing:border-box!important;width:auto!important;max-width:none!important;min-height:0!important;
-    margin:0 0 6px!important;padding:0!important;border-radius:0!important;background:none!important;
-    border:0!important;font-family:var(--display)!important;font-size:12.5px!important;line-height:1.15!important;
-    font-weight:750!important;color:#285e67!important;white-space:normal!important
-  }
-  body[data-screen="baby-home"] .mf-animal-copy h2{grid-area:name!important;position:static!important;width:auto!important;margin:0!important;font-size:31px!important;line-height:.98!important;align-self:end!important;white-space:nowrap!important;overflow:visible!important;color:#163f52!important}
-  body[data-screen="baby-home"] .mf-animal-copy>small{grid-area:age!important;position:static!important;margin:3px 0 0!important;font-size:10.5px!important;line-height:1.15!important;align-self:start!important;color:#456b71!important;opacity:.92!important}
-  body[data-screen="baby-home"] .mf-animal-stats{grid-area:stats!important;position:static!important;align-self:center!important;width:100%!important;margin:0!important;display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
-  body[data-screen="baby-home"] .mf-animal-stat{min-width:0!important;min-height:45px!important;padding:6px 8px!important;border-radius:16px!important;text-align:left!important;display:grid!important;align-content:center!important}
-  body[data-screen="baby-home"] .mf-animal-stat strong{font-family:var(--display)!important;font-size:15px!important;line-height:1!important}
-  body[data-screen="baby-home"] .mf-animal-stat span{font-size:9px!important;line-height:1.05!important;margin-top:3px!important}
-  body[data-screen="baby-home"] .mf-animal-hero>.bear,body[data-screen="baby-home"] .mf-animal-hero>.bunny,body[data-screen="baby-home"] .mf-animal-star{display:none!important}
-}
-@media(max-width:390px){
-  body[data-screen="baby-home"] .mf-animal-hero{grid-template-columns:96px minmax(0,1fr) minmax(116px,.86fr)!important;column-gap:8px!important}
-  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:96px!important;height:96px!important}
-  body[data-screen="baby-home"] .mf-animal-copy h2{font-size:26px!important}
-}
-:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:none!important;border-color:transparent!important;color:#d8f5f7!important}
-:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#f5fbff!important}
-:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy>small{color:#c5dce3!important}
 
 /* ---------------------------------------------------------------- care history */
 /* Category is carried by the whole surface, never a coloured edge. */
-body[data-realm="baby"] .rows .row{box-shadow:0 7px 18px rgba(38,64,83,.055)!important}
-body[data-realm="baby"] .rows .row:has(.row-icon.kind-feeding){background:linear-gradient(135deg,#eaf8f1,#dff2e9)!important;border-color:#c9e7d9!important}
-body[data-realm="baby"] .rows .row:has(.row-icon.kind-nursing){background:linear-gradient(135deg,#fff0f6,#f9dfeb)!important;border-color:#f2cada!important}
-body[data-realm="baby"] .rows .row:has(.row-icon.sub-wet){background:linear-gradient(135deg,#eaf6ff,#dceef9)!important;border-color:#c7e2f2!important}
-body[data-realm="baby"] .rows .row:has(.row-icon.sub-poop){background:linear-gradient(135deg,#fff6e7,#f9e8c8)!important;border-color:#efd7ae!important}
-body[data-realm="baby"] .rows .row:has(.row-icon.sub-both){background:linear-gradient(135deg,#f4efff,#e9dfff)!important;border-color:#d9ccf3!important}
-body[data-realm="baby"] .rows .row:has(.row-icon.kind-sleep){background:linear-gradient(135deg,#eef0ff,#e1e4f8)!important;border-color:#d0d5ef!important}
-body[data-realm="baby"] .rows .row:has(.row-icon.kind-growth){background:linear-gradient(135deg,#edf9f5,#dff1eb)!important;border-color:#c9e4da!important}
-body[data-realm="baby"] .rows .row:has(.row-icon.kind-milestone){background:linear-gradient(135deg,#fbf0ff,#f0e1f5)!important;border-color:#e1cbe8!important}
-body[data-realm="mom"] .rows .row{background:linear-gradient(135deg,#f4efff,#e9e5fb)!important;border-color:#dad1f0!important;box-shadow:0 7px 18px rgba(73,57,113,.055)!important}
-body[data-realm] .rows .row:hover{filter:saturate(1.025) brightness(1.01)!important}
+body[data-realm="baby"] .rows .row{box-shadow:0 7px 18px rgba(38,64,83,.055)}
+body[data-realm="baby"] .rows .row:has(.row-icon.kind-feeding){background:linear-gradient(135deg,#eaf8f1,#dff2e9);border-color:#c9e7d9}
+body[data-realm="baby"] .rows .row:has(.row-icon.kind-nursing){background:linear-gradient(135deg,#fff0f6,#f9dfeb);border-color:#f2cada}
+body[data-realm="baby"] .rows .row:has(.row-icon.sub-wet){background:linear-gradient(135deg,#eaf6ff,#dceef9);border-color:#c7e2f2}
+body[data-realm="baby"] .rows .row:has(.row-icon.sub-poop){background:linear-gradient(135deg,#fff6e7,#f9e8c8);border-color:#efd7ae}
+body[data-realm="baby"] .rows .row:has(.row-icon.sub-both){background:linear-gradient(135deg,#f4efff,#e9dfff);border-color:#d9ccf3}
+body[data-realm="baby"] .rows .row:has(.row-icon.kind-sleep){background:linear-gradient(135deg,#eef0ff,#e1e4f8);border-color:#d0d5ef}
+body[data-realm="baby"] .rows .row:has(.row-icon.kind-growth){background:linear-gradient(135deg,#edf9f5,#dff1eb);border-color:#c9e4da}
+body[data-realm="baby"] .rows .row:has(.row-icon.kind-milestone){background:linear-gradient(135deg,#fbf0ff,#f0e1f5);border-color:#e1cbe8}
+body[data-realm="mom"] .rows .row{background:linear-gradient(135deg,#f4efff,#e9e5fb);border-color:#dad1f0;box-shadow:0 7px 18px rgba(73,57,113,.055)}
+body[data-realm] .rows .row:hover{filter:saturate(1.025) brightness(1.01)}
 
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-feeding){background:linear-gradient(135deg,#173128,#1c352f)!important;border-color:#294c40!important}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-nursing){background:linear-gradient(135deg,#3a2030,#452638)!important;border-color:#63364c!important}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-wet){background:linear-gradient(135deg,#173040,#1b3a4d)!important;border-color:#28536a!important}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-poop){background:linear-gradient(135deg,#3b2c15,#46351b)!important;border-color:#604b29!important}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-both){background:linear-gradient(135deg,#302643,#3a2c51)!important;border-color:#50406c!important}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-sleep){background:linear-gradient(135deg,#252941,#2c304c)!important;border-color:#3f4663!important}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-growth){background:linear-gradient(135deg,#1b332d,#203d35)!important;border-color:#315148!important}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-milestone){background:linear-gradient(135deg,#382641,#432d4d)!important;border-color:#5c3f67!important}
-:root[data-theme="dark"] body[data-realm="mom"] .rows .row{background:linear-gradient(135deg,#29243b,#322943)!important;border-color:#453a5c!important}
 
 /* ---------------------------------------------------------------- analytical screens */
 /* Metric cards are semantic surfaces, not generic dark boxes with decorative corner blobs. */
-body[data-screen="baby-trends"] .metric:after,body[data-screen="mom-trends"] .metric:after{display:none!important}
-body[data-screen="baby-trends"] .metric{border-width:1px!important;box-shadow:0 7px 18px rgba(25,45,61,.07)!important}
-body[data-screen="baby-trends"] .metric:nth-child(1){background:var(--wet)!important;color:var(--wet-ink)!important;border-color:color-mix(in srgb,var(--wet-ink) 20%,transparent)!important}
-body[data-screen="baby-trends"] .metric:nth-child(2){background:var(--poop)!important;color:var(--poop-ink)!important;border-color:color-mix(in srgb,var(--poop-ink) 20%,transparent)!important}
-body[data-screen="baby-trends"] .metric:nth-child(3){background:var(--feed)!important;color:var(--feed-ink)!important;border-color:color-mix(in srgb,var(--feed-ink) 20%,transparent)!important}
-body[data-screen="baby-trends"] .metric:nth-child(4){background:var(--baby-soft)!important;color:var(--baby-ink)!important;border-color:color-mix(in srgb,var(--baby-ink) 20%,transparent)!important}
-body[data-screen="baby-trends"] .metric .metric-icon{background:rgba(255,255,255,.46)!important;color:currentColor!important;box-shadow:none!important}
-body[data-screen="baby-trends"] .metric strong{color:currentColor!important}
-body[data-screen="baby-trends"] .metric span,body[data-screen="baby-trends"] .metric small{color:currentColor!important;opacity:.82!important}
-:root[data-theme="dark"] body[data-screen="baby-trends"] .metric .metric-icon{background:rgba(255,255,255,.065)!important}
+body[data-screen="baby-trends"] .metric:after,body[data-screen="mom-trends"] .metric:after{display:none}
+body[data-screen="baby-trends"] .metric{border-width:1px;box-shadow:0 7px 18px rgba(25,45,61,.07)}
+body[data-screen="baby-trends"] .metric:nth-child(1){background:var(--wet);color:var(--wet-ink);border-color:color-mix(in srgb,var(--wet-ink) 20%,transparent)}
+body[data-screen="baby-trends"] .metric:nth-child(2){background:var(--poop);color:var(--poop-ink);border-color:color-mix(in srgb,var(--poop-ink) 20%,transparent)}
+body[data-screen="baby-trends"] .metric:nth-child(3){background:var(--feed);color:var(--feed-ink);border-color:color-mix(in srgb,var(--feed-ink) 20%,transparent)}
+body[data-screen="baby-trends"] .metric:nth-child(4){background:var(--baby-soft);color:var(--baby-ink);border-color:color-mix(in srgb,var(--baby-ink) 20%,transparent)}
+body[data-screen="baby-trends"] .metric .metric-icon{background:rgba(255,255,255,.46);color:currentColor;box-shadow:none}
+body[data-screen="baby-trends"] .metric strong{color:currentColor}
+body[data-screen="baby-trends"] .metric span,body[data-screen="baby-trends"] .metric small{color:currentColor;opacity:.82}
 
 /* Daily cards repeat the same semantic colours, which makes a week scannable without
    reading every label. */
-body[data-screen="baby-trends"] .daily-cell.wet{background:var(--wet)!important;color:var(--wet-ink)!important}
-body[data-screen="baby-trends"] .daily-cell.poop{background:var(--poop)!important;color:var(--poop-ink)!important}
-body[data-screen="baby-trends"] .daily-cell.mixed{background:var(--mixed)!important;color:var(--mixed-ink)!important}
-body[data-screen="baby-trends"] .daily-cell.feeds{background:var(--feed)!important;color:var(--feed-ink)!important}
-body[data-screen="baby-trends"] .daily-cell.milk{background:var(--baby-soft)!important;color:var(--baby-ink)!important}
-body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"] .daily-cell b,body[data-screen="baby-trends"] .daily-cell small{color:currentColor!important}
+body[data-screen="baby-trends"] .daily-cell.wet{background:var(--wet);color:var(--wet-ink)}
+body[data-screen="baby-trends"] .daily-cell.poop{background:var(--poop);color:var(--poop-ink)}
+body[data-screen="baby-trends"] .daily-cell.mixed{background:var(--mixed);color:var(--mixed-ink)}
+body[data-screen="baby-trends"] .daily-cell.feeds{background:var(--feed);color:var(--feed-ink)}
+body[data-screen="baby-trends"] .daily-cell.milk{background:var(--baby-soft);color:var(--baby-ink)}
+body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"] .daily-cell b,body[data-screen="baby-trends"] .daily-cell small{color:currentColor}
 
 @media(max-width:760px){
-  body[data-screen="baby-trends"] .pills,body[data-screen="mom-trends"] .pills{margin-bottom:11px!important}
-  body[data-screen="baby-trends"] .metric-grid,body[data-screen="mom-trends"] .metric-grid{gap:9px!important;margin-bottom:13px!important}
+  body[data-screen="baby-trends"] .pills,body[data-screen="mom-trends"] .pills{margin-bottom:11px}
+  body[data-screen="baby-trends"] .metric-grid,body[data-screen="mom-trends"] .metric-grid{gap:9px;margin-bottom:13px}
   body[data-screen="baby-trends"] .metric,body[data-screen="mom-trends"] .metric{
-    min-height:82px!important;padding:11px 12px!important;display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;
-    align-items:center!important;gap:10px!important;border-radius:18px!important
+    min-height:82px;padding:11px 12px;display:grid;grid-template-columns:36px minmax(0,1fr);
+    align-items:center;gap:10px;border-radius:18px
   }
-  body[data-screen="baby-trends"] .metric-icon,body[data-screen="mom-trends"] .metric-icon{width:36px!important;height:36px!important;margin:0!important}
-  body[data-screen="baby-trends"] .metric strong,body[data-screen="mom-trends"] .metric strong{font-size:18px!important;line-height:1.05!important}
-  body[data-screen="baby-trends"] .metric span,body[data-screen="mom-trends"] .metric span{font-size:10px!important;line-height:1.2!important}
-  body[data-screen="baby-trends"] .metric small,body[data-screen="mom-trends"] .metric small{font-size:9.5px!important;line-height:1.2!important;margin-top:2px!important}
-  body[data-screen="baby-trends"] .panel,body[data-screen="mom-trends"] .panel{padding:13px!important;margin-bottom:13px!important;border-radius:21px!important}
-  body[data-screen="baby-trends"] .panel-head,body[data-screen="mom-trends"] .panel-head{margin-bottom:9px!important}
-  body[data-screen="baby-trends"] .panel-head h3,body[data-screen="mom-trends"] .panel-head h3{font-size:18px!important}
+  body[data-screen="baby-trends"] .metric-icon,body[data-screen="mom-trends"] .metric-icon{width:36px;height:36px;margin:0}
+  body[data-screen="baby-trends"] .metric strong,body[data-screen="mom-trends"] .metric strong{font-size:18px;line-height:1.05}
+  body[data-screen="baby-trends"] .metric span,body[data-screen="mom-trends"] .metric span{font-size:10px;line-height:1.2}
+  body[data-screen="baby-trends"] .metric small,body[data-screen="mom-trends"] .metric small{font-size:9.5px;line-height:1.2;margin-top:2px}
+  body[data-screen="baby-trends"] .panel,body[data-screen="mom-trends"] .panel{padding:13px;margin-bottom:13px;border-radius:21px}
+  body[data-screen="baby-trends"] .panel-head,body[data-screen="mom-trends"] .panel-head{margin-bottom:9px}
+  body[data-screen="baby-trends"] .panel-head h3,body[data-screen="mom-trends"] .panel-head h3{font-size:18px}
 
   /* One compact five-value row per day. The previous 3+2 arrangement gave Bottle milk
      twice the width of Feeds and made the list unnecessarily tall. */
-  body[data-screen="baby-trends"] .daily-table{gap:8px!important}
-  body[data-screen="baby-trends"] .daily-row{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:6px!important;padding:10px!important;border-radius:17px!important}
-  body[data-screen="baby-trends"] .daily-date{grid-column:1/-1!important;padding-bottom:7px!important;margin-bottom:1px!important}
+  body[data-screen="baby-trends"] .daily-table{gap:8px}
+  body[data-screen="baby-trends"] .daily-row{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:10px;border-radius:17px}
+  body[data-screen="baby-trends"] .daily-date{grid-column:1/-1;padding-bottom:7px;margin-bottom:1px}
   body[data-screen="baby-trends"] .daily-cell,body[data-screen="baby-trends"] .daily-cell.feeds,body[data-screen="baby-trends"] .daily-cell.milk{
-    grid-column:auto!important;min-height:52px!important;padding:6px 3px!important;border-radius:10px!important
+    grid-column:auto;min-height:52px;padding:6px 3px;border-radius:10px
   }
-  body[data-screen="baby-trends"] .daily-cell span{font-size:8px!important;line-height:1.1!important;text-align:center!important}
-  body[data-screen="baby-trends"] .daily-cell b{font-size:16px!important;line-height:1!important}
-  body[data-screen="baby-trends"] .daily-cell b small{font-size:8px!important}
+  body[data-screen="baby-trends"] .daily-cell span{font-size:8px;line-height:1.1;text-align:center}
+  body[data-screen="baby-trends"] .daily-cell b{font-size:16px;line-height:1}
+  body[data-screen="baby-trends"] .daily-cell b small{font-size:8px}
 }
 
 /* ---------------------------------------------------------------- Settings */
+
+/* ---------------------------------------------------------------- chat */
+.mf-chat-panel .mf-chat-close{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--mom) 18%,var(--line));border-radius:15px;background:color-mix(in srgb,var(--mom) 7%,var(--surface));color:color-mix(in srgb,var(--mom) 58%,var(--ink));box-shadow:0 6px 16px rgba(45,34,78,.08)}
+}
+
+@layer milkflow-dark {
+:root[data-theme="dark"] body[data-realm="baby"] .page-head{
+  background:linear-gradient(135deg,#173142,#1d3849 55%,#243b38);border-color:#355264;box-shadow:0 14px 34px rgba(0,0,0,.22)
+}
+:root[data-theme="dark"] body[data-realm="baby"] .page-head:before{background:linear-gradient(135deg,#173142,#1d3849 55%,#243b38)}
+:root[data-theme="dark"] body[data-realm="mom"] .page-head{background:linear-gradient(135deg,#28213e,#35254a 55%,#27384d);border-color:#493c61}
+:root[data-theme="dark"] body[data-realm="mom"] .page-head:before{background:linear-gradient(135deg,#28213e,#35254a 55%,#27384d)}
+:root[data-theme="dark"] body[data-realm="family"] .page-head{background:linear-gradient(135deg,#242338,#2a2742 48%,#203341);border-color:#3a4053}
+:root[data-theme="dark"] body[data-realm="family"] .page-head:before{background:linear-gradient(135deg,#242338,#2a2742 48%,#203341)}
+:root[data-theme="dark"] body[data-realm] .page-head h2{color:#f7f9fc;text-shadow:none}
+:root[data-theme="dark"] body[data-realm] .page-head .eyebrow{color:#c8d5e7;opacity:1}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-feeding){background:linear-gradient(135deg,#173128,#1c352f);border-color:#294c40}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-nursing){background:linear-gradient(135deg,#3a2030,#452638);border-color:#63364c}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-wet){background:linear-gradient(135deg,#173040,#1b3a4d);border-color:#28536a}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-poop){background:linear-gradient(135deg,#3b2c15,#46351b);border-color:#604b29}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-both){background:linear-gradient(135deg,#302643,#3a2c51);border-color:#50406c}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-sleep){background:linear-gradient(135deg,#252941,#2c304c);border-color:#3f4663}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-growth){background:linear-gradient(135deg,#1b332d,#203d35);border-color:#315148}
+:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-milestone){background:linear-gradient(135deg,#382641,#432d4d);border-color:#5c3f67}
+:root[data-theme="dark"] body[data-realm="mom"] .rows .row{background:linear-gradient(135deg,#29243b,#322943);border-color:#453a5c}
+:root[data-theme="dark"] body[data-screen="baby-trends"] .metric .metric-icon{background:rgba(255,255,255,.065)}
 :root[data-theme="dark"] body[data-screen="settings"] #view .page-head,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head{isolation:isolate!important;background:linear-gradient(135deg,#242338,#2a2742 48%,#203341)!important;border-color:#3a4053!important;box-shadow:0 14px 34px rgba(0,0,0,.24)!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head{isolation:isolate;background:linear-gradient(135deg,#242338,#2a2742 48%,#203341);border-color:#3a4053;box-shadow:0 14px 34px rgba(0,0,0,.24)}
 :root[data-theme="dark"] body[data-screen="settings"] #view .page-head:before,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head:before{background:none!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head:before{background:none}
 :root[data-theme="dark"] body[data-screen="settings"] #view .page-head h2,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head h2{color:#fff!important;text-shadow:none!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head h2{color:#fff;text-shadow:none}
 :root[data-theme="dark"] body[data-screen="settings"] #view .page-head .eyebrow,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head .eyebrow{color:#c9d2ff!important;opacity:1!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-head .eyebrow{color:#c9d2ff;opacity:1}
 :root[data-theme="dark"] body[data-screen="settings"] #view .data-status,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .data-status{background:linear-gradient(145deg,#202432,#26283c)!important;border-color:#353b4d!important;color:#f5f7fb!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .data-status{background:linear-gradient(145deg,#202432,#26283c);border-color:#353b4d;color:#f5f7fb}
 :root[data-theme="dark"] body[data-screen="settings"] #view .data-status.good,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .data-status.good{background:linear-gradient(145deg,#173029,#1c3531 58%,#252b3b)!important;border-color:#2d5147!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .data-status.good{background:linear-gradient(145deg,#173029,#1c3531 58%,#252b3b);border-color:#2d5147}
 :root[data-theme="dark"] body[data-screen="settings"] #view .data-status strong,
 :root[data-theme="dark"] body[data-screen^="set-"] #view .data-status strong,
 :root[data-theme="dark"] body[data-screen="settings"] #view .grp-label strong,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-label strong{color:#f7f8fb!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-label strong{color:#f7f8fb}
 :root[data-theme="dark"] body[data-screen="settings"] #view .data-status span,
 :root[data-theme="dark"] body[data-screen="settings"] #view .data-status small,
 :root[data-theme="dark"] body[data-screen^="set-"] #view .data-status span,
@@ -228,23 +209,63 @@ body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"]
 :root[data-theme="dark"] body[data-screen="settings"] #view .grp-value,
 :root[data-theme="dark"] body[data-screen^="set-"] #view .grp-value,
 :root[data-theme="dark"] body[data-screen="settings"] #view .page-intro,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .page-intro{color:#bac3d4!important;opacity:1!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .page-intro{color:#bac3d4;opacity:1}
 :root[data-theme="dark"] body[data-screen="settings"] #view .grp,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .grp{background:#202333!important;border-color:#34394b!important;box-shadow:0 12px 30px rgba(0,0,0,.18)!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp{background:#202333;border-color:#34394b;box-shadow:0 12px 30px rgba(0,0,0,.18)}
 :root[data-theme="dark"] body[data-screen="settings"] #view .grp-row,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-row{color:#f4f6fa!important;border-color:#313647!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-row{color:#f4f6fa;border-color:#313647}
 :root[data-theme="dark"] body[data-screen="settings"] #view .grp-go,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-go{color:#aeb7ca!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-go{color:#aeb7ca}
 :root[data-theme="dark"] body[data-screen="settings"] #view .grp-title,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-title{color:#dce2ee!important;opacity:1!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .grp-title{color:#dce2ee;opacity:1}
 :root[data-theme="dark"] body[data-screen^="set-"] #view .field input,
 :root[data-theme="dark"] body[data-screen^="set-"] #view .field select,
 :root[data-theme="dark"] body[data-screen^="set-"] #view .field textarea,
 :root[data-theme="dark"] body[data-screen^="set-"] #view .setting-row>button,
-:root[data-theme="dark"] body[data-screen^="set-"] #view .setting-actions button{background:#252938!important;border-color:#3a4052!important;color:#edf1f7!important}
+:root[data-theme="dark"] body[data-screen^="set-"] #view .setting-actions button{background:#252938;border-color:#3a4052;color:#edf1f7}
 :root[data-theme="dark"] body[data-screen="settings"] .back-btn,
-:root[data-theme="dark"] body[data-screen^="set-"] .back-btn{color:#d0d7e8!important}
+:root[data-theme="dark"] body[data-screen^="set-"] .back-btn{color:#d0d7e8}
+:root[data-theme="dark"] .mf-chat-panel .mf-chat-close{background:#2a293a;border-color:#45405a;color:#eee9fb}
+}
 
-/* ---------------------------------------------------------------- chat */
-.mf-chat-panel .mf-chat-close{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid color-mix(in srgb,var(--mom) 18%,var(--line))!important;border-radius:15px!important;background:color-mix(in srgb,var(--mom) 7%,var(--surface))!important;color:color-mix(in srgb,var(--mom) 58%,var(--ink))!important;box-shadow:0 6px 16px rgba(45,34,78,.08)!important}
-:root[data-theme="dark"] .mf-chat-panel .mf-chat-close{background:#2a293a!important;border-color:#45405a!important;color:#eee9fb!important}
+
+@layer milkflow-screens {
+/* ---------------------------------------------------------------- Baby home
+   The hero composition: greeting across the top, then photo / name / stats. It is in the
+   milkflow-screens layer rather than milkflow-core because it supersedes the older flex
+   hero in the component layer above core - one screen, one owner, decided by position
+   instead of by ~20 !important declarations. Everything else in this file stays in
+   milkflow-core, below the components. */
+body[data-screen="baby-home"] .mf-animal-copy h2{font-family:var(--display);font-weight:800;letter-spacing:-.035em}
+@media(max-width:760px){
+  body[data-screen="baby-home"] .mf-animal-hero{
+    min-height:0;padding:14px 14px 16px;display:grid;
+    grid-template-columns:124px minmax(0,1fr) minmax(116px,.8fr);
+    grid-template-areas:"greeting greeting greeting" "photo name stats" "photo age stats";
+    column-gap:10px;row-gap:4px;align-items:center
+  }
+  body[data-screen="baby-home"] .mf-animal-profile,body[data-screen="baby-home"] .mf-animal-copy{display:contents}
+  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{grid-area:photo;width:124px;height:124px;border-width:6px;align-self:center}
+  body[data-screen="baby-home"] .mf-animal-copy .welcome{
+    grid-area:greeting;box-sizing:border-box;width:auto;max-width:none;min-height:0;
+    margin:0 0 6px;padding:0;border-radius:0;background:none;
+    border:0;font-family:var(--display);font-size:12.5px;line-height:1.15;
+    font-weight:750;color:#285e67;white-space:normal
+  }
+  body[data-screen="baby-home"] .mf-animal-copy h2{grid-area:name;position:static;width:auto;margin:0;font-size:31px;line-height:.98;align-self:end;white-space:nowrap;overflow:visible;color:#163f52}
+  body[data-screen="baby-home"] .mf-animal-copy>small{grid-area:age;position:static;margin:3px 0 0;font-size:10.5px;line-height:1.15;align-self:start;color:#456b71;opacity:.92}
+  body[data-screen="baby-home"] .mf-animal-stats{grid-area:stats;position:static;align-self:center;width:100%;margin:0;display:grid;grid-template-columns:1fr;gap:6px}
+  body[data-screen="baby-home"] .mf-animal-stat{min-width:0;min-height:45px;padding:6px 8px;border-radius:16px;text-align:left;display:grid;align-content:center}
+  body[data-screen="baby-home"] .mf-animal-stat strong{font-family:var(--display);font-size:15px;line-height:1}
+  body[data-screen="baby-home"] .mf-animal-stat span{font-size:9px;line-height:1.05;margin-top:3px}
+  body[data-screen="baby-home"] .mf-animal-hero>.bear,body[data-screen="baby-home"] .mf-animal-hero>.bunny,body[data-screen="baby-home"] .mf-animal-star{display:none}
+}
+@media(max-width:390px){
+  body[data-screen="baby-home"] .mf-animal-hero{grid-template-columns:96px minmax(0,1fr) minmax(116px,.86fr);column-gap:8px}
+  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:96px;height:96px}
+  body[data-screen="baby-home"] .mf-animal-copy h2{font-size:26px}
+}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:none;border-color:transparent;color:#d8f5f7}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#f5fbff}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy>small{color:#c5dce3}
+}

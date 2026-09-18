@@ -92,7 +92,7 @@ body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-option[aria
 
 /* Existing settings remain available below the storybook controls and inherit the same
    cream surface rather than becoming a separate visual system. */
-body[data-screen="settings"] #view>.data-status,body[data-screen="settings"] #view>.grp{border-radius:24px;background:rgba(255,253,245,.90);border-color:rgba(78,100,80,.12);box-shadow:0 11px 27px rgba(57,68,53,.10);backdrop-filter:blur(15px)}
+body[data-screen="settings"] #view>.data-status,body[data-screen="settings"] #view>.grp{background:rgba(255,253,245,.90);border-color:rgba(78,100,80,.12);box-shadow:0 11px 27px rgba(57,68,53,.10);backdrop-filter:blur(15px)}
 
 :root[data-theme="dark"] body[data-screen="settings"] .page-head h2{color:#f6f7f3;text-shadow:0 2px 14px rgba(0,0,0,.28)}
 :root[data-theme="dark"] body[data-screen="settings"] .mf-settings-subtitle{color:#c7d0c7}

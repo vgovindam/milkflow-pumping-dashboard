@@ -1,7 +1,13 @@
 /* MilkFlow Doctor Summary component
    Scoped to the Doctor screen and its print document only. This file does not theme
-   navigation, forms, Mom/Baby home, or shared controls. */
+   navigation, forms, Mom/Baby home, or shared controls.
 
+   The on-screen half sits in the milkflow-screens layer (see the cascade contract at the top
+   of styles.css): one screen's polish, which outranks the shared component styles but still
+   gives way to a theme. The print half below is
+   outside the layer system on purpose - it styles a document that no theme may reach. */
+
+@layer milkflow-screens {
 body[data-screen="doctor"] .doctor-summary-card{
   background:linear-gradient(135deg,#eef8fb 0%,#f4fbf7 100%);
   border:1px solid #cfe3e5;
@@ -22,7 +28,8 @@ body[data-screen="doctor"] .qa-grid>div{
 }
 body[data-screen="doctor"] .qa-grid span{color:#61717d}
 body[data-screen="doctor"] .qa-grid strong{color:#182632}
-body[data-screen="doctor"] .qa-grid small{color:#657680}
+/* #657680 measured 4.40:1 on the pale card it sits on - just under AA for 11px. */
+body[data-screen="doctor"] .qa-grid small{color:#55636e}
 body[data-screen="doctor"] .panel:has(.daily-table){
   border-color:#dbe5e8;
 }
@@ -81,96 +88,106 @@ body[data-screen="doctor"] .daily-cell span{color:#65727d}
 :root[data-theme="dark"] body[data-screen="doctor"] .daily-cell span{
   color:#aab5c5!important;
 }
+}
 
-/* Dedicated print document. It is generated from the currently rendered Doctor Summary
-   so the selected date range and live family data are always the ones printed. */
+/* ---------------------------------------------------------------- print document --
+   A separate document, built by doctor-summary.js from the report model and appended to
+   <body>, outside .shell. It is a sheet of paper, so it owns its own type, rules and
+   spacing here and inherits nothing from the themed app: no theme rule may reach outside
+   .shell, which is why the experience surface contract is scoped there.
+
+   body.mf-printing-report is set only while that document exists. Without it the app
+   prints the way any web page prints, rather than printing a half-built report. */
 .mf-doctor-print{display:none}
 
 @media print{
-  @page{size:auto;margin:12mm}
-  body> .shell,
-  body> .bottom-nav,
-  body> .scrim,
-  body> .sheet,
-  body> .dialog,
-  body> .toast,
-  body> #syncFoot{display:none!important}
+  @page{size:auto;margin:14mm 12mm}
+
+  body.mf-printing-report> :is(.shell,.bottom-nav,.scrim,.sheet,.dialog,.toast,#syncFoot){
+    display:none!important;
+  }
+  body.mf-printing-report .mf-doctor-print{display:block}
+
   html,body{
     background:#fff!important;
     color:#111!important;
-    font-family:Arial,Helvetica,sans-serif!important;
-    font-size:10pt!important;
+    font:11pt/1.4 "Helvetica Neue",Arial,sans-serif!important;
   }
-  .mf-doctor-print{
-    display:block!important;
-    color:#111!important;
-    background:#fff!important;
-    width:100%;
-  }
-  .mf-doctor-print *{box-sizing:border-box;color:inherit!important}
-  .mf-print-header{
-    display:grid;
-    grid-template-columns:1fr auto;
-    gap:16px;
-    align-items:end;
-    border-bottom:2px solid #111;
-    padding-bottom:8px;
-    margin-bottom:12px;
-  }
+  .mf-doctor-print{color:#111;background:#fff;width:100%}
+  .mf-doctor-print *{box-sizing:border-box}
+
+  /* ------------------------------------------------------------------ header */
+  .mf-print-header{border-bottom:1.5pt solid #111;padding-bottom:9pt;margin-bottom:14pt}
   .mf-print-kicker{
-    font-size:8.5pt;
-    font-weight:700;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:#444!important;
+    margin:0;font-size:7.8pt;font-weight:700;letter-spacing:.09em;
+    text-transform:uppercase;color:#555;
   }
   .mf-print-header h1{
-    font:700 18pt/1.1 Arial,Helvetica,sans-serif!important;
-    margin:2px 0 3px!important;
-    letter-spacing:0!important;
+    font:700 17pt/1.15 "Helvetica Neue",Arial,sans-serif;
+    margin:3pt 0 8pt;letter-spacing:-.01em;color:#111;
   }
-  .mf-print-subtitle{font-size:9.5pt;color:#444!important}
-  .mf-print-meta{text-align:right;font-size:8.5pt;line-height:1.45;color:#444!important}
-  .mf-print-section{margin:0 0 12px;break-inside:avoid}
+  /* Label/value pairs, not a right-aligned block: on paper the eye wants one column of
+     labels it can run down. */
+  .mf-print-facts{
+    display:grid;grid-template-columns:max-content 1fr;
+    gap:2.5pt 12pt;margin:0;font-size:9.5pt;
+  }
+  .mf-print-facts dt{font-weight:700;color:#444}
+  .mf-print-facts dd{margin:0;color:#111}
+
+  /* ----------------------------------------------------------------- sections */
+  .mf-print-section{margin:0 0 15pt}
   .mf-print-section h2{
-    font:700 11pt Arial,Helvetica,sans-serif!important;
-    margin:0 0 5px!important;
-    letter-spacing:0!important;
+    font:700 10.5pt/1.2 "Helvetica Neue",Arial,sans-serif;
+    margin:0 0 5pt;letter-spacing:.02em;text-transform:uppercase;color:#333;
   }
-  .mf-print-table{
-    width:100%;
-    border-collapse:collapse;
-    table-layout:fixed;
-  }
+
+  /* -------------------------------------------------------------------- tables
+     Horizontal rules only. Boxed cells make a small data table look like a form; rules
+     let the numbers line up and keep the page quiet. */
+  .mf-print-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9.5pt}
   .mf-print-table th,
   .mf-print-table td{
-    border:1px solid #b8b8b8;
-    padding:5px 6px;
-    vertical-align:top;
-    text-align:left;
-    line-height:1.28;
+    padding:4pt 6pt 4pt 0;
+    text-align:left;vertical-align:baseline;
+    border-bottom:.5pt solid #d0d0d0;
+    line-height:1.3;
   }
-  .mf-print-table th{
-    background:#ededed!important;
-    font-weight:700;
-    font-size:8.5pt;
+  .mf-print-table thead th{
+    font-size:8pt;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:#444;border-bottom:1pt solid #888;padding-bottom:3pt;
   }
-  .mf-print-table td{font-size:9pt}
-  .mf-print-table .metric{width:28%;font-weight:700}
-  .mf-print-table .value{width:27%;font-weight:700}
-  .mf-print-table .note{width:45%;color:#444!important}
-  .mf-print-daily th:nth-child(1){width:25%}
-  .mf-print-daily th:nth-child(n+2){width:auto;text-align:center}
-  .mf-print-daily td:nth-child(n+2){text-align:center}
-  .mf-print-daily td:first-child{font-weight:700}
+  .mf-print-table tbody th{font-weight:700;color:#111}
+  .mf-print-table tbody tr:last-child :is(th,td){border-bottom:none}
+
+  /* At a glance: a measure, its number, and the caveat that belongs with it. */
+  .mf-print-measures th[scope="row"]{width:31%}
+  .mf-print-measures .value{width:22%;font-weight:700;font-variant-numeric:tabular-nums}
+  .mf-print-measures .note{width:47%;color:#555;font-size:9pt}
+
+  /* Day by day: a date column, then seven numeric columns that must line up. */
+  .mf-print-daily{font-variant-numeric:tabular-nums}
+  .mf-print-daily :is(th,td):first-child{width:19%}
+  .mf-print-daily thead th:not(:first-child),
+  .mf-print-daily tbody td{text-align:right;padding-right:0}
+  .mf-print-daily .mf-print-blank td{
+    text-align:left;color:#8a8a8a;font-style:italic;font-size:9pt;
+  }
+  .mf-print-daily .mf-print-total :is(th,td){
+    border-top:1pt solid #888;border-bottom:none;
+    font-weight:700;padding-top:5pt;
+  }
+
+  /* A table that breaks across pages must carry its header with it. */
+  .mf-print-table thead{display:table-header-group}
+  .mf-print-table tr{break-inside:avoid}
+
+  /* ------------------------------------------------------------------ footnote */
   .mf-print-note{
-    border-top:1px solid #999;
-    margin-top:10px;
-    padding-top:6px;
-    color:#555!important;
-    font-size:8pt;
-    line-height:1.35;
+    border-top:.5pt solid #999;margin-top:4pt;padding-top:7pt;
+    font-size:8.2pt;line-height:1.45;color:#444;
   }
-  .mf-print-source{margin-top:3px;color:#666!important;font-size:7.8pt}
-  .mf-print-empty{padding:8px;border:1px solid #bbb;color:#555!important}
+  .mf-print-note p{margin:0 0 4pt}
+  .mf-print-note strong{color:#111}
+  .mf-print-source{color:#666;font-size:7.8pt}
 }

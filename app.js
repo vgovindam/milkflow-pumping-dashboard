@@ -1256,14 +1256,85 @@ function developmentView(){
 }
 
 function doctorView(){
-  const range=S.ui.doctorRange ?? 14, n=rangeDays(range,'baby'), rows=dailyBabyRows(n), active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz), g=latestGrowth(), pref=feedingPreference();
-  const totalNursing=sum(active.map(r=>r.nursing)), totalBottles=sum(active.map(r=>r.bottles));
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Doctor summary</h2></div><button class="round-action baby" data-print>${icon('steth')}<span>Print</span></button></div>${pills(RANGE_PILLS,range,'data-doctor-range')}
-  <section class="doctor-summary-card"><div>${icon('steth')}</div><div><strong>${esc(S.baby.name)} · ${n}-day snapshot</strong><span>Quick answers from logged care</span></div></section>
-  <div class="qa-grid"><div><span>Feeding pattern</span><strong>${pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed'}</strong></div><div><span>Wet diapers</span><strong>${avgFromActive(rows,'wetTotal')} / day</strong><small>includes mixed</small></div><div><span>Poopy diapers</span><strong>${avgFromActive(rows,'poopTotal')} / day</strong><small>includes mixed</small></div><div><span>Mixed diapers</span><strong>${avgFromActive(rows,'mixed')} / day</strong></div><div><span>Feeds</span><strong>${avgFromActive(rows,'feeds')} / day</strong><small>${totalNursing} nursing · ${totalBottles} bottles</small></div><div><span>Latest growth</span><strong>${g?`${g.weightLb??'—'} lb · ${g.lengthIn??'—'} in`:'Not logged'}</strong></div></div>
+  /* One model, two views: this screen and the printable summary both read doctorReport(),
+     so a number can never say one thing on screen and another on paper. */
+  const r=doctorReport();
+  const rows=dailyBabyRows(r.period.days);
+  const card=(m)=>`<div><span>${esc(m.label)}</span><strong>${esc(m.value)}</strong>${m.note?`<small>${esc(m.note)}${m.date?` ${esc(fd(m.date))}`:''}</small>`:''}</div>`;
+  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Doctor summary</h2></div><button class="round-action baby" data-print>${icon('steth')}<span>Print</span></button></div>${pills(RANGE_PILLS,S.ui.doctorRange ?? 14,'data-doctor-range')}
+  <section class="doctor-summary-card"><div>${icon('steth')}</div><div><strong>${esc(r.baby.name)} · ${r.period.days}-day snapshot</strong><span>Everything below is on the printed summary too</span></div></section>
+  <div class="qa-grid">${r.measures.map(card).join('')}</div>
   ${panel('Daily review',babyDailyTable(rows))}
   <div class="clinical-note">This is a log summary, not a diagnosis. Around and after 6 weeks, stool frequency can vary widely, so your pediatrician may look at feeding, wet diapers, growth and the overall pattern together.</div>`;
 }
+
+
+/* ---------------------------------------------------------------- doctor report model --
+ * The Doctor screen and the printable visit summary are two VIEWS OF ONE MODEL. The print
+ * document used to be rebuilt by scraping the rendered cards, so a markup tweak on the
+ * screen could silently change what a pediatrician reads, and anything the screen rounded
+ * or abbreviated was all the report could ever know. This function is the single source:
+ * it reads state, and both the screen copy and the print document are rendered from it.
+ *
+ * Nothing here is device- or cloud-specific: it is the family's own logged care, in plain
+ * numbers, with no identifiers beyond the baby's name and date of birth.
+ */
+function doctorReport(){
+  const range=S.ui.doctorRange ?? 14;
+  const n=rangeDays(range,'baby');
+  const rows=dailyBabyRows(n);
+  const active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz||r.sleepMin);
+  const total=key=>sum(rows.map(r=>+r[key]||0));
+  /* Averages are per DAY WITH RECORDS, not per calendar day: a day nobody logged is a gap in
+     the record, not a day the baby had no wet nappy. The report says so in its footnote. */
+  const perDay=key=>active.length?total(key)/active.length:0;
+  const g=latestGrowth();
+  const pref=feedingPreference();
+  const prefLabel=pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed';
+  const one=v=>(Math.round(v*10)/10).toFixed(1);
+
+  return {
+    generatedAt:new Date().toISOString(),
+    baby:{name:S.baby.name||'Baby', birthDate:birthDate()||null, age:ageLabel()||null},
+    period:{days:n, from:rows[0]?.d||null, to:rows.at(-1)?.d||null, daysWithRecords:active.length},
+    feeding:{
+      preference:pref, preferenceLabel:prefLabel,
+      feedsPerDay:perDay('feeds'), nursingSessions:total('nursing'), bottles:total('bottles'),
+      breastMilkOz:total('breastMilkOz'), formulaOz:total('formulaOz'), bottleOz:total('bottleOz')
+    },
+    output:{
+      wetPerDay:perDay('wetTotal'), poopPerDay:perDay('poopTotal'),
+      mixedPerDay:perDay('mixed'), diapersPerDay:perDay('diapers'), diapers:total('diapers')
+    },
+    sleep:{hoursPerDay:perDay('sleepMin')/60, totalMin:total('sleepMin')},
+    growth:g?{date:g.date||null, weightLb:g.weightLb??null, lengthIn:g.lengthIn??null, headIn:g.headIn??null}:null,
+    /* The order here is the order a clinician reads: how is feeding going, is enough coming
+       out, how is sleep, how is growth. */
+    measures:[
+      {label:'Feeding pattern', value:prefLabel, note:`${total('nursing')} nursing · ${total('bottles')} bottles logged`},
+      {label:'Feeds per day', value:one(perDay('feeds')), note:active.length?`across ${active.length} day${active.length===1?'':'s'} with records`:'no days with records'},
+      {label:'Bottle volume per day', value:`${one(perDay('bottleOz'))} oz`, note:total('formulaOz')?`${one(total('breastMilkOz'))} oz expressed · ${one(total('formulaOz'))} oz formula in period`:'expressed milk only'},
+      {label:'Wet nappies per day', value:one(perDay('wetTotal')), note:'includes mixed nappies'},
+      {label:'Dirty nappies per day', value:one(perDay('poopTotal')), note:'includes mixed nappies'},
+      {label:'Mixed nappies per day', value:one(perDay('mixed')), note:'wet and dirty in one change'},
+      {label:'Sleep per day', value:`${one(perDay('sleepMin')/60)} h`, note:total('sleepMin')?'logged sleep only; unlogged naps are not counted':'no sleep logged in this period'},
+      {label:'Most recent growth', value:g?`${g.weightLb??'—'} lb · ${g.lengthIn??'—'} in`:'Not logged', note:g?.date?'measured':'add a growth entry to include this', date:g?.date||null}
+    ],
+    /* Newest first: a clinician scans the recent days, then reads back. */
+    daily:rows.slice().reverse().map(r=>({
+      date:r.d, wetOnly:r.wetOnly, poopOnly:r.poopOnly, mixed:r.mixed, diapers:r.diapers,
+      feeds:r.feeds, nursing:r.nursing, bottles:r.bottles, bottleOz:r.bottleOz,
+      sleepMin:r.sleepMin, logged:!!(r.diapers||r.feeds||r.bottleOz||r.sleepMin)
+    })),
+    totals:{
+      diapers:total('diapers'), wetOnly:total('wetOnly'), poopOnly:total('poopOnly'), mixed:total('mixed'),
+      feeds:total('feeds'), nursing:total('nursing'), bottles:total('bottles'),
+      bottleOz:total('bottleOz'), sleepMin:total('sleepMin')
+    }
+  };
+}
+window.MilkFlowReports={doctorSummary:doctorReport};
+
 
 function dataStatus(){
   const localMom=momEntries().length, localBaby=babyEvents().length, cloudKnown=S.cloud.momCount!=null&&S.cloud.babyCount!=null, match=cloudKnown&&S.cloud.momCount===localMom&&S.cloud.babyCount===localBaby;
