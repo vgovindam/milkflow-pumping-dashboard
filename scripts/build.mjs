@@ -77,12 +77,16 @@ fs.rmSync(DIST,{recursive:true,force:true});fs.mkdirSync(DIST,{recursive:true});
 TEXT_FILES.forEach(copyText);BINARY_FILES.forEach(copyBinary);
 copyTree(path.join(ROOT,'assets'),path.join(DIST,'assets'));
 for(const theme of ['safari','butterfly','princess','unicorn']){
-  const scene=path.join(ROOT,`assets/theme-composite/${theme}.svg`);
-  if(!fs.existsSync(scene))throw new Error(`Missing canonical self-contained ${theme} scene`);
+  for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
+    const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${role}.svg`);
+    if(!fs.existsSync(scene))throw new Error(`Missing canonical self-contained ${theme}/${mode}/${role} scene`);
+  }
 }
 verifyIndexRefs();
 
-const shellFiles=listFiles(DIST).filter(f=>!f.startsWith('visual-audit/')&&!['build-manifest.json','sw.js'].includes(f));
+/* Theme worlds are fetched and runtime-cached on demand. Shipping all 40 variants in the
+   install shell would make first launch unnecessarily expensive on mobile. */
+const shellFiles=listFiles(DIST).filter(f=>!f.startsWith('visual-audit/')&&!f.startsWith('assets/themes-v2/')&&!['build-manifest.json','sw.js'].includes(f));
 const shell=['./',...shellFiles.map(f=>`./${f}`)];
 let sw=fs.readFileSync(path.join(ROOT,'sw.template.js'),'utf8');
 sw=sw.replaceAll('__MILKFLOW_VERSION__',VERSION).replace('__MILKFLOW_SHELL__',JSON.stringify(shell,null,2));
