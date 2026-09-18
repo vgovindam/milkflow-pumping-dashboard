@@ -140,6 +140,29 @@
   :root[data-theme="dark"] .step-value input{color:#f8faff!important;-webkit-text-fill-color:#f8faff!important}
   :root[data-theme="dark"] .step-value span,
   :root[data-theme="dark"] .auth-helper{color:#b8c1d1!important}
+
+  /* Dark-mode readability contract. Numeric values and tappable controls must never
+     inherit a muted foreground from a decorative surface. Selection styling remains
+     owned by the higher milkflow-selection layer below. */
+  :root[data-theme="dark"] :is(.metric strong,.schedule-card strong,.stat-ring-dial b,.donut-center strong,.daily-cell b,.cbar-v,.qa-grid strong,.stash-hero strong,.hbar b,.stat-line b){
+    color:#f8faff!important;opacity:1!important
+  }
+  :root[data-theme="dark"] :is(.metric span,.metric small,.schedule-card small,.stat-ring span,.stat-ring small,.donut-legend small,.hbar small){
+    color:#c6cfde!important;opacity:1!important
+  }
+  :root[data-theme="dark"] :is(.panel-head button,.pills button,.segmented button,.day-chip,.theme-opt){
+    color:#dce3ef!important
+  }
+  :root[data-theme="dark"] .panel-head button{
+    background:#262c3a!important;border:1px solid #3c4558!important;color:#f3f6fc!important
+  }
+  :root[data-theme="dark"] .panel-head button:hover{background:#303748!important}
+  :root[data-theme="dark"] :is(.pills button,.segmented button,.day-chip,.theme-opt){
+    background:#202532!important;border-color:#384153!important
+  }
+  :root[data-theme="dark"] .round-action{
+    color:#fff!important;-webkit-text-fill-color:#fff!important
+  }
 }
 
 @layer milkflow-selection {
