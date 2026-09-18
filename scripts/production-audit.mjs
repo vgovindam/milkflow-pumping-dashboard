@@ -45,6 +45,15 @@ if(experienceCss.includes('content:var(--mf-theme-name)'))fail.push('deployed th
 for(const token of ['body[data-screen="settings"] .main','var(--mf-theme-baby-scene)','var(--mf-theme-mom-scene)','var(--mf-theme-baby-hero)','var(--mf-theme-mom-hero)','body[data-screen="baby-home"] .mf-animal-hero','body[data-screen="mom-home"] .mf-dream-hero','data-theme="dark"'])if(!experienceCss.includes(token))fail.push(`deployed immersive/light-dark theme contract missing: ${token}`);
 const manifestPwa=JSON.parse(fs.readFileSync(path.join(DIST,'manifest.webmanifest'),'utf8'));
 if(!manifestPwa.icons?.some(i=>i.src==='milkflow-family-v3-192.png'))fail.push('PWA manifest missing canonical v3 MilkFlow icon');
+/* The icon set regressed once by omission rather than by breakage: only the 192 and the SVG
+   were listed for copy, so a 512 and a maskable existed in the repo but never shipped, and
+   Android upscaled a 192 for splash screens and letterboxed the launcher icon. Assert the
+   whole set reaches dist/ and that the manifest still declares both purposes. */
+for(const icon of ['milkflow-family-v3-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','favicon.ico','icon.svg'])
+  if(!fs.existsSync(path.join(DIST,icon)))fail.push(`app icon missing from production build: ${icon}`);
+if(!manifestPwa.icons?.some(i=>i.sizes==='512x512'&&i.purpose!=='maskable'))fail.push('PWA manifest has no 512px icon for install/splash');
+if(!manifestPwa.icons?.some(i=>i.purpose==='maskable'))fail.push('PWA manifest has no maskable icon for Android adaptive launchers');
+if(!index.includes('apple-touch-icon.png?v='))fail.push('iOS home screen icon is not the purpose-built 180px asset');
 for(const src of ['milkflow-family-icon-192.png','milkflow-family-icon-512.png','milkflow-family-maskable-512.png','milkflow-family-apple-touch.png'])if(manifestPwa.icons?.some(i=>i.src===src))fail.push(`PWA manifest still references legacy icon: ${src}`);
 const sw=fs.readFileSync(path.join(DIST,'sw.js'),'utf8');
 if(!sw.includes(`milkflow-v${version}`))fail.push('service-worker cache version does not match version.json');

@@ -31,13 +31,9 @@ const sips = (...args) => execFileSync('sips', args, {stdio: ['ignore', 'ignore'
 
 /* Outputs, and why each exists. */
 const PNG_TARGETS = [
-  ['milkflow-family-v3-192.png', 192], // canonical: manifest, index.html, push notifications
-  ['icon-192.png', 192],
-  ['icon-512.png', 512],
-  ['apple-touch-icon.png', 180],       // iOS home screen
-  ['icon-180.png', 180],
-  ['apple-touch-icon-167.png', 167],   // iPad Pro
-  ['apple-touch-icon-152.png', 152]    // iPad
+  ['milkflow-family-v3-192.png', 192], // canonical: manifest, browser tab, push notifications
+  ['icon-512.png', 512],               // PWA install + Android splash
+  ['apple-touch-icon.png', 180]        // iOS home screen
 ];
 const NEAR_WHITE = 244;
 const SVG_EMBED_PX = 128;              // keeps icon.svg light enough to be a favicon
