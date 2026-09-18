@@ -40,7 +40,7 @@ for(const text of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::a
 need('canonical stylesheet loaded',html,'theme.css?v=__MILKFLOW_VERSION__');
 need('canonical controller loaded',html,'experience-theme.js?v=__MILKFLOW_VERSION__');
 need('cross-device alert module loaded',html,'cross-device-alerts.js?v=__MILKFLOW_VERSION__');
-need('new iPhone icon',html,'milkflow-family-apple-touch.png?v=__MILKFLOW_VERSION__');
+need('new iPhone icon',html,'milkflow-family-v3-192.png?v=__MILKFLOW_VERSION__');
 for(const bad of ['component-theme-v3.css','experience-theme-v2.js','experience-theme-v3.js','experience-art-v2.css','jungle-theme.css'])if(html.includes(bad))failures.push(`legacy production entry loaded: ${bad}`);
 
 for(const text of ['mf-doctor-print','mf-print-table','Clinical snapshot','Daily care log','prepareDoctorPrint'])need('clinician doctor report',doctorJs+doctorCss,text);
