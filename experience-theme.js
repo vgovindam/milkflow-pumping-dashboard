@@ -8,36 +8,52 @@ const KEY='milkflow-experience-theme-v1';
 const THEMES=new Set(['safari','butterfly','princess','unicorn','clean']);
 const root=document.documentElement;
 
-/* Each illustrated world is ONE self-contained SVG. No nested <image> dependencies,
-   no separate backdrop/detail composition, and therefore no iOS/WebKit blank-layer risk. */
+/* One explicit asset owns each visual job. Dark art is independently color-tuned; page,
+   hero and preview files are self-contained SVGs with no nested image dependencies. */
+const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
+  babyPage:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`,
+  babyHero:`./assets/themes-v2/${theme}/${mode}/baby-hero.svg`,
+  momPage:`./assets/themes-v2/${theme}/${mode}/mom-background.svg`,
+  momHero:`./assets/themes-v2/${theme}/${mode}/mom-hero.svg`,
+  preview:`./assets/themes-v2/${theme}/${mode}/settings-preview.svg`
+}]));
 const THEME_MANIFEST={
-  safari:{title:'Safari Adventure',subtitle:'Wild days, bigger dreams',scene:'./assets/theme-composite/safari.svg',iconSprite:'./assets/theme-icons/safari.svg'},
-  butterfly:{title:'Butterfly Garden',subtitle:'Little moments, big magic',scene:'./assets/theme-composite/butterfly.svg',iconSprite:'./assets/theme-icons/butterfly.svg'},
-  princess:{title:'Princess Palace',subtitle:'Kind hearts change the world',scene:'./assets/theme-composite/princess.svg',iconSprite:'./assets/theme-icons/princess.svg'},
-  unicorn:{title:'Unicorn Dreams',subtitle:'Believe in brighter tomorrows',scene:'./assets/theme-composite/unicorn.svg',iconSprite:'./assets/theme-icons/unicorn.svg'},
-  clean:{title:'Clean',subtitle:'Quiet MilkFlow canvas',scene:'',iconSprite:''}
+  safari:{title:'Safari Adventure',subtitle:'Wild days, bigger dreams',assets:assetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
+  butterfly:{title:'Butterfly Garden',subtitle:'Little moments, big magic',assets:assetSet('butterfly'),iconSprite:'./assets/theme-icons/butterfly.svg'},
+  princess:{title:'Princess Palace',subtitle:'Kind hearts change the world',assets:assetSet('princess'),iconSprite:'./assets/theme-icons/princess.svg'},
+  unicorn:{title:'Unicorn Dreams',subtitle:'Believe in brighter tomorrows',assets:assetSet('unicorn'),iconSprite:'./assets/theme-icons/unicorn.svg'},
+  clean:{title:'Clean',subtitle:'Quiet MilkFlow canvas',assets:{light:{},dark:{}},iconSprite:''}
 };
 
 function normalize(value){if(value==='jungle'||value==='storybook')return 'safari';return THEMES.has(value)?value:'safari';}
 function read(){try{return normalize(localStorage.getItem(KEY));}catch{return 'safari';}}
 function assetUrl(path){return path?`url("${path}")`:'none';}
-function preloadTheme(theme){for(const src of [theme.scene,theme.iconSprite]){if(!src)continue;const img=new Image();img.decoding='async';img.src=src;}}
+function mode(){return root.dataset.theme==='dark'?'dark':'light';}
+function preloadTheme(theme,assets){
+  const realm=document.body?.dataset.realm==='baby'?'baby':'mom';
+  const sources=realm==='baby'?[assets.babyPage,assets.babyHero,theme.iconSprite]:[assets.momPage,assets.momHero,theme.iconSprite];
+  for(const src of sources){if(!src)continue;const img=new Image();img.decoding='async';img.src=src;}
+}
 function apply(name=read()){
-  const value=normalize(name),theme=THEME_MANIFEST[value];
+  const value=normalize(name),theme=THEME_MANIFEST[value],assets=theme.assets[mode()]||{};
   root.dataset.experienceTheme=value;
-  root.style.setProperty('--mf-theme-art',assetUrl(theme.scene));
-  root.style.setProperty('--mf-theme-baby-scene',assetUrl(theme.scene));
-  root.style.setProperty('--mf-theme-mom-scene',assetUrl(theme.scene));
+  root.style.setProperty('--mf-theme-baby-scene',assetUrl(assets.babyPage));
+  root.style.setProperty('--mf-theme-baby-hero',assetUrl(assets.babyHero));
+  root.style.setProperty('--mf-theme-mom-scene',assetUrl(assets.momPage));
+  root.style.setProperty('--mf-theme-mom-hero',assetUrl(assets.momHero));
+  root.style.setProperty('--mf-theme-preview',assetUrl(assets.preview));
   root.style.setProperty('--mf-icon-sprite',assetUrl(theme.iconSprite));
   root.style.setProperty('--mf-theme-name',JSON.stringify(theme.title));
   root.style.setProperty('--mf-theme-tagline',JSON.stringify(theme.subtitle));
+  document.querySelectorAll('[data-theme-card]').forEach(card=>{const img=card.querySelector('img');if(img)img.src=previewFor(card.dataset.themeCard);});
   document.querySelectorAll('[data-experience-theme-pick]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.experienceThemePick===value)));
-  preloadTheme(theme);
+  preloadTheme(theme,assets);
   return value;
 }
 function save(name){const value=normalize(name);try{localStorage.setItem(KEY,value);}catch{}apply(value);window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{theme:value}}));}
-function themeCard(key,title,subtitle,scene){return `<button type="button" class="mf-experience-option" data-experience-theme-pick="${key}" data-theme-card="${key}" aria-pressed="false"><span class="mf-experience-preview" aria-hidden="true"><img class="mf-preview-scene" src="${scene}" alt="" decoding="async" loading="eager"></span><span class="mf-experience-copy"><strong>${title}</strong><small>${subtitle}</small></span></button>`;}
-function themeCards(){return `${themeCard('safari','Safari Adventure','Wild days, bigger dreams','./assets/theme-composite/safari.svg')}${themeCard('butterfly','Butterfly Garden','Little moments, big magic','./assets/theme-composite/butterfly.svg')}${themeCard('princess','Princess Palace','Kind hearts change the world','./assets/theme-composite/princess.svg')}${themeCard('unicorn','Unicorn Dreams','Believe in brighter tomorrows','./assets/theme-composite/unicorn.svg')}`;}
+function previewFor(key){return THEME_MANIFEST[key].assets[mode()].preview;}
+function themeCard(key,title,subtitle){return `<button type="button" class="mf-experience-option" data-experience-theme-pick="${key}" data-theme-card="${key}" aria-pressed="false"><span class="mf-experience-preview" aria-hidden="true"><img class="mf-preview-scene" src="${previewFor(key)}" alt="" decoding="async" loading="lazy"></span><span class="mf-experience-copy"><strong>${title}</strong><small>${subtitle}</small></span></button>`;}
+function themeCards(){return `${themeCard('safari','Safari Adventure','Wild days, bigger dreams')}${themeCard('butterfly','Butterfly Garden','Little moments, big magic')}${themeCard('princess','Princess Palace','Kind hearts change the world')}${themeCard('unicorn','Unicorn Dreams','Believe in brighter tomorrows')}`;}
 function experiencePanel(){
   const screen=document.body.dataset.screen;
   if(screen!=='settings'&&screen!=='set-appearance')return;
@@ -62,7 +78,8 @@ function settingsExtras(){
   if(!document.getElementById('mfSettingsShortcuts')){
     const dark=root.dataset.theme==='dark';
     const section=document.createElement('section');section.id='mfSettingsShortcuts';section.className='panel mf-settings-shortcuts';
-    section.innerHTML=`<button type="button" class="mf-settings-row" data-theme-pick="${dark?'light':'dark'}"><span class="mf-settings-row-icon moon" aria-hidden="true"></span><span><strong>Dark Mode</strong><small>A calmer view for nighttime</small></span><i class="mf-settings-switch ${dark?'on':''}" aria-hidden="true"></i></button><button type="button" class="mf-settings-row" data-view="set-reminders"><span class="mf-settings-row-icon bell" aria-hidden="true"></span><span><strong>Reminders</strong><small>Feeding, pumping and more</small></span><b aria-hidden="true">›</b></button><button type="button" class="mf-settings-row" data-view="set-baby"><span class="mf-settings-row-icon profile" aria-hidden="true"></span><span><strong>Profile &amp; Personalization</strong><small>Your little one’s details</small></span><b aria-hidden="true">›</b></button><button type="button" class="mf-settings-row" data-view="set-account"><span class="mf-settings-row-icon family" aria-hidden="true"></span><span><strong>Family account</strong><small>Sync safely across your devices</small></span><b aria-hidden="true">›</b></button>`;
+    const sounds=localStorage.getItem('milkflow-interface-sounds-v1')!=='off';
+    section.innerHTML=`<button type="button" class="mf-settings-row" data-theme-pick="${dark?'light':'dark'}"><span class="mf-settings-row-icon moon" aria-hidden="true"></span><span><strong>Dark Mode</strong><small>A calmer view for nighttime</small></span><i class="mf-settings-switch ${dark?'on':''}" aria-hidden="true"></i></button><button type="button" class="mf-settings-row" data-sound-toggle aria-pressed="${sounds}"><span class="mf-settings-row-icon sound" aria-hidden="true"></span><span><strong>Sounds</strong><small>Gentle interface feedback</small></span><i class="mf-settings-switch ${sounds?'on':''}" aria-hidden="true"></i></button><button type="button" class="mf-settings-row" data-view="set-reminders"><span class="mf-settings-row-icon bell" aria-hidden="true"></span><span><strong>Reminders</strong><small>Feeding, pumping and more</small></span><b aria-hidden="true">›</b></button><button type="button" class="mf-settings-row" data-view="set-baby"><span class="mf-settings-row-icon profile" aria-hidden="true"></span><span><strong>Profile &amp; Personalization</strong><small>Your little one’s details</small></span><b aria-hidden="true">›</b></button>`;
     document.getElementById('mfExperiencePanel')?.insertAdjacentElement('afterend',section);
   }
   if(!document.getElementById('mfSettingsMotto')){
@@ -76,7 +93,7 @@ function afterCanonicalRender(){if(queued)return;queued=true;queueMicrotask(()=>
 
 window.MilkFlowExperience={manifest:THEME_MANIFEST,current:read,apply,save};
 apply();
-document.addEventListener('click',e=>{const btn=e.target.closest('[data-experience-theme-pick]');if(btn)save(btn.dataset.experienceThemePick);});
+document.addEventListener('click',e=>{const btn=e.target.closest('[data-experience-theme-pick]');if(btn)save(btn.dataset.experienceThemePick);if(e.target.closest('[data-theme-pick]'))setTimeout(afterCanonicalRender,0);const sound=e.target.closest('[data-sound-toggle]');if(sound){const enabled=sound.getAttribute('aria-pressed')!=='true';localStorage.setItem('milkflow-interface-sounds-v1',enabled?'on':'off');sound.setAttribute('aria-pressed',String(enabled));sound.querySelector('.mf-settings-switch')?.classList.toggle('on',enabled);}});
 window.addEventListener('storage',e=>{if(e.key===KEY)afterCanonicalRender();});
 window.addEventListener('milkflow:base-rendered',afterCanonicalRender);
 window.addEventListener('milkflow:experience-theme-change',afterCanonicalRender);
