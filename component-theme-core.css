@@ -262,12 +262,12 @@ body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"]
 
   body[data-screen="baby-home"] .mf-feed-card>span.mf-care-mark,
   body[data-screen="baby-home"] .mf-diaper-blob>span.mf-care-mark{
-    left:50%!important;right:auto!important;top:11px!important;
-    transform:translateX(-50%)!important;width:46px!important;height:46px!important;
+    left:50%!important;right:auto!important;top:10px!important;
+    transform:translateX(-50%)!important;width:54px!important;height:54px!important;
   }
   body[data-screen="mom-home"] .mf-dream-actions .quick-tile .tile-art{
-    left:50%!important;right:auto!important;top:12px!important;
-    transform:translateX(-50%)!important;width:46px!important;height:46px!important;
+    left:50%!important;right:auto!important;top:11px!important;
+    transform:translateX(-50%)!important;width:54px!important;height:54px!important;
   }
   /* The label block sits under the mark and wraps inside the card rather than beside it. */
   body[data-screen="baby-home"] .mf-feed-card :is(strong,small),

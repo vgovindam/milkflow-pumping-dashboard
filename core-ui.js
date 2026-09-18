@@ -253,7 +253,7 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
    gives each action its own colour instead of one flat ink across all six. */
 .mf-care-mark{position:absolute;display:grid;place-items:center;border-radius:50%;color:inherit;
   background:rgba(255,255,255,.92);box-shadow:inset 0 0 0 1px rgba(255,255,255,.72),0 6px 15px rgba(30,44,66,.13)}
-.mf-care-mark svg{width:58%;height:58%;fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
+.mf-care-mark svg{width:62%;height:62%;fill:none;stroke:currentColor;stroke-width:2.9;stroke-linecap:round;stroke-linejoin:round}
 /* The mark is a span, and the rule .mf-diaper-blob span{position:relative} outranks a lone
    .mf-care-mark, so these carry the element type to win the specificity contest. */
 .mf-feed-card>span.mf-care-mark{position:absolute;right:10px;top:10px;width:52px;height:52px}

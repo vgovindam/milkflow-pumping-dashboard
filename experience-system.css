@@ -105,19 +105,6 @@
   background-size:cover!important;background-position:var(--mf-mom-focus)!important;background-repeat:no-repeat!important;
   border:1px solid rgba(255,255,255,.68)!important;box-shadow:0 22px 48px var(--mf-world-shadow)!important
 }
-/* The Mom headline, greeting and kicker sit straight on the hero art. On the painted plates
-   that band happens to be dark enough; on a pale scene it collapsed (measured 1.08:1 for the
-   headline on Unicorn dark). A scrim built from the world's own surface token — light in
-   light mode, dark in dark mode — pairs with --mf-world-text in both and holds regardless of
-   what artwork lands there. It fades out well before the right edge so the scene still reads. */
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero::before{
-  content:""!important;display:block!important;position:absolute!important;inset:0!important;
-  z-index:0!important;pointer-events:none!important;border-radius:inherit!important;
-  background:linear-gradient(163deg,
-    color-mix(in srgb,var(--mf-world-surface-strong) 82%,transparent) 0%,
-    color-mix(in srgb,var(--mf-world-surface-strong) 52%,transparent) 48%,
-    transparent 80%)!important;
-}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero::after{content:none!important;display:none!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-main,.mf-dream-side){position:relative;z-index:2}
 /* The painted worlds already clear contrast here unaided, so their scrim stays light and the
@@ -353,29 +340,39 @@
   background:rgba(12,16,24,.86)!important;
 }
 
-/* Unicorn ships no painted plate, so its generated night sky puts a bright patch exactly
-   where the baby's name sits and the name drops to 1.7:1. The painted worlds clear contrast
-   unaided, so this is scoped to the theme that needs it.
-   Placement matters: the rule that disables this pseudo-element lives earlier in THIS file,
-   and for !important the milkflow-experience layer outranks unlayered theme.css — so the
-   override has to sit in the same layer, after it. */
-:root[data-experience-theme="unicorn"] body[data-screen="baby-home"] .mf-animal-hero::before{
-  content:""!important;
-  display:block!important;
-  position:absolute!important;
-  inset:0!important;
-  z-index:0!important;
-  pointer-events:none!important;
-  border-radius:inherit!important;
-  background:linear-gradient(168deg,
-    color-mix(in srgb,var(--mf-world-surface-strong) 90%,transparent) 0%,
-    color-mix(in srgb,var(--mf-world-surface-strong) 80%,transparent) 64%,
-    color-mix(in srgb,var(--mf-world-surface-strong) 66%,transparent) 92%,
-    transparent 100%)!important;
+
+
+/* ------------------------------------------------- one artwork layer per screen */
+/* Both homes were stacking four layers: the page plate, a SECOND crop of the same
+   illustration on the hero, two blurred white ambient blobs, and a 22px fragment of the
+   icon sprite in each card corner. Two crops of one picture on top of each other is what
+   read as "overlapping images", and the blurred blobs are what made it all look faded.
+
+   One plate per screen is the page background. Everything above it is a real surface. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero,
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{
+  background-image:none!important;
+  background-color:var(--mf-world-surface-strong)!important;
+  background:linear-gradient(152deg,
+    var(--mf-world-surface-strong) 0%,
+    color-mix(in srgb,var(--mf-world-accent) 18%,var(--mf-world-surface-strong)) 100%)!important;
+  border:1px solid var(--mf-world-line)!important;
+  box-shadow:0 18px 40px var(--mf-world-shadow)!important;
 }
-/* .mf-animal-profile / .mf-animal-copy are display:contents on mobile, so the real grid
-   items are the ones that need lifting above the scrim. */
-:root[data-experience-theme="unicorn"] body[data-screen="baby-home"] :is(.mf-profile-photo,.mf-animal-copy .welcome,.mf-animal-copy h2,.mf-animal-copy>small,.mf-animal-stats,.mf-animal-stat){
-  position:relative!important;
-  z-index:2!important;
+/* The ambient blurred blobs sit above the plate and wash it out. */
+:root:not([data-experience-theme="clean"]) body:is([data-screen="baby-home"],[data-screen="mom-home"]) .main::before,
+:root:not([data-experience-theme="clean"]) body:is([data-screen="baby-home"],[data-screen="mom-home"]) .main::after{
+  display:none!important;
+}
+
+/* Dark mode re-applies the hero plate through a higher-specificity rule earlier in this
+   file (:root[data-theme="dark"] adds a class-level token), so the solid-hero rule above
+   only won in light. Same intent, matched specificity, later in the cascade. */
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero,
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{
+  background-image:none!important;
+  background:linear-gradient(152deg,
+    var(--mf-world-surface-strong) 0%,
+    color-mix(in srgb,var(--mf-world-accent) 16%,var(--mf-world-surface-strong)) 100%)!important;
+  border:1px solid var(--mf-world-line)!important;
 }

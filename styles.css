@@ -73,9 +73,11 @@
 
   /* Bricolage Grotesque is a contemporary variable grotesque - modern rather than the
      old-style serif it replaces - paired with Plus Jakarta Sans for dense UI text. */
-  --font:"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  --display:"Bricolage Grotesque","Plus Jakarta Sans",system-ui,sans-serif;
-  --editorial:"Fraunces","Bricolage Grotesque",serif;
+  /* Typeface follows the MilkFlow mark: a soft rounded display with a warm, highly legible
+     rounded UI face. Fraunces was an old-style serif and read dated against the logo. */
+  --font:"Nunito",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --display:"Baloo 2","Nunito",system-ui,sans-serif;
+  --editorial:"Baloo 2","Nunito",system-ui,sans-serif;
 }
 
 /* Time-of-day tint. Only ambient surfaces change - ink, lines and accents stay put,
