@@ -22,6 +22,10 @@ const experience=fs.readFileSync(path.join(ROOT,'experience-theme.js'),'utf8');
 const experienceSystem=fs.readFileSync(path.join(ROOT,'experience-system.css'),'utf8');
 const themedComponents=fs.readFileSync(path.join(ROOT,'experience-components.css'),'utf8');
 const themeEntry=fs.readFileSync(path.join(ROOT,'theme.css'),'utf8');
+const componentTheme=fs.readFileSync(path.join(ROOT,'component-theme.css'),'utf8');
+const indexHtml=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
+const manifestPwa=JSON.parse(fs.readFileSync(path.join(ROOT,'manifest.webmanifest'),'utf8'));
+const swTemplate=fs.readFileSync(path.join(ROOT,'sw.template.js'),'utf8');
 if(!app.includes("STATE_KEY = 'milkflow-family-v4-state'")&&!app.includes("STATE_KEY='milkflow-family-v4-state'"))throw new Error('Data-contract check failed: canonical localStorage state key changed.');
 if(!app.includes('function unionById'))throw new Error('Data-contract check failed: merge-by-id logic missing.');
 if(!core.includes("const STATE_KEY='milkflow-family-v4-state'"))throw new Error('Core UI is not bound to the canonical state key.');
@@ -49,4 +53,10 @@ for(const token of ['.mf-animal-hero::before','.mf-animal-hero::after','.mf-feed
 for(const token of ['.mf-dream-hero::before','.mf-dream-hero::after','content:none!important','var(--mf-theme-art)','body[data-screen="settings"] .main','body[data-screen="baby-home"] .mf-animal-hero','body[data-screen="mom-home"] .mf-dream-hero','color:var(--mf-world-text)!important'])if(!experienceSystem.includes(token))throw new Error(`Theme scene/contrast contract missing: ${token}`);
 if(experienceSystem.includes('content:var(--mf-theme-name)'))throw new Error('Theme names must not be rendered as hero badges.');
 if(experienceSystem.includes('--mf-theme-detail')||experience.includes('theme-details/'))throw new Error('Runtime theme composition must use one self-contained scene, not stacked detail/backdrop files.');
-console.log('MilkFlow test suite passed: syntax, UI contracts, four self-contained detailed scene SVGs, no nested image dependencies, no hero theme labels, light/dark contrast, single-layer ownership, Settings experience, data preservation, and notification identity.');
+for(const token of ['.metric strong','.panel-head button','.round-action'])if(!componentTheme.includes(token))throw new Error(`Dark readability contract missing: ${token}`);
+for(const token of ['.mf-dream-progress strong','.mf-dream-next button','.mf-dream-metrics .metric strong','.mf-dream-journey .mf-journey-stop strong'])if(!experienceSystem.includes(token))throw new Error(`Mom dark readability contract missing: ${token}`);
+if(!indexHtml.includes('milkflow-family-v3-192.png?v=__MILKFLOW_VERSION__'))throw new Error('Canonical v3 MilkFlow icon is not wired to iPhone/browser entry points.');
+if(!manifestPwa.icons?.some(i=>i.src==='milkflow-family-v3-192.png'))throw new Error('Canonical v3 MilkFlow icon is missing from manifest.');
+if(!swTemplate.includes("icon:'./milkflow-family-v3-192.png'"))throw new Error('Push notification icon is not the canonical v3 MilkFlow artwork.');
+
+console.log('MilkFlow test suite passed: syntax, data and notification contracts, four detailed theme worlds, canonical v3 app icon wiring, dark-mode number/button readability, Settings experience, and single-layer ownership.');
