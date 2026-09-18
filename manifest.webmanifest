@@ -15,33 +15,15 @@
   ],
   "icons": [
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "milkflow-family-icon-192.png",
+      "src": "milkflow-family-v3-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "milkflow-family-icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "milkflow-family-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "milkflow-family-apple-touch.png",
-      "sizes": "180x180",
-      "type": "image/png",
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
     }
   ],
