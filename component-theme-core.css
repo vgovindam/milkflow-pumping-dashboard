@@ -5,8 +5,19 @@
 
 /* ---------------------------------------------------------------- interaction */
 button,.row,.grp-row,.mf-feed-card,.mf-diaper-blob{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.row,.grp-row,.mf-feed-card,.mf-diaper-blob{transition:transform .12s ease,filter .12s ease,box-shadow .12s ease}
-.row:active,.grp-row:active,.mf-feed-card:active,.mf-diaper-blob:active{transform:scale(.985);filter:saturate(1.03)}
+/* Every surface you can press answers the same way. Previously the care cards and list rows
+   acknowledged a tap and the action tiles, dock and persona tabs did not, so parts of the app
+   felt responsive and parts felt dead. */
+.row,.grp-row,.mf-feed-card,.mf-diaper-blob,.quick-tile,.mf-settings-row,#bottomNav button,#personaTabs button{
+  transition:transform .12s ease,filter .12s ease,box-shadow .12s ease
+}
+.row:active,.grp-row:active,.mf-feed-card:active,.mf-diaper-blob:active,.quick-tile:active,.mf-settings-row:active{transform:scale(.985);filter:saturate(1.03)}
+#bottomNav button:active,#personaTabs button:active{transform:scale(.94)}
+#bottomNav .add-tab:active{transform:scale(.9)}
+@media(prefers-reduced-motion:reduce){
+  .row,.grp-row,.mf-feed-card,.mf-diaper-blob,.quick-tile,.mf-settings-row,#bottomNav button,#personaTabs button{transition:none}
+  .row:active,.grp-row:active,.mf-feed-card:active,.mf-diaper-blob:active,.quick-tile:active,.mf-settings-row:active,#bottomNav button:active,#personaTabs button:active{transform:none}
+}
 
 /* A successful sync is background infrastructure, not page content. Surface only errors;
    account state remains fully visible in Settings. */

@@ -747,14 +747,40 @@ button{cursor:pointer;font-family:inherit}
 .theme-swatch.auto i:nth-child(1){background:#f4f4f9}.theme-swatch.auto i:nth-child(2){background:linear-gradient(160deg,#fff 0%,#fff 45%,#171a22 55%,#171a22 100%)}.theme-swatch.auto i:nth-child(3){background:#0e1016}
 
 /* ------------------------------------------------------------ transitions -- */
-/* Push/pop the way a native stack does: forward slides in from the trailing edge,
-   back from the leading edge, sideways tab changes cross-fade. */
-@keyframes navForward{from{opacity:0;transform:translate3d(22px,0,0)}to{opacity:1;transform:none}}
-@keyframes navBack{from{opacity:0;transform:translate3d(-22px,0,0)}to{opacity:1;transform:none}}
-@keyframes navSwap{from{opacity:0;transform:translate3d(0,6px,0)}to{opacity:1;transform:none}}
-.view.nav-forward{animation:navForward .26s cubic-bezier(.32,.72,0,1)}
-.view.nav-back{animation:navBack .26s cubic-bezier(.32,.72,0,1)}
-.view.nav-swap{animation:navSwap .2s ease-out}
+/* Push/pop the way a native stack does: forward slides in from the trailing edge, back from
+   the leading edge, a sideways tab change cross-fades.
+
+   Only #view carries a view-transition-name, so the chrome - top bar, persona tabs, bottom
+   dock - stays put while the content moves underneath it, which is what separates a native
+   feeling stack from a whole-page wipe. The browser animates SNAPSHOTS, so translating them
+   cannot disturb the .main scroll container the content lives in. */
+#view{view-transition-name:mf-view}
+::view-transition-old(mf-view),::view-transition-new(mf-view){
+  animation-duration:.30s;animation-timing-function:cubic-bezier(.32,.72,0,1);mix-blend-mode:normal
+}
+::view-transition-old(root),::view-transition-new(root){animation:none}
+:root[data-nav-dir="forward"]::view-transition-old(mf-view){animation-name:mfPushOut}
+:root[data-nav-dir="forward"]::view-transition-new(mf-view){animation-name:mfPushIn}
+:root[data-nav-dir="back"]::view-transition-old(mf-view){animation-name:mfPopOut}
+:root[data-nav-dir="back"]::view-transition-new(mf-view){animation-name:mfPopIn}
+:root[data-nav-dir="swap"]::view-transition-old(mf-view){animation-name:mfFadeOut;animation-duration:.2s}
+:root[data-nav-dir="swap"]::view-transition-new(mf-view){animation-name:mfFadeIn;animation-duration:.2s}
+@keyframes mfPushIn{from{opacity:0;transform:translate3d(26px,0,0)}to{opacity:1;transform:none}}
+@keyframes mfPushOut{from{opacity:1;transform:none}to{opacity:0;transform:translate3d(-18px,0,0)}}
+@keyframes mfPopIn{from{opacity:0;transform:translate3d(-26px,0,0)}to{opacity:1;transform:none}}
+@keyframes mfPopOut{from{opacity:1;transform:none}to{opacity:0;transform:translate3d(18px,0,0)}}
+@keyframes mfFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes mfFadeOut{from{opacity:1}to{opacity:0}}
+
+/* Fallback for engines without the View Transitions API. Opacity only: animating the live
+   #view element (rather than a snapshot) inside the scroll container is what caused the
+   jitter that led to motion being disabled outright. */
+@keyframes navFade{from{opacity:.4}to{opacity:1}}
+.view.nav-forward,.view.nav-back,.view.nav-swap{animation:navFade .2s ease-out}
+@media(prefers-reduced-motion:reduce){
+  .view.nav-forward,.view.nav-back,.view.nav-swap{animation:none}
+  ::view-transition-old(mf-view),::view-transition-new(mf-view){animation:none}
+}
 
 /* per-section accent, used by the back button and active tab */
 body[data-screen^="mom"]{--accent:var(--mom-ink)}

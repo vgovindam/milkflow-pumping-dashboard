@@ -187,6 +187,71 @@ function toast(text,ms=2800,action=null){
 }
 function closeOverlays(){ document.body.classList.remove('locked'); $('sheet')?.classList.remove('open'); $('scrim')?.classList.remove('open'); }
 function closeDialogs(){ document.querySelectorAll('dialog[open]').forEach(d => { try{ d.close(); }catch{} }); }
+/* ------------------------------------------------------------------ navigation --
+ * The router owns screen transitions and scroll position. Three files used to declare the
+ * transition and two of them used !important to win, which is why motion ended up switched
+ * off entirely rather than fixed: animating #view fights the .main scroll container it
+ * lives inside.
+ *
+ * The View Transitions API animates SNAPSHOTS of the outgoing and incoming states, so a
+ * directional slide cannot move the live scroller at all - the reason transforms were
+ * unsafe stops applying. Where the API is missing the render happens instantly and
+ * styles.css supplies an opacity-only fallback; reduced-motion skips both.
+ */
+const scrollMemory = new Map();
+const scroller = () => document.querySelector('.main') || document.scrollingElement;
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canViewTransition = () => typeof document.startViewTransition === 'function';
+let inViewTransition = false;
+
+function rememberScroll(v){ const el = scroller(); if(el && v) scrollMemory.set(v, el.scrollTop || 0); }
+/* Going deeper starts at the top of the new screen; coming back returns you to where you
+ * were reading, which is what makes Back feel like going back rather than reloading. */
+function restoreScroll(v, dir){
+  const el = scroller(); if(!el) return;
+  const target = dir === 'back' ? (scrollMemory.get(v) || 0) : 0;
+  if(el !== document.scrollingElement) window.scrollTo({top:0, behavior:'auto'});
+  /* The base render is followed by an enhancement pass (core-ui re-renders the Mom and Baby
+   * screens on milkflow:base-rendered) which changes the content height. That is why the
+   * position has to be PINNED rather than set once: assigning scrollTop before the taller
+   * content lands clamps it to 0, and content inserted afterwards can drag the previous
+   * offset back in. Pinning both cases here is what lets render-lifecycle stop forcing 0 on
+   * every route change, so scroll has a single owner. */
+  el.scrollTop = target;
+  let frames = 0;
+  const pin = () => {
+    el.scrollTop = target;
+    if(++frames < 14) requestAnimationFrame(pin);
+  };
+  requestAnimationFrame(pin);
+  setTimeout(() => { el.scrollTop = target; }, 150);
+}
+let activeTransition = null;
+function withTransition(dir, mutate){
+  if(dir === 'none' || reducedMotion() || !canViewTransition()){ mutate(); return; }
+  /* Tapping a second destination while the first is still animating aborts the running
+   * transition. That rejects its ready/finished promises, and unhandled those surface as
+   * "InvalidStateError: Transition was aborted". Retire the previous one deliberately and
+   * attach a handler to every promise the API hands back - the rejection is expected here,
+   * not a fault. */
+  if(activeTransition){ try{ activeTransition.skipTransition(); }catch{} }
+  document.documentElement.dataset.navDir = dir;
+  inViewTransition = true;
+  let t;
+  try{ t = document.startViewTransition(mutate); }
+  catch{ inViewTransition = false; delete document.documentElement.dataset.navDir; mutate(); return; }
+  activeTransition = t;
+  const ignore = () => {};
+  t.ready?.catch?.(ignore);
+  t.updateCallbackDone?.catch?.(ignore);
+  const done = () => {
+    if(activeTransition === t) activeTransition = null;
+    inViewTransition = false;
+    delete document.documentElement.dataset.navDir;
+  };
+  t.finished.then(done, done);
+}
+
 function setView(v,{replace=false}={}){
   if(!VIEWS.has(v)) v = S.ui.workspace === 'baby' ? 'baby-home' : 'mom-home';
   const same = v === view;
@@ -197,8 +262,8 @@ function setView(v,{replace=false}={}){
   // pushState (not replaceState) so the device Back button walks back through screens
   // instead of leaving the app entirely. `from` lets goBack() pop instead of pushing.
   if(replace || same) history.replaceState({view:v,from},'',url); else history.pushState({view:v,from},'',url);
-  closeOverlays(); closeDialogs(); render(dir);
-  window.scrollTo({top:0,behavior:'auto'});
+  rememberScroll(from);
+  withTransition(dir, () => { closeOverlays(); closeDialogs(); render(dir); restoreScroll(v,dir); });
 }
 function goBack(){
   const p = PARENT[view];
@@ -214,7 +279,10 @@ window.addEventListener('popstate',e => {
   const v = e.state?.view || location.hash.slice(1);
   if(!VIEWS.has(v) || v === view) return;
   const dir = depthOf(v) > depthOf(view) ? 'forward' : depthOf(v) < depthOf(view) ? 'back' : 'swap';
-  view = v; save(); render(dir); window.scrollTo({top:0,behavior:'auto'});
+  const from = view;
+  rememberScroll(from);
+  view = v; save();
+  withTransition(dir, () => { render(dir); restoreScroll(v,dir); });
 });
 
 // Deep links and hand-edited URLs change the hash without a popstate, so route on that
@@ -225,7 +293,10 @@ window.addEventListener('hashchange',() => {
   if(!VIEWS.has(v) || v === view) return;
   closeOverlays(); closeDialogs();
   const dir = depthOf(v) > depthOf(view) ? 'forward' : depthOf(v) < depthOf(view) ? 'back' : 'swap';
-  view = v; save(); render(dir); window.scrollTo({top:0,behavior:'auto'});
+  const from = view;
+  rememberScroll(from);
+  view = v; save();
+  withTransition(dir, () => { render(dir); restoreScroll(v,dir); });
 });
 
 function icon(name,cls=''){
@@ -1225,8 +1296,9 @@ function render(dir='none'){
   if(back) back.textContent = parent ? (titles[parent]||'Back') : '';
   document.querySelector('.back-btn')?.classList.toggle('show',!!parent);
   el.innerHTML=(renderers[view]||momHome)();
-  if(dir!=='none' && !matchMedia('(prefers-reduced-motion: reduce)').matches){
-    el.classList.remove('nav-forward','nav-back','nav-swap');
+  // Only the fallback path needs a class; a view transition animates its own snapshots.
+  el.classList.remove('nav-forward','nav-back','nav-swap');
+  if(dir!=='none' && !inViewTransition && !reducedMotion()){
     void el.offsetWidth;
     el.classList.add(dir==='forward'?'nav-forward':dir==='back'?'nav-back':'nav-swap');
   }

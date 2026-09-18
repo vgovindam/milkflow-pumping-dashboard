@@ -210,7 +210,7 @@ function addStyles(){
 html{scroll-behavior:auto!important}#view{overflow-anchor:none}/* Motion was switched off entirely to stop the slide transform jittering inside the
    .main scroll owner. An opacity cross-fade cannot move layout, so navigation can feel
    continuous again without reintroducing that jitter. */
-.nav-forward,.nav-back,.nav-swap{animation:mfViewFade .2s ease-out!important;transform:none!important}@keyframes mfViewFade{from{opacity:.35}to{opacity:1}}@media(prefers-reduced-motion:reduce){.nav-forward,.nav-back,.nav-swap{animation:none!important}}
+
 
 /* ---------- ambient color: stronger identity without sacrificing readability ---------- */
 body[data-screen="mom-home"] .main{background:radial-gradient(circle at 10% 8%,rgba(194,220,255,.55),transparent 29%),radial-gradient(circle at 89% 17%,rgba(226,193,255,.46),transparent 31%),radial-gradient(circle at 60% 76%,rgba(255,205,228,.24),transparent 29%),linear-gradient(155deg,var(--bg),color-mix(in srgb,var(--bg) 72%,#eaf7ff))}

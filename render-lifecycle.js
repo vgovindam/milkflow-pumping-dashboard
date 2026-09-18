@@ -89,15 +89,11 @@ function publish(){
 
     window.dispatchEvent(new CustomEvent('milkflow:base-rendered',{detail:{screen,routeChanged}}));
 
-    if(routeChanged){
-      /* Core UI listeners run from the event above in the same task/microtask checkpoint.
-         Reset after that work so inserted home content cannot drag the old page offset back. */
-      requestAnimationFrame(()=>{
-        resetRouteScroll();
-        requestAnimationFrame(resetRouteScroll);
-      });
-      setTimeout(resetRouteScroll,120);
-    }
+    /* Scroll position belongs to the router, which pins the intended offset across this
+       same window (app.js restoreScroll). This used to force 0 here on every route change,
+       which guarded against inserted content dragging the old offset back but also made it
+       impossible for Back to return you to where you were reading. resetRouteScroll is kept
+       for the recovery paths below, where the screen failed to render at all. */
     requestAnimationFrame(()=>verifyScreen(screen));
   });
 }
