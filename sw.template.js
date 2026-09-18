@@ -23,7 +23,7 @@ try{
       const url=new URL(`#${route}`,self.registration.scope).href;
       return self.registration.showNotification(d.title||'MilkFlow family update',{
         body:d.body||'New care was logged on another device.',
-        icon:'./icon-192.png',badge:'./icon-192.png',
+        icon:'./milkflow-family-v3-192.png',badge:'./milkflow-family-v3-192.png',
         tag:d.alertId||`milkflow-${d.recordId||Date.now()}`,renotify:false,
         data:{url,alertId:d.alertId||''}
       });
