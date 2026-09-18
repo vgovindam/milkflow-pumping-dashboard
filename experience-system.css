@@ -260,3 +260,39 @@
   :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-zone,.mf-diaper-cluster){gap:7px;padding:8px}
   .mf-experience-panel .mf-experience-preview{height:128px!important;min-height:128px!important;flex-basis:128px!important}
 }
+
+/* Contrast floor for text sitting over a painted plate.
+   The illustrated worlds carry far more local contrast than the generated SVG scenes the
+   alphas above were tuned against. Measured against safari/light from the decoded plate
+   pixels: the care section label fell to 1.5:1, the hero greeting to 2.5:1 and the stat
+   pills to ~3.2:1. The theme package's own measurement puts the minimum surface alpha for
+   body text over a plate at 0.62, so every carrier here clears that.
+   These live in this file, and last, on purpose: for !important declarations the cascade
+   inverts layer order, so a layered rule beats an unlayered one and the only reliable way
+   to override the rules above is to sit in the same layer, later. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat{
+  background:rgba(16,21,28,.76)!important;
+  color:#fff!important;
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label>:is(span,small){
+  background:rgba(255,255,255,.9)!important;
+  border-radius:999px!important;
+  padding:3px 11px!important;
+  text-shadow:none!important;
+}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label>:is(span,small){
+  background:rgba(12,16,24,.86)!important;
+}
+/* "Add a photo" sits straight on the plate under the name. Its colour is owned by the
+   milkflow-core layer, which wins !important here, but nothing sets a background there —
+   so a carrier is the one lever available, and it is what the floor needs anyway. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{
+  background:rgba(255,255,255,.9)!important;
+  border-radius:999px!important;
+  padding:2px 9px!important;
+  justify-self:start!important;
+  text-shadow:none!important;
+}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{
+  background:rgba(12,16,24,.86)!important;
+}

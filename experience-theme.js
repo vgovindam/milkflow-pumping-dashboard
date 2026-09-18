@@ -8,14 +8,32 @@ const KEY='milkflow-experience-theme-v1';
 const THEMES=new Set(['safari','butterfly','princess','unicorn','clean']);
 const root=document.documentElement;
 
-/* One explicit asset owns each visual job. Dark art is independently color-tuned; page,
-   hero and preview files are self-contained SVGs with no nested image dependencies. */
+/* One explicit asset owns each visual job. Dark art is independently color-tuned.
+
+   Painted themes ship illustrated WebP plates at fixed widths; a theme with no painted art
+   keeps its generated self-contained SVG scene, which is a first-class state rather than a
+   broken one. WebP rather than AVIF on purpose: these are consumed as CSS background-image
+   through custom properties, and url() cannot negotiate formats the way <picture> can, so
+   the format has to be one every browser running this app already decodes. */
+const PAINTED=new Set(['safari','butterfly','princess']);
+const BG_WIDTHS=[480,720,941],HERO_WIDTHS=[640,941];
+/* Resolved once per load. The plates top out at their native 941px, so anything denser than
+   that is served the widest file rather than an upscale that adds bytes but no detail. */
+const pickWidth=widths=>{
+  const want=(window.innerWidth||360)*(window.devicePixelRatio||1);
+  return widths.find(w=>w>=want)||widths[widths.length-1];
+};
+const plate=(theme,mode,role,widths)=>PAINTED.has(theme)
+  ?`./assets/themes-v2/${theme}/${mode}/${role}@${pickWidth(widths)}.webp`
+  :`./assets/themes-v2/${theme}/${mode}/${role}.svg`;
 const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
-  babyPage:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`,
-  babyHero:`./assets/themes-v2/${theme}/${mode}/baby-hero.svg`,
-  momPage:`./assets/themes-v2/${theme}/${mode}/mom-background.svg`,
-  momHero:`./assets/themes-v2/${theme}/${mode}/mom-hero.svg`,
-  preview:`./assets/themes-v2/${theme}/${mode}/settings-preview.svg`
+  babyPage:plate(theme,mode,'baby-background',BG_WIDTHS),
+  babyHero:plate(theme,mode,'baby-hero',HERO_WIDTHS),
+  momPage:plate(theme,mode,'mom-background',BG_WIDTHS),
+  momHero:plate(theme,mode,'mom-hero',HERO_WIDTHS),
+  preview:PAINTED.has(theme)
+    ?`./assets/themes-v2/${theme}/${mode}/settings-preview.webp`
+    :`./assets/themes-v2/${theme}/${mode}/settings-preview.svg`
 }]));
 const THEME_MANIFEST={
   safari:{title:'Safari Adventure',subtitle:'Wild days, bigger dreams',assets:assetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
