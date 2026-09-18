@@ -246,14 +246,14 @@ body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"]
 body[data-screen="baby-home"] .mf-animal-copy h2{font-family:var(--display);font-weight:800;letter-spacing:-.035em}
 @media(max-width:760px){
   body[data-screen="baby-home"] .mf-animal-hero{
-    min-height:0;padding:16px 16px 18px;display:grid;
-    grid-template-columns:minmax(0,1fr) 128px;
+    min-height:0;padding:14px 15px 15px;display:grid;
+    grid-template-columns:minmax(0,1fr) 118px;
     grid-template-areas:"greeting photo" "title photo" "meta photo" "facts facts";
     column-gap:14px;row-gap:0;align-items:start
   }
   body[data-screen="baby-home"] .mf-animal-profile,body[data-screen="baby-home"] .mf-animal-copy{display:contents}
   body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{
-    grid-area:photo;width:128px;height:128px;border-width:6px;align-self:center;justify-self:end
+    grid-area:photo;width:118px;height:118px;border-width:5px;align-self:center;justify-self:end
   }
   body[data-screen="baby-home"] .mf-animal-copy .welcome{
     grid-area:greeting;box-sizing:border-box;width:auto;max-width:none;min-height:0;
@@ -262,20 +262,20 @@ body[data-screen="baby-home"] .mf-animal-copy h2{font-family:var(--display);font
     font-weight:750;color:#285e67;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
   }
   body[data-screen="baby-home"] .mf-animal-copy h2{
-    grid-area:title;position:static;width:auto;margin:8px 0 0;font-size:30px;line-height:1;
+    grid-area:title;position:static;width:auto;margin:6px 0 0;font-size:31px;line-height:1;
     align-self:start;white-space:normal;overflow-wrap:anywhere;color:#163f52
   }
   body[data-screen="baby-home"] .mf-animal-copy>small{
     grid-area:meta;position:static;margin:4px 0 0;font-size:11px;line-height:1.15;
     align-self:start;color:#456b71;opacity:.92
   }
-  body[data-screen="baby-home"] .mf-hero-facts{grid-area:facts;margin-top:13px}
+  body[data-screen="baby-home"] .mf-hero-facts{grid-area:facts;margin-top:11px;gap:8px}
   body[data-screen="baby-home"] .mf-animal-hero>.bear,body[data-screen="baby-home"] .mf-animal-hero>.bunny,body[data-screen="baby-home"] .mf-animal-star{display:none}
 }
 @media(max-width:390px){
-  body[data-screen="baby-home"] .mf-animal-hero{grid-template-columns:minmax(0,1fr) 118px;column-gap:12px}
-  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:118px;height:118px}
-  body[data-screen="baby-home"] .mf-animal-copy h2{font-size:27px}
+  body[data-screen="baby-home"] .mf-animal-hero{grid-template-columns:minmax(0,1fr) 108px;column-gap:12px;padding:14px}
+  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:108px;height:108px}
+  body[data-screen="baby-home"] .mf-animal-copy h2{font-size:25px}
 }
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:none;border-color:transparent;color:#d8f5f7}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#f5fbff}

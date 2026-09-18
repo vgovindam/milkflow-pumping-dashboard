@@ -246,7 +246,7 @@
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress>div,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-side-note,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next{background:#171d29!important;border-color:rgba(255,255,255,.16)!important;color:#fff!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-hero-facts,.mf-dream-next) :is(strong,small,span,p){color:#fff!important;opacity:1!important;text-shadow:none!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next :is(strong,small,span,p){color:#fff!important;opacity:1!important;text-shadow:none!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{background:linear-gradient(145deg,#173849,#1d4355)!important;color:#bcecff!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{background:linear-gradient(145deg,#442238,#552843)!important;color:#ffc2d8!important}
 /* Mom dark-mode hierarchy: important totals, progress, schedule and actions stay bright
@@ -341,6 +341,29 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact :is(strong,span,small){
   color:inherit!important;
 }
+/* Mom's two boxes had no tint at all: translucent white on a pale card, which read as one
+   flat slab with some text on it. They get the same treatment Baby's already had - a pair of
+   deliberate hues so "what just happened" and "where today stands" are told apart at a
+   glance. Violet for the session that just ended, rose for the day so far. */
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-hero-fact:first-child{
+  background:linear-gradient(145deg,rgba(235,229,255,.97),rgba(214,204,250,.95))!important;
+  border-color:rgba(255,255,255,.85)!important;color:#3b2a74!important;
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-hero-fact:last-child{
+  background:linear-gradient(145deg,rgba(255,232,243,.97),rgba(250,207,228,.95))!important;
+  border-color:rgba(255,255,255,.85)!important;color:#6f2a4e!important;
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-hero-fact :is(strong,span,small,em){
+  color:inherit!important;opacity:1!important;
+}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-hero-fact:first-child{
+  background:linear-gradient(145deg,rgba(38,30,68,.92),rgba(48,38,84,.9))!important;
+  border-color:rgba(190,175,246,.26)!important;color:#d9cffb!important;
+}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-hero-fact:last-child{
+  background:linear-gradient(145deg,rgba(62,28,48,.92),rgba(78,36,60,.9))!important;
+  border-color:rgba(246,190,218,.26)!important;color:#fbcfe4!important;
+}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact:first-child{
   background:linear-gradient(145deg,rgba(14,42,60,.9),rgba(17,52,74,.88))!important;
   border-color:rgba(160,214,240,.26)!important;color:#bfe7fb!important;
@@ -394,8 +417,8 @@
 }
 /* The hero's own copy inherits the surface's ink rather than the #fff it carried when it
    was a saturated gradient. That mismatch is what made the summary numbers invisible. */
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero :is(h2,b,strong,small,span,p,i),
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero :is(h2,b,strong,small,span,p,i){
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero :is(h2,b,strong,small,span,p,i):not(.mf-hero-fact):not(.mf-hero-fact *),
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero :is(h2,b,strong,small,span,p,i):not(.mf-hero-fact):not(.mf-hero-fact *){
   color:inherit!important;text-shadow:none!important;
 }
 /* The stat chips keep their own deliberate pairing. */

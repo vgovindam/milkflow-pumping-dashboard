@@ -13,13 +13,13 @@ requireText('hero fact boxes',files.ui,'mf-hero-facts');
    width, so the composition has a 393pt step and a 375pt step - a Pro-sized photo beside a
    column that still fits a greeting with a name in it. */
 requireText('mom hero composition',files.ui,'grid-template-areas:"greeting photo" "title photo" "facts facts" "next next"');
-requireText('narrow phone step',files.ui,'.mf-dream-photo{width:116px;height:116px}');
+requireText('narrow phone step',files.ui,'.mf-dream-photo{width:108px;height:108px}');
 requireText('relative time, not a clock',files.ui,'relativeAgo(x.last.date||today(),x.last.time)');
 if(files.ui.includes('Your day, beautifully paced'))failures.push('mom hero: the headline must summarize the day, not repeat a slogan');
 requireText('both heroes share the fact component',files.ui,'.mf-hero-fact strong');
 requireText('modern title face',files.ui,'.mf-journey-head strong,.mf-dream-actions .quick-tile strong{font-family:var(--display)');
 requireText('editorial accent face',files.ui,'.mf-dream-hero .mf-dream-main h2,.mf-animal-copy h2{font-family:var(--editorial)');
-requireText('mobile hero title scale',files.ui,'.mf-dream-main h2{font-size:32px');
+requireText('mobile hero title scale',files.ui,'.mf-dream-main h2{grid-area:title;max-width:none;font-size:26px');
 requireText('readable row copy',files.css,'.row-main strong{font-size:15px');
 requireText('dark baby name',files.ui,':root[data-theme="dark"] .mf-animal-copy h2{color:#f7f3ff}');
 requireText('dark baby details',files.ui,':root[data-theme="dark"] .mf-animal-copy small{color:#d7e7ef}');
