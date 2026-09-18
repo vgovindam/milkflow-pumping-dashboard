@@ -37,20 +37,22 @@ for(const token of ["collection('familyChatRequests')", "mode==='status'", "stat
 
 const themes=['safari','butterfly','princess','unicorn'];
 for(const theme of themes){
-  const scene=`assets/theme-composite/${theme}.svg`,icons=`assets/theme-icons/${theme}.svg`;
-  for(const rel of [scene,icons])if(!fs.existsSync(path.join(ROOT,rel)))throw new Error(`Theme asset contract missing: ${rel}`);
-  const svg=fs.readFileSync(path.join(ROOT,scene),'utf8');
-  if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be fully self-contained; nested SVG/image references are not allowed.`);
-  if(!svg.includes('viewBox="0 0 1000 2200"'))throw new Error(`${scene} must remain a tall 1000x2200 immersive world.`);
-  if(svg.length<4500)throw new Error(`${scene} is too sparse to qualify as the detailed production backdrop.`);
-  if(!experience.includes(`theme-composite/${theme}.svg`))throw new Error(`Theme manifest is not using detailed ${theme} scene.`);
+  const icons=`assets/theme-icons/${theme}.svg`;
+  if(!fs.existsSync(path.join(ROOT,icons)))throw new Error(`Theme asset contract missing: ${icons}`);
+  for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
+    const scene=`assets/themes-v2/${theme}/${mode}/${role}.svg`;
+    if(!fs.existsSync(path.join(ROOT,scene)))throw new Error(`Theme asset contract missing: ${scene}`);
+    const svg=fs.readFileSync(path.join(ROOT,scene),'utf8');
+    if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be fully self-contained.`);
+    if(svg.length<4500)throw new Error(`${scene} is too sparse to qualify as production artwork.`);
+  }
+  if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} asset matrix.`);
   if(!experience.includes(`theme-icons/${theme}.svg`))throw new Error(`Theme manifest is not using independent ${theme} icon sprite.`);
-  if(!experienceSystem.includes(`theme-composite/${theme}.svg`))throw new Error(`Theme CSS is not using detailed ${theme} scene.`);
 }
 for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
 for(const token of ['Choose a theme','Make this little adventure yours','Profile &amp; Personalization','Different themes.','mf-preview-scene'])if(!experience.includes(token))throw new Error(`Settings storybook contract missing: ${token}`);
 for(const token of ['.mf-animal-hero::before','.mf-animal-hero::after','.mf-feed-card::before','.mf-diaper-blob::before','.mf-animal-checkin::before','display:none!important','visibility:hidden!important','min-height:136px!important','padding:78px 11px 15px!important'])if(!themeEntry.includes(token))throw new Error(`Single-layer Baby visual contract missing: ${token}`);
-for(const token of ['.mf-dream-hero::before','.mf-dream-hero::after','content:none!important','var(--mf-theme-art)','body[data-screen="settings"] .main','body[data-screen="baby-home"] .mf-animal-hero','body[data-screen="mom-home"] .mf-dream-hero','color:var(--mf-world-text)!important'])if(!experienceSystem.includes(token))throw new Error(`Theme scene/contrast contract missing: ${token}`);
+for(const token of ['.mf-dream-hero::before','.mf-dream-hero::after','content:none!important','var(--mf-theme-baby-scene)','var(--mf-theme-mom-scene)','var(--mf-theme-baby-hero)','var(--mf-theme-mom-hero)','body[data-screen="settings"] .main','body[data-screen="baby-home"] .mf-animal-hero','body[data-screen="mom-home"] .mf-dream-hero','color:var(--mf-world-text)!important'])if(!experienceSystem.includes(token))throw new Error(`Theme scene/contrast contract missing: ${token}`);
 if(experienceSystem.includes('content:var(--mf-theme-name)'))throw new Error('Theme names must not be rendered as hero badges.');
 if(experienceSystem.includes('--mf-theme-detail')||experience.includes('theme-details/'))throw new Error('Runtime theme composition must use one self-contained scene, not stacked detail/backdrop files.');
 for(const token of ['.metric strong','.panel-head button','.round-action'])if(!componentTheme.includes(token))throw new Error(`Dark readability contract missing: ${token}`);
