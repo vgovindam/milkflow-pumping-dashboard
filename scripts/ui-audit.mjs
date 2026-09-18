@@ -8,7 +8,7 @@ const requireText=(name,source,expected)=>{if(!source.includes(expected))failure
 requireText('mobile viewport',files.css,'min-height:100dvh');
 requireText('mobile safe area',files.css,'env(safe-area-inset-bottom)');
 requireText('saved parent name',files.ui,"name=s.profile?.momName||'Mom'");
-requireText('hero data coverage',files.ui,'mf-dream-side-note');
+requireText('hero data coverage',files.ui,'mf-dream-stats');
 requireText('modern title face',files.ui,'.mf-journey-head strong,.mf-dream-actions .quick-tile strong{font-family:var(--display)');
 requireText('editorial accent face',files.ui,'.mf-dream-hero .mf-dream-main h2,.mf-animal-copy h2{font-family:var(--editorial)');
 requireText('mobile hero title scale',files.ui,'.mf-dream-main h2{font-size:32px');

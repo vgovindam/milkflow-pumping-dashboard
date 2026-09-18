@@ -95,9 +95,9 @@ body[data-screen="baby-home"] .mf-animal-copy h2{font-family:var(--display)!impo
   body[data-screen="baby-home"] .mf-animal-profile,body[data-screen="baby-home"] .mf-animal-copy{display:contents!important}
   body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{grid-area:photo!important;width:124px!important;height:124px!important;border-width:6px!important;align-self:center!important}
   body[data-screen="baby-home"] .mf-animal-copy .welcome{
-    grid-area:greeting!important;box-sizing:border-box!important;width:100%!important;max-width:none!important;min-height:31px!important;
-    margin:0 0 5px!important;padding:5px 9px!important;border-radius:13px!important;background:rgba(255,255,255,.88)!important;
-    border:1px solid rgba(255,255,255,.5)!important;font-family:var(--display)!important;font-size:12.5px!important;line-height:1.15!important;
+    grid-area:greeting!important;box-sizing:border-box!important;width:auto!important;max-width:none!important;min-height:0!important;
+    margin:0 0 6px!important;padding:0!important;border-radius:0!important;background:none!important;
+    border:0!important;font-family:var(--display)!important;font-size:12.5px!important;line-height:1.15!important;
     font-weight:750!important;color:#285e67!important;white-space:normal!important
   }
   body[data-screen="baby-home"] .mf-animal-copy h2{grid-area:name!important;position:static!important;width:auto!important;margin:0!important;font-size:31px!important;line-height:.98!important;align-self:end!important;white-space:nowrap!important;overflow:visible!important;color:#163f52!important}
@@ -113,7 +113,7 @@ body[data-screen="baby-home"] .mf-animal-copy h2{font-family:var(--display)!impo
   body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:96px!important;height:96px!important}
   body[data-screen="baby-home"] .mf-animal-copy h2{font-size:26px!important}
 }
-:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:rgba(8,26,34,.86)!important;border-color:rgba(191,234,240,.16)!important;color:#d8f5f7!important}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:none!important;border-color:transparent!important;color:#d8f5f7!important}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#f5fbff!important}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy>small{color:#c5dce3!important}
 

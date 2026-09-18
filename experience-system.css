@@ -31,18 +31,25 @@
   --mf-page-focus:center 15%;--mf-baby-focus:center 8%;--mf-mom-focus:center 10%
 }
 
-/* One scene per realm. No veil, duplicate wallpaper or decorative pseudo-layer. */
+/* One scene per realm. No veil, duplicate wallpaper or decorative pseudo-layer.
+
+   background-attachment is `fixed`, not `local`, because `cover` resolves against the
+   positioning area: with `local` that area is the SCROLL box, so on a 1454px-tall page a
+   390px-wide viewport was being shown the middle 60% of a plate scaled to 654px wide. The
+   artwork read as an arbitrary crop on both sides for exactly that reason. Fixed resolves
+   cover against the viewport, so each plate is composed as drawn and stays put while the
+   content scrolls over it. */
 :root:not([data-experience-theme="clean"]) body[data-realm="baby"] .main,
 :root:not([data-experience-theme="clean"]) body[data-screen="settings"] .main,
 :root:not([data-experience-theme="clean"]) body[data-screen="set-appearance"] .main{
   position:relative;isolation:isolate;background-color:var(--mf-world-base)!important;
   background-image:var(--mf-theme-baby-scene)!important;background-size:cover!important;
-  background-position:var(--mf-page-focus)!important;background-repeat:no-repeat!important;background-attachment:local!important
+  background-position:var(--mf-page-focus)!important;background-repeat:no-repeat!important;background-attachment:fixed!important
 }
 :root:not([data-experience-theme="clean"]) body[data-realm="mom"] .main{
   position:relative;isolation:isolate;background-color:var(--mf-world-base)!important;
   background-image:var(--mf-theme-mom-scene)!important;background-size:cover!important;
-  background-position:var(--mf-page-focus)!important;background-repeat:no-repeat!important;background-attachment:local!important
+  background-position:var(--mf-page-focus)!important;background-repeat:no-repeat!important;background-attachment:fixed!important
 }
 
 /* Chrome floats over the world rather than replacing it. */
@@ -215,7 +222,7 @@
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress>div,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-side-note,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next{background:#171d29!important;border-color:rgba(255,255,255,.16)!important;color:#fff!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-progress>div,.mf-dream-side-note,.mf-dream-next) :is(strong,small,span,p){color:#fff!important;opacity:1!important;text-shadow:none!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-stats,.mf-dream-photo-cap,.mf-dream-next) :is(strong,small,span,p){color:#fff!important;opacity:1!important;text-shadow:none!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{background:linear-gradient(145deg,#173849,#1d4355)!important;color:#bcecff!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{background:linear-gradient(145deg,#442238,#552843)!important;color:#ffc2d8!important}
 /* Mom dark-mode hierarchy: important totals, progress, schedule and actions stay bright
