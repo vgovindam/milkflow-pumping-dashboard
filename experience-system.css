@@ -331,7 +331,7 @@
   border-color:rgba(245,214,160,.26)!important;color:#ffdca6!important;
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label>:is(span,small){
-  background:rgba(255,255,255,.9)!important;
+  background:rgba(255,255,255,.96)!important;
   border-radius:999px!important;
   padding:3px 11px!important;
   text-shadow:none!important;

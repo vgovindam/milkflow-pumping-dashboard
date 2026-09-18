@@ -237,3 +237,42 @@ body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"]
 /* ---------------------------------------------------------------- chat */
 .mf-chat-panel .mf-chat-close{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid color-mix(in srgb,var(--mom) 18%,var(--line))!important;border-radius:15px!important;background:color-mix(in srgb,var(--mom) 7%,var(--surface))!important;color:color-mix(in srgb,var(--mom) 58%,var(--ink))!important;box-shadow:0 6px 16px rgba(45,34,78,.08)!important}
 :root[data-theme="dark"] .mf-chat-panel .mf-chat-close{background:#2a293a!important;border-color:#45405a!important;color:#eee9fb!important}
+
+/* ---------------------------------------------------------------- care cards */
+/* One shape language for every quick-log tile on both sides, fitted to its content.
+   These carry !important from the milkflow-core layer because the reserved art zone in
+   theme.css (78px of top padding for the old full-size themed sprite) is pinned by a
+   contract test and cannot simply be edited there. The sprite is a corner motif now, so
+   the reserve is oversized and left a dead band above the label.
+
+   Layout: mark centred on top, label centred beneath. The previous diagonal — icon top
+   right, text bottom left — is what made the boxes read as empty rectangles. */
+@media(max-width:760px){
+  body[data-screen="baby-home"] .mf-feed-card,
+  body[data-screen="baby-home"] .mf-diaper-blob,
+  body[data-screen="mom-home"] .mf-dream-actions .quick-tile{
+    border-radius:28px!important;
+    text-align:center!important;
+    align-items:center!important;
+    justify-items:center!important;
+  }
+  body[data-screen="baby-home"] .mf-feed-card{min-height:116px!important;padding:58px 9px 13px!important}
+  body[data-screen="baby-home"] .mf-diaper-blob{min-height:116px!important;padding:58px 8px 13px!important}
+  body[data-screen="mom-home"] .mf-dream-actions .quick-tile{min-height:112px!important;padding:56px 12px 14px!important}
+
+  body[data-screen="baby-home"] .mf-feed-card>span.mf-care-mark,
+  body[data-screen="baby-home"] .mf-diaper-blob>span.mf-care-mark{
+    left:50%!important;right:auto!important;top:11px!important;
+    transform:translateX(-50%)!important;width:46px!important;height:46px!important;
+  }
+  body[data-screen="mom-home"] .mf-dream-actions .quick-tile .tile-art{
+    left:50%!important;right:auto!important;top:12px!important;
+    transform:translateX(-50%)!important;width:46px!important;height:46px!important;
+  }
+  /* The label block sits under the mark and wraps inside the card rather than beside it. */
+  body[data-screen="baby-home"] .mf-feed-card :is(strong,small),
+  body[data-screen="baby-home"] .mf-diaper-blob :is(strong,span),
+  body[data-screen="mom-home"] .mf-dream-actions .quick-tile :is(strong,small){
+    text-align:center!important;width:100%!important;
+  }
+}

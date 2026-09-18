@@ -18,7 +18,10 @@
    icon remains underneath as a safe fallback, so an art asset cannot break the action. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card::after,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob::after{
-  content:"";position:absolute;left:8px;bottom:8px;width:30px;height:30px;z-index:1;opacity:.55;
+  /* Top-left corner: the care mark owns the top centre and the label owns the bottom, so
+     this was previously sitting directly behind the title text. */
+  content:"";position:absolute!important;left:9px!important;top:9px!important;bottom:auto!important;
+  width:22px!important;height:22px!important;z-index:1;opacity:.4;
   border-radius:50%;background-color:transparent;background-image:var(--mf-icon-sprite);
   background-repeat:no-repeat;background-size:var(--mf-sprite-size);
   pointer-events:none
