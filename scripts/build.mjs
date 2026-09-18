@@ -15,7 +15,7 @@ const TEXT_FILES=[
   'index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-themes.css','experience-system.css','experience-components.css','doctor-summary.css',
   'config.js','app.js','cross-device-alerts.js','app-reliability.js','core-ui.js','experience-theme.js','render-lifecycle.js','plan-reliability.js','network-reliability.js','ai-coach-client.js','app-update-notice.js','family-chat.js','doctor-summary.js','release-info.js','manifest.webmanifest','icon.svg'
 ];
-const BINARY_FILES=['milkflow-family-icon-192.png','milkflow-family-icon-512.png','milkflow-family-maskable-512.png','milkflow-family-apple-touch.png'];
+const BINARY_FILES=['milkflow-family-v3-192.png'];
 
 function ensureDir(file){fs.mkdirSync(path.dirname(file),{recursive:true});}
 function transform(text){
