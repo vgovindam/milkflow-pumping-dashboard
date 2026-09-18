@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 860" preserveAspectRatio="xMidYMid slice" role="img" aria-label="safari dark baby hero illustration">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#182b35"/><stop offset=".28" stop-color="#263a31"/><stop offset=".68" stop-color="#6a5a39"/><stop offset="1" stop-color="#302d24"/></linearGradient>
+  <linearGradient id="mount" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9dbb9b"/><stop offset="1" stop-color="#66846f"/></linearGradient>
+  <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9e62"/><stop offset="1" stop-color="#214f3c"/></linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7cd83"/><stop offset="1" stop-color="#d68a3d"/></linearGradient>
+  <linearGradient id="tiger" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffba59"/><stop offset="1" stop-color="#e37e30"/></linearGradient>
+  <radialGradient id="sun"><stop stop-color="#dfcf91" stop-opacity=".95"/><stop offset="1" stop-color="#8a7442" stop-opacity="0"/></radialGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#24482f" flood-opacity=".22"/></filter>
+</defs>
+<rect width="1000" height="2200" fill="url(#sky)"/><rect width="1000" height="2200" fill="#070b13" opacity=".18"/>
+<circle cx="790" cy="190" r="250" fill="url(#sun)"/>
+<g opacity=".52"><path d="M0 610 170 390l130 145 150-250 185 280 150-150 215 205v330H0Z" fill="url(#mount)"/><path d="M365 450c60-30 112-26 162 11 45 33 88 34 133 0l20 265c-77 44-153 47-228 9-54-27-91-62-110-104Z" fill="#d8eef0" opacity=".78"/><path d="M492 494c20 83 19 176-6 279" fill="none" stroke="#f5ffff" stroke-width="28" stroke-linecap="round" opacity=".82"/></g>
+<path d="M0 820c150-102 314-93 470 25 126 95 277 85 530-52v407H0Z" fill="#7c9e68" opacity=".46"/>
+<path d="M0 1360c178-112 341-99 489 39 149 139 308 139 511-1v506H0Z" fill="#4f7558" opacity=".24"/>
+<!-- giraffe -->
+<g transform="translate(34 210) scale(.86)" filter="url(#shadow)">
+ <path d="M118 150c0-82 42-122 98-122s102 39 102 115c0 65-29 102-75 120l-1 460c0 69-26 109-75 109-49 0-76-42-71-111l31-467c-56-19-93-55-106-101-11-38 8-63 39-54 25 7 42 28 58 51Z" fill="#eab46d"/>
+ <ellipse cx="217" cy="133" rx="101" ry="77" fill="#f2c485"/><path d="M158 67c-42-51-75-50-87-19-10 27 17 66 75 83m136-61c43-50 77-46 86-13 7 28-22 63-78 75" fill="#d79251"/>
+ <path d="M178 46c-12-55 6-87 32-85 26 2 36 37 18 94m50 0c12-53 41-78 65-66 23 13 17 47-15 88" fill="none" stroke="#6b4b32" stroke-width="15" stroke-linecap="round"/>
+ <g fill="#8e5e39"><ellipse cx="194" cy="122" rx="18" ry="24"/><ellipse cx="260" cy="108" rx="17" ry="23"/><ellipse cx="148" cy="200" rx="25" ry="34"/><ellipse cx="210" cy="252" rx="28" ry="20"/><ellipse cx="151" cy="340" rx="24" ry="34"/><ellipse cx="211" cy="428" rx="29" ry="21"/><ellipse cx="144" cy="525" rx="24" ry="35"/><ellipse cx="205" cy="614" rx="28" ry="20"/><ellipse cx="141" cy="704" rx="21" ry="31"/></g>
+ <circle cx="191" cy="139" r="7" fill="#332820"/><circle cx="247" cy="139" r="7" fill="#332820"/><path d="M198 174q21 17 43 0" fill="none" stroke="#6b4937" stroke-width="6" stroke-linecap="round"/>
+</g>
+<!-- monkey in canopy -->
+<g transform="translate(718 210)" filter="url(#shadow)"><path d="M78 84c-39-53-94-6-77 45 15 45 67 60 104 29 35 34 92 14 101-36 10-55-50-91-87-43-13-12-27-17-41-17Z" fill="#7c5037"/><circle cx="104" cy="124" r="61" fill="#a86d47"/><ellipse cx="104" cy="136" rx="39" ry="32" fill="#e9bb86"/><circle cx="84" cy="117" r="6"/><circle cx="126" cy="117" r="6"/><path d="M88 143q16 15 32 0" fill="none" stroke="#674232" stroke-width="5" stroke-linecap="round"/><path d="M55 60Q18 12 45-10m119 70q41-45 19-72" fill="none" stroke="#31583a" stroke-width="13" stroke-linecap="round"/></g>
+<!-- parrots -->
+<g transform="translate(745 520)" filter="url(#shadow)"><path d="M20 22q91 22 98 102 7 85-91 121L6 182 4 95Q7 47 20 22Z" fill="#ef5f4a"/><path d="M46 95q53 14 72 62-40 32-79 30Z" fill="#ffbf38"/><circle cx="74" cy="67" r="7"/><path d="m110 73 53 18-51 27" fill="#31323b"/><path d="M43 200 22 301m58-96 14 102" stroke="#2d91bd" stroke-width="13" stroke-linecap="round"/></g>
+<g transform="translate(626 655) scale(.72)"><path d="M20 22q91 22 98 102 7 85-91 121L6 182 4 95Q7 47 20 22Z" fill="#2d9fd0"/><path d="M46 95q53 14 72 62-40 32-79 30Z" fill="#7ed26d"/><circle cx="74" cy="67" r="7"/><path d="m110 73 53 18-51 27" fill="#31323b"/></g>
+<!-- lion cub -->
+<g transform="translate(50 1510) scale(.88)" filter="url(#shadow)"><circle cx="160" cy="152" r="126" fill="#b9793b"/><circle cx="160" cy="153" r="90" fill="url(#gold)"/><circle cx="95" cy="90" r="32" fill="#a66734"/><circle cx="227" cy="90" r="32" fill="#a66734"/><ellipse cx="160" cy="181" rx="61" ry="47" fill="#f9dfad"/><circle cx="132" cy="142" r="8"/><circle cx="190" cy="142" r="8"/><path d="M146 184q14 13 29 0m-15-13v26" fill="none" stroke="#6b4938" stroke-width="6" stroke-linecap="round"/></g>
+<!-- tiger cub -->
+<g transform="translate(690 1500) scale(.82)" filter="url(#shadow)"><path d="M37 129C59 49 139 5 222 31c79 25 121 104 91 179-31 77-125 114-204 76-74-35-99-92-72-157Z" fill="url(#tiger)"/><path d="M62 91 19 44l11 82m227-35 51-39-24 82" fill="#c96d2d"/><ellipse cx="179" cy="191" rx="72" ry="56" fill="#ffd9a4"/><circle cx="139" cy="149" r="8"/><circle cx="221" cy="149" r="8"/><path d="M159 201q14 12 43 0m-21-13v25" fill="none" stroke="#714631" stroke-width="7" stroke-linecap="round"/><g stroke="#4d372d" stroke-width="12" stroke-linecap="round"><path d="M103 92l39 25"/><path d="M132 62l31 42"/><path d="M241 89l-38 29"/><path d="M267 117l-44 14"/><path d="M91 152l42 5"/><path d="M277 163l-45 3"/></g></g>
+<!-- butterflies -->
+<g fill="#ff9f49" stroke="#563b31" stroke-width="4"><path d="M520 320c43-59 85-12 56 22 37 27 10 82-37 31-46 49-72-7-35-31-29-32 10-79 16-22Z"/><path d="M570 1120c35-49 70-9 46 20 30 23 8 69-30 27-38 41-60-7-28-27-24-26 8-67 12-20Z"/></g>
+<g fill="#7fc5ff" stroke="#4f5578" stroke-width="4"><path d="M355 1040c31-42 62-7 41 17 26 20 7 58-27 23-33 34-53-6-24-23-21-22 7-57 10-17Z"/></g>
+<!-- layered foliage -->
+<g fill="url(#leaf)"><path d="M0 0h210c-20 113-76 190-182 232L0 240Z"/><path d="M1000 0H800c12 110 74 189 175 229l25 11Z"/><path d="M0 760c105-27 195-1 270 79-94 10-164 49-216 117 82-8 151 17 205 74C157 1058 79 1064 0 1047Z"/><path d="M1000 720c-104-18-198 17-276 104 100 4 176 43 230 119-90-4-164 26-220 90 104 22 191 24 266 7Z"/><path d="M0 1840c121-26 221 9 300 103-107 1-191 44-251 127 100-12 184 17 249 87-111 33-203 43-298 35Z"/><path d="M1000 1810c-119-20-219 18-301 113 110-2 194 37 252 119-102-4-184 31-245 103 111 29 208 34 294 14Z"/></g>
+<g fill="#8bc57a" opacity=".9"><ellipse cx="109" cy="866" rx="34" ry="108" transform="rotate(-32 109 866)"/><ellipse cx="886" cy="856" rx="34" ry="104" transform="rotate(29 886 856)"/><ellipse cx="126" cy="1960" rx="40" ry="123" transform="rotate(-26 126 1960)"/><ellipse cx="860" cy="1952" rx="40" ry="122" transform="rotate(27 860 1952)"/></g>
+</svg>
