@@ -41,7 +41,7 @@ try{
   const momRoutes=new Set(['mom-home','mom-history','mom-trends','mom-stash']);
   const babyRoutes=new Set(['baby-home','baby-history','baby-trends','baby-growth','development','doctor']);
   const themes=['safari','butterfly','princess','unicorn','clean'];
-  const expected={safari:'theme-composite/safari.svg',butterfly:'theme-composite/butterfly.svg',princess:'theme-composite/princess.svg',unicorn:'theme-composite/unicorn.svg'};
+  const expected={safari:'themes-v2/safari/',butterfly:'themes-v2/butterfly/',princess:'themes-v2/princess/',unicorn:'themes-v2/unicorn/'};
   const expectedIcons={safari:'theme-icons/safari.svg',butterfly:'theme-icons/butterfly.svg',princess:'theme-icons/princess.svg',unicorn:'theme-icons/unicorn.svg'};
   const failures=[],report=[];
   async function reach(route){await evalJs(`location.hash=${JSON.stringify('#'+route)}`);for(let i=0;i<20;i++){await sleep(100);if(await evalJs('document.body.dataset.screen||""')===route)return true;}return false;}
