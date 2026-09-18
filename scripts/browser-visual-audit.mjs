@@ -50,7 +50,7 @@ const passes=[
   {theme:'princess',routes:['baby-home','set-appearance']},
   {theme:'unicorn',routes:['baby-home','set-appearance']},
 ];
-const themeAsset={safari:'safari-adventure.svg',butterfly:'butterfly-garden.svg',princess:'princess-palace.svg',unicorn:'unicorn-dreams.svg'};
+const themeAsset={safari:'themes-v2/safari/',butterfly:'themes-v2/butterfly/',princess:'themes-v2/princess/',unicorn:'themes-v2/unicorn/'};
 const failures=[];const report=[];
 const initial=await evalJs(`(()=>({href:location.href,screen:document.body.dataset.screen||'',realm:document.body.dataset.realm||'',hash:location.hash,views:document.querySelectorAll('[data-view]').length,viewChildren:document.getElementById('view')?.children.length||0,text:(document.body.innerText||'').slice(0,160)}))()`);
 console.log('Browser audit initial state:',JSON.stringify(initial));
