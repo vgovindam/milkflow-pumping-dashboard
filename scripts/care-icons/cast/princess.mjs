@@ -42,7 +42,7 @@ const puppy = {
   render: c => [
     P.earsFloppy(c, {dx: 15.8, dy: -2.4, rx: 5.4, ry: 9}),
     P.head(c),
-    P.crown(c, {cy: H.cy - 17.8, w: 11.6, colour: '#F3D89A'}),
+    P.crown(c, {cy: H.cy - 17.8, w: 11.6, color: '#F3D89A'}),
     P.ellipse(H.cx - 9.4, H.cy - 5.4, 5.4, 4.6, c.mark, 'fill-opacity=".45"'),
     P.muzzle(c, {rx: 9, ry: 6.4}),
     P.eyes(c),
@@ -86,7 +86,7 @@ const poodle = {
   name: 'poodle',
   coat: '#FBF0F5', coat2: '#F0DCE7', inner: '#FFFFFF', mark: '#F4E2EC',
   render: c => [
-    P.mane(c, {colour: '#F6E4EE'}),
+    P.mane(c, {color: '#F6E4EE'}),
     P.earsFloppy(c, {dx: 15.4, dy: -1.4, rx: 5.6, ry: 8.4}),
     P.head(c, {rx: 14.8, ry: 14}),
     P.bow(c, {cx: H.cx, cy: H.cy - 14.6, s: 0.78}),
@@ -102,7 +102,7 @@ const fawn = {
   render: c => [
     P.earsLeaf(c, {dx: 14.6, dy: -10.4, rx: 5, ry: 5.6, tilt: 62}),
     P.head(c),
-    P.spots(c, {colour: c.mark, at: [[-9.6, -6, 2.5], [8.6, -6.6, 2.3], [-11.4, 1.4, 2], [11, 0.6, 2.1]]}),
+    P.spots(c, {color: c.mark, at: [[-9.6, -6, 2.5], [8.6, -6.6, 2.3], [-11.4, 1.4, 2], [11, 0.6, 2.1]]}),
     P.tiara(c, {cy: H.cy - 14.6}),
     P.muzzle(c, {rx: 8.6, ry: 6.2}),
     P.eyes(c),

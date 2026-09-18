@@ -70,6 +70,11 @@ if(!experience.includes('function careIcon('))throw new Error('Theme registry do
 if(!core.includes('MilkFlowExperience?.careIcon'))throw new Error('Baby care cards do not resolve icons from the theme registry');
 if(!app.includes('MilkFlowExperience?.careIcon'))throw new Error('Mom action tiles do not resolve icons from the theme registry');
 if(!core.includes('CARE_GLYPH'))throw new Error('Care icon fallback glyph map is missing');
+/* American English is the app's voice. "nappy" reached the printed doctor summary once. */
+for(const [file,text] of [['app.js',app],['core-ui.js',core],['doctor-summary.js',fs.readFileSync(path.join(ROOT,'doctor-summary.js'),'utf8')]])
+  for(const word of ['nappies','nappy','colour','centred','behaviour'])
+    if(new RegExp(`(?<![A-Za-z-])${word}(?![A-Za-z-])`,'i').test(text.replace(/\bnappy\b(?=\))/g,'')))
+      throw new Error(`${file}: use American spelling - found "${word}"`);
 {
   /* The care icons are an illustrated cast, one character per action per theme, composed from
      shared parts so the set stays consistent. A theme is a cast file plus a palette entry. */
@@ -93,7 +98,7 @@ for(const token of ['.mf-dream-hero::before','.mf-dream-hero::after','content:no
 if(experienceSystem.includes('content:var(--mf-theme-name)'))throw new Error('Theme names must not be rendered as hero badges.');
 if(experienceSystem.includes('--mf-theme-detail')||experience.includes('theme-details/'))throw new Error('Runtime theme composition must use one self-contained scene, not stacked detail/backdrop files.');
 for(const token of ['.metric strong','.panel-head button','.round-action'])if(!componentTheme.includes(token))throw new Error(`Dark readability contract missing: ${token}`);
-for(const token of ['.mf-dream-stats','.mf-dream-next','.mf-dream-metrics .metric strong','.mf-dream-journey .mf-journey-stop strong'])if(!experienceSystem.includes(token))throw new Error(`Mom dark readability contract missing: ${token}`);
+for(const token of ['.mf-hero-facts','.mf-dream-next','.mf-dream-metrics .metric strong','.mf-dream-journey .mf-journey-stop strong'])if(!experienceSystem.includes(token))throw new Error(`Mom dark readability contract missing: ${token}`);
 if(!indexHtml.includes('milkflow-family-v3-192.png?v=__MILKFLOW_VERSION__'))throw new Error('Canonical v3 MilkFlow icon is not wired to iPhone/browser entry points.');
 if(!manifestPwa.icons?.some(i=>i.src==='milkflow-family-v3-192.png'))throw new Error('Canonical v3 MilkFlow icon is missing from manifest.');
 if(!swTemplate.includes("icon:'./milkflow-family-v3-192.png'"))throw new Error('Push notification icon is not the canonical v3 MilkFlow artwork.');

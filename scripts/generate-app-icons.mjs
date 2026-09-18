@@ -8,7 +8,7 @@
  *      a rounded square inside the platform's own rounded square.
  *   2. Fill the corners. A square crop of a rounded badge leaves white in the four corners.
  *      iOS composites transparency onto BLACK and applies its own squircle mask, so those
- *      corners are flood-filled with the badge's rim colour instead of left white or alpha.
+ *      corners are flood-filled with the badge's rim color instead of left white or alpha.
  *      Only the white region CONNECTED to each corner is filled - a global replace would
  *      also hit the baby's white blanket inside the artwork.
  *   3. Stay opaque. Every output is written without an alpha channel.
@@ -56,7 +56,7 @@ function fillCorners(bmpFile) {
   const get = (x, y) => {const i = at(x, y); return [d[i + 2], d[i + 1], d[i]];};
   const set = (x, y, c) => {const i = at(x, y); d[i + 2] = c[0]; d[i + 1] = c[1]; d[i] = c[2];};
 
-  // Rim colour: sampled just inside the left edge at mid-height.
+  // Rim color: sampled just inside the left edge at mid-height.
   let acc = [0, 0, 0], n = 0;
   for (let x = Math.round(w * 0.012); x < Math.round(w * 0.026); x++) {
     const c = get(x, h >> 1); acc = [acc[0] + c[0], acc[1] + c[1], acc[2] + c[2]]; n++;

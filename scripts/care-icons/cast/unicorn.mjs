@@ -1,5 +1,5 @@
 /* Unicorn-dream cast: the storybook creatures, kept pastel so the icons stay quiet next to
-   a card's own colour. */
+   a card's own color. */
 import * as P from '../parts.mjs';
 
 const H = P.HEAD;
@@ -58,7 +58,7 @@ const narwhal = {
   render: c => [
     P.path(`M${H.cx - 15.4} ${H.cy + 8.4} q-8.4 1.4 -11.4 -5.4 q7.4 1 9.4 -2.4Z`, c.coat2),
     P.head(c, {rx: 16.4, ry: 14.8}),
-    P.spiralHorn(c, {colour: '#F2F7FB', cy: H.cy - 14.6}),
+    P.spiralHorn(c, {color: '#F2F7FB', cy: H.cy - 14.6}),
     P.ellipse(H.cx, H.cy + 6.4, 10.4, 7, c.inner, 'fill-opacity=".85"'),
     P.stroke(`M${H.cx - 3.4} ${H.cy + 5.4} q3.4 3 6.8 0`, c.ink, 1.6, 'stroke-opacity=".8"'),
     P.eyes(c, {dx: 6.6, dy: -3.4}),
@@ -72,7 +72,7 @@ const dragon = {
   render: c => [
     P.path(`M${H.cx - 17.4} ${H.cy - 2.4} q-8 -3.4 -9.4 3.4 q6.4 -.6 8.4 3.4Z`, c.coat2),
     P.head(c),
-    P.hornsSmall(c, {colour: c.mark}),
+    P.hornsSmall(c, {color: c.mark}),
     P.path(`M${H.cx} ${H.cy - 16.4} l2.4 4.4 -4.8 0Z`, c.mark, 'fill-opacity=".9"'),
     P.ellipse(H.cx, H.cy + 8, 9.4, 6.6, c.inner, 'fill-opacity=".9"'),
     P.stroke(`M${H.cx - 3.2} ${H.cy + 4.8} v1.4M${H.cx + 3.2} ${H.cy + 4.8} v1.4`, c.ink, 1.8, 'stroke-opacity=".7"'),

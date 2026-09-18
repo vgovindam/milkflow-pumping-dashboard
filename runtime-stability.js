@@ -49,7 +49,7 @@ if(NativeMutationObserver && !window.__MILKFLOW_STABLE_MUTATION_OBSERVER__){
       this._target=null;
       this._observer=new NativeMutationObserver((records)=>{
         // Only de-loop observers attached to the application view. Other browser/library
-        // observers retain native behaviour.
+        // observers retain native behavior.
         if(this._target?.id!=='view'){
           this._callback(records,this);
           return;

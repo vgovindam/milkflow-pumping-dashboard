@@ -2,7 +2,7 @@
  *
  * Each prop is drawn once, in a 32x32 box, and is the single source of truth for that
  * action's shape. It is placed twice at different scales:
- *   - full size, centred, for a theme that wants a plain mark (no cast);
+ *   - full size, centered, for a theme that wants a plain mark (no cast);
  *   - badge size, bottom-right, next to a character.
  * A bottle is therefore the same bottle in Safari and in Princess, which is what keeps the
  * app learnable when a family switches themes.
@@ -61,7 +61,7 @@ export function prop(action, ink) {
   return draw(ink).trim();
 }
 
-/** The prop placed inside a 64x64 icon: `scale` of its native size, centred on cx/cy. */
+/** The prop placed inside a 64x64 icon: `scale` of its native size, centered on cx/cy. */
 export function placeProp(action, ink, {cx, cy, scale}) {
   const offset = 16 * scale;
   return `<g transform="translate(${round(cx - offset)} ${round(cy - offset)}) scale(${round(scale)})">${prop(action, ink)}</g>`;

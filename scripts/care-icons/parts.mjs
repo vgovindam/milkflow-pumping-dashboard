@@ -23,8 +23,8 @@ export const circle = (cx, cy, rad, fill, extra = '') =>
 export const path = (d, fill, extra = '') =>
   `<path d="${d}" fill="${fill}"${extra ? ' ' + extra : ''}/>`;
 
-export const stroke = (d, colour, width, extra = '') =>
-  `<path d="${d}" fill="none" stroke="${colour}" stroke-width="${r(width)}" stroke-linecap="round" stroke-linejoin="round"${extra ? ' ' + extra : ''}/>`;
+export const stroke = (d, color, width, extra = '') =>
+  `<path d="${d}" fill="none" stroke="${color}" stroke-width="${r(width)}" stroke-linecap="round" stroke-linejoin="round"${extra ? ' ' + extra : ''}/>`;
 
 /* ------------------------------------------------------------------- head -- */
 /** Rounded head with a soft under-shade and a hairline contour. */
@@ -87,58 +87,58 @@ export function ossicones(c) {
   }).join('');
 }
 
-export function spiralHorn(c, {colour = '#F6C866', cx = HEAD.cx, cy = HEAD.cy - 15.2} = {}) {
+export function spiralHorn(c, {color = '#F6C866', cx = HEAD.cx, cy = HEAD.cy - 15.2} = {}) {
   return [
-    path(`M${r(cx)} ${r(cy - 12.4)} L${r(cx - 3.5)} ${r(cy + 2.4)} L${r(cx + 3.5)} ${r(cy + 2.4)} Z`, colour),
+    path(`M${r(cx)} ${r(cy - 12.4)} L${r(cx - 3.5)} ${r(cy + 2.4)} L${r(cx + 3.5)} ${r(cy + 2.4)} Z`, color),
     stroke(`M${r(cx - 2.5)} ${r(cy - 0.6)} L${r(cx + 2.6)} ${r(cy - 1.8)}M${r(cx - 1.8)} ${r(cy - 4.2)} L${r(cx + 2)} ${r(cy - 5.2)}M${r(cx - 1)} ${r(cy - 7.6)} L${r(cx + 1.4)} ${r(cy - 8.2)}`, '#C98A1E', 1.1, 'stroke-opacity=".7"')
   ].join('');
 }
 
-export function hornsSmall(c, {colour} = {}) {
-  const tone = colour || c.inner;
+export function hornsSmall(c, {color} = {}) {
+  const tone = color || c.inner;
   const y = HEAD.cy - 14.6;
   return [-1, 1].map(s => path(
     `M${r(HEAD.cx + s * 5.4)} ${r(y + 3.2)} q${r(s * 1.2)} -5.4 ${r(s * 4)} -6.6 q${r(-s * 0.8)} 4 ${r(-s * 1.4)} 6.6 Z`, tone)).join('');
 }
 
-export function crown(c, {colour = '#F6C866', gem = '#E2547E', cy = HEAD.cy - 16.4, cx = HEAD.cx, w = 13} = {}) {
+export function crown(c, {color = '#F6C866', gem = '#E2547E', cy = HEAD.cy - 16.4, cx = HEAD.cx, w = 13} = {}) {
   const h = 8.4;
   const x0 = cx - w / 2;
   return [
-    path(`M${r(x0)} ${r(cy + h / 2)} L${r(x0 + 0.6)} ${r(cy - h / 2)} L${r(cx - w * 0.19)} ${r(cy - h * 0.06)} L${r(cx)} ${r(cy - h * 0.66)} L${r(cx + w * 0.19)} ${r(cy - h * 0.06)} L${r(x0 + w - 0.6)} ${r(cy - h / 2)} L${r(x0 + w)} ${r(cy + h / 2)} Z`, colour),
+    path(`M${r(x0)} ${r(cy + h / 2)} L${r(x0 + 0.6)} ${r(cy - h / 2)} L${r(cx - w * 0.19)} ${r(cy - h * 0.06)} L${r(cx)} ${r(cy - h * 0.66)} L${r(cx + w * 0.19)} ${r(cy - h * 0.06)} L${r(x0 + w - 0.6)} ${r(cy - h / 2)} L${r(x0 + w)} ${r(cy + h / 2)} Z`, color),
     circle(cx, cy - h * 0.7, 1.7, gem),
     path(`M${r(x0 + 0.4)} ${r(cy + h / 2 - 1.8)} h${r(w - 0.8)} v1.8 h${r(-w + 0.8)} Z`, '#E4A82F', 'fill-opacity=".55"')
   ].join('');
 }
 
-export function tiara(c, {colour = '#F3D89A', gem = '#D8567E', cy = HEAD.cy - 14.8} = {}) {
+export function tiara(c, {color = '#F3D89A', gem = '#D8567E', cy = HEAD.cy - 14.8} = {}) {
   return [
-    stroke(`M${r(HEAD.cx - 9)} ${r(cy + 3.4)} q${9} -6.2 ${18} 0`, colour, 2.6),
-    path(`M${r(HEAD.cx)} ${r(cy - 5.6)} l2 3.9 4.2.7-3.1 3 .8 4.2-3.9-2.1-3.9 2.1.8-4.2-3.1-3 4.2-.7Z`, colour),
+    stroke(`M${r(HEAD.cx - 9)} ${r(cy + 3.4)} q${9} -6.2 ${18} 0`, color, 2.6),
+    path(`M${r(HEAD.cx)} ${r(cy - 5.6)} l2 3.9 4.2.7-3.1 3 .8 4.2-3.9-2.1-3.9 2.1.8-4.2-3.1-3 4.2-.7Z`, color),
     circle(HEAD.cx, cy - 1.1, 1.3, gem)
   ].join('');
 }
 
-export function bow(c, {colour = '#EE85A8', cx = HEAD.cx + 11.4, cy = HEAD.cy - 12.4, s = 1} = {}) {
+export function bow(c, {color = '#EE85A8', cx = HEAD.cx + 11.4, cy = HEAD.cy - 12.4, s = 1} = {}) {
   return [
-    path(`M${r(cx)} ${r(cy)} q${r(-6.4 * s)} ${r(-4.6 * s)} ${r(-6.6 * s)} ${r(0.6 * s)} q${r(0.2 * s)} ${r(4.6 * s)} ${r(6.6 * s)} ${r(-0.6 * s)}Z`, colour),
-    path(`M${r(cx)} ${r(cy)} q${r(6.4 * s)} ${r(-4.6 * s)} ${r(6.6 * s)} ${r(0.6 * s)} q${r(-0.2 * s)} ${r(4.6 * s)} ${r(-6.6 * s)} ${r(-0.6 * s)}Z`, colour),
-    circle(cx, cy, 2, colour === '#EE85A8' ? '#D96A90' : colour, 'fill-opacity=".9"')
+    path(`M${r(cx)} ${r(cy)} q${r(-6.4 * s)} ${r(-4.6 * s)} ${r(-6.6 * s)} ${r(0.6 * s)} q${r(0.2 * s)} ${r(4.6 * s)} ${r(6.6 * s)} ${r(-0.6 * s)}Z`, color),
+    path(`M${r(cx)} ${r(cy)} q${r(6.4 * s)} ${r(-4.6 * s)} ${r(6.6 * s)} ${r(0.6 * s)} q${r(-0.2 * s)} ${r(4.6 * s)} ${r(-6.6 * s)} ${r(-0.6 * s)}Z`, color),
+    circle(cx, cy, 2, color === '#EE85A8' ? '#D96A90' : color, 'fill-opacity=".9"')
   ].join('');
 }
 
-export function antennae(c, {colour} = {}) {
-  const tone = colour || c.ink;
+export function antennae(c, {color} = {}) {
+  const tone = color || c.ink;
   const y = HEAD.cy - 13.8;
   return [-1, 1].map(s => stroke(
     `M${r(HEAD.cx + s * 4.4)} ${r(y + 3)} q${r(s * 2.4)} -6 ${r(s * 7.4)} -7.4`, tone, 1.5, 'stroke-opacity=".78"') +
     circle(HEAD.cx + s * 11.8, y - 4.4, 1.9, tone, 'fill-opacity=".78"')).join('');
 }
 
-export function hairBob(c, {colour = '#7B4A2A'} = {}) {
+export function hairBob(c, {color = '#7B4A2A'} = {}) {
   return [
-    path(`M${r(HEAD.cx - 17.8)} ${r(HEAD.cy - 1)} a17.8 16.6 0 0 1 35.6 0 q-4 -6 -17.8 -6 q-13.8 0 -17.8 6Z`, colour),
-    ellipse(HEAD.cx, HEAD.cy - 12.6, 14.8, 8.4, colour)
+    path(`M${r(HEAD.cx - 17.8)} ${r(HEAD.cy - 1)} a17.8 16.6 0 0 1 35.6 0 q-4 -6 -17.8 -6 q-13.8 0 -17.8 6Z`, color),
+    ellipse(HEAD.cx, HEAD.cy - 12.6, 14.8, 8.4, color)
   ].join('');
 }
 
@@ -166,8 +166,8 @@ export function butterflyWings(c, {c1, c2, cx = HEAD.cx, cy = HEAD.cy, spread = 
 
 /* A feathered wing: leading edge swept up and out, three scalloped flight feathers on the
    trailing edge. Reads as a wing at icon size, where rotated ellipses read as clouds. */
-export function wingFan(c, {colour, edge, ax = HEAD.cx + 12.4, ay = HEAD.cy - 2, len = 19, lift = 13} = {}) {
-  const fill = colour || c.wing1 || c.coat2;
+export function wingFan(c, {color, edge, ax = HEAD.cx + 12.4, ay = HEAD.cy - 2, len = 19, lift = 13} = {}) {
+  const fill = color || c.wing1 || c.coat2;
   const trim = edge || c.wing2 || c.inner;
   return [-1, 1].map(s => {
     const x = ax === null ? HEAD.cx : HEAD.cx + s * (ax - HEAD.cx);
@@ -180,13 +180,13 @@ export function wingFan(c, {colour, edge, ax = HEAD.cx + 12.4, ay = HEAD.cy - 2,
 }
 
 /* ------------------------------------------------------------------ marks -- */
-export function spots(c, {colour, at = [[-9, -4, 3.1], [7.6, -6.4, 2.7], [-4.4, 5.6, 2.4], [9.4, 3.2, 2.9]]} = {}) {
-  const tone = colour || c.mark || c.coat2;
+export function spots(c, {color, at = [[-9, -4, 3.1], [7.6, -6.4, 2.7], [-4.4, 5.6, 2.4], [9.4, 3.2, 2.9]]} = {}) {
+  const tone = color || c.mark || c.coat2;
   return at.map(([dx, dy, rad]) => circle(HEAD.cx + dx, HEAD.cy + dy, rad, tone, 'fill-opacity=".62"')).join('');
 }
 
-export function stripes(c, {colour, opacity = '.8'} = {}) {
-  const tone = colour || c.mark || c.ink;
+export function stripes(c, {color, opacity = '.8'} = {}) {
+  const tone = color || c.mark || c.ink;
   /* Each stripe starts thick at the outline and tapers inward, which is what makes a
      stripe read as a stripe rather than a smudge at 56px. */
   const rows = [[-11.4, 1.5, 7.4], [-4.6, 1.9, 8.6], [2.4, 1.7, 7.6], [8.6, 1.3, 5.4]];
@@ -201,8 +201,8 @@ export function stripes(c, {colour, opacity = '.8'} = {}) {
 }
 
 /* A short brush of upright hairs along the crown of the head: zebra and pony manes. */
-export function forelockBrush(c, {colour, count = 5, spread = 9, height = 4.2, width = 2.2} = {}) {
-  const tone = colour || c.mark || c.coat2;
+export function forelockBrush(c, {color, count = 5, spread = 9, height = 4.2, width = 2.2} = {}) {
+  const tone = color || c.mark || c.coat2;
   return Array.from({length: count}, (_, i) => {
     const t = count === 1 ? 0 : (i / (count - 1)) * 2 - 1;
     const x = HEAD.cx + t * spread;
@@ -211,8 +211,8 @@ export function forelockBrush(c, {colour, count = 5, spread = 9, height = 4.2, w
   }).join('');
 }
 
-export function mane(c, {colour} = {}) {
-  const tone = colour || c.mark || c.coat2;
+export function mane(c, {color} = {}) {
+  const tone = color || c.mark || c.coat2;
   const petals = 11;
   return Array.from({length: petals}, (_, i) => {
     const angle = (i / petals) * Math.PI * 2;

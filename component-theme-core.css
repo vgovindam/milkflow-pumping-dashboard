@@ -1,6 +1,6 @@
 /* MilkFlow component system
    This is the single component-level visual contract layered on the base tokens in
-   styles.css. It owns semantic card colour, compact mobile composition, dark page heads,
+   styles.css. It owns semantic card color, compact mobile composition, dark page heads,
    navigation scrolling and touch treatment. No edge-accent cards or one-off patch files.
 
    This file is the milkflow-core layer (see the cascade contract at the top of styles.css).
@@ -94,7 +94,7 @@ body[data-realm="family"] .page-head .eyebrow{color:#5e5792;opacity:1}
 }
 
 /* ---------------------------------------------------------------- care history */
-/* Category is carried by the whole surface, never a coloured edge. */
+/* Category is carried by the whole surface, never a colored edge. */
 body[data-realm="baby"] .rows .row{box-shadow:0 7px 18px rgba(38,64,83,.055)}
 body[data-realm="baby"] .rows .row:has(.row-icon.kind-feeding){background:linear-gradient(135deg,#eaf8f1,#dff2e9);border-color:#c9e7d9}
 body[data-realm="baby"] .rows .row:has(.row-icon.kind-nursing){background:linear-gradient(135deg,#fff0f6,#f9dfeb);border-color:#f2cada}
@@ -120,7 +120,7 @@ body[data-screen="baby-trends"] .metric .metric-icon{background:rgba(255,255,255
 body[data-screen="baby-trends"] .metric strong{color:currentColor}
 body[data-screen="baby-trends"] .metric span,body[data-screen="baby-trends"] .metric small{color:currentColor;opacity:.82}
 
-/* Daily cards repeat the same semantic colours, which makes a week scannable without
+/* Daily cards repeat the same semantic colors, which makes a week scannable without
    reading every label. */
 body[data-screen="baby-trends"] .daily-cell.wet{background:var(--wet);color:var(--wet-ink)}
 body[data-screen="baby-trends"] .daily-cell.poop{background:var(--poop);color:var(--poop-ink)}
@@ -164,6 +164,9 @@ body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"]
 }
 
 @layer milkflow-dark {
+/* The photo well stays cream in dark mode, so the "add a photo" glyph inside it must not
+   follow the dark palette out to a pale gray - it measured 2.04:1 on its own background. */
+:root[data-theme="dark"] :is(.mf-profile-photo,.mf-dream-photo){color:#5d6478}
 :root[data-theme="dark"] body[data-realm="baby"] .page-head{
   background:linear-gradient(135deg,#173142,#1d3849 55%,#243b38);border-color:#355264;box-shadow:0 14px 34px rgba(0,0,0,.22)
 }
@@ -231,39 +234,48 @@ body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"]
 
 @layer milkflow-screens {
 /* ---------------------------------------------------------------- Baby home
-   The hero composition: greeting across the top, then photo / name / stats. It is in the
-   milkflow-screens layer rather than milkflow-core because it supersedes the older flex
-   hero in the component layer above core - one screen, one owner, decided by position
+   The hero composition, and the twin of the Mom hero in core-ui.js: a greeting line with the
+   parent's name, the title, and a photo filling the top-right - then one full-width row of
+   fact boxes. Both heroes answer the same two questions in the same place: what happened
+   last, and where today stands.
+
+   It is in the milkflow-screens layer rather than milkflow-core because it supersedes the
+   older hero in the component layer above core - one screen, one owner, decided by position
    instead of by ~20 !important declarations. Everything else in this file stays in
    milkflow-core, below the components. */
 body[data-screen="baby-home"] .mf-animal-copy h2{font-family:var(--display);font-weight:800;letter-spacing:-.035em}
 @media(max-width:760px){
   body[data-screen="baby-home"] .mf-animal-hero{
-    min-height:0;padding:14px 14px 16px;display:grid;
-    grid-template-columns:124px minmax(0,1fr) minmax(116px,.8fr);
-    grid-template-areas:"greeting greeting greeting" "photo name stats" "photo age stats";
-    column-gap:10px;row-gap:4px;align-items:center
+    min-height:0;padding:16px 16px 18px;display:grid;
+    grid-template-columns:minmax(0,1fr) 128px;
+    grid-template-areas:"greeting photo" "title photo" "meta photo" "facts facts";
+    column-gap:14px;row-gap:0;align-items:start
   }
   body[data-screen="baby-home"] .mf-animal-profile,body[data-screen="baby-home"] .mf-animal-copy{display:contents}
-  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{grid-area:photo;width:124px;height:124px;border-width:6px;align-self:center}
+  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{
+    grid-area:photo;width:128px;height:128px;border-width:6px;align-self:center;justify-self:end
+  }
   body[data-screen="baby-home"] .mf-animal-copy .welcome{
     grid-area:greeting;box-sizing:border-box;width:auto;max-width:none;min-height:0;
-    margin:0 0 6px;padding:0;border-radius:0;background:none;
-    border:0;font-family:var(--display);font-size:12.5px;line-height:1.15;
-    font-weight:750;color:#285e67;white-space:normal
+    margin:0;padding:0;border-radius:0;background:none;align-self:center;
+    border:0;font-family:var(--display);font-size:15px;line-height:1.15;
+    font-weight:750;color:#285e67;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
   }
-  body[data-screen="baby-home"] .mf-animal-copy h2{grid-area:name;position:static;width:auto;margin:0;font-size:31px;line-height:.98;align-self:end;white-space:nowrap;overflow:visible;color:#163f52}
-  body[data-screen="baby-home"] .mf-animal-copy>small{grid-area:age;position:static;margin:3px 0 0;font-size:10.5px;line-height:1.15;align-self:start;color:#456b71;opacity:.92}
-  body[data-screen="baby-home"] .mf-animal-stats{grid-area:stats;position:static;align-self:center;width:100%;margin:0;display:grid;grid-template-columns:1fr;gap:6px}
-  body[data-screen="baby-home"] .mf-animal-stat{min-width:0;min-height:45px;padding:6px 8px;border-radius:16px;text-align:left;display:grid;align-content:center}
-  body[data-screen="baby-home"] .mf-animal-stat strong{font-family:var(--display);font-size:15px;line-height:1}
-  body[data-screen="baby-home"] .mf-animal-stat span{font-size:9px;line-height:1.05;margin-top:3px}
+  body[data-screen="baby-home"] .mf-animal-copy h2{
+    grid-area:title;position:static;width:auto;margin:8px 0 0;font-size:30px;line-height:1;
+    align-self:start;white-space:normal;overflow-wrap:anywhere;color:#163f52
+  }
+  body[data-screen="baby-home"] .mf-animal-copy>small{
+    grid-area:meta;position:static;margin:4px 0 0;font-size:11px;line-height:1.15;
+    align-self:start;color:#456b71;opacity:.92
+  }
+  body[data-screen="baby-home"] .mf-hero-facts{grid-area:facts;margin-top:13px}
   body[data-screen="baby-home"] .mf-animal-hero>.bear,body[data-screen="baby-home"] .mf-animal-hero>.bunny,body[data-screen="baby-home"] .mf-animal-star{display:none}
 }
 @media(max-width:390px){
-  body[data-screen="baby-home"] .mf-animal-hero{grid-template-columns:96px minmax(0,1fr) minmax(116px,.86fr);column-gap:8px}
-  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:96px;height:96px}
-  body[data-screen="baby-home"] .mf-animal-copy h2{font-size:26px}
+  body[data-screen="baby-home"] .mf-animal-hero{grid-template-columns:minmax(0,1fr) 118px;column-gap:12px}
+  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:118px;height:118px}
+  body[data-screen="baby-home"] .mf-animal-copy h2{font-size:27px}
 }
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:none;border-color:transparent;color:#d8f5f7}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#f5fbff}

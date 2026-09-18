@@ -1,6 +1,6 @@
 /* ==========================================================================
    MilkFlow Family - the base layer.
-   Mobile-first, large touch targets, one colour per care action.
+   Mobile-first, large touch targets, one color per care action.
 
    CASCADE CONTRACT. Everything the app paints lives in a named layer, and the order below
    is the only thing that decides who wins. Later layer beats earlier layer, full stop - no
@@ -15,7 +15,7 @@
      milkflow-dark        component-theme-core.css's dark-mode corrections, which have to
                           outrank whatever the light design settled on
      milkflow-experience  experience-system.css / experience-components.css: the themed
-                          worlds. Later than components on purpose - a theme decides colour
+                          worlds. Later than components on purpose - a theme decides color
                           and surface, and must not have to shout to do it
      milkflow-controls    component-theme.css: controls that must survive a theme
      milkflow-selection   component-theme.css: selected/active state, which outranks all
@@ -52,7 +52,7 @@
   --baby-ink:#22708f;
   --baby-soft:#e7f6fd;
 
-  /* one colour per care action, reused everywhere that action appears */
+  /* one color per care action, reused everywhere that action appears */
   --wet:#e0f2ff;        --wet-ink:#1f6f9c;
   --poop:#fdeed5;       --poop-ink:#94621f;
   --mixed:#ece3ff;      --mixed-ink:#6a4fc0;
@@ -267,8 +267,8 @@ button{cursor:pointer;font-family:inherit}
 .ring-label span{font-size:9px;font-weight:800;color:var(--muted)}
 
 /* ----------------------------------------------------------- care glyphs -- */
-/* Two-tone: a soft wash of the action's colour plus a crisp outline of the same
-   colour, so every glyph inherits its surface and the set stays one family. */
+/* Two-tone: a soft wash of the action's color plus a crisp outline of the same
+   color, so every glyph inherits its surface and the set stays one family. */
 .gly{width:26px;height:26px;display:block;flex:0 0 auto;color:inherit}
 .gly .g-fill{fill:currentColor;opacity:.22}
 .gly .g-line{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
@@ -304,7 +304,7 @@ button{cursor:pointer;font-family:inherit}
 .quick-tile .tile-art:has(.mf-care-art){background:none;box-shadow:none}
 .quick-tile strong{font:800 18px var(--font);letter-spacing:-.01em}
 .quick-tile small{font-size:11px;margin-top:3px;opacity:.8;font-weight:700}
-/* each action keeps its own colour on every screen it appears */
+/* each action keeps its own color on every screen it appears */
 .quick-tile.mom{background:linear-gradient(150deg,var(--t-mom-a),var(--t-mom-b));color:var(--mom-ink)}
 .quick-tile.nurse{background:linear-gradient(150deg,var(--t-nurse-a),var(--t-nurse-b));color:var(--growth-ink)}
 .quick-tile.history{background:linear-gradient(150deg,var(--t-hist-a),var(--t-hist-b));color:var(--wet-ink)}
@@ -735,7 +735,7 @@ button{cursor:pointer;font-family:inherit}
 .record-note{font-size:10.5px;color:var(--muted);text-align:center;margin:12px 4px 2px;line-height:1.5;font-weight:600}
 
 /* --------------------------------------------------------- grouped list -- */
-/* One pattern for More and Settings: coloured icon tile, label, chevron. The colour is
+/* One pattern for More and Settings: colored icon tile, label, chevron. The color is
    the tab's identity, applied in small doses rather than across whole surfaces. */
 .grp{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:18px;box-shadow:var(--shadow-soft)}
 .grp-title{font-size:10.5px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:0 6px 8px;margin-top:2px}
@@ -910,9 +910,9 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
   .shell{display:block}
   .sidebar{display:none}
   .main{width:100%;max-width:100%;min-height:100dvh;overflow-x:clip}
-  /* iOS large-title behaviour: the nav bar carries Back + status, the page carries the
+  /* iOS large-title behavior: the nav bar carries Back + status, the page carries the
      title. Showing both meant every screen printed its name twice. */
-  /* One 54px row. Mom/Baby sits inline and centred here rather than as the full-width
+  /* One 54px row. Mom/Baby sits inline and centered here rather than as the full-width
      block stacked under the bar, which used to cost a second row on every screen. */
   .topbar{height:auto;min-height:54px;padding:8px 13px;display:flex;align-items:center;gap:8px}
   body[data-depth="0"] .mobile-workspace{display:flex;margin:0 auto}

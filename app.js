@@ -1286,7 +1286,7 @@ function doctorReport(){
   const active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz||r.sleepMin);
   const total=key=>sum(rows.map(r=>+r[key]||0));
   /* Averages are per DAY WITH RECORDS, not per calendar day: a day nobody logged is a gap in
-     the record, not a day the baby had no wet nappy. The report says so in its footnote. */
+     the record, not a day the baby had no wet diaper. The report says so in its footnote. */
   const perDay=key=>active.length?total(key)/active.length:0;
   const g=latestGrowth();
   const pref=feedingPreference();
@@ -1314,9 +1314,9 @@ function doctorReport(){
       {label:'Feeding pattern', value:prefLabel, note:`${total('nursing')} nursing · ${total('bottles')} bottles logged`},
       {label:'Feeds per day', value:one(perDay('feeds')), note:active.length?`across ${active.length} day${active.length===1?'':'s'} with records`:'no days with records'},
       {label:'Bottle volume per day', value:`${one(perDay('bottleOz'))} oz`, note:total('formulaOz')?`${one(total('breastMilkOz'))} oz expressed · ${one(total('formulaOz'))} oz formula in period`:'expressed milk only'},
-      {label:'Wet nappies per day', value:one(perDay('wetTotal')), note:'includes mixed nappies'},
-      {label:'Dirty nappies per day', value:one(perDay('poopTotal')), note:'includes mixed nappies'},
-      {label:'Mixed nappies per day', value:one(perDay('mixed')), note:'wet and dirty in one change'},
+      {label:'Wet diapers per day', value:one(perDay('wetTotal')), note:'includes mixed diapers'},
+      {label:'Dirty diapers per day', value:one(perDay('poopTotal')), note:'includes mixed diapers'},
+      {label:'Mixed diapers per day', value:one(perDay('mixed')), note:'wet and dirty in one change'},
       {label:'Sleep per day', value:`${one(perDay('sleepMin')/60)} h`, note:total('sleepMin')?'logged sleep only; unlogged naps are not counted':'no sleep logged in this period'},
       {label:'Most recent growth', value:g?`${g.weightLb??'—'} lb · ${g.lengthIn??'—'} in`:'Not logged', note:g?.date?'measured':'add a growth entry to include this', date:g?.date||null}
     ],
@@ -1426,7 +1426,7 @@ function syncBadge(){
   if(sub) sub.textContent=S.cloud.enabled?(S.cloud.email||'Family account'):'Sign in to sync across devices';
 }
 
-// iOS-style grouped list: a coloured icon tile, a label, an optional value, a chevron.
+// iOS-style grouped list: a colored icon tile, a label, an optional value, a chevron.
 function listRow(cfg){
   const {view:v, label, sub='', value='', icon:ic, color, action=''} = cfg;
   const attr = v ? `data-view="${v}"` : action;
@@ -1758,7 +1758,7 @@ function openDiaperDialog(kind,isEdit=false){
       <div class="choice-row big" data-choice="diaperKind">${[['wet','Wet','drop'],['poop','Poopy','poop'],['both','Mixed','mixed']].map(([v,l,ic])=>`<button type="button" data-pick="diaperKind:${v}">${glyph(ic)}<span>${l}</span></button>`).join('')}</div>
     </section>
     <section class="form-section"><div class="form-section-title">When</div>${whenRow('diaperDate','diaperTime')}
-      <details class="optional"><summary>Add a note</summary><textarea id="diaperNote" rows="2" placeholder="Colour, rash, anything unusual"></textarea></details>
+      <details class="optional"><summary>Add a note</summary><textarea id="diaperNote" rows="2" placeholder="Color, rash, anything unusual"></textarea></details>
     </section>` +
     dialogActions('diaperDialog','Save','baby');
   setWhen('diaperTime',0); pickChoice('diaperKind',k);

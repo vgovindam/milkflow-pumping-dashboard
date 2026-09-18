@@ -76,7 +76,7 @@ const zebra = {
     P.earsLeaf(c, {dx: 13.2, dy: -12.6, rx: 4.2, ry: 6, tilt: 26}),
     P.head(c),
     P.stripes(c, {opacity: '.82', width: 2.8}),
-    P.forelockBrush(c, {colour: c.mark, count: 5, spread: 7.2, height: 2.8, width: 2}),
+    P.forelockBrush(c, {color: c.mark, count: 5, spread: 7.2, height: 2.8, width: 2}),
     P.muzzle(c, {rx: 9, ry: 6.6}),
     P.path(`M${P.HEAD.cx - 9} ${P.HEAD.cy + 8.4} a9 6.6 0 0 1 18 0Z`, c.mark, 'fill-opacity=".18"'),
     P.eyes(c),
@@ -91,7 +91,7 @@ const tiger = {
     P.earsRound(c, {dx: 14.4, dy: -11.6, rad: 5.2, inner: 2.9}),
     P.head(c),
     P.stripes(c, {opacity: '.88', width: 2.9}),
-    P.forelockBrush(c, {colour: c.mark, count: 3, spread: 4.2, height: 2.6, width: 2}),
+    P.forelockBrush(c, {color: c.mark, count: 3, spread: 4.2, height: 2.6, width: 2}),
     P.muzzle(c, {rx: 9.2, ry: 6.6, nose: 'triangle'}),
     P.eyes(c),
     P.cheeks(c)

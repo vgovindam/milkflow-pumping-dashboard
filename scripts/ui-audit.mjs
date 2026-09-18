@@ -8,7 +8,15 @@ const requireText=(name,source,expected)=>{if(!source.includes(expected))failure
 requireText('mobile viewport',files.css,'min-height:100dvh');
 requireText('mobile safe area',files.css,'env(safe-area-inset-bottom)');
 requireText('saved parent name',files.ui,"name=s.profile?.momName||'Mom'");
-requireText('hero data coverage',files.ui,'mf-dream-stats');
+requireText('hero fact boxes',files.ui,'mf-hero-facts');
+/* Both heroes answer the same two questions in the same place. The hero is reviewed at phone
+   width, so the composition has a 393pt step and a 375pt step - a Pro-sized photo beside a
+   column that still fits a greeting with a name in it. */
+requireText('mom hero composition',files.ui,'grid-template-areas:"greeting photo" "title photo" "facts facts" "next next"');
+requireText('narrow phone step',files.ui,'.mf-dream-photo{width:116px;height:116px}');
+requireText('relative time, not a clock',files.ui,'relativeAgo(x.last.date||today(),x.last.time)');
+if(files.ui.includes('Your day, beautifully paced'))failures.push('mom hero: the headline must summarize the day, not repeat a slogan');
+requireText('both heroes share the fact component',files.ui,'.mf-hero-fact strong');
 requireText('modern title face',files.ui,'.mf-journey-head strong,.mf-dream-actions .quick-tile strong{font-family:var(--display)');
 requireText('editorial accent face',files.ui,'.mf-dream-hero .mf-dream-main h2,.mf-animal-copy h2{font-family:var(--editorial)');
 requireText('mobile hero title scale',files.ui,'.mf-dream-main h2{font-size:32px');

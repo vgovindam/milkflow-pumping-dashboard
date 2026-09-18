@@ -56,15 +56,25 @@
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .topbar,
 :root:not([data-experience-theme="clean"]) body:is([data-screen="settings"],[data-screen="set-appearance"]) .topbar{
   /* The artwork runs under the bar to the physical top edge instead of being cut off by an
-     opaque strip. A downward scrim keeps the tabs legible without reintroducing that band,
-     and the safe-area inset keeps them clear of the notch on a phone. */
+     opaque strip, and the safe-area inset keeps the tabs clear of the notch on a phone.
+
+     The scrim used to be 30% white over a 14px blur, which on an iPhone Pro turned the whole
+     top 120px - a seventh of the screen - into a flat washed band with two small tabs on it.
+     Everything on this bar carries its own surface already (the tabs, the back button), so
+     the scrim only has to lift the artwork slightly, not hide it. */
   background:linear-gradient(180deg,
-    color-mix(in srgb,var(--mf-world-surface-strong) 30%,transparent) 0%,
-    color-mix(in srgb,var(--mf-world-surface-strong) 12%,transparent) 64%,
+    color-mix(in srgb,var(--mf-world-surface-strong) 16%,transparent) 0%,
+    color-mix(in srgb,var(--mf-world-surface-strong) 6%,transparent) 58%,
     transparent 100%)!important;
   border-bottom-color:transparent!important;
   padding-top:calc(8px + env(safe-area-inset-top))!important;
-  backdrop-filter:blur(14px) saturate(1.06);-webkit-backdrop-filter:blur(14px) saturate(1.06)
+  padding-bottom:5px!important;
+  backdrop-filter:blur(6px) saturate(1.04);-webkit-backdrop-filter:blur(6px) saturate(1.04)
+}
+/* The bar already spends the notch inset plus a 44px tab row before any content. Reclaim the
+   gap under it so the hero starts higher on a tall phone. */
+:root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .view{
+  padding-top:9px!important;
 }
 /* The scene is painted on .main, which starts below nothing — so it already reaches y=0.
    The view just needs to stop adding its own gap under a now-transparent bar. */
@@ -165,19 +175,18 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero>.mf-animal-sticker,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-star{display:none!important}
 
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:98px;height:98px;border:5px solid rgba(255,255,255,.94);background:#f9f4e4;box-shadow:0 9px 22px rgba(20,24,31,.24)}
 /* The greeting was a dark glass pill from the days when it sat straight on the artwork. It
    sits on the hero card now, where the Baby home composition wants it as plain text across
-   the top row - a pill there stretches the full width of the grid and reads as a grey bar.
+   the top row - a pill there stretches the full width of the grid and reads as a gray bar.
    The theme still owns the ink. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy .welcome{
   color:var(--mf-world-deep);
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy h2{margin-top:7px;color:#fff!important;font-family:var(--display);font-size:31px;font-weight:850;line-height:1;letter-spacing:-.04em;text-shadow:0 2px 13px rgba(14,17,23,.42)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{margin-top:6px;color:rgba(255,255,255,.95)!important;font-size:10.5px;font-weight:750;opacity:1;text-shadow:0 2px 10px rgba(14,17,23,.36)}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stats{top:20px;right:18px;gap:8px;z-index:4}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat{min-width:96px;padding:9px 11px;border:1px solid rgba(255,255,255,.34)!important;border-radius:17px;background:rgba(18,23,30,.46)!important;color:#fff!important;text-align:left;backdrop-filter:blur(9px);box-shadow:0 5px 16px rgba(20,24,31,.12)}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat :is(strong,span,small){color:#fff!important;opacity:1!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-facts{z-index:4}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact{min-width:96px;padding:9px 11px;border:1px solid rgba(255,255,255,.34)!important;border-radius:17px;background:rgba(18,23,30,.46)!important;color:#fff!important;text-align:left;backdrop-filter:blur(9px);box-shadow:0 5px 16px rgba(20,24,31,.12)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact :is(strong,span,small){color:#fff!important;opacity:1!important}
 
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin{grid-template-columns:42px minmax(0,1fr) minmax(108px,auto);gap:10px;padding:12px 14px;border:1px solid var(--mf-world-line);border-radius:23px;background:var(--mf-world-surface)!important;color:var(--mf-world-text)!important;box-shadow:0 10px 24px var(--mf-world-shadow);backdrop-filter:blur(12px)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin>.mf-animal-sticker{display:none!important}
@@ -237,7 +246,7 @@
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress>div,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-side-note,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next{background:#171d29!important;border-color:rgba(255,255,255,.16)!important;color:#fff!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-stats,.mf-dream-photo-cap,.mf-dream-next) :is(strong,small,span,p){color:#fff!important;opacity:1!important;text-shadow:none!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-hero-facts,.mf-dream-next) :is(strong,small,span,p){color:#fff!important;opacity:1!important;text-shadow:none!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{background:linear-gradient(145deg,#173849,#1d4355)!important;color:#bcecff!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{background:linear-gradient(145deg,#442238,#552843)!important;color:#ffc2d8!important}
 /* Mom dark-mode hierarchy: important totals, progress, schedule and actions stay bright
@@ -281,7 +290,8 @@
   background:#163d33!important;color:#79dfbc!important;border-color:#2d5b4e!important
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey .mf-journey-stop.next i{
-  background:linear-gradient(145deg,#7958d5,#c56fa8)!important;color:#fff!important;border-color:#a88be9!important
+  /* the pink end measured 3.38:1 under the white marker; both stops go a step deeper */
+  background:linear-gradient(145deg,#6244b8,#a04a80)!important;color:#fff!important;border-color:#a88be9!important
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero{background-image:var(--mf-theme-baby-hero)!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-care-label,.mf-animal-checkin){color:var(--mf-world-text)!important;text-shadow:none}
@@ -320,22 +330,22 @@
    ones say nothing. The base component already defines a blue milk pill and an amber diaper
    pill; the experience layer was flattening both to one slab, so restore that pairing at an
    opacity that survives sitting on artwork. */
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat:first-child{
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact:first-child{
   background:linear-gradient(145deg,rgba(223,246,255,.96),rgba(184,228,250,.94))!important;
   border-color:rgba(255,255,255,.82)!important;color:#0f4d6b!important;
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat:last-child{
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact:last-child{
   background:linear-gradient(145deg,rgba(255,241,207,.97),rgba(255,219,170,.95))!important;
   border-color:rgba(255,255,255,.82)!important;color:#6d4013!important;
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat :is(strong,span,small){
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact :is(strong,span,small){
   color:inherit!important;
 }
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat:first-child{
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact:first-child{
   background:linear-gradient(145deg,rgba(14,42,60,.9),rgba(17,52,74,.88))!important;
   border-color:rgba(160,214,240,.26)!important;color:#bfe7fb!important;
 }
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat:last-child{
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact:last-child{
   background:linear-gradient(145deg,rgba(58,40,12,.9),rgba(74,50,14,.88))!important;
   border-color:rgba(245,214,160,.26)!important;color:#ffdca6!important;
 }
@@ -348,7 +358,7 @@
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label>:is(span,small){
   background:rgba(12,16,24,.86)!important;
 }
-/* "Add a photo" sits straight on the plate under the name. Its colour is owned by the
+/* "Add a photo" sits straight on the plate under the name. Its color is owned by the
    milkflow-core layer, which wins !important here, but nothing sets a background there —
    so a carrier is the one lever available, and it is what the floor needs anyway. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{
@@ -389,7 +399,7 @@
   color:inherit!important;text-shadow:none!important;
 }
 /* The stat chips keep their own deliberate pairing. */
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-stat :is(strong,span,small){color:inherit!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact :is(strong,span,small){color:inherit!important}
 /* The ambient blurred blobs sit above the plate and wash it out. */
 :root:not([data-experience-theme="clean"]) body:is([data-screen="baby-home"],[data-screen="mom-home"]) .main::before,
 :root:not([data-experience-theme="clean"]) body:is([data-screen="baby-home"],[data-screen="mom-home"]) .main::after{
@@ -454,12 +464,12 @@
 
 /* A selected range pill puts white on the accent. Several accents are mid-tone, so white
    lands between 3.0 and 4.4:1 - use the deep variant of the same hue instead of inventing a
-   new colour, so the pill still reads as the world's accent. */
+   new color, so the pill still reads as the world's accent. */
 :root:not([data-experience-theme="clean"]) body[data-realm] .pills button:is(.on,.active){
   background:var(--mf-world-deep)!important;color:#fff!important;border-color:transparent!important;
 }
 /* In dark mode the world's deep tone IS the light one - it is the tone that has to read
-   against a dark page - so the selected pill takes the world's base colour as its ink
+   against a dark page - so the selected pill takes the world's base color as its ink
    instead of white on pale green. */
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .pills button:is(.on,.active){
   color:var(--mf-world-base)!important;
@@ -482,7 +492,7 @@
 /* ---------------------------------------------------------------- edge to edge */
 /* In standalone the page stopped short of both edges: a strip above the status bar the app
    did not own, and a band below the dock. The scene is fixed to the viewport, so painting
-   the world colour on the root and letting the shell fill the dynamic viewport closes both
+   the world color on the root and letting the shell fill the dynamic viewport closes both
    without the content itself moving. */
 :root:not([data-experience-theme="clean"]) body[data-realm]{background:var(--mf-world-base)!important}
 :root:not([data-experience-theme="clean"]) body[data-realm] .shell{min-height:100dvh}

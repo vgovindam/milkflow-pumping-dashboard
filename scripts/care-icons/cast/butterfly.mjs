@@ -16,7 +16,7 @@ const monarch = {
   wing1: '#F0A24E', wing2: '#E3762F',
   render: c => [
     P.butterflyWings(c),
-    P.antennae(c, {colour: c.coat2}),
+    P.antennae(c, {color: c.coat2}),
     P.head(c, {rx: 7.8, ry: 9.4}),
     P.eyes(c, {dx: 3, dy: -2.2, rx: 2.1, ry: 2.5}),
     P.stroke(`M${H.cx} ${H.cy + 2.4} q0 2.4 -2.2 2.4M${H.cx} ${H.cy + 2.4} q0 2.4 2.2 2.4`, c.ink, 1.3, 'stroke-opacity=".8"'),
@@ -28,7 +28,7 @@ const ladybird = {
   name: 'ladybird',
   coat: '#E2586A', coat2: '#BE3A4E', inner: '#FDE8EC', mark: '#4A2230',
   render: c => [
-    P.antennae(c, {colour: '#4A2230'}),
+    P.antennae(c, {color: '#4A2230'}),
     shell(c, {a: c.coat, b: c.mark, dots: [[-8.6, -3.4, 2.7], [8.6, -3.4, 2.7], [-6.4, 7.4, 2.3], [6.4, 7.4, 2.3]]}),
     P.ellipse(H.cx, H.cy - 9.6, 11.4, 7.6, c.mark),
     P.eyes({...c, ink: '#FFFFFF'}, {dx: 4.8, dy: -10.4, rx: 2.4, ry: 2.7}),
@@ -44,7 +44,7 @@ const bumblebee = {
   wing1: '#EAF4FB', wing2: '#D5E8F6',
   render: c => [
     P.wingsBack(c, {dx: 14.6, rx: 8.4, ry: 11, cy: H.cy - 6}),
-    P.antennae(c, {colour: c.mark}),
+    P.antennae(c, {color: c.mark}),
     P.head(c, {rx: 16.4, ry: 15.4}),
     P.path(`M${H.cx - 15.4} ${H.cy + 1.4} h30.8 v3.8 h-30.8Z`, c.mark, 'fill-opacity=".85"'),
     P.path(`M${H.cx - 12.4} ${H.cy + 9} h24.8 v3.6 h-24.8Z`, c.mark, 'fill-opacity=".85"'),
@@ -60,7 +60,7 @@ const dragonfly = {
   wing1: '#E8F6FB', wing2: '#CFE9F4',
   render: c => [
     P.wingsBack(c, {dx: 18.4, rx: 7, ry: 12.4, cy: H.cy - 4}),
-    P.antennae(c, {colour: c.coat2}),
+    P.antennae(c, {color: c.coat2}),
     P.ellipse(H.cx, H.cy + 9.4, 4.6, 9.6, c.coat2),
     P.stroke(`M${H.cx - 3.4} ${H.cy + 6.4} h6.8M${H.cx - 3} ${H.cy + 11} h6`, c.mark, 1.3, 'stroke-opacity=".55"'),
     P.head(c, {rx: 10.4, ry: 9.6, cy: H.cy - 4.4}),
@@ -77,7 +77,7 @@ const caterpillar = {
     P.circle(H.cx + 13.4, H.cy + 8.6, 6.4, c.coat2),
     P.circle(H.cx + 5.4, H.cy + 10.4, 7.2, c.coat),
     P.circle(H.cx - 4.4, H.cy + 9.4, 6.6, c.coat2),
-    P.antennae(c, {colour: c.coat2}),
+    P.antennae(c, {color: c.coat2}),
     P.head(c, {rx: 12.4, ry: 11.8, cy: H.cy - 3.4}),
     P.eyes(c, {dx: 4.8, dy: -5, rx: 2.7, ry: 3.1}),
     P.stroke(`M${H.cx - 2.6} ${H.cy + 0.4} q2.6 2.4 5.2 0`, c.ink, 1.5, 'stroke-opacity=".8"'),
@@ -96,7 +96,7 @@ const snail = {
     P.circle(H.cx + 9.4, H.cy - 0.4, 3, '#F8E6CA'),
     /* foot */
     P.path(`M${H.cx - 20.4} ${H.cy + 13.6} q2.4 -6.4 9.4 -6.4 h16 q4 0 4 3.2 t-4 3.2Z`, c.coat2),
-    P.antennae(c, {colour: c.coat2}),
+    P.antennae(c, {color: c.coat2}),
     P.head(c, {rx: 9.6, ry: 9.8, cx: H.cx - 11.4, cy: H.cy + 1.4}),
     P.eyes(c, {dx: 3.6, dy: 0.4, rx: 2.4, ry: 2.7}),
     P.stroke(`M${H.cx - 13.6} ${H.cy + 5.6} q2.2 2.2 4.4 0`, c.ink, 1.4, 'stroke-opacity=".8"'),

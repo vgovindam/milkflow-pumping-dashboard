@@ -30,8 +30,8 @@
   .bottom-nav svg.ico,.bottom-nav svg.gly,.topbar svg.ico,.back-btn svg.ico{display:block!important}
 
   /* Entry sheets and dialogs must remain legible in both themes. The care picker uses
-     the same semantic colours as the cards it creates, which also makes the choices
-     easier to scan than six identical grey boxes. */
+     the same semantic colors as the cards it creates, which also makes the choices
+     easier to scan than six identical gray boxes. */
   :root[data-theme="dark"] .sheet {
     background:linear-gradient(180deg,#171a27 0%,#111521 100%)!important;
     border-top:1px solid #353b4c!important;
@@ -195,7 +195,7 @@
   }
   .when-quick button.on{background:color-mix(in srgb,var(--accent,var(--mom)) 14%,var(--surface))!important;color:var(--ink)!important}
 
-  /* Diaper correction while editing keeps semantic colour, not a generic black tile. */
+  /* Diaper correction while editing keeps semantic color, not a generic black tile. */
   #diaperDialog .choice-row button[data-pick="diaperKind:wet"].on{
     background:#dff3ff!important;border-color:#55acd5!important;color:#155b7a!important
   }

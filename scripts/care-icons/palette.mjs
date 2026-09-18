@@ -1,9 +1,9 @@
 /* Theme palettes for the care-icon system.
  *
  * `disc`  - the pale plate the character sits on. Deliberately low-chroma: the icon is a
- *           mark on a card, not a second block of colour competing with the page artwork.
+ *           mark on a card, not a second block of color competing with the page artwork.
  * `ink`   - the theme's dark tone. Used for outlines, eyes and the semantic prop, so the
- *           prop always clears contrast against the badge regardless of the coat colour.
+ *           prop always clears contrast against the badge regardless of the coat color.
  * `blush` - cheeks, and any soft accent a cast wants.
  */
 export const PALETTES = {

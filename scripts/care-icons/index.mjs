@@ -26,7 +26,7 @@ export {ACTIONS};
 const CASTS = {safari, butterfly, princess, unicorn};
 export const THEME_IDS = Object.keys(CASTS);
 
-function colours(themeId, character) {
+function colors(themeId, character) {
   const p = palette(themeId);
   return {...character, ink: p.ink, blush: character.blush || p.blush};
 }
@@ -64,7 +64,7 @@ export function renderIcon(themeId, action) {
   const gid = `d-${themeId}-${action}`;
   const d = disc(themeId, gid);
   const label = `${character.name} — ${action}`;
-  return svg(label, [d.shape, character.render(colours(themeId, character)), propBadge(themeId, action)].join('\n  '), d.def);
+  return svg(label, [d.shape, character.render(colors(themeId, character)), propBadge(themeId, action)].join('\n  '), d.def);
 }
 
 /** The theme's mascot with no prop: used for section headers and theme pickers. */
@@ -73,7 +73,7 @@ export function renderMascot(themeId) {
   if (!theme) throw new Error(`Unknown care-icon theme: ${themeId}`);
   const gid = `m-${themeId}`;
   const d = disc(themeId, gid);
-  const c = colours(themeId, theme.mascot);
+  const c = colors(themeId, theme.mascot);
   return svg(`${theme.label} mascot`, [d.shape, `<g transform="translate(2.4 3.4) scale(1.08)" transform-origin="32 32">${theme.mascot.render(c)}</g>`].join('\n  '), d.def);
 }
 

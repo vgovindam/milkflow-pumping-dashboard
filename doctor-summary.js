@@ -108,14 +108,14 @@ function buildPrintDocument(){
       <table class="mf-print-table mf-print-daily">
         <thead><tr>
           <th scope="col">Date</th><th scope="col">Wet</th><th scope="col">Dirty</th><th scope="col">Mixed</th>
-          <th scope="col">Nappies</th><th scope="col">Feeds</th><th scope="col">Bottle oz</th><th scope="col">Sleep h</th>
+          <th scope="col">Diapers</th><th scope="col">Feeds</th><th scope="col">Bottle oz</th><th scope="col">Sleep h</th>
         </tr></thead>
         <tbody>${dailyRows(r.daily)}${totalsRow(r.totals)}</tbody>
       </table>
     </section>
 
     <footer class="mf-print-note">
-      <p><strong>How to read this.</strong> Daily averages are worked out across the ${r.period.daysWithRecords} day${r.period.daysWithRecords === 1 ? '' : 's'} that have records, not across all ${r.period.days} days, so a day nobody had a chance to log does not read as a day with no wet nappies. “Wet” and “Dirty” counts include mixed changes. Bottle volume is logged bottles only — nursing volume is not estimated. Sleep is logged sleep only.</p>
+      <p><strong>How to read this.</strong> Daily averages are worked out across the ${r.period.daysWithRecords} day${r.period.daysWithRecords === 1 ? '' : 's'} that have records, not across all ${r.period.days} days, so a day nobody had a chance to log does not read as a day with no wet diapers. “Wet” and “Dirty” counts include mixed changes. Bottle volume is logged bottles only — nursing volume is not estimated. Sleep is logged sleep only.</p>
       <p class="mf-print-source">Entered by the family in the MilkFlow app. This is a record of care at home, not a clinical assessment or a diagnosis.</p>
     </footer>`;
   document.body.appendChild(el);
