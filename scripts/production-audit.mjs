@@ -9,7 +9,12 @@ const fail=[];
 const must=['index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-themes.css','experience-system.css','experience-components.css','doctor-summary.css','app.js','cross-device-alerts.js','experience-theme.js','sw.js','manifest.webmanifest','build-manifest.json','icon.svg','milkflow-family-v3-192.png'];
 for(const f of must)if(!fs.existsSync(path.join(DIST,f)))fail.push(`missing dist/${f}`);
 const themes=['safari','butterfly','princess','unicorn'];
-for(const theme of themes)for(const rel of [`assets/theme-composite/${theme}.svg`,`assets/theme-icons/${theme}.svg`])if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
+for(const theme of themes){
+  if(!fs.existsSync(path.join(DIST,`assets/theme-icons/${theme}.svg`)))fail.push(`missing dist/assets/theme-icons/${theme}.svg`);
+  for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
+    const rel=`assets/themes-v2/${theme}/${mode}/${role}.svg`;if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
+  }
+}
 const textFiles=[];
 function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())walk(p);else if(/\.(?:html|css|js|json|webmanifest|svg)$/.test(e.name))textFiles.push(p);}}
 if(fs.existsSync(DIST))walk(DIST);
@@ -25,26 +30,26 @@ if(!themeEntry.includes(`experience-components.css?v=${version}`))fail.push('can
 const experience=fs.readFileSync(path.join(DIST,'experience-theme.js'),'utf8');
 const experienceCss=fs.readFileSync(path.join(DIST,'experience-system.css'),'utf8');
 for(const theme of themes){
-  const rel=`assets/theme-composite/${theme}.svg`;
-  const full=path.join(DIST,rel);
-  if(!experience.includes(`theme-composite/${theme}.svg`)||!experienceCss.includes(rel))fail.push(`${theme} self-contained detailed scene missing from deployed theme runtime`);
+  if(!experience.includes(`assetSet('${theme}')`))fail.push(`${theme} asset matrix missing from deployed theme runtime`);
   if(!experience.includes(`theme-icons/${theme}.svg`))fail.push(`${theme} icon sprite missing from deployed theme runtime`);
-  if(fs.existsSync(full)){
+  for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
+    const rel=`assets/themes-v2/${theme}/${mode}/${role}.svg`,full=path.join(DIST,rel);
     const svg=fs.readFileSync(full,'utf8');
     if(svg.includes('<image ')||svg.includes('href="../'))fail.push(`${theme} scene still uses nested image/SVG dependencies`);
-    if(!svg.includes('viewBox="0 0 1000 2200"')||svg.length<4500)fail.push(`${theme} scene is not the detailed vertical production artwork`);
+    if(svg.length<4500)fail.push(`${rel} is not detailed production artwork`);
   }
 }
 if(experience.includes('theme-details/'))fail.push('deployed controller still stacks a separate detail SVG instead of using one self-contained scene');
 if(experienceCss.includes('--mf-theme-detail'))fail.push('deployed theme CSS still depends on a separate detail layer');
 if(experienceCss.includes('content:var(--mf-theme-name)'))fail.push('deployed theme CSS still renders theme-name hero badges');
-for(const token of ['body[data-screen="settings"] .main','var(--mf-theme-art)','body[data-screen="baby-home"] .mf-animal-hero','body[data-screen="mom-home"] .mf-dream-hero','data-theme="dark"'])if(!experienceCss.includes(token))fail.push(`deployed immersive/light-dark theme contract missing: ${token}`);
+for(const token of ['body[data-screen="settings"] .main','var(--mf-theme-baby-scene)','var(--mf-theme-mom-scene)','var(--mf-theme-baby-hero)','var(--mf-theme-mom-hero)','body[data-screen="baby-home"] .mf-animal-hero','body[data-screen="mom-home"] .mf-dream-hero','data-theme="dark"'])if(!experienceCss.includes(token))fail.push(`deployed immersive/light-dark theme contract missing: ${token}`);
 const manifestPwa=JSON.parse(fs.readFileSync(path.join(DIST,'manifest.webmanifest'),'utf8'));
 if(!manifestPwa.icons?.some(i=>i.src==='milkflow-family-v3-192.png'))fail.push('PWA manifest missing canonical v3 MilkFlow icon');
 for(const src of ['milkflow-family-icon-192.png','milkflow-family-icon-512.png','milkflow-family-maskable-512.png','milkflow-family-apple-touch.png'])if(manifestPwa.icons?.some(i=>i.src===src))fail.push(`PWA manifest still references legacy icon: ${src}`);
 const sw=fs.readFileSync(path.join(DIST,'sw.js'),'utf8');
 if(!sw.includes(`milkflow-v${version}`))fail.push('service-worker cache version does not match version.json');
 if(!sw.includes("icon:'./milkflow-family-v3-192.png'"))fail.push('push notifications do not use the canonical v3 MilkFlow icon');
+if(sw.includes('./assets/themes-v2/'))fail.push('service-worker install shell eagerly downloads the 40-asset theme matrix');
 const manifest=JSON.parse(fs.readFileSync(path.join(DIST,'build-manifest.json'),'utf8'));
 if(manifest.version!==version)fail.push('build-manifest version mismatch');
 if(!fs.readFileSync(path.join(DIST,'app.js'),'utf8').includes('milkflow-family-v4-state'))fail.push('canonical state key missing from production app.js');
