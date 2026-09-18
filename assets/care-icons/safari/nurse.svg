@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="nurse (safari)">
+  <defs><linearGradient id="d-safari-nurse" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#FDF3E2"/><stop offset="1" stop-color="#F5E1BE"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#d-safari-nurse)"/>
+  <path d="M55.6 9.4c0 7.2-4.1 11.8-10.4 11.8 0-7.2 4.1-11.8 10.4-11.8Z" fill="#7C4A1C" fill-opacity=".46"/><path d="M45.6 21.6c1.5-4.1 4.1-7.7 7.7-10.1" stroke="#7C4A1C" stroke-opacity=".6" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <circle cx="23.6" cy="19.4" r="7.2" fill="#7C4A1C"/>
+    <path d="M10.6 51.4c0-9.4 5.6-15.6 13-15.6 3.3 0 6.3 1.2 8.6 3.4l-4.4 5a6.6 6.6 0 0 0-4.2-1.5c-3.3 0-5.7 3-5.7 8.7Z" fill="#7C4A1C"/>
+    <circle cx="41.4" cy="31.6" r="6.1" fill="#7C4A1C"/>
+    <path d="M30.8 51.4c0-6.3 4.6-10.8 10.6-10.8s10.6 4.5 10.6 10.8Z" fill="#7C4A1C"/>
+    <path d="M33.4 45.2a11 11 0 0 1 8-3.2" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+</svg>

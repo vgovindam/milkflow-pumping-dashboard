@@ -176,6 +176,9 @@ function adoptExternalState(raw){
   clearTimeout(renderTimer); renderTimer = setTimeout(render,80);
 }
 window.addEventListener('storage', e => { if(e.key === STATE_KEY && e.newValue) adoptExternalState(e.newValue); });
+// Care icons are resolved during render from the theme registry, so switching worlds has to
+// re-run it. Guarded on the current view still being a screen that draws them.
+window.addEventListener('milkflow:experience-theme-change', () => { render(); });
 function toast(text,ms=2800,action=null){
   const t=$('toast'); if(!t) return;
   t.innerHTML=`<span>${esc(text)}</span>`;
@@ -335,6 +338,14 @@ function navIcon(name,on=false){
   };
   const m=M[name]||M.mom;
   return `<svg class="gly nav-gly${on?' on':''}" viewBox="0 0 24 24" aria-hidden="true">${on?m.fill:''}${m.line}</svg>`;
+}
+// Mom's action tiles resolve the same generated theme icon the Baby cards use, falling back
+// to the built-in glyph when a theme has no art for that action. One registry, both sides.
+function themedCareArt(action,fallbackGlyph){
+  const src = window.MilkFlowExperience?.careIcon?.(action) || null;
+  return src
+    ? `<img class="mf-care-art" src="${esc(src)}" alt="" decoding="async">`
+    : glyph(fallbackGlyph);
 }
 const GLYPHS = new Set(['drop','poop','mixed','bottle','nursing','pump','moon','scale']);
 // Large surfaces use the glyph when one exists, otherwise fall back to the line icon.
@@ -658,8 +669,8 @@ function momHome(){
     </div>
   </section>
   <div class="quick-grid mom-grid two">
-    <button class="quick-tile mom" data-mom="pump"><span class="tile-art">${glyph('pump')}</span><strong>Pump</strong><small>Log milk</small></button>
-    <button class="quick-tile nurse" data-mom="nursing"><span class="tile-art">${glyph('nursing')}</span><strong>Nursing</strong><small>Log session</small></button>
+    <button class="quick-tile mom" data-mom="pump"><span class="tile-art">${themedCareArt('pump','pump')}</span><strong>Pump</strong><small>Log milk</small></button>
+    <button class="quick-tile nurse" data-mom="nursing"><span class="tile-art">${themedCareArt('nurse','nursing')}</span><strong>Nursing</strong><small>Log session</small></button>
   </div>
   <div class="metric-grid mom-summary">${metric('7-day avg',`${avg} mL`,'per pumping day','chart')}${metric('Today vs avg',count&&avg?`${pace}%`:'—',count&&avg?'of your average':'after your first pump','spark')}${metric('Freezer stash',`${(+S.profile.stashMl||0).toLocaleString()} mL`,'saved milk','snow')}</div>
   ${panel('Pump plan',scheduleStrip(),'<button data-view="set-pumping">Edit</button>')}

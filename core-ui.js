@@ -94,19 +94,18 @@ function icon(kind){
   return `<svg viewBox="0 0 48 48" aria-hidden="true">${p[kind]||p.bottle}</svg>`;
 }
 
-function careMark(kind){
-  return `<span class="mf-care-mark ${esc(kind)}" aria-hidden="true">${icon(kind)}</span>`;
-}
+/* Maps a care action to the built-in semantic glyph used when the active theme has no
+   generated icon for it (a new theme, or an action added before its art). */
+const CARE_GLYPH={milk:'bottle',nurse:'nursing',formula:'formula',wet:'wet',poop:'poop',mixed:'both',clock:'clock'};
 
-function animalSticker(kind){
-  const art={
-    bear:'<circle class="a-ear" cx="18" cy="18" r="9"/><circle class="a-ear" cx="46" cy="18" r="9"/><path class="a-base" d="M12 34c0-14 8-23 20-23s20 9 20 23c0 13-8 21-20 21S12 47 12 34Z"/><ellipse class="a-soft" cx="32" cy="38" rx="12" ry="9"/><circle class="a-dot" cx="25" cy="31" r="2.2"/><circle class="a-dot" cx="39" cy="31" r="2.2"/><path class="a-line" d="M29 38c2 2 4 2 6 0M32 36v4"/>',
-    bunny:'<path class="a-base" d="M19 27C13 18 14 7 19 6c5-1 8 9 9 17M45 27c6-9 5-20 0-21-5-1-8 9-9 17"/><path class="a-soft" d="M20 12c2 3 3 8 4 12M44 12c-2 3-3 8-4 12"/><path class="a-base" d="M12 38c0-12 8-20 20-20s20 8 20 20c0 11-8 18-20 18s-20-7-20-18Z"/><circle class="a-dot" cx="25" cy="35" r="2.2"/><circle class="a-dot" cx="39" cy="35" r="2.2"/><path class="a-line" d="M29 42c2 2 4 2 6 0M32 39v4"/>',
-    fox:'<path class="a-base" d="m10 18 13 5c6-3 12-3 18 0l13-5-5 18c0 12-7 20-17 20S15 48 15 36L10 18Z"/><path class="a-soft" d="M18 31c7 1 11 5 14 14 3-9 7-13 14-14-1 13-5 20-14 20s-13-7-14-20Z"/><circle class="a-dot" cx="25" cy="33" r="2.1"/><circle class="a-dot" cx="39" cy="33" r="2.1"/><path class="a-line" d="M29 45c2 2 4 2 6 0"/>',
-    whale:'<path class="a-base" d="M8 36c5-12 15-18 29-16 7 1 12 5 14 11 3-3 5-7 5-12 5 6 4 13-1 18-1 11-10 18-23 18-12 0-21-7-24-19Z"/><path class="a-soft" d="M10 39c9 2 19 2 29-1-3 8-9 12-17 11-5-1-9-4-12-10Z"/><circle class="a-dot" cx="39" cy="29" r="2.2"/><path class="a-line" d="M14 28c-4-4-4-8-1-11M18 27c1-5-1-9-5-11"/>',
-    owl:'<path class="a-base" d="M13 30c0-13 7-21 19-21s19 8 19 21v18l-9-4-10 11-10-11-9 4V30Z"/><circle class="a-soft" cx="24" cy="29" r="9"/><circle class="a-soft" cx="40" cy="29" r="9"/><circle class="a-dot" cx="24" cy="29" r="3"/><circle class="a-dot" cx="40" cy="29" r="3"/><path class="a-line" d="m29 36 3 3 3-3"/>'
-  };
-  return `<span class="mf-animal-sticker ${esc(kind)}" aria-hidden="true"><svg viewBox="0 0 64 64">${art[kind]||art.bear}</svg></span>`;
+/* Resolved at render time from the theme registry, in the same pass that builds the card.
+   No second module rewrites these afterwards, so there is no ordering to get wrong. */
+function careMark(action){
+  const src=window.MilkFlowExperience?.careIcon?.(action)||null;
+  const inner=src
+    ? `<img class="mf-care-art" src="${esc(src)}" alt="" decoding="async">`
+    : icon(CARE_GLYPH[action]||action);
+  return `<span class="mf-care-mark ${esc(action)}${src?' is-art':''}" aria-hidden="true">${inner}</span>`;
 }
 
 function diaperKind(e){const x=String(e?.subtype||'').toLowerCase();return x==='poop'||x==='dirty'?'poop':x==='both'||x==='mixed'?'both':'wet';}
@@ -144,6 +143,44 @@ function babySnapshot(s,st){
   return{todayOz:st.bottleOz,recentAvg,allAvg,pct,diapers:st.diaperCount};
 }
 function lastFeed(s){return[...babyEvents(s)].reverse().find(e=>e.eventType==='feeding'||e.eventType==='nursing')||null;}
+/* Predicted next feed.
+ *
+ * Mom's side has had an adaptive pump plan for a while; Baby had nothing equivalent, so the
+ * check-in row could only ever report the past. This projects forward from the gaps actually
+ * observed, using the MEDIAN of recent intervals rather than the mean so that one four-hour
+ * stretch overnight does not drag every estimate late.
+ *
+ * Deliberately conservative: it needs at least four feeds to say anything, ignores gaps
+ * outside 20 minutes to 8 hours as data-entry noise or night breaks, and returns null rather
+ * than guessing. A wrong prediction on a newborn feeding schedule is worse than none.
+ */
+function predictNextFeed(s, now = Date.now()){
+  const feeds = babyEvents(s).filter(e => (e.eventType === 'feeding' || e.eventType === 'nursing') && e.date && e.time);
+  if(feeds.length < 4) return null;
+  const recent = feeds.slice(-12).map(e => new Date(`${e.date}T${e.time}:00`).getTime()).filter(Number.isFinite).sort((a,b) => a-b);
+  if(recent.length < 4) return null;
+  const gaps = [];
+  for(let i = 1; i < recent.length; i++){
+    const g = (recent[i] - recent[i-1]) / 60000;
+    if(g >= 20 && g <= 480) gaps.push(g);
+  }
+  if(gaps.length < 3) return null;
+  const sorted = [...gaps].sort((a,b) => a-b);
+  const mid = Math.floor(sorted.length/2);
+  const median = sorted.length % 2 ? sorted[mid] : (sorted[mid-1] + sorted[mid]) / 2;
+  const last = recent[recent.length-1];
+  const due = last + median * 60000;
+  const minsAway = Math.round((due - now) / 60000);
+  return {
+    dueAt: due,
+    typicalGapMin: Math.round(median),
+    minsAway,
+    overdue: minsAway < 0,
+    label: to12(new Date(due).getHours()*60 + new Date(due).getMinutes()),
+    sample: gaps.length
+  };
+}
+
 function lastFeedText(e){
   if(!e)return{main:'No feed logged yet',age:'—',clock:'Tap a feed option below'};
   const age=relativeAgo(e.date,e.time)||'—',clock=to12(mins(e.time));
@@ -224,7 +261,7 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 .mf-dream-side{position:relative;z-index:2;display:grid;justify-items:center}.mf-dream-photo{width:136px;height:136px;padding:0;border:7px solid rgba(255,255,255,.22);border-radius:50%;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.93),rgba(235,215,255,.93));color:#4a2f86;display:grid;place-items:center;box-shadow:0 18px 34px rgba(57,37,101,.16)}.mf-dream-photo img{width:100%;height:100%;object-fit:cover}.mf-dream-photo .placeholder{font-size:38px}.mf-dream-progress{--dream-p:0%;width:178px;height:178px;margin-top:-18px;border-radius:50%;padding:12px;background:conic-gradient(#fff var(--dream-p),rgba(255,255,255,.19) 0);box-shadow:0 20px 38px rgba(57,37,101,.18)}.mf-dream-progress>div{height:100%;border-radius:50%;display:grid;place-content:center;text-align:center;background:linear-gradient(145deg,rgba(87,62,151,.88),rgba(126,86,167,.72));box-shadow:inset 0 1px 0 rgba(255,255,255,.24)}.mf-dream-progress strong{font:850 42px/.9 var(--display)}.mf-dream-progress strong i{font-style:normal;font-size:19px;opacity:.68}.mf-dream-progress span{margin-top:8px;font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:900;color:rgba(255,255,255,.72)}.mf-dream-volume{margin-top:12px;padding:9px 17px;border-radius:999px;background:rgba(255,255,255,.14);backdrop-filter:blur(12px);text-align:center}.mf-dream-volume strong{font-size:16px}.mf-dream-volume span{margin-left:5px;font-size:10px;color:rgba(255,255,255,.74);font-weight:800}
 .mf-dream-side-note{display:none}
 .mf-dream-journey{position:relative;z-index:3;margin-top:18px!important;padding:23px 25px!important;border-radius:30px!important;background:rgba(255,255,255,.82)!important;box-shadow:0 18px 40px rgba(79,63,132,.11),inset 0 1px 0 #fff!important}.mf-journey-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.mf-journey-head span,.mf-journey-head strong{display:block}.mf-journey-head span{font-size:9px;letter-spacing:.15em;font-weight:900;color:var(--mom)}.mf-journey-head strong{margin-top:4px;font:800 18px var(--display)}.mf-journey-head em{font-style:normal;padding:7px 11px;border-radius:999px;background:var(--mom-soft);color:var(--mom-ink);font-size:11px;font-weight:900}.mf-journey-track{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(92px,1fr);gap:8px;overflow:auto;margin:14px 0 8px;padding:12px 0 10px;scrollbar-width:none}.mf-journey-track:before{content:"";position:absolute;left:34px;right:34px;top:33px;height:2px;background:linear-gradient(90deg,#8b68de,#e19ac2,#8bc9e7);opacity:.27}.mf-journey-stop{position:relative;z-index:1;display:grid;justify-items:center;min-width:92px;text-align:center}.mf-journey-stop i{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#f2edfb;color:#a999c7;border:5px solid rgba(255,255,255,.9);box-shadow:0 4px 14px rgba(82,64,131,.1);font-style:normal}.mf-journey-stop.done i{background:#dff5ec;color:#258165}.mf-journey-stop.next i{background:linear-gradient(145deg,#8362d8,#d37fb7);color:#fff;box-shadow:0 7px 18px rgba(115,75,178,.26),0 0 0 4px rgba(132,98,216,.1)}.mf-journey-stop strong{margin-top:7px;font-size:12px}.mf-journey-stop small{margin-top:2px;font-size:9px;color:var(--muted);font-weight:800}.mf-dream-journey>p{margin:2px 0 0;color:var(--muted);font-size:11px;line-height:1.45}
-.mf-dream-actions{max-width:none!important;gap:12px!important}.mf-dream-actions .quick-tile{min-height:128px;border-radius:34px 46px 38px 42px / 40px 32px 48px 36px!important;padding:22px!important}.mf-dream-actions .quick-tile strong{font-size:22px}.mf-dream-actions .quick-tile .tile-art{width:58px;height:58px;border-radius:50%}.mf-dream-metrics .metric{border:0;border-radius:24px;background:rgba(255,255,255,.72);box-shadow:0 13px 30px rgba(78,65,126,.08)}
+.mf-dream-actions{max-width:none!important;gap:12px!important}.mf-dream-actions .quick-tile{min-height:120px;border-radius:28px;padding:60px 14px 16px;text-align:center;align-items:center}.mf-dream-actions .quick-tile strong{font-size:22px}.mf-dream-actions .quick-tile .tile-art{left:50%;right:auto;top:12px;transform:translateX(-50%);width:54px;height:54px;border-radius:50%}.mf-dream-metrics .metric{border:0;border-radius:24px;background:rgba(255,255,255,.72);box-shadow:0 13px 30px rgba(78,65,126,.08)}
 /* ---------- Baby ---------- */
 .mf-core-baby{display:grid;gap:12px;margin-bottom:16px}.mf-core-baby .mf-profile-line{margin-bottom:0}
 .mf-animal-hero{position:relative;min-height:176px;padding:22px 25px;border-radius:38px 48px 35px 44px / 42px 34px 48px 38px;overflow:hidden;isolation:isolate;background:linear-gradient(135deg,#a8ddf4 0%,#c9ebdf 48%,#ffe0b9 100%);box-shadow:0 20px 45px rgba(47,91,102,.14);color:#214c57}
@@ -245,7 +282,7 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 
 /* Feed actions: organic shapes, with a protected text-safe area at the bottom. */
 .mf-feed-zone{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.mf-feed-card{box-sizing:border-box;position:relative;min-height:108px;border:0;padding:14px 14px 21px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--ink);box-shadow:0 7px 18px rgba(29,42,70,.08)}
+.mf-feed-card{box-sizing:border-box;position:relative;min-height:116px;border:0;padding:58px 10px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;overflow:hidden;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--ink);box-shadow:0 7px 18px rgba(29,42,70,.08)}
 .mf-feed-card svg{position:absolute;right:11px;top:10px;width:31px;height:31px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
 .mf-feed-card>.mf-animal-sticker{position:absolute;right:8px;top:7px;width:58px;height:58px;padding:5px;border-radius:50%;background:rgba(255,255,255,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);opacity:1}.mf-feed-card>.mf-animal-sticker svg{position:static;width:100%;height:100%;fill:initial;stroke:initial;opacity:1}
 /* A care action is recognised by its symbol, so the symbol is the one thing a theme may not
@@ -254,10 +291,16 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 .mf-care-mark{position:absolute;display:grid;place-items:center;border-radius:50%;color:inherit;
   background:rgba(255,255,255,.92);box-shadow:inset 0 0 0 1px rgba(255,255,255,.72),0 6px 15px rgba(30,44,66,.13)}
 .mf-care-mark svg{width:62%;height:62%;fill:none;stroke:currentColor;stroke-width:2.9;stroke-linecap:round;stroke-linejoin:round}
+/* is-art: the generated theme icon supplies its own disc and palette, so the neutral
+   carrier steps aside entirely rather than showing a ring around it. */
+.mf-care-mark.is-art{background:none;box-shadow:none}
+.mf-care-mark.is-art .mf-care-art{width:100%;height:100%;display:block;border-radius:50%}
+.mf-section-motif{position:absolute;right:14px;bottom:8px;width:56px;height:56px;opacity:.9;pointer-events:none}
+
 /* The mark is a span, and the rule .mf-diaper-blob span{position:relative} outranks a lone
    .mf-care-mark, so these carry the element type to win the specificity contest. */
-.mf-feed-card>span.mf-care-mark{position:absolute;right:10px;top:10px;width:52px;height:52px}
-.mf-diaper-blob>span.mf-care-mark{position:absolute;left:50%;top:13px;transform:translateX(-50%);width:54px;height:54px}
+.mf-feed-card>span.mf-care-mark{position:absolute;left:50%;right:auto;top:10px;transform:translateX(-50%);width:54px;height:54px}
+.mf-diaper-blob>span.mf-care-mark{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:54px;height:54px}
 .mf-animal-checkin>span.mf-care-mark{position:relative;left:auto;top:auto;transform:none;width:44px;height:44px}
 :root[data-theme="dark"] .mf-animal-checkin>span.mf-care-mark{background:rgba(255,255,255,.15);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
 /* Two tones per card: the title carries the accent, the caption steps back a measured
@@ -268,18 +311,18 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none!importan
 :root[data-theme="dark"] .mf-feed-card.milk{--mf-card-sub:#8fc4e4}:root[data-theme="dark"] .mf-feed-card.nurse{--mf-card-sub:#e59ebd}:root[data-theme="dark"] .mf-feed-card.formula{--mf-card-sub:#b9a5e8}
 :root[data-theme="dark"] .mf-diaper-blob.wet{--mf-card-sub:#8ccdec}:root[data-theme="dark"] .mf-diaper-blob.poop{--mf-card-sub:#dbb271}:root[data-theme="dark"] .mf-diaper-blob.both{--mf-card-sub:#b3a0e0}
 .mf-feed-card strong,.mf-feed-card small{position:relative;z-index:1;max-width:100%}.mf-feed-card strong{font-size:16px;font-weight:900;letter-spacing:-.015em;line-height:1.1}.mf-feed-card small{display:block;font-size:11.5px;line-height:1.18;font-weight:750;opacity:.84;margin-top:4px}
-.mf-feed-card.milk{border-radius:38px 29px 43px 32px / 30px 40px 28px 37px;background:linear-gradient(145deg,#b8ddff 0%,#c5e3ff 58%,#c9cbff 100%);color:#153f61}
-.mf-feed-card.nurse{border-radius:43px 31px 35px 42px / 35px 42px 29px 37px;background:linear-gradient(145deg,#ffd1e2,#f5bad4);color:#7b244d}
-.mf-feed-card.formula{border-radius:31px 44px 40px 33px / 39px 31px 42px 29px;background:linear-gradient(145deg,#d8ccff,#c6b6f3);color:#432d73}
+.mf-feed-card.milk{border-radius:28px;background:linear-gradient(145deg,#b8ddff 0%,#c5e3ff 58%,#c9cbff 100%);color:#153f61}
+.mf-feed-card.nurse{border-radius:28px;background:linear-gradient(145deg,#ffd1e2,#f5bad4);color:#7b244d}
+.mf-feed-card.formula{border-radius:28px;background:linear-gradient(145deg,#d8ccff,#c6b6f3);color:#432d73}
 
 /* Diaper blobs stay playful, while count badges stay safely inset. */
 .mf-diaper-cluster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
-.mf-diaper-blob{position:relative;min-height:122px;padding:72px 8px 13px;text-align:center;display:grid;grid-template-rows:auto auto;align-content:end;justify-items:center;border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 7px 18px rgba(29,42,70,.07);overflow:hidden}
+.mf-diaper-blob{position:relative;min-height:116px;padding:58px 9px 13px;text-align:center;display:grid;grid-template-rows:auto auto;align-content:end;justify-items:center;border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 7px 18px rgba(29,42,70,.07);overflow:hidden}
 .mf-diaper-blob svg{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.94}
 .mf-diaper-blob>.mf-animal-sticker{position:absolute;top:5px;left:50%;transform:translateX(-50%);width:58px;height:58px;padding:5px;border-radius:50%;background:rgba(255,255,255,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.62)}.mf-diaper-blob>.mf-animal-sticker svg{position:static;width:100%;height:100%;transform:none;fill:initial;stroke:initial;opacity:1}
 .mf-diaper-blob strong{position:relative;z-index:2;font-size:16px;font-weight:900;line-height:1.1}.mf-diaper-blob span{position:relative;z-index:2;font-size:11.5px;line-height:1.15;margin-top:4px;opacity:.86}
 .mf-diaper-blob b{position:absolute;right:11px;top:10px;min-width:30px;height:30px;padding:0 8px;border-radius:999px;background:rgba(255,255,255,.86);display:grid;place-items:center;font-size:12.5px;font-weight:900;line-height:1;box-shadow:0 1px 0 rgba(0,0,0,.04)}
-.mf-diaper-blob.wet{border-radius:56% 44% 62% 38% / 58% 46% 54% 42%;background:linear-gradient(145deg,#bfe7ff,#9fd7f4);color:#145b86}.mf-diaper-blob.poop{border-radius:42% 58% 45% 55% / 62% 45% 55% 38%;background:linear-gradient(145deg,#ffe1a8,#f4ca76);color:#68420d}.mf-diaper-blob.both{border-radius:60% 40% 52% 48% / 43% 57% 44% 56%;background:linear-gradient(145deg,#d6c2ff,#bca5f4);color:#46307f}
+.mf-diaper-blob.wet{border-radius:28px;background:linear-gradient(145deg,#bfe7ff,#9fd7f4);color:#145b86}.mf-diaper-blob.poop{border-radius:28px;background:linear-gradient(145deg,#ffe1a8,#f4ca76);color:#68420d}.mf-diaper-blob.both{border-radius:28px;background:linear-gradient(145deg,#d6c2ff,#bca5f4);color:#46307f}
 
 .mf-care-ribbon{display:flex;gap:8px;overflow:auto;scrollbar-width:none;padding:1px 1px 2px}.mf-care-ribbon::-webkit-scrollbar{display:none}
 .mf-care-ribbon button{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:10px 14px;border:0;border-radius:999px;font-size:12.5px;font-weight:850;cursor:pointer;color:var(--ink-2)}
@@ -343,13 +386,13 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 /* ---------- responsive ---------- */
 @media(max-width:760px){
   #view{transition:none!important}.mf-core-plan{border-radius:24px 34px 25px 31px / 28px 23px 34px 26px}
-  .mf-dream-hero{display:block;min-height:0;padding:19px 18px 18px;border-radius:29px!important}.mf-sky-orb{width:126px;height:126px;right:1px;top:12px}.mf-sparkles{right:34%;top:22%;font-size:15px}.cloud-one{right:-115px;bottom:12px}.cloud-two{left:18%;top:-40px}.mf-dream-main{display:block;max-width:none}.mf-dream-welcome{min-height:26px;padding-right:130px;font-size:11.5px}.mf-dream-welcome>span{width:25px;height:25px}.mf-dream-mobile-summary{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:calc(100% - 126px);margin-top:9px}.mf-dream-mobile-summary span{min-width:0;padding:8px 7px;border-radius:12px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);font-size:7.5px;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.7);font-weight:850;text-align:center}.mf-dream-mobile-summary strong{display:block;font:900 14px var(--display);letter-spacing:-.02em;color:#fff;margin-bottom:1px}.mf-dream-kicker{margin-top:37px;font-size:9px}.mf-dream-main h2{max-width:72%;font-size:29px;line-height:1;margin:5px 0 0}.mf-dream-main>p{display:none}.mf-dream-next{width:100%;margin-top:15px;padding:11px 11px 11px 14px;border-radius:19px;gap:9px}.mf-dream-next>div strong{font-size:16px}.mf-dream-next>div small{font-size:9px}.mf-dream-next button{min-height:48px;width:auto;min-width:91px;padding:0 12px;justify-content:center;border-radius:15px}.mf-dream-next button span{display:inline;font-size:10px}.mf-dream-side{position:absolute;top:12px;right:13px;display:block;width:118px;height:132px}.mf-dream-photo{width:112px;height:112px;border-width:6px}.mf-dream-photo .placeholder{font-size:32px}.mf-dream-progress{position:absolute;right:58px;top:73px;width:64px;height:64px;padding:5px;margin:0;box-shadow:0 9px 20px rgba(57,37,101,.25)}.mf-dream-progress strong{font-size:17px}.mf-dream-progress strong i{font-size:8px}.mf-dream-progress span{font-size:5.5px;margin-top:2px}.mf-dream-volume{display:none}.mf-dream-journey{padding:17px 15px!important}.mf-journey-track{margin-top:14px;grid-auto-columns:82px}.mf-dream-actions .quick-tile{min-height:116px!important;padding:18px!important}.mf-dream-actions .quick-tile strong{font-size:19px}.mf-dream-actions .quick-tile .tile-art{width:50px;height:50px}
+  .mf-dream-hero{display:block;min-height:0;padding:19px 18px 18px;border-radius:29px!important}.mf-sky-orb{width:126px;height:126px;right:1px;top:12px}.mf-sparkles{right:34%;top:22%;font-size:15px}.cloud-one{right:-115px;bottom:12px}.cloud-two{left:18%;top:-40px}.mf-dream-main{display:block;max-width:none}.mf-dream-welcome{min-height:26px;padding-right:130px;font-size:11.5px}.mf-dream-welcome>span{width:25px;height:25px}.mf-dream-mobile-summary{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:calc(100% - 126px);margin-top:9px}.mf-dream-mobile-summary span{min-width:0;padding:8px 7px;border-radius:12px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);font-size:7.5px;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.7);font-weight:850;text-align:center}.mf-dream-mobile-summary strong{display:block;font:900 14px var(--display);letter-spacing:-.02em;color:#fff;margin-bottom:1px}.mf-dream-kicker{margin-top:37px;font-size:9px}.mf-dream-main h2{max-width:72%;font-size:29px;line-height:1;margin:5px 0 0}.mf-dream-main>p{display:none}.mf-dream-next{width:100%;margin-top:15px;padding:11px 11px 11px 14px;border-radius:19px;gap:9px}.mf-dream-next>div strong{font-size:16px}.mf-dream-next>div small{font-size:9px}.mf-dream-next button{min-height:48px;width:auto;min-width:91px;padding:0 12px;justify-content:center;border-radius:15px}.mf-dream-next button span{display:inline;font-size:10px}.mf-dream-side{position:absolute;top:12px;right:13px;display:block;width:118px;height:132px}.mf-dream-photo{width:112px;height:112px;border-width:6px}.mf-dream-photo .placeholder{font-size:32px}.mf-dream-progress{position:absolute;right:58px;top:73px;width:64px;height:64px;padding:5px;margin:0;box-shadow:0 9px 20px rgba(57,37,101,.25)}.mf-dream-progress strong{font-size:17px}.mf-dream-progress strong i{font-size:8px}.mf-dream-progress span{font-size:5.5px;margin-top:2px}.mf-dream-volume{display:none}.mf-dream-journey{padding:17px 15px!important}.mf-journey-track{margin-top:14px;grid-auto-columns:82px}.mf-dream-actions .quick-tile{min-height:116px;padding:58px 13px 15px}.mf-dream-actions .quick-tile strong{font-size:19px}.mf-dream-actions .quick-tile .tile-art{width:54px;height:54px}
   .mf-animal-hero{min-height:204px;padding:15px;border-radius:29px 36px 28px 34px / 33px 28px 37px 30px}.mf-animal-profile{display:block;width:100%;height:148px;max-width:none}.mf-animal-profile .mf-profile-photo{width:138px;height:138px;border-width:7px;box-shadow:0 12px 28px rgba(38,99,102,.2)}.mf-animal-copy{position:absolute;left:149px;top:23px;width:104px}.mf-animal-copy .welcome{display:inline-block;padding:5px 7px;border-radius:9px;background:rgba(255,255,255,.55);color:#29606b;font-size:9px;line-height:1.15;letter-spacing:.055em;opacity:1}.mf-animal-copy h2{margin-top:7px;font-size:25px;color:#163f52}.mf-animal-copy small{font-size:9.5px;color:#41636a;opacity:1}.mf-animal-stats{top:12px;right:11px;gap:7px}.mf-animal-stat{min-width:78px;padding:7px 8px;text-align:center}.mf-animal-stat strong{font-size:13.5px}.mf-animal-stat span{font-size:7.5px}.mf-animal-hero>.bear{width:70px;height:70px;right:80px;bottom:-1px}.mf-animal-hero>.bunny{width:57px;height:57px;right:20px;bottom:2px}.mf-animal-star.one{left:48%;top:16px}.mf-animal-checkin{grid-template-columns:44px minmax(0,1fr) auto;padding:10px 11px}.mf-animal-checkin>.mf-animal-sticker{width:42px;height:42px}
   .mf-profile-photo{width:60px;height:60px}.mf-profile-copy h2{font-size:27px}
   .mf-top-orb-wrap{width:52px}.mf-top-orb{width:50px;height:50px}.mf-top-orb strong{font-size:14px}.mf-top-orb-wrap>span{font-size:9.5px}
   .mf-mom-orbs{margin-top:5px}.ring.mf-mom-photo-ring,.mf-mom-hero-photo{width:116px;height:116px}
-  .mf-feed-card{min-height:106px;padding:13px 12px 20px}.mf-feed-card strong{font-size:15px}.mf-feed-card small{font-size:11px}
-  .mf-diaper-blob{min-height:122px}.mf-care-ribbon button{padding:10px 13px}
+  .mf-feed-card{min-height:116px;padding:58px 9px 13px}.mf-feed-card strong{font-size:15px}.mf-feed-card small{font-size:11px}
+  .mf-diaper-blob{min-height:116px}.mf-care-ribbon button{padding:10px 13px}
 }
 @media(max-width:390px){
   .mf-dream-hero{min-height:0;padding-left:16px;padding-right:16px}.mf-dream-main h2{font-size:27px}.mf-dream-next>div strong{font-size:16px}.mf-dream-next>div small{max-width:190px}.mf-journey-head strong{font-size:16px}
@@ -359,12 +402,12 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
   .mf-mom-orbs{gap:6px}.mf-mom-orbs .mf-top-orb-wrap{width:52px}.mf-mom-orbs .mf-top-orb{width:50px;height:50px}
   .ring.mf-mom-photo-ring,.mf-mom-hero-photo{width:104px;height:104px}
   .mf-last-feed-band{grid-template-columns:34px minmax(0,1fr) minmax(112px,auto);gap:8px;padding:11px}.mf-last-feed-band strong,.mf-last-feed-age strong{font-size:14px}.mf-last-feed-band small{font-size:10.5px}
-  .mf-feed-zone{gap:6px}.mf-feed-card{min-height:104px;padding:12px 10px 19px}.mf-feed-card svg{width:29px;height:29px;right:9px;top:9px}.mf-feed-card strong{font-size:14px}.mf-feed-card small{font-size:10.5px}
-  .mf-diaper-cluster{gap:6px}.mf-diaper-blob{min-height:120px;padding:70px 7px 12px}.mf-diaper-blob b{right:7px;top:7px;min-width:28px;height:28px;padding:0 7px;font-size:12px}.mf-diaper-blob>.mf-animal-sticker{width:55px;height:55px}.mf-diaper-blob strong{font-size:15px}.mf-diaper-blob span{font-size:10.5px}
+  .mf-feed-zone{gap:6px}.mf-feed-card{min-height:112px;padding:54px 8px 12px}.mf-feed-card svg{width:29px;height:29px;right:9px;top:9px}.mf-feed-card strong{font-size:14px}.mf-feed-card small{font-size:10.5px}
+  .mf-diaper-cluster{gap:6px}.mf-diaper-blob{min-height:112px;padding:54px 7px 12px}.mf-diaper-blob b{right:7px;top:7px;min-width:28px;height:28px;padding:0 7px;font-size:12px}.mf-diaper-blob>.mf-animal-sticker{width:55px;height:55px}.mf-diaper-blob strong{font-size:15px}.mf-diaper-blob span{font-size:10.5px}
 }
 @media(max-width:760px){
   .mf-dream-journey{padding:16px 15px!important}.mf-journey-track{margin:10px 0 5px;grid-auto-columns:82px;padding:8px 0 7px}.mf-journey-stop.next i{border-color:#d9ccf5;box-shadow:0 7px 18px rgba(115,75,178,.26)}
-  .mf-dream-actions{gap:9px!important;margin:10px 0 11px!important}.mf-dream-actions .quick-tile{min-height:92px!important;padding:14px!important;border-radius:26px 34px 29px 31px / 31px 25px 35px 27px!important}.mf-dream-actions .quick-tile strong{font-size:18px}.mf-dream-actions .quick-tile .tile-art{width:42px!important;height:42px!important;right:11px;top:10px}.mf-dream-actions .quick-tile .tile-art .gly{width:40px;height:40px}
+  .mf-dream-actions{gap:9px!important;margin:10px 0 11px!important}.mf-dream-actions .quick-tile{min-height:112px;padding:56px 12px 14px;border-radius:28px}.mf-dream-actions .quick-tile strong{font-size:18px}.mf-dream-actions .quick-tile .tile-art{width:54px;height:54px;left:50%;right:auto;top:11px;transform:translateX(-50%)}.mf-dream-actions .quick-tile .tile-art .gly{width:40px;height:40px}
   .mf-dream-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;overflow:visible!important;margin-bottom:12px!important}.mf-dream-metrics .metric{min-width:0!important;min-height:76px!important;padding:11px 12px!important;display:grid!important;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:9px!important;border-radius:19px!important}.mf-dream-metrics .metric-icon{width:34px!important;height:34px!important;margin:0!important}.mf-dream-metrics .metric:last-child:nth-child(odd){grid-column:1/-1!important;min-height:70px!important}.mf-dream-metrics .metric strong{font-size:18px!important}.mf-dream-metrics .metric small{font-size:9px!important}
   .mf-pump-plan-panel .schedule-card.mf-r2-next,.mf-pump-plan-panel .schedule-card.pc-next,.mf-pump-plan-panel .schedule-card.pi-next{outline:0!important;border:2px solid color-mix(in srgb,var(--mom) 48%,transparent)!important;box-shadow:0 7px 17px color-mix(in srgb,var(--mom) 15%,transparent)!important}.mf-pump-plan-panel .schedule-card.mf-r2-next>div:first-child,.mf-pump-plan-panel .schedule-card.pc-next>div:first-child,.mf-pump-plan-panel .schedule-card.pi-next>div:first-child{box-shadow:none!important;border-color:var(--surface)!important}
   .mf-dream-mobile-summary span{padding:9px 7px!important;background:rgba(48,28,92,.68)!important;border-color:rgba(255,255,255,.34)!important;color:#fff!important;font-size:10px!important;line-height:1.2;text-transform:none!important;letter-spacing:.01em!important;font-weight:700!important}.mf-dream-mobile-summary strong{font-size:17px!important;font-weight:800!important}.mf-dream-kicker{font-size:12px!important;letter-spacing:.02em!important;font-weight:700!important}.mf-dream-main h2{font-size:32px!important;line-height:1.02!important;max-width:74%;letter-spacing:-.03em!important}.mf-dream-next>div span{font-size:11px!important;color:#fff6d9!important}.mf-dream-next>div strong{font-size:18px!important;line-height:1.15}.mf-dream-next>div small{font-size:11px!important;color:rgba(255,255,255,.9)!important;line-height:1.3}.mf-dream-next button span{font-size:12px!important}.mf-dream-progress strong i{font-size:10px!important;opacity:.9}.mf-dream-progress span{font-size:8px!important;letter-spacing:.05em!important;color:#fff!important}.mf-dream-side-note{position:absolute;top:141px;right:0;width:104px;min-height:38px;padding:7px 8px;border-radius:12px;display:grid;align-content:center;background:rgba(48,28,92,.68);border:1px solid rgba(255,255,255,.3);color:#fff;text-align:center;backdrop-filter:blur(10px)}.mf-dream-side-note span,.mf-dream-side-note strong{display:block}.mf-dream-side-note span{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.85)}.mf-dream-side-note strong{margin-top:1px;font-size:12px;font-weight:800}
@@ -428,7 +471,7 @@ function maybeAskTomorrow(x){
 
 function renderBaby(s){
   const view=document.getElementById('view');if(!view)return;
-  const st=babyCareStats(s),snap=babySnapshot(s,st),g=positiveGreeting(),gl=greetingLine(s.profile?.momName),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate),lf=lastFeedText(lastFeed(s));
+  const st=babyCareStats(s),snap=babySnapshot(s,st),nextFeed=predictNextFeed(s),g=positiveGreeting(),gl=greetingLine(s.profile?.momName),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate),lf=lastFeedText(lastFeed(s));
   let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}
   const babyMeta=[age,!photo?'Add a photo':''].filter(Boolean).join(' · ');
   box.innerHTML=`
@@ -446,14 +489,14 @@ function renderBaby(s){
 
     <div class="mf-animal-checkin" aria-label="Last feeding">
       ${careMark('clock')}
-      <span class="mf-last-feed-primary"><strong>${esc(lf.main)}</strong><small>${esc(lf.clock)}</small></span>
-      <span class="mf-last-feed-age"><strong>${esc(lf.age)}</strong><small>Last fed</small></span>
+      <span class="mf-last-feed-primary"><strong>${esc(lf.main)}</strong><small>${esc(lf.clock)}${nextFeed?` · usually every ${nextFeed.typicalGapMin>=60?`${(nextFeed.typicalGapMin/60).toFixed(1)}h`:`${nextFeed.typicalGapMin}m`}`:''}</small></span>
+      <span class="mf-last-feed-age"><strong>${nextFeed?esc(nextFeed.label):esc(lf.age)}</strong><small>${nextFeed?(nextFeed.overdue?'Due now':'Next, about'):'Last fed'}</small></span>
     </div>
 
     <div class="mf-care-label"><span>Feed</span><small>Quick log</small></div>
     <div class="mf-feed-zone">
-      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${careMark('bottle')}<strong>Breast milk</strong><small>Log bottle</small></button>
-      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${careMark('nursing')}<strong>Nurse</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button>
+      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${careMark('milk')}<strong>Breast milk</strong><small>Log bottle</small></button>
+      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${careMark('nurse')}<strong>Nurse</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button>
       <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${careMark('formula')}<strong>Formula</strong><small>${st.formulaCount?`${st.formulaCount} today`:'Log bottle'}</small></button>
     </div>
 
@@ -461,7 +504,7 @@ function renderBaby(s){
     <div class="mf-diaper-cluster">
       <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper">${careMark('wet')}<b>${st.wet}</b><strong>Wet</strong><span>diaper</span></button>
       <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper">${careMark('poop')}<b>${st.poop}</b><strong>Poopy</strong><span>diaper</span></button>
-      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper">${careMark('both')}<b>${st.both}</b><strong>Mixed</strong><span>wet + poopy</span></button>
+      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper">${careMark('mixed')}<b>${st.both}</b><strong>Mixed</strong><span>wet + poopy</span></button>
     </div>
 
     <div class="mf-care-ribbon" aria-label="More baby care">
@@ -480,7 +523,10 @@ function decorateApp(){
   const screen=document.body.dataset.screen||'',baby=screen.startsWith('baby-')||screen==='development'||screen==='doctor',mom=screen.startsWith('mom-');
   document.body.dataset.realm=baby?'baby':mom?'mom':'family';
   const head=document.querySelector('#view .page-head');if(!head||head.querySelector('.mf-section-animal,.mf-head-dream'))return;
-  if(baby){const kind=screen==='baby-trends'?'whale':screen==='baby-growth'?'bear':screen==='development'?'bunny':screen==='doctor'?'fox':'owl';head.insertAdjacentHTML('beforeend',animalSticker(kind).replace('mf-animal-sticker','mf-animal-sticker mf-section-animal'));}
+  /* Section headers used to show an unrelated stock animal - a whale on Trends, a fox on
+     Doctor - that belonged to no theme. They now carry the selected world's own motif. */
+  if(baby){const motif=window.MilkFlowExperience?.themeMotif?.();
+    if(motif)head.insertAdjacentHTML('beforeend',`<img class="mf-section-motif" src="${esc(motif)}" alt="" decoding="async">`);}
   else if(mom)head.insertAdjacentHTML('beforeend','<span class="mf-head-dream" aria-hidden="true">✦ · ✧</span>');
 }
 function apply(){if(applying)return;applying=true;try{addStyles();const s=read();cleanup();decorateApp();if(document.body.dataset.screen==='mom-home')renderMom(s);if(document.body.dataset.screen==='baby-home')renderBaby(s);}finally{applying=false;}}
@@ -505,6 +551,8 @@ window.addEventListener('pageshow',afterApp);
 window.addEventListener('milkflow:base-rendered',afterApp);
 window.addEventListener('storage',e=>{if(e.key===STATE_KEY||e.key===COACH_KEY)afterApp();});
 window.addEventListener('milkflow:coach-change',afterApp);
+/* Care icons are resolved during render, so a world change has to re-run it. */
+window.addEventListener('milkflow:experience-theme-change',afterApp);
 window.addEventListener('milkflow:chat-data',afterApp);
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',afterApp,{once:true});else afterApp();

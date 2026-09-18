@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="formula (princess)">
+  <defs><linearGradient id="d-princess-formula" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#FDF1F3"/><stop offset="1" stop-color="#F7DFE7"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#d-princess-formula)"/>
+  <path d="M43.6 21.4 41.4 9l5.3 4.3 4.6-6.5 4.6 6.5L61.2 9l-2.2 12.4Z" fill="#8E3A58" fill-opacity=".46"/>
+  <rect x="18.4" y="13.6" width="27.2" height="8" rx="2.6" fill="#8E3A58"/>
+    <path d="M21.2 23.4h21.6v20.8a7.2 7.2 0 0 1-7.2 7.2h-7.2a7.2 7.2 0 0 1-7.2-7.2Z" fill="#8E3A58"/>
+    <path d="M25 30.6h14v6.2H25z" fill="#fff" fill-opacity=".62"/>
+    <path d="M27.4 41.8h9.2v2.6h-9.2z" fill="#fff" fill-opacity=".4"/>
+</svg>

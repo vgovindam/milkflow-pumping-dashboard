@@ -269,6 +269,10 @@ button{cursor:pointer;font-family:inherit}
 .quick-tile:active{transform:scale(.975)}
 .quick-tile .tile-art{position:absolute;right:14px;top:13px;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--glow)}
 .quick-tile .tile-art .ico{width:29px;height:29px;stroke-width:1.7}
+/* A generated theme icon brings its own disc and palette, so the neutral carrier steps
+   aside rather than drawing a second circle behind it. */
+.quick-tile .tile-art .mf-care-art{width:100%;height:100%;display:block;border-radius:50%}
+.quick-tile .tile-art:has(.mf-care-art){background:none;box-shadow:none}
 .quick-tile strong{font:800 18px var(--font);letter-spacing:-.01em}
 .quick-tile small{font-size:11px;margin-top:3px;opacity:.8;font-weight:700}
 /* each action keeps its own colour on every screen it appears */

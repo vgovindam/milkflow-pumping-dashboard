@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="wet (butterfly)">
+  <defs><linearGradient id="d-butterfly-wet" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#FBF1F8"/><stop offset="1" stop-color="#EDDFF4"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#d-butterfly-wet)"/>
+  <path d="M51.4 9.8c3.6 0 6 2.2 6 5s-2.4 4.6-6 4.6Zm-1.9 0c-3.6 0-6 2.2-6 5s2.4 4.6 6 4.6Z" fill="#6A3D7C" fill-opacity=".46"/><path d="M50.4 8.6v12" stroke="#6A3D7C" stroke-opacity=".6" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M32 10.4c7.4 9.6 13.4 16 13.4 22.2a13.4 13.4 0 0 1-26.8 0c0-6.2 6-12.6 13.4-22.2Z" fill="#6A3D7C"/>
+    <path d="M25.4 33.8c0 4 2.2 7 5.6 8.1" stroke="#fff" stroke-opacity=".55" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+</svg>

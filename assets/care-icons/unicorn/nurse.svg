@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="nurse (unicorn)">
+  <defs><linearGradient id="d-unicorn-nurse" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#F4EFFD"/><stop offset="1" stop-color="#E5E1FB"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#d-unicorn-nurse)"/>
+  <path d="M51 6.6l2.3 6 6 2.3-6 2.3-2.3 6-2.3-6-6-2.3 6-2.3Z" fill="#53408D" fill-opacity=".48"/>
+  <circle cx="23.6" cy="19.4" r="7.2" fill="#53408D"/>
+    <path d="M10.6 51.4c0-9.4 5.6-15.6 13-15.6 3.3 0 6.3 1.2 8.6 3.4l-4.4 5a6.6 6.6 0 0 0-4.2-1.5c-3.3 0-5.7 3-5.7 8.7Z" fill="#53408D"/>
+    <circle cx="41.4" cy="31.6" r="6.1" fill="#53408D"/>
+    <path d="M30.8 51.4c0-6.3 4.6-10.8 10.6-10.8s10.6 4.5 10.6 10.8Z" fill="#53408D"/>
+    <path d="M33.4 45.2a11 11 0 0 1 8-3.2" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+</svg>

@@ -51,7 +51,34 @@ for(const theme of themes){
 }
 for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
 for(const token of ['Choose a theme','Make this little adventure yours','Profile &amp; Personalization','Different themes.','mf-preview-scene'])if(!experience.includes(token))throw new Error(`Settings storybook contract missing: ${token}`);
-for(const token of ['.mf-animal-hero::before','.mf-animal-hero::after','.mf-feed-card::before','.mf-diaper-blob::before','.mf-animal-checkin::before','display:none!important','visibility:hidden!important','min-height:136px!important','padding:78px 11px 15px!important'])if(!themeEntry.includes(token))throw new Error(`Single-layer Baby visual contract missing: ${token}`);
+/* The Baby single-layer contract: legacy decorative pseudo-elements stay suppressed. The
+   card's own geometry is no longer pinned here - it moved next to the component in
+   core-ui.js, where it needs no !important, so pinning pixel values in theme.css would
+   only reintroduce the override this refactor removed. */
+for(const token of ['.mf-animal-hero::before','.mf-animal-hero::after','.mf-feed-card::before','.mf-diaper-blob::before','.mf-animal-checkin::before','display:none!important','visibility:hidden!important'])if(!themeEntry.includes(token))throw new Error(`Single-layer Baby visual contract missing: ${token}`);
+/* Quick-log card geometry has exactly one owner: the component's own stylesheet in
+   core-ui.js, stated once per breakpoint and with no !important. Re-pinning it from a theme
+   or experience file is what produced the override chain this architecture replaced. */
+for(const [name,css] of [['theme.css',themeEntry],['experience-system.css',experienceSystem],['experience-components.css',themedComponents]])
+  if(/\.mf-(feed-card|diaper-blob)\{[^}]*(padding|min-height|border-radius)\s*:[^;}]*!important/.test(css))
+    throw new Error(`Quick-log card geometry is re-pinned in ${name}; it belongs to the component in core-ui.js`);
+if(/\.mf-feed-card\{[^}]*!important/.test(core))throw new Error('Quick-log card geometry must not need !important inside its own component stylesheet');
+
+/* Care icons are a generated design system resolved through one registry, with the built-in
+   semantic glyph as the fallback, so a missing asset degrades instead of breaking. */
+if(!experience.includes('function careIcon('))throw new Error('Theme registry does not expose careIcon');
+if(!core.includes('MilkFlowExperience?.careIcon'))throw new Error('Baby care cards do not resolve icons from the theme registry');
+if(!app.includes('MilkFlowExperience?.careIcon'))throw new Error('Mom action tiles do not resolve icons from the theme registry');
+if(!core.includes('CARE_GLYPH'))throw new Error('Care icon fallback glyph map is missing');
+{
+  const iconRoot=path.join(ROOT,'assets/care-icons');
+  const actions=['milk','nurse','formula','wet','poop','mixed','pump'];
+  for(const theme of ['safari','butterfly','princess','unicorn']){
+    for(const action of [...actions,'motif'])
+      if(!fs.existsSync(path.join(iconRoot,theme,`${action}.svg`)))
+        throw new Error(`Generated care icon missing: ${theme}/${action}.svg - run node scripts/generate-care-icons.mjs`);
+  }
+}
 for(const token of ['.mf-dream-hero::before','.mf-dream-hero::after','content:none!important','var(--mf-theme-baby-scene)','var(--mf-theme-mom-scene)','var(--mf-theme-baby-hero)','var(--mf-theme-mom-hero)','body[data-screen="settings"] .main','body[data-screen="baby-home"] .mf-animal-hero','body[data-screen="mom-home"] .mf-dream-hero','color:var(--mf-world-text)!important'])if(!experienceSystem.includes(token))throw new Error(`Theme scene/contrast contract missing: ${token}`);
 if(experienceSystem.includes('content:var(--mf-theme-name)'))throw new Error('Theme names must not be rendered as hero badges.');
 if(experienceSystem.includes('--mf-theme-detail')||experience.includes('theme-details/'))throw new Error('Runtime theme composition must use one self-contained scene, not stacked detail/backdrop files.');

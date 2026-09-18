@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="mixed (safari)">
+  <defs><linearGradient id="d-safari-mixed" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#FDF3E2"/><stop offset="1" stop-color="#F5E1BE"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#d-safari-mixed)"/>
+  <path d="M55.6 9.4c0 7.2-4.1 11.8-10.4 11.8 0-7.2 4.1-11.8 10.4-11.8Z" fill="#7C4A1C" fill-opacity=".46"/><path d="M45.6 21.6c1.5-4.1 4.1-7.7 7.7-10.1" stroke="#7C4A1C" stroke-opacity=".6" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M22.6 10.6c5.3 6.9 9.6 11.5 9.6 15.9a9.6 9.6 0 0 1-19.2 0c0-4.4 4.3-9 9.6-15.9Z" fill="#7C4A1C"/>
+    <path d="M41.4 27.4c3.4.7 4.3 2.8 3.5 4.8h1.4c3.4 0 5.6 2 5.6 4.3 0 1.1-.5 2.1-1.3 2.9 2.7.7 4.2 2.5 4.2 4.4 0 2.8-3 4.9-6.8 4.9H31.8c-3.8 0-6.8-2.1-6.8-4.9 0-1.9 1.5-3.7 4.2-4.4a3.9 3.9 0 0 1-1.3-2.9c0-2.3 2.2-4.3 5.6-4.3h1.4c-.8-2 .1-4.1 3.5-4.8Z" fill="#7C4A1C"/>
+    <path d="M17.6 26.8c0 2.9 1.6 5 4 5.8" stroke="#fff" stroke-opacity=".5" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+</svg>

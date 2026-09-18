@@ -172,14 +172,14 @@
   border:1px solid var(--mf-world-line);border-radius:28px;overflow:hidden;
   background:var(--mf-world-surface)!important;box-shadow:0 11px 26px var(--mf-world-shadow);backdrop-filter:none
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{min-height:128px;padding:73px 11px 15px;border:1px solid rgba(255,255,255,.60)!important;border-radius:24px!important;justify-content:flex-end;overflow:hidden;box-shadow:0 7px 17px rgba(49,58,48,.07)!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{border:1px solid rgba(255,255,255,.60)!important;overflow:hidden;box-shadow:0 7px 17px rgba(49,58,48,.07)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>.mf-animal-sticker,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>svg{display:none!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.milk{background:linear-gradient(145deg,#caeaff,#b6dcff 62%,#ded8ff)!important;color:#153f61!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.nurse{background:linear-gradient(145deg,#ffd9e7,#f5bfd3)!important;color:#7b294d!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.formula{background:linear-gradient(145deg,#e1d8ff,#cabaf4)!important;color:#493078!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card :is(strong,small,span){color:inherit!important;opacity:1!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob{min-height:132px;padding:75px 8px 14px;border:1px solid rgba(255,255,255,.60)!important;border-radius:24px!important;box-shadow:0 7px 17px rgba(65,53,39,.07)!important;overflow:hidden}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob{border:1px solid rgba(255,255,255,.60)!important;box-shadow:0 7px 17px rgba(65,53,39,.07)!important;overflow:hidden}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>.mf-animal-sticker,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>svg{display:none!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob b{right:9px;top:10px;min-width:29px;height:29px;padding:0 7px;border-radius:999px;background:rgba(255,255,255,.94);font-size:12px;box-shadow:0 3px 8px rgba(50,50,50,.08);z-index:3}

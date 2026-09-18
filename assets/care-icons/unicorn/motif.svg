@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="unicorn motif">
+  <defs><linearGradient id="m-unicorn" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#F4EFFD"/><stop offset="1" stop-color="#E5E1FB"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#m-unicorn)"/>
+  <g transform="translate(-19.5 12.5) scale(1.85)" transform-origin="51 15"><path d="M51 6.6l2.3 6 6 2.3-6 2.3-2.3 6-2.3-6-6-2.3 6-2.3Z" fill="#53408D" fill-opacity=".48"/></g>
+</svg>

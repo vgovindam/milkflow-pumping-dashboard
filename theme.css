@@ -31,12 +31,10 @@
   background:none!important;
 }
 
-/* Reserve a real art zone. Theme icons are decoration above the action, never on top of
-   its label. These dimensions are part of the themed card component contract. */
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{
-  min-height:136px!important;
-  padding:78px 11px 15px!important;
-}
+/* The art zone this file used to reserve (136px tall, 78px of top padding) existed for a
+   full-size themed sprite that was painted over the action's own icon. That sprite is gone;
+   the card owns its geometry next to its base styles in core-ui.js, with no !important and
+   nothing here to override. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card strong,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card small{
   position:relative;

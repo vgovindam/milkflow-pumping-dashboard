@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="wet (safari)">
+  <defs><linearGradient id="d-safari-wet" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#FDF3E2"/><stop offset="1" stop-color="#F5E1BE"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#d-safari-wet)"/>
+  <path d="M55.6 9.4c0 7.2-4.1 11.8-10.4 11.8 0-7.2 4.1-11.8 10.4-11.8Z" fill="#7C4A1C" fill-opacity=".46"/><path d="M45.6 21.6c1.5-4.1 4.1-7.7 7.7-10.1" stroke="#7C4A1C" stroke-opacity=".6" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M32 10.4c7.4 9.6 13.4 16 13.4 22.2a13.4 13.4 0 0 1-26.8 0c0-6.2 6-12.6 13.4-22.2Z" fill="#7C4A1C"/>
+    <path d="M25.4 33.8c0 4 2.2 7 5.6 8.1" stroke="#fff" stroke-opacity=".55" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+</svg>

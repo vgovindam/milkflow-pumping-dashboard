@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="pump (unicorn)">
+  <defs><linearGradient id="d-unicorn-pump" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#F4EFFD"/><stop offset="1" stop-color="#E5E1FB"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#d-unicorn-pump)"/>
+  <path d="M51 6.6l2.3 6 6 2.3-6 2.3-2.3 6-2.3-6-6-2.3 6-2.3Z" fill="#53408D" fill-opacity=".48"/>
+  <path d="M13.6 21.4h30.8a2.6 2.6 0 0 1 2.4 3.6l-5.6 13.4a3.4 3.4 0 0 0-.3 1.3v1.1H17.1v-1.1a3.4 3.4 0 0 0-.3-1.3l-5.6-13.4a2.6 2.6 0 0 1 2.4-3.6Z" fill="#53408D"/>
+    <path d="M24.4 42.6h9.2a5.4 5.4 0 0 1 5.4 5.4v3.4a2 2 0 0 1-2 2H21a2 2 0 0 1-2-2V48a5.4 5.4 0 0 1 5.4-5.4Z" fill="#53408D"/>
+    <path d="M29 26.6c2.1 2.7 3.8 4.8 3.8 6.6a3.8 3.8 0 0 1-7.6 0c0-1.8 1.7-3.9 3.8-6.6Z" fill="#fff" fill-opacity=".66"/>
+</svg>

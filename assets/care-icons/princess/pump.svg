@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="pump (princess)">
+  <defs><linearGradient id="d-princess-pump" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#FDF1F3"/><stop offset="1" stop-color="#F7DFE7"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#d-princess-pump)"/>
+  <path d="M43.6 21.4 41.4 9l5.3 4.3 4.6-6.5 4.6 6.5L61.2 9l-2.2 12.4Z" fill="#8E3A58" fill-opacity=".46"/>
+  <path d="M13.6 21.4h30.8a2.6 2.6 0 0 1 2.4 3.6l-5.6 13.4a3.4 3.4 0 0 0-.3 1.3v1.1H17.1v-1.1a3.4 3.4 0 0 0-.3-1.3l-5.6-13.4a2.6 2.6 0 0 1 2.4-3.6Z" fill="#8E3A58"/>
+    <path d="M24.4 42.6h9.2a5.4 5.4 0 0 1 5.4 5.4v3.4a2 2 0 0 1-2 2H21a2 2 0 0 1-2-2V48a5.4 5.4 0 0 1 5.4-5.4Z" fill="#8E3A58"/>
+    <path d="M29 26.6c2.1 2.7 3.8 4.8 3.8 6.6a3.8 3.8 0 0 1-7.6 0c0-1.8 1.7-3.9 3.8-6.6Z" fill="#fff" fill-opacity=".66"/>
+</svg>

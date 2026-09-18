@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="nurse (princess)">
+  <defs><linearGradient id="d-princess-nurse" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#FDF1F3"/><stop offset="1" stop-color="#F7DFE7"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#d-princess-nurse)"/>
+  <path d="M43.6 21.4 41.4 9l5.3 4.3 4.6-6.5 4.6 6.5L61.2 9l-2.2 12.4Z" fill="#8E3A58" fill-opacity=".46"/>
+  <circle cx="23.6" cy="19.4" r="7.2" fill="#8E3A58"/>
+    <path d="M10.6 51.4c0-9.4 5.6-15.6 13-15.6 3.3 0 6.3 1.2 8.6 3.4l-4.4 5a6.6 6.6 0 0 0-4.2-1.5c-3.3 0-5.7 3-5.7 8.7Z" fill="#8E3A58"/>
+    <circle cx="41.4" cy="31.6" r="6.1" fill="#8E3A58"/>
+    <path d="M30.8 51.4c0-6.3 4.6-10.8 10.6-10.8s10.6 4.5 10.6 10.8Z" fill="#8E3A58"/>
+    <path d="M33.4 45.2a11 11 0 0 1 8-3.2" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+</svg>

@@ -43,6 +43,25 @@ const THEME_MANIFEST={
   clean:{title:'Clean',subtitle:'Quiet MilkFlow canvas',assets:{light:{},dark:{}},iconSprite:''}
 };
 
+/* Care icons are a generated design system: assets/care-icons/<theme>/<action>.svg, built by
+   scripts/generate-care-icons.mjs from one semantic base shape per action and one palette per
+   theme. The registry answers "which file for this action in the current world" and returns
+   null when a combination does not exist, so the caller keeps ownership of its own fallback
+   instead of this module reaching into the DOM to patch icons in after render. */
+const CARE_ICON_ACTIONS=new Set(['milk','nurse','formula','wet','poop','mixed','pump']);
+const CARE_ICON_THEMES=new Set(['safari','butterfly','princess','unicorn']);
+function careIcon(action,themeName){
+  const theme=normalize(themeName===undefined?read():themeName);
+  if(!CARE_ICON_ACTIONS.has(action)||!CARE_ICON_THEMES.has(theme))return null;
+  return `./assets/care-icons/${theme}/${action}.svg`;
+}
+/* The world's own signature, for section headers that want theme flavour without implying
+   a care action. */
+function themeMotif(themeName){
+  const theme=normalize(themeName===undefined?read():themeName);
+  return CARE_ICON_THEMES.has(theme)?`./assets/care-icons/${theme}/motif.svg`:null;
+}
+
 function normalize(value){if(value==='jungle'||value==='storybook')return 'safari';return THEMES.has(value)?value:'safari';}
 function read(){try{return normalize(localStorage.getItem(KEY));}catch{return 'safari';}}
 function assetUrl(path){return path?`url("${path}")`:'none';}
@@ -109,7 +128,7 @@ function syncThemeUi(){apply();experiencePanel();settingsExtras();}
 let queued=false;
 function afterCanonicalRender(){if(queued)return;queued=true;queueMicrotask(()=>requestAnimationFrame(()=>{queued=false;syncThemeUi();}));}
 
-window.MilkFlowExperience={manifest:THEME_MANIFEST,current:read,apply,save};
+window.MilkFlowExperience={manifest:THEME_MANIFEST,current:read,apply,save,careIcon,themeMotif,careIconActions:[...CARE_ICON_ACTIONS]};
 apply();
 document.addEventListener('click',e=>{const btn=e.target.closest('[data-experience-theme-pick]');if(btn)save(btn.dataset.experienceThemePick);if(e.target.closest('[data-theme-pick]'))setTimeout(afterCanonicalRender,0);const sound=e.target.closest('[data-sound-toggle]');if(sound){const enabled=sound.getAttribute('aria-pressed')!=='true';localStorage.setItem('milkflow-interface-sounds-v1',enabled?'on':'off');sound.setAttribute('aria-pressed',String(enabled));sound.querySelector('.mf-settings-switch')?.classList.toggle('on',enabled);}});
 window.addEventListener('storage',e=>{if(e.key===KEY)afterCanonicalRender();});

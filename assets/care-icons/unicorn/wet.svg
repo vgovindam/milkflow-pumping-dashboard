@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="wet (unicorn)">
+  <defs><linearGradient id="d-unicorn-wet" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#F4EFFD"/><stop offset="1" stop-color="#E5E1FB"/>
+  </linearGradient></defs>
+  <circle cx="32" cy="32" r="31" fill="url(#d-unicorn-wet)"/>
+  <path d="M51 6.6l2.3 6 6 2.3-6 2.3-2.3 6-2.3-6-6-2.3 6-2.3Z" fill="#53408D" fill-opacity=".48"/>
+  <path d="M32 10.4c7.4 9.6 13.4 16 13.4 22.2a13.4 13.4 0 0 1-26.8 0c0-6.2 6-12.6 13.4-22.2Z" fill="#53408D"/>
+    <path d="M25.4 33.8c0 4 2.2 7 5.6 8.1" stroke="#fff" stroke-opacity=".55" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+</svg>
