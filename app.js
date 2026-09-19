@@ -1929,8 +1929,40 @@ function exportBackup(){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}), url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=`milkflow-family-backup-${today()}.json`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000); toast('Private backup exported.');
 }
 
+/* Load the Firebase SDKs on demand, after the app has already rendered what is on the device.
+ * They used to be defer'd <script> tags ahead of app.js; because deferred scripts run in
+ * document order, nothing the app knows locally could reach the screen until ~300KB had come
+ * down from a third-party CDN. On a phone, on a bad connection, that is the whole delay - and
+ * offline it was worse, because the app waited for requests that were never going to succeed.
+ * Every other module already guards with window.firebase?., so they simply start working once
+ * this resolves. */
+const FIREBASE_SDK='https://www.gstatic.com/firebasejs/10.14.1/';
+let firebaseLoad=null;
+function loadScriptOnce(src){
+  return new Promise((resolve,reject)=>{
+    const el=document.createElement('script');
+    el.src=src; el.async=true;
+    el.onload=()=>resolve(true);
+    el.onerror=()=>reject(new Error(`Could not load ${src}`));
+    document.head.appendChild(el);
+  });
+}
+function loadFirebase(){
+  if(window.firebase?.firestore) return Promise.resolve(true);
+  if(!firebaseLoad) firebaseLoad=(async()=>{
+    await loadScriptOnce(`${FIREBASE_SDK}firebase-app-compat.js`);
+    await Promise.all([
+      loadScriptOnce(`${FIREBASE_SDK}firebase-auth-compat.js`),
+      loadScriptOnce(`${FIREBASE_SDK}firebase-firestore-compat.js`)
+    ]);
+    return !!window.firebase?.firestore;
+  })().catch(()=>false);
+  return firebaseLoad;
+}
+
 async function initCloud(){
-  const c=window.MILKFLOW_CONFIG||{}; if(!c.enableCloudSync||!c.firebaseConfig||!window.firebase) return syncBadge();
+  const c=window.MILKFLOW_CONFIG||{}; if(!c.enableCloudSync||!c.firebaseConfig) return syncBadge();
+  if(!await loadFirebase()) return syncBadge();
   try{
     if(!firebase.apps.length) firebase.initializeApp(c.firebaseConfig);
     cloud={auth:firebase.auth(),db:firebase.firestore()};

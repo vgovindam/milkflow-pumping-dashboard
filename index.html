@@ -47,9 +47,12 @@
   <link rel="stylesheet" href="styles.css?v=__MILKFLOW_VERSION__">
   <link rel="stylesheet" href="theme.css?v=__MILKFLOW_VERSION__">
   <link rel="stylesheet" href="doctor-summary.css?v=__MILKFLOW_VERSION__">
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+  <!-- The Firebase SDKs are NOT script tags any more. Deferred scripts execute in document
+       order, so three ~100KB bundles from gstatic sitting above app.js meant the app could not
+       render the data already on the device until all of them had arrived - which is the pause
+       between opening the app and seeing today's numbers. app.js loads them on demand after
+       the first render instead. The preconnect keeps that later fetch quick. -->
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <script src="config.js?v=__MILKFLOW_VERSION__" defer></script>
   <script src="app.js?v=__MILKFLOW_VERSION__" defer></script>
   <script src="cross-device-alerts.js?v=__MILKFLOW_VERSION__" defer></script>

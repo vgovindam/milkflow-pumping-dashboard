@@ -164,6 +164,11 @@ body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"]
 }
 
 @layer milkflow-dark {
+/* Same omission, for the clean theme, which the experience surface contract excludes. */
+:root[data-theme="dark"] body[data-realm] :is(.journey,.stage-card,.ms-group){
+  background:linear-gradient(145deg,rgba(30,30,50,.94),color-mix(in srgb,var(--realm) 12%,rgba(25,29,45,.92)));
+  border-color:rgba(201,193,239,.1);
+}
 /* The photo well stays cream in dark mode, so the "add a photo" glyph inside it must not
    follow the dark palette out to a pale gray - it measured 2.04:1 on its own background. */
 :root[data-theme="dark"] :is(.mf-profile-photo,.mf-dream-photo){color:#5d6478}

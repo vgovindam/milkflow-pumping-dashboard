@@ -9,6 +9,24 @@ requireText('mobile viewport',files.css,'min-height:100dvh');
 requireText('mobile safe area',files.css,'env(safe-area-inset-bottom)');
 requireText('saved parent name',files.ui,"name=s.profile?.momName||'Mom'");
 requireText('hero fact boxes',files.ui,'mf-hero-facts');
+/* Development kept the component layer's pale card in dark mode and printed light ink on it -
+   96 failures at 1.01-1.31:1 - because .journey/.stage-card/.ms-group were never added to the
+   surface contract. Any screen-level surface has to be in that list. */
+{
+  const exp=read('experience-system.css');
+  for(const surface of ['.journey','.stage-card','.ms-group'])
+    if(!exp.includes(surface+',')&&!exp.includes(surface+')'))
+      failures.push(`experience-system.css: ${surface} is missing from the surface contract`);
+}
+/* The two heroes are one card seen from two sides: the portrait must not change shape when
+   the persona switches. */
+if(/\.mf-profile-photo\{[^}]*border-radius:(?!50%)/.test(files.ui))
+  failures.push('the Baby portrait must be a circle, like the Mom portrait');
+/* The app has to be able to render what is already on the device without waiting for a
+   third-party CDN. */
+if(/<script[^>]+gstatic\.com\/firebasejs/.test(files.html))
+  failures.push('index.html: the Firebase SDKs must load on demand, not as script tags ahead of app.js');
+requireText('firebase loads on demand',read('app.js'),'function loadFirebase()');
 /* Both heroes answer the same two questions in the same place. The hero is reviewed at phone
    width, so the composition has a 393pt step and a 375pt step - a Pro-sized photo beside a
    column that still fits a greeting with a name in it. */

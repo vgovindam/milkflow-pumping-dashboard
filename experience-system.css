@@ -450,9 +450,15 @@
    patch each time one is noticed.
 
    Scoped to .shell on purpose: the printable doctor summary is appended to <body>, outside
-   the shell, and must not inherit a themed surface. A report is a document, not a screen. */
+   the shell, and must not inherit a themed surface. A report is a document, not a screen.
+
+   .journey, .stage-card and .ms-group are the Development screen, and they were missing from
+   this list. In light mode they kept the component layer's pale gradient and looked close
+   enough to pass; in dark mode that same pale gradient stayed put while the page ink went
+   light, so every milestone was light-on-light at 1.01-1.31:1. A screen left out of the one
+   surface contract is a screen that will break the first time the palette moves. */
 :root:not([data-experience-theme="clean"]) body[data-realm] .shell
-  :is(.panel,.grp,.metric,.timeline-card,.daily-row,.act-row,.mf-core-plan,.empty,.rows,.qa-grid,.daily-table,.mf-experience-panel,.mf-experience-option,.mf-settings-shortcuts,.mf-dream-journey){
+  :is(.panel,.grp,.metric,.timeline-card,.daily-row,.act-row,.mf-core-plan,.empty,.rows,.qa-grid,.daily-table,.journey,.stage-card,.ms-group,.mf-experience-panel,.mf-experience-option,.mf-settings-shortcuts,.mf-dream-journey){
   background:var(--mf-world-surface-strong)!important;
   border:1px solid var(--mf-world-line)!important;
   box-shadow:0 10px 26px var(--mf-world-shadow)!important;

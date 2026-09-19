@@ -472,7 +472,7 @@ button{cursor:pointer;font-family:inherit}
 .schedule-card strong,.schedule-card small{display:block}
 .schedule-card strong{font-size:13px;font-weight:800}
 .schedule-card small{font-size:10px;color:var(--ink-2);margin-top:2px;font-weight:700}
-.schedule-card em{position:absolute;top:10px;right:10px;font-size:8px;font-style:normal;font-weight:900;color:var(--mom);background:var(--surface);border-radius:99px;padding:3px 6px}
+.schedule-card em{position:absolute;top:10px;right:10px;font-size:8px;font-style:normal;font-weight:900;color:var(--mom-ink);background:var(--surface);border-radius:99px;padding:3px 6px}
 
 /* ----------------------------------------------------------------- rows -- */
 .rows{display:grid}
