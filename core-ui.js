@@ -408,6 +408,23 @@ body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head h2{
 body[data-realm] .round-action{position:relative;z-index:2;border:1px solid rgba(255,255,255,.55);border-radius:17px;background:rgba(255,255,255,.75);box-shadow:0 10px 24px rgba(46,48,92,.1);color:var(--realm-ink);backdrop-filter:blur(12px)}
 body[data-realm] .pills{padding:4px;border-radius:17px;background:color-mix(in srgb,var(--realm) 9%,rgba(255,255,255,.7));border:1px solid rgba(255,255,255,.7);box-shadow:0 8px 22px rgba(67,58,110,.06)}body[data-realm] .pills button{border-radius:13px}body[data-realm] .pills button.active{background:linear-gradient(135deg,var(--realm),color-mix(in srgb,var(--realm) 68%,#d785ba));color:#fff;box-shadow:0 7px 16px color-mix(in srgb,var(--realm) 24%,transparent)}
 body[data-realm] .panel{border:1px solid rgba(255,255,255,.78);border-radius:30px;background:linear-gradient(145deg,rgba(255,255,255,.86),color-mix(in srgb,var(--realm-soft) 34%,rgba(255,255,255,.82)));box-shadow:0 16px 38px rgba(67,58,110,.09),inset 0 1px 0 rgba(255,255,255,.9)}body[data-realm] .panel-head h3{font-size:18px}body[data-realm] .panel-head button{color:var(--realm-ink);background:var(--realm-soft);border-radius:999px;padding:7px 11px}
+/* Summary tiles take the color of the thing they count. The tint is a background-IMAGE, so
+   the themed surface contract (which sets background-color for contrast) leaves it alone, and
+   the icon well carries the matching ink. This is what puts color on Trends, Growth and the
+   Mom screens instead of a grid of identical white boxes. */
+body[data-realm] .metric[data-metric]{background-image:linear-gradient(152deg,rgba(255,255,255,.62),var(--realm-soft) 96%)}
+body[data-realm] .metric[data-metric="drop"]{background-image:linear-gradient(152deg,rgba(255,255,255,.55),var(--wet) 96%)}
+body[data-realm] .metric[data-metric="poop"]{background-image:linear-gradient(152deg,rgba(255,255,255,.55),var(--poop) 96%)}
+body[data-realm] .metric[data-metric="milk"],body[data-realm] .metric[data-metric="bottle"]{background-image:linear-gradient(152deg,rgba(255,255,255,.55),var(--feed) 96%)}
+body[data-realm] .metric[data-metric="scale"]{background-image:linear-gradient(152deg,rgba(255,255,255,.55),var(--growth) 96%)}
+body[data-realm] .metric[data-metric="moon"],body[data-realm] .metric[data-metric="sleep"]{background-image:linear-gradient(152deg,rgba(255,255,255,.55),var(--sleep) 96%)}
+body[data-realm] .metric[data-metric="spark"]{background-image:linear-gradient(152deg,rgba(255,255,255,.55),var(--mixed) 96%)}
+body[data-realm] .metric[data-metric="drop"] .metric-icon{color:var(--wet-ink)}
+body[data-realm] .metric[data-metric="poop"] .metric-icon{color:var(--poop-ink)}
+body[data-realm] .metric[data-metric="milk"] .metric-icon,body[data-realm] .metric[data-metric="bottle"] .metric-icon{color:var(--feed-ink)}
+body[data-realm] .metric[data-metric="scale"] .metric-icon{color:var(--growth-ink)}
+body[data-realm] .metric[data-metric="moon"] .metric-icon,body[data-realm] .metric[data-metric="sleep"] .metric-icon{color:var(--sleep-ink)}
+body[data-realm] .metric[data-metric="spark"] .metric-icon{color:var(--mixed-ink)}
 body[data-realm] .metric{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.8);border-radius:25px;background:linear-gradient(145deg,rgba(255,255,255,.9),var(--realm-soft));box-shadow:0 13px 30px rgba(67,58,110,.08)}body[data-realm] .metric:after{content:"";position:absolute;right:-18px;bottom:-28px;width:82px;height:62px;border-radius:50%;background:rgba(255,255,255,.37)}body[data-realm] .metric-icon{position:relative;z-index:1;border-radius:50%;background:rgba(255,255,255,.7);color:var(--realm-ink);box-shadow:0 6px 15px rgba(68,61,110,.08)}body[data-realm] .metric>div:last-child{position:relative;z-index:1}
 body[data-realm="mom"] .metric:nth-child(2){--realm-soft:#ffe5f0;--realm-ink:#a64672}body[data-realm="mom"] .metric:nth-child(3){--realm-soft:#e5f5ff;--realm-ink:#357ba5}body[data-realm="mom"] .metric:nth-child(4){--realm-soft:#e3f6ee;--realm-ink:#327d65}body[data-realm="baby"] .metric:nth-child(2){--realm-soft:#fff0d7;--realm-ink:#98702b}body[data-realm="baby"] .metric:nth-child(3){--realm-soft:#eee5ff;--realm-ink:#684da9}body[data-realm="baby"] .metric:nth-child(4){--realm-soft:#e3f6ee;--realm-ink:#347e67}
 body[data-realm] .rows{display:grid;gap:8px}body[data-realm] .row{border:1px solid color-mix(in srgb,var(--realm) 9%,transparent);border-radius:18px;background:rgba(255,255,255,.58);padding:11px}body[data-realm] .row:hover{background:rgba(255,255,255,.86)}body[data-realm] .row-icon{border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}

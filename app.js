@@ -719,7 +719,10 @@ function trendBadge(recent,previous,{unit='',goodIsUp=true}={}){
   const up = delta > 0, good = up === goodIsUp;
   return `<span class="delta ${good?'up':'down'}">${up?'▲':'▼'} ${Math.abs(pct)}%<em>vs previous</em></span>`;
 }
-function metric(label,value,sub,ic,tone='mom'){ return `<article class="metric ${tone}"><div class="metric-icon">${icon(ic)}</div><div><span>${label}</span><strong>${value}</strong><small>${sub}</small></div></article>`; }
+/* data-metric carries WHAT the tile measures, so the card can take the same color the rest of
+   the app already uses for that thing - a wet diaper is blue on Baby home, so it is blue here
+   too. Without it every summary tile on every inner screen was the same white box. */
+function metric(label,value,sub,ic,tone='mom'){ return `<article class="metric ${tone}" data-metric="${esc(ic)}"><div class="metric-icon">${icon(ic)}</div><div><span>${label}</span><strong>${value}</strong><small>${sub}</small></div></article>`; }
 function panel(title,content,action=''){ return `<section class="panel"><div class="panel-head"><h3>${title}</h3>${action}</div>${content}</section>`; }
 function empty(ic,title,sub,action=''){ return `<div class="empty"><div class="empty-icon">${icon(ic)}</div><strong>${title}</strong><span>${sub||''}</span>${action}</div>`; }
 function pills(items,active,attr){ return `<div class="pills">${items.map(([v,l])=>`<button ${attr}="${v}" class="${String(v)===String(active)?'active':''}">${l}</button>`).join('')}</div>`; }

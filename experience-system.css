@@ -90,9 +90,14 @@
 }
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .bottom-nav button.on{color:var(--mf-world-deep)!important}
 
-/* Functional surfaces are solid; scenery stays outside content. */
+/* Functional surfaces are solid; scenery stays outside content.
+
+   background-COLOR, not the shorthand, for the same reason as the surface contract further
+   down this file: the shorthand also clears background-image, and that is where a card's
+   meaning-color lives. This rule alone was repainting every summary tile on Trends, Growth
+   and the Mom screens the same near-white. */
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.panel,.grp,.metric,.row,.stash-hero,.data-status){
-  background:var(--mf-world-surface)!important;border-color:var(--mf-world-line)!important;
+  background-color:var(--mf-world-surface)!important;border-color:var(--mf-world-line)!important;
   box-shadow:0 12px 30px var(--mf-world-shadow)!important;color:var(--mf-world-text)!important;
   backdrop-filter:none;-webkit-backdrop-filter:none
 }
