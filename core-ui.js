@@ -210,7 +210,7 @@ function lastFeedText(e){
   const age=relativeAgo(e.date,e.time)||'—',clock=to12(mins(e.time));
   if(e.eventType==='nursing'){
     const dur=Number(e.durationMinutes??e.totalMinutes??0)||0,side=e.side?` · ${String(e.side).replace(/^./,c=>c.toUpperCase())}`:'';
-    return{main:dur?`Nursed ${dur} min`:'Nursed',age,clock:`${clock}${side}`};
+    return{main:dur?`Nursed ${dur} min`:'Nursed',age,clock,side:side.replace(/^ · /,'')};
   }
   const oz=Number(e.amountOz??e.amount_oz)||0,type=String(e.feedingType||e.feeding_type||'').toLowerCase().includes('formula')?'formula':'breast milk';
   return{main:`${oz?oz.toFixed(1):'—'} oz ${type}`,age,clock};
@@ -335,7 +335,7 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none}
 .mf-animal-sticker{--a:#a96c4b;--b:#ffe7c7;--line:#60402f;display:grid;place-items:center}.mf-animal-sticker svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 3px 3px rgba(44,51,67,.13))}.mf-animal-sticker .a-base,.mf-animal-sticker .a-ear{fill:var(--a)}.mf-animal-sticker .a-soft{fill:var(--b)}.mf-animal-sticker .a-dot{fill:var(--line)}.mf-animal-sticker .a-line{fill:none;stroke:var(--line);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.mf-animal-sticker.bunny{--a:#fffaf7;--b:#f3adc4;--line:#5e4d5d}.mf-animal-sticker.fox{--a:#f38b4d;--b:#fff2db;--line:#64352d}.mf-animal-sticker.whale{--a:#49b3d3;--b:#e1fbff;--line:#245469}.mf-animal-sticker.owl{--a:#8c68cb;--b:#ffe29c;--line:#453762}
 .mf-animal-hero>.mf-animal-sticker{position:absolute;z-index:2}.mf-animal-hero>.bear{width:76px;height:76px;right:116px;bottom:8px;transform:rotate(-4deg)}.mf-animal-hero>.bunny{width:62px;height:62px;right:47px;bottom:7px;transform:rotate(5deg)}.mf-animal-star{position:absolute;color:#fff8c7;font-size:15px;filter:drop-shadow(0 2px 4px rgba(72,86,70,.14))}.mf-animal-star.one{left:47%;top:25px}.mf-animal-star.two{right:34%;top:66px;font-size:10px}
 .mf-animal-checkin{display:grid;grid-template-columns:48px minmax(0,1fr) auto;align-items:center;gap:11px;padding:12px 14px;border-radius:34px 24px 30px 26px / 26px 32px 24px 34px;background:linear-gradient(135deg,#fff5df,#ffe8cf 52%,#eadffd);color:#664f45;box-shadow:0 8px 22px rgba(96,72,66,.08)}.mf-animal-checkin>.mf-animal-sticker{width:45px;height:45px}.mf-animal-checkin strong,.mf-animal-checkin small{display:block}.mf-animal-checkin strong{font-size:14px}.mf-animal-checkin small{margin-top:3px;font-size:10.5px;opacity:.72}.mf-animal-checkin>span:last-child{text-align:right}
-.mf-care-label{display:flex;align-items:center;justify-content:space-between;margin:1px 3px 0;font:650 18px/1.15 var(--editorial);letter-spacing:-.015em;text-transform:none;color:var(--ink)}
+.mf-care-label{display:flex;align-items:center;justify-content:space-between;margin:0 3px;font:650 17px/1.1 var(--editorial);letter-spacing:-.015em;text-transform:none;color:var(--ink)}
 .mf-care-label small{font-size:12px;font-weight:750;letter-spacing:0;text-transform:none}
 
 .mf-last-feed-band{display:grid;grid-template-columns:38px minmax(0,1fr) minmax(126px,auto);gap:11px;align-items:center;margin:0;padding:13px 14px;border-radius:23px 31px 25px 29px / 26px 22px 32px 25px;background:linear-gradient(135deg,#cfeeff,#dff3ff 55%,#d8f5ea);border:1px solid #a7d8e8;color:#234d68}
@@ -369,14 +369,17 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none}
 /* Two tones per card: the title carries the accent, the caption steps back a measured
    amount. Previously both sat on one color at .84 opacity, which read as a single flat ink. */
 .mf-feed-card small,.mf-diaper-blob span{color:var(--mf-card-sub,currentColor);opacity:1;font-weight:800}
-.mf-feed-card.milk{--mf-card-sub:#3c6f93}.mf-feed-card.nurse{--mf-card-sub:#a64b78}.mf-feed-card.formula{--mf-card-sub:#6a51a6}
+.mf-feed-card.milk{--mf-card-sub:#2d7a62}.mf-feed-card.nurse{--mf-card-sub:#a64b78}.mf-feed-card.formula{--mf-card-sub:#9a4f28}
 .mf-diaper-blob.wet{--mf-card-sub:#2f7ba7}.mf-diaper-blob.poop{--mf-card-sub:#8d6420}.mf-diaper-blob.both{--mf-card-sub:#6a55a8}
-:root[data-theme="dark"] .mf-feed-card.milk{--mf-card-sub:#8fc4e4}:root[data-theme="dark"] .mf-feed-card.nurse{--mf-card-sub:#e59ebd}:root[data-theme="dark"] .mf-feed-card.formula{--mf-card-sub:#b9a5e8}
+:root[data-theme="dark"] .mf-feed-card.milk{--mf-card-sub:#8ad9bf}:root[data-theme="dark"] .mf-feed-card.nurse{--mf-card-sub:#e59ebd}:root[data-theme="dark"] .mf-feed-card.formula{--mf-card-sub:#f0b490}
 :root[data-theme="dark"] .mf-diaper-blob.wet{--mf-card-sub:#8ccdec}:root[data-theme="dark"] .mf-diaper-blob.poop{--mf-card-sub:#dbb271}:root[data-theme="dark"] .mf-diaper-blob.both{--mf-card-sub:#b3a0e0}
 .mf-feed-card strong,.mf-feed-card small{position:relative;z-index:1;max-width:100%}.mf-feed-card strong{font-size:16px;font-weight:900;letter-spacing:-.015em;line-height:1.1}.mf-feed-card small{display:block;font-size:11.5px;line-height:1.18;font-weight:750;opacity:.84;margin-top:4px}
-.mf-feed-card.milk{border-radius:40px 26px 36px 30px / 30px 38px 28px 40px;background:linear-gradient(145deg,#b8ddff 0%,#c5e3ff 58%,#c9cbff 100%);color:#153f61}
+/* Feed and Diapers used to share blue and violet, two of three each, so at a glance the two
+   groups looked like one. Feed is the warm/green family now - teal, rose, coral - and Diapers
+   keeps the established blue, amber and violet. */
+.mf-feed-card.milk{border-radius:40px 26px 36px 30px / 30px 38px 28px 40px;background:linear-gradient(145deg,#c6f1e1 0%,#b2e7d3 58%,#a4dfc9 100%);color:#0f4f3b}
 .mf-feed-card.nurse{border-radius:28px 40px 30px 36px / 38px 28px 40px 30px;background:linear-gradient(145deg,#ffd1e2,#f5bad4);color:#7b244d}
-.mf-feed-card.formula{border-radius:36px 30px 40px 26px / 28px 40px 30px 38px;background:linear-gradient(145deg,#d8ccff,#c6b6f3);color:#432d73}
+.mf-feed-card.formula{border-radius:36px 30px 40px 26px / 28px 40px 30px 38px;background:linear-gradient(145deg,#ffdcc8,#ffc3a4);color:#76331a}
 
 /* Diaper blobs stay playful, while count badges stay safely inset. */
 .mf-diaper-cluster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
@@ -451,7 +454,7 @@ body[data-realm] .page-head h2,body[data-realm] .panel-head h3,.mf-journey-head 
 :root[data-theme="dark"] .mf-top-orb.baby-milk{--orb-ring:#57c4f3;--orb-fill:#173d56}:root[data-theme="dark"] .mf-top-orb.baby-usual{--orb-ring:#aa8df4;--orb-fill:#33264f}:root[data-theme="dark"] .mf-top-orb.baby-diaper{--orb-ring:#5ed5af;--orb-fill:#173d31}
 :root[data-theme="dark"] .mf-top-orb strong{color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25)}:root[data-theme="dark"] .mf-top-orb small{color:#e0e5ef}:root[data-theme="dark"] .mf-top-orb-wrap>span{color:#d7dce6}
 :root[data-theme="dark"] .mf-last-feed-band{background:linear-gradient(135deg,#123246,#17354e 55%,#153c33);border-color:#2a6070;color:#f0fbff}:root[data-theme="dark"] .mf-last-feed-band .mf-last-feed-icon{background:#1b4557;color:#9fe4ff}:root[data-theme="dark"] .mf-last-feed-band small{color:#ced9e3}
-:root[data-theme="dark"] .mf-feed-card.milk{background:linear-gradient(145deg,#143a56,#1b315b 62%,#31264f);color:#ccefff}:root[data-theme="dark"] .mf-feed-card.nurse{background:linear-gradient(145deg,#55263c,#442135);color:#ffc1da}:root[data-theme="dark"] .mf-feed-card.formula{background:linear-gradient(145deg,#433765,#332a56);color:#e8ddff}
+:root[data-theme="dark"] .mf-feed-card.milk{background:linear-gradient(145deg,#103a30,#15493b 62%,#1a5344);color:#b6f0da}:root[data-theme="dark"] .mf-feed-card.nurse{background:linear-gradient(145deg,#55263c,#442135);color:#ffc1da}:root[data-theme="dark"] .mf-feed-card.formula{background:linear-gradient(145deg,#4c2c1b,#5e3722);color:#ffcfb2}
 :root[data-theme="dark"] .mf-diaper-blob.wet{background:linear-gradient(145deg,#123a53,#174a65);color:#7ed4ff}:root[data-theme="dark"] .mf-diaper-blob.poop{background:linear-gradient(145deg,#44320e,#5a4211);color:#ffd487}:root[data-theme="dark"] .mf-diaper-blob.both{background:linear-gradient(145deg,#352653,#463169);color:#c9b4ff}
 :root[data-theme="dark"] .mf-diaper-blob b{background:#303846;color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
 :root[data-theme="dark"] .mf-care-ribbon button:nth-child(1){background:#25294b;color:#bfc5ff}:root[data-theme="dark"] .mf-care-ribbon button:nth-child(2){background:#472437;color:#ffbfd7}:root[data-theme="dark"] .mf-care-ribbon button:nth-child(3){background:#17394b;color:#9fddff}:root[data-theme="dark"] .mf-care-ribbon button:nth-child(4){background:#183c31;color:#9be1c8}
@@ -496,7 +499,7 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
   body[data-realm] .mf-dream-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;overflow:visible;margin-bottom:12px}body[data-realm] .mf-dream-metrics .metric{min-width:0;min-height:76px;padding:11px 12px;display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:9px;border-radius:19px}body[data-realm] .mf-dream-metrics .metric-icon{width:34px;height:34px;margin:0}body[data-realm] .mf-dream-metrics .metric:last-child:nth-child(odd){grid-column:1/-1;min-height:70px}body[data-realm] .mf-dream-metrics .metric strong{font-size:18px}body[data-realm] .mf-dream-metrics .metric small{font-size:9px}
   .mf-pump-plan-panel .schedule-card.mf-r2-next,.mf-pump-plan-panel .schedule-card.pc-next,.mf-pump-plan-panel .schedule-card.pi-next{outline:0;border:2px solid color-mix(in srgb,var(--mom) 48%,transparent);box-shadow:0 7px 17px color-mix(in srgb,var(--mom) 15%,transparent)}.mf-pump-plan-panel .schedule-card.mf-r2-next>div:first-child,.mf-pump-plan-panel .schedule-card.pc-next>div:first-child,.mf-pump-plan-panel .schedule-card.pi-next>div:first-child{box-shadow:none;border-color:var(--surface)}.mf-dream-kicker{font-size:12px;letter-spacing:.02em;font-weight:700}.mf-dream-next>div span{font-size:11px;color:#fff6d9}.mf-dream-next>div strong{font-size:18px;line-height:1.15}.mf-dream-next>div small{font-size:11px;color:rgba(255,255,255,.9);line-height:1.3}.mf-dream-next button span{font-size:12px}
   .mf-journey-head strong{font:750 20px/1.12 var(--display);letter-spacing:-.025em}.mf-journey-head span{font-size:11.5px}.mf-dream-journey>p{font-size:12.5px;line-height:1.45;color:var(--ink-2)}.mf-journey-stop small{font-size:10.5px;color:var(--ink-2)}.mf-dream-actions .quick-tile strong{font-family:var(--display);font-size:20px;font-weight:750}.mf-dream-actions .quick-tile small{font-size:12px;opacity:.86}body[data-realm] .mf-dream-metrics .metric span{font-size:11px;color:var(--ink-2)}body[data-realm] .mf-dream-metrics .metric strong{font-size:21px}body[data-realm] .mf-dream-metrics .metric small{font-size:11px;color:var(--ink-2)}
-  .mf-animal-copy .welcome{font-size:11px;line-height:1.25;letter-spacing:.01em}.mf-animal-copy h2{font-size:27px}.mf-animal-copy small{font-size:11px;line-height:1.25}.mf-care-label{font:750 15px/1.2 var(--display);letter-spacing:-.01em}.mf-care-label small{font-size:12px;color:var(--ink-2)}.mf-animal-checkin strong{font-size:15px}.mf-animal-checkin small{font-size:11px;opacity:.9}.mf-feed-card strong{font-size:15px;font-weight:800}.mf-feed-card small,.mf-diaper-blob span{font-size:11px}.mf-diaper-blob strong{font-size:16px}
+  .mf-animal-copy .welcome{font-size:11px;line-height:1.25;letter-spacing:.01em}.mf-animal-copy h2{font-size:27px}.mf-animal-copy small{font-size:11px;line-height:1.25}.mf-care-label{font:750 14px/1.15 var(--display);letter-spacing:-.01em}.mf-care-label small{font-size:12px;color:var(--ink-2)}.mf-animal-checkin strong{font-size:15px}.mf-animal-checkin small{font-size:11px;opacity:.9}.mf-feed-card strong{font-size:15px;font-weight:800}.mf-feed-card small,.mf-diaper-blob span{font-size:11px}.mf-diaper-blob strong{font-size:16px}
   body[data-realm] .page-head h2{font-family:var(--display);font-weight:750;line-height:1.05}body[data-realm] .panel-head h3{font-family:var(--display);font-weight:750;font-size:20px;line-height:1.15}.page-head .eyebrow{font-size:11px;letter-spacing:.07em}.row-main strong{font-size:15px}.row-main span{font-size:11.5px;color:var(--ink-2);line-height:1.35}.pills button{font-size:13px;font-weight:750}.bottom-nav button{font-size:10.5px;color:var(--ink-2)}.schedule-card strong{font-size:14px}.schedule-card small{font-size:11px}.schedule-card em{font-size:10px}.metric span{font-size:11px;text-transform:none;letter-spacing:.01em}.metric small{font-size:11px}.daily-cell span,.daily-cell b small{font-size:10.5px}.qa-grid span{font-size:10.5px;text-transform:none;letter-spacing:.01em}.qa-grid small{font-size:11px}.stat-ring span,.stat-ring small{font-size:10px}.tl-ticks span,.cbar small,.chart-rail.dim,.donut-center span,.hbar small,.journey-legend span,.band em{font-size:10px;color:var(--ink-2)}.sheet-actions button span{font-size:10.5px;color:var(--ink-2)}
 }
 }
@@ -515,7 +518,7 @@ function renderMom(s){
       <div class="mf-dream-welcome"><span>${g.mark}</span><b>${esc(gl.text)}</b>${(s.profile?.momName||'').trim()?'':'<button type="button" class="mf-name-cta" data-view="set-baby">Add your name</button>'}</div>
       <h2>${esc(momHeadline(x))}</h2>
       <div class="mf-hero-facts" aria-label="Today at a glance">
-        <span class="mf-hero-fact"><small>Last pump</small><strong>${x.last?`${Number(x.last.amountMl)||0} mL`:'—'}</strong><em>${x.last?esc(relativeAgo(x.last.date||today(),x.last.time)||to12(mins(x.last.time))):'Not yet today'}</em></span>
+        <span class="mf-hero-fact"><small>Last pump</small><strong>${x.last?`${Number(x.last.amountMl)||0} mL`:'—'}</strong><em>${x.last?`${esc(relativeAgo(x.last.date||today(),x.last.time)||'')} · ${esc(to12(mins(x.last.time)))}`.replace(/^ · /,''):'Not yet today'}</em></span>
         <span class="mf-hero-fact"><small>Today</small><strong>${snap.total} mL · ${x.actual.length} of ${x.target}</strong></span>
       </div>
       <div class="mf-dream-next"><span>${x.remaining?'Next pump':'All done today'}</span><strong>${esc(next)}</strong></div>
@@ -558,10 +561,10 @@ function renderBaby(s){
       <span class="mf-animal-star one" aria-hidden="true">✦</span><span class="mf-animal-star two" aria-hidden="true">✧</span>
       <div class="mf-animal-profile">
         <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}</button>
-        <div class="mf-animal-copy"><div class="welcome">${g.mark} ${esc(gl.text)}${(s.profile?.momName||'').trim()?'':'<button type="button" class="mf-name-cta" data-view="set-baby">Add your name</button>'}</div><h2>${esc(babyName)}</h2>${babyMeta?`<small>${esc(babyMeta)}</small>`:''}</div>
+        <div class="mf-animal-copy"><div class="welcome">${g.mark} ${esc(gl.text)}${(s.profile?.momName||'').trim()?'':'<button type="button" class="mf-name-cta" data-view="set-baby">Add your name</button>'}</div><h2>${esc(babyName)}${babyMeta?`<i>${esc(babyMeta)}</i>`:''}</h2></div>
       </div>
       <div class="mf-hero-facts" aria-label="Baby today summary">
-        <span class="mf-hero-fact"><small>Last feed</small><strong>${esc(lf.age==='—'?'Nothing yet':lf.age)}</strong><em>${esc(lf.main)}</em></span>
+        <span class="mf-hero-fact"><small>Last feed</small><strong>${esc(lf.age==='—'?'Nothing yet':lf.age)}</strong><em>${esc(lf.main)}${lf.clock&&lf.clock!=='Tap a feed option below'?` · ${esc(lf.clock)}`:''}</em></span>
         <span class="mf-hero-fact"><small>Today</small><strong>${snap.todayOz.toFixed(1)} oz · ${snap.diapers} diaper${snap.diapers===1?'':'s'}</strong></span>
       </div>
     </div>
