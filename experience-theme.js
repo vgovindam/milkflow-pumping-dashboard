@@ -91,9 +91,13 @@ function save(name){const value=normalize(name);try{localStorage.setItem(KEY,val
 function previewFor(key){return THEME_MANIFEST[key].assets[mode()].preview;}
 function themeCard(key,title,subtitle){return `<button type="button" class="mf-experience-option" data-experience-theme-pick="${key}" data-theme-card="${key}" aria-pressed="false"><span class="mf-experience-preview" aria-hidden="true"><img class="mf-preview-scene" src="${previewFor(key)}" alt="" decoding="async" loading="lazy"></span><span class="mf-experience-copy"><strong>${title}</strong><small>${subtitle}</small></span></button>`;}
 function themeCards(){return `${themeCard('safari','Safari Adventure','Wild days, bigger dreams')}${themeCard('butterfly','Butterfly Garden','Little moments, big magic')}${themeCard('princess','Princess Palace','Kind hearts change the world')}${themeCard('unicorn','Unicorn Dreams','Believe in brighter tomorrows')}`;}
+/* The theme picker used to be injected into the Settings landing page AND into Appearance,
+   with a separate Dark Mode row next to it - three places to change how the app looks, two of
+   them saying the same thing. It lives on Appearance only now, beside the light/dark control,
+   so there is one screen that owns the look. */
 function experiencePanel(){
   const screen=document.body.dataset.screen;
-  if(screen!=='settings'&&screen!=='set-appearance')return;
+  if(screen!=='set-appearance')return;
   const view=document.getElementById('view');if(!view)return;
   let panel=document.getElementById('mfExperiencePanel');
   if(!panel){
@@ -105,21 +109,27 @@ function experiencePanel(){
   apply();
 }
 function settingsExtras(){
-  if(document.body.dataset.screen!=='settings')return;
+  const screen=document.body.dataset.screen;
+  if(screen!=='settings'&&screen!=='set-appearance')return;
   const view=document.getElementById('view');if(!view)return;
   const head=view.querySelector('.page-head');
-  if(head&&!head.querySelector('.mf-settings-subtitle')){
+  if(screen==='settings'&&head&&!head.querySelector('.mf-settings-subtitle')){
     const sub=document.createElement('p');sub.className='mf-settings-subtitle';sub.textContent='Make this little adventure yours';head.appendChild(sub);
     const mark=document.createElement('span');mark.className='mf-settings-corner-art';mark.setAttribute('aria-hidden','true');head.appendChild(mark);
   }
-  if(!document.getElementById('mfSettingsShortcuts')){
+  /* Dark Mode and Sounds belong with the world picker on Appearance - they are all "how the
+     app looks and feels". Reminders and the profile stay in the Settings list, where they are
+     already rows; showing them twice was half of why Settings felt duplicated. */
+  if(screen==='set-appearance'&&!document.getElementById('mfSettingsShortcuts')){
     const dark=root.dataset.theme==='dark';
     const section=document.createElement('section');section.id='mfSettingsShortcuts';section.className='panel mf-settings-shortcuts';
     const sounds=localStorage.getItem('milkflow-interface-sounds-v1')!=='off';
-    section.innerHTML=`<button type="button" class="mf-settings-row" data-theme-pick="${dark?'light':'dark'}"><span class="mf-settings-row-icon moon" aria-hidden="true"></span><span><strong>Dark Mode</strong><small>A calmer view for nighttime</small></span><i class="mf-settings-switch ${dark?'on':''}" aria-hidden="true"></i></button><button type="button" class="mf-settings-row" data-sound-toggle aria-pressed="${sounds}"><span class="mf-settings-row-icon sound" aria-hidden="true"></span><span><strong>Sounds</strong><small>Gentle interface feedback</small></span><i class="mf-settings-switch ${sounds?'on':''}" aria-hidden="true"></i></button><button type="button" class="mf-settings-row" data-view="set-reminders"><span class="mf-settings-row-icon bell" aria-hidden="true"></span><span><strong>Reminders</strong><small>Feeding, pumping and more</small></span><b aria-hidden="true">›</b></button><button type="button" class="mf-settings-row" data-view="set-baby"><span class="mf-settings-row-icon profile" aria-hidden="true"></span><span><strong>Profile &amp; Personalization</strong><small>Your little one’s details</small></span><b aria-hidden="true">›</b></button>`;
-    document.getElementById('mfExperiencePanel')?.insertAdjacentElement('afterend',section);
+    section.innerHTML=`<button type="button" class="mf-settings-row" data-theme-pick="${dark?'light':'dark'}"><span class="mf-settings-row-icon moon" aria-hidden="true"></span><span><strong>Dark Mode</strong><small>A calmer view for nighttime</small></span><i class="mf-settings-switch ${dark?'on':''}" aria-hidden="true"></i></button><button type="button" class="mf-settings-row" data-sound-toggle aria-pressed="${sounds}"><span class="mf-settings-row-icon sound" aria-hidden="true"></span><span><strong>Sounds</strong><small>Gentle interface feedback</small></span><i class="mf-settings-switch ${sounds?'on':''}" aria-hidden="true"></i></button>`;
+    const anchor=document.getElementById('mfExperiencePanel');
+    if(anchor)anchor.insertAdjacentElement('afterend',section);
+    else view.querySelector('.page-head')?.insertAdjacentElement('afterend',section);
   }
-  if(!document.getElementById('mfSettingsMotto')){
+  if(screen==='set-appearance'&&!document.getElementById('mfSettingsMotto')){
     const note=document.createElement('div');note.id='mfSettingsMotto';note.className='mf-settings-motto';note.innerHTML='<span aria-hidden="true">⌁</span><strong>Different themes.<br>The same brighter tomorrows.</strong><i aria-hidden="true">♡</i>';
     document.getElementById('mfSettingsShortcuts')?.insertAdjacentElement('afterend',note);
   }

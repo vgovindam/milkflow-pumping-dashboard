@@ -11,6 +11,10 @@
 'use strict';
 
 const PRINT_ID = 'mfDoctorPrint';
+/* "All" can be several hundred days. A clinician reads the recent stretch and the totals, and
+   a three-hundred-row table is what made printing crawl - the period total below still counts
+   every day in the range, so nothing is lost from the summary. */
+const DAILY_ROW_CAP = 60;
 const PRINTING_CLASS = 'mf-printing-report';
 
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
@@ -110,13 +114,13 @@ function buildPrintDocument(){
           <th scope="col">Date</th><th scope="col">Wet</th><th scope="col">Dirty</th><th scope="col">Mixed</th>
           <th scope="col">Diapers</th><th scope="col">Feeds</th><th scope="col">Bottle oz</th><th scope="col">Sleep h</th>
         </tr></thead>
-        <tbody>${dailyRows(r.daily)}${totalsRow(r.totals)}</tbody>
+        <tbody>${dailyRows(r.daily.slice(0, DAILY_ROW_CAP))}${totalsRow(r.totals)}</tbody>
       </table>
     </section>
 
     <footer class="mf-print-note">
       <p><strong>How to read this.</strong> Daily averages are worked out across the ${r.period.daysWithRecords} day${r.period.daysWithRecords === 1 ? '' : 's'} that have records, not across all ${r.period.days} days, so a day nobody had a chance to log does not read as a day with no wet diapers. “Wet” and “Dirty” counts include mixed changes. Bottle volume is logged bottles only — nursing volume is not estimated. Sleep is logged sleep only.</p>
-      <p class="mf-print-source">Entered by the family in the MilkFlow app. This is a record of care at home, not a clinical assessment or a diagnosis.</p>
+      <p class="mf-print-source">${r.daily.length > DAILY_ROW_CAP ? `Day by day lists the most recent ${DAILY_ROW_CAP} days of the ${r.period.days}-day range; the period total covers all of it. ` : ''}Entered by the family in the MilkFlow app. This is a record of care at home, not a clinical assessment or a diagnosis.</p>
     </footer>`;
   document.body.appendChild(el);
   document.body.classList.add(PRINTING_CLASS);

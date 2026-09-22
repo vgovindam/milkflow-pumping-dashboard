@@ -292,6 +292,29 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none}
 /* ---------- Reimagined dream-cloud Mom home ---------- */
 .mf-dream-hero{min-height:0;padding:22px 24px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px;border-radius:32px;isolation:isolate;background:linear-gradient(135deg,#755fc8 0%,#9e78d9 36%,#e293bd 68%,#8fc5e8 100%);border:0;box-shadow:0 22px 48px rgba(78,55,133,.2);color:#fff;overflow:hidden}
 .mf-dream-main h2{font:800 30px/1.08 var(--editorial);margin:10px 0 0;letter-spacing:-.02em}
+/* The nudge card. Quiet by design: it reads as a note on the page, not an alert, and the
+   dismiss affordance is as easy to hit as the action. */
+.mf-nudge{margin:12px 0 0;padding:14px 15px 13px;border-radius:24px 30px 22px 28px / 26px 22px 30px 24px;
+  background:linear-gradient(150deg,rgba(255,255,255,.95),var(--realm-soft) 96%);
+  border:1px solid rgba(255,255,255,.8);box-shadow:0 12px 28px rgba(64,60,104,.09);position:relative;z-index:3}
+.mf-nudge.mom{--realm-soft:var(--mom-soft)}
+.mf-nudge.baby{--realm-soft:var(--baby-soft)}
+.mf-nudge-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mf-nudge-head span{font-size:9.5px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;opacity:.72}
+.mf-nudge-x{width:28px;height:28px;min-height:0;padding:0;border:0;background:rgba(255,255,255,.7);border-radius:50%;
+  font-size:17px;line-height:1;color:inherit;opacity:.65;display:grid;place-items:center}
+.mf-nudge-x:active{opacity:1}
+.mf-nudge>strong{display:block;margin-top:5px;font:800 17px/1.2 var(--display);letter-spacing:-.01em}
+.mf-nudge>p{margin:5px 0 0;font-size:12.5px;line-height:1.4;opacity:.88}
+.mf-nudge>ul{margin:9px 0 0;padding:0;list-style:none;display:grid;gap:5px}
+.mf-nudge>ul li{position:relative;padding-left:16px;font-size:12.5px;line-height:1.35;opacity:.92}
+.mf-nudge>ul li:before{content:"";position:absolute;left:3px;top:7px;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.42}
+.mf-nudge-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.mf-nudge-go{flex:1 1 auto;min-height:40px;padding:0 15px;border:0;border-radius:14px;background:var(--realm-ink,var(--ink));color:#fff;font:800 13px/1 var(--font)}
+.mf-nudge-later{min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:14px;background:transparent;color:inherit;font:750 13px/1 var(--font);opacity:.8}
+:root[data-theme="dark"] .mf-nudge{background:linear-gradient(150deg,rgba(32,32,52,.94),color-mix(in srgb,var(--realm) 14%,rgba(26,30,46,.92)));border-color:rgba(201,193,239,.14)}
+:root[data-theme="dark"] .mf-nudge-x{background:rgba(255,255,255,.12)}
+@media(max-width:390px){.mf-nudge>strong{font-size:16px}}
 /* The hero fact boxes. One component, used by BOTH heroes, so "what happened last" and
    "where today stands" read identically whichever person you are looking at. Each box is a
    label, the number, and the one piece of context that makes the number mean something. */
@@ -509,6 +532,23 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 
 function profilePhoto(src,kind){if(src)return `<img src="${esc(src)}" alt="${kind==='mom'?'Mom':'Baby'} profile photo">`;return `<span class="placeholder">${kind==='mom'?'♡':'☁︎'}</span>`;}
 
+/* The nudge card. app.js decides IF and WHAT; this renders it, once, directly under the hero
+   where it is the first thing read and the easiest thing to dismiss. */
+function nudgeCard(realm){
+  const n=window.MilkFlowNudges?.due?.(realm);
+  if(!n)return '';
+  return `<section class="mf-nudge ${esc(n.tone)}" role="status">
+    <div class="mf-nudge-head"><span>${esc(n.eyebrow)}</span><button type="button" class="mf-nudge-x" data-nudge-dismiss="${esc(n.id)}" aria-label="${esc(n.dismiss)}">×</button></div>
+    <strong>${esc(n.title)}</strong>
+    <p>${esc(n.body)}</p>
+    ${n.items&&n.items.length?`<ul>${n.items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:''}
+    <div class="mf-nudge-actions">
+      <button type="button" class="mf-nudge-go" data-nudge-go="${esc(n.id)}" data-view="${esc(n.cta.view)}">${esc(n.cta.label)}</button>
+      <button type="button" class="mf-nudge-later" data-nudge-dismiss="${esc(n.id)}">${esc(n.dismiss)}</button>
+    </div>
+  </section>`;
+}
+
 function renderMom(s){
   const view=document.getElementById('view'),hero=view?.querySelector('.mom-hero');if(!view||!hero)return;
   const g=positiveGreeting(),name=s.profile?.momName||'Mom',gl=greetingLine(name),photo=s.profile?.momPhoto||'',x=plan(s,prefs()),snap=momSnapshot(s,x),next=x.remaining&&x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:'All done for today',progress=x.target?Math.min(100,Math.round(x.actual.length/x.target*100)):0;
@@ -533,6 +573,13 @@ function renderMom(s){
   card.className='mf-core-plan mf-dream-journey';
   const stops=[...(x.actual||[]).map(e=>({kind:'done',time:mins(e.time),amount:Number(e.amountMl)||0})),...(x.future||[]).map((m,i)=>({kind:i===0?'next':'future',time:m}))];
   card.innerHTML=`<div class="mf-journey-head"><div><span>Today’s journey</span><strong>${x.remaining?'One gentle session at a time':'Today’s rhythm is complete'}</strong></div><em>${x.actual.length} of ${x.target}</em></div><div class="mf-journey-track">${stops.map((stop,i)=>`<div class="mf-journey-stop ${stop.kind}"><i>${stop.kind==='done'?'✓':stop.kind==='next'?'●':'○'}</i><strong>${to12(stop.time)}</strong><small>${stop.kind==='done'?`${stop.amount} mL`:stop.kind==='next'?'Next up':'Later'}</small></div>`).join('')}</div><p>${x.source==='override'?'Today’s times were adjusted for you.':x.source==='actual'&&x.last?`Spaced out from your ${to12(mins(x.last.time))} pump so the gaps stay comfortable.`:'Starts from your usual schedule and adjusts each time you log a pump.'}</p>`;
+  let nudge=document.getElementById('mfMomNudge');
+  const nudgeHtml=nudgeCard('mom');
+  if(nudgeHtml){
+    if(!nudge){nudge=document.createElement('div');nudge.id='mfMomNudge';}
+    nudge.innerHTML=nudgeHtml;
+    hero.insertAdjacentElement('afterend',nudge);
+  }else nudge?.remove();
   maybeAskTomorrow(x);
 }
 
@@ -568,6 +615,8 @@ function renderBaby(s){
         <span class="mf-hero-fact"><small>Today</small><strong>${snap.todayOz.toFixed(1)} oz · ${snap.diapers} diaper${snap.diapers===1?'':'s'}</strong></span>
       </div>
     </div>
+
+    ${nudgeCard('baby')}
 
     <div class="mf-animal-checkin" aria-label="Next feeding">
       ${careMark('clock')}

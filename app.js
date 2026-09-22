@@ -29,6 +29,7 @@ const DEFAULTS = {
   reminders: { enabled: false, leadMin: 10, lastSentKey: null, feedEnabled: false, feedGapMin: 180, feedLastKey: null },
   last: { bottleOz: null, pumpMl: null, pumpMin: null, nursingMin: null, sleepMin: null },
   cloud: { enabled: false, userId: null, email: null, lastSync: null, lastVerified: null, momCount: null, babyCount: null, lastError: null, lastErrorAt: null },
+  nudges: {},
   ui: { workspace: 'mom', view: 'mom-home', theme: 'auto', momRange: 30, babyRange: 30, babyFilter: 'all', trendRange: 14, doctorRange: 14, reviewDate: '', historyMode: 'day' }
 };
 
@@ -1484,7 +1485,7 @@ function settingsView(){
     listRow({view:'set-reminders', label:'Reminders', sub:remindersSummary(), icon:'bell', color:TILE.red})
   ])}
   ${group('',[
-    listRow({view:'set-appearance', label:'Appearance', sub:`${cap(S.ui.theme||'auto')} · ${cap(resolveTheme())} now`, icon:'sun', color:TILE.amber}),
+    listRow({view:'set-appearance', label:'Appearance', sub:`${esc(themeLabelForSettings())} · ${cap(S.ui.theme||'auto')}`, icon:'sun', color:TILE.amber}),
     listRow({view:'set-data', label:'Backup & data', sub:'Import, export, cloud check', icon:'download', color:TILE.indigo}),
     listRow({view:'set-about', label:'About MilkFlow', sub:'Version and privacy', icon:'shield', color:TILE.slate})
   ])}`;
@@ -1541,6 +1542,114 @@ function setAppearance(){
   </div><p class="chart-note">Automatic follows the clock — the app turns dark during the night period, which is when most feeds get logged. It also follows your device if that is set to dark.</p>`)}
   ${panel('Right now',`<div class="about-list"><div><span>Time of day</span><b>${cap(dayPart().key)}</b></div><div><span>Theme in use</span><b>${cap(resolveTheme())}</b></div></div>`)}`;
 }
+/* The Settings row says which world is on, because the picker itself now lives one screen in. */
+function themeLabelForSettings(){
+  const id=window.MilkFlowExperience?.current?.()||'clean';
+  return ({safari:'Safari Adventure',butterfly:'Butterfly Garden',princess:'Princess Palace',unicorn:'Unicorn Dreams',clean:'Simple'})[id]||'Simple';
+}
+
+/* ------------------------------------------------------------------------ nudges --
+ * The app knew plenty and never said anything: it waited to be asked. These are the two
+ * places where speaking first is worth the interruption - a weekly look at what is typical
+ * for this age, and a reminder that the freezer figure goes stale if nobody touches it.
+ *
+ * The rule is the same for both, and it is deliberately quiet: a card at the top of the
+ * screen, never a dialog. Act on it and it is done for the period. Dismiss it and it comes
+ * back at most twice more, then stops until the next period. Three appearances is the whole
+ * budget - an app that nags is an app that gets ignored.
+ */
+const NUDGE_LIMIT = 3;
+
+function isoWeekKey(d = new Date()){
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((t - yearStart) / 86400000 + 1) / 7);
+  return `${t.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+function nudgeRecord(id, period){
+  const all = S.nudges || (S.nudges = {});
+  const rec = all[id];
+  if(!rec || rec.period !== period){ all[id] = {period, shown: 0, done: false, lastShown: null}; }
+  return all[id];
+}
+function nudgeIsOpen(id, period){
+  const rec = nudgeRecord(id, period);
+  return !rec.done && rec.shown < NUDGE_LIMIT;
+}
+function markNudgeShown(id, period){
+  const rec = nudgeRecord(id, period);
+  const stamp = today();
+  /* One appearance per day at most, so opening the app five times in a morning does not burn
+     the whole budget before lunch. */
+  if(rec.lastShown === stamp) return;
+  rec.lastShown = stamp; save();
+}
+function dismissNudge(id){
+  const rec = S.nudges?.[id]; if(!rec) return;
+  rec.shown = (rec.shown || 0) + 1; save(); render();
+}
+function completeNudge(id){
+  const rec = S.nudges?.[id]; if(!rec) return;
+  rec.done = true; save();
+}
+
+/* What is typical for this age, and something to try. The checklist itself lives on the
+   Development screen; this is the invitation to go and look at it. */
+function weeklyDevelopmentNudge(){
+  if(!birthDate()) return null;
+  const stage = currentStage(); if(!stage) return null;
+  const period = isoWeekKey();
+  if(!nudgeIsOpen('dev-week', period)) return null;
+  const marked = markedMilestones();
+  const all = Object.values(stage.groups).flat();
+  const open = all.filter(x => !marked.has(`${stage.m}-${x}`));
+  const pick = (open.length ? open : all).slice(0, 3);
+  return {
+    id: 'dev-week', period, tone: 'baby',
+    eyebrow: 'This week',
+    title: `${stage.label} · ${stage.tag}`,
+    body: `Around ${stage.label}, most babies are starting these. Have you seen ${S.baby.name} do any of them?`,
+    items: pick,
+    cta: {label: 'Open the checklist', view: 'development'},
+    dismiss: 'Not now'
+  };
+}
+
+/* The freezer figure is typed in by hand, so it is only ever as good as the last time
+   somebody remembered. Two days is long enough not to be annoying and short enough that the
+   number still means something. */
+function stashNudge(){
+  const period = `stash-${Math.floor(Date.now() / 172800000)}`;
+  if(!nudgeIsOpen('stash', period)) return null;
+  const ml = +S.profile.stashMl || 0;
+  return {
+    id: 'stash', period, tone: 'mom',
+    eyebrow: 'Freezer stash',
+    title: ml ? `Still ${ml.toLocaleString()} mL in the freezer?` : 'How much is in the freezer?',
+    body: ml
+      ? 'It has been a couple of days. Update it if you have added or pulled any bags.'
+      : 'Add what you have frozen so the stash total means something.',
+    items: [],
+    cta: {label: 'Update stash', view: 'mom-stash'},
+    dismiss: 'Later'
+  };
+}
+
+/* Exposed for core-ui.js, which owns both home screens and renders the card. */
+window.MilkFlowNudges = {
+  due(realm){
+    try{
+      const n = realm === 'mom' ? stashNudge() : weeklyDevelopmentNudge();
+      if(n) markNudgeShown(n.id, n.period);
+      return n;
+    }catch{ return null; }
+  },
+  dismiss: dismissNudge,
+  complete: completeNudge
+};
+
 function setAbout(){
   return `${subHead('About MilkFlow')}
   ${panel('This app',`<div class="about-list"><div><span>Records on this device</span><b>${momEntries().length} Mom · ${babyEvents().length} Baby</b></div><div><span>Sync</span><b>${S.cloud.enabled?'Family account':'This device only'}</b></div><div><span>Offline</span><b>Available</b></div></div>`)}
@@ -2139,6 +2248,8 @@ function handleClick(e){
   const br=e.target.closest('[data-baby-range]'); if(br){ S.ui.babyRange=+br.dataset.babyRange; save(); render(); return; }
   const bf=e.target.closest('[data-baby-filter]'); if(bf){ S.ui.babyFilter=bf.dataset.babyFilter; save(); render(); return; }
   const tr=e.target.closest('[data-trend-range]'); if(tr){ S.ui.trendRange=+tr.dataset.trendRange; save(); render(); return; }
+  const nd=e.target.closest('[data-nudge-dismiss]'); if(nd){ dismissNudge(nd.dataset.nudgeDismiss); return; }
+  const na=e.target.closest('[data-nudge-go]'); if(na){ completeNudge(na.dataset.nudgeGo); setView(na.dataset.view||'more'); return; }
   const dr=e.target.closest('[data-doctor-range]'); if(dr){ S.ui.doctorRange=+dr.dataset.doctorRange; save(); render(); return; }
   const st=e.target.closest('[data-stash]'); if(st){ S.profile.stashMl=Math.max(0,(+S.profile.stashMl||0)+ +st.dataset.stash); save(); pushProfile().catch(()=>{}); render(); return; }
 }

@@ -27,6 +27,19 @@ if(/\.mf-profile-photo\{[^}]*border-radius:(?!50%)/.test(files.ui))
 if(/<script[^>]+gstatic\.com\/firebasejs/.test(files.html))
   failures.push('index.html: the Firebase SDKs must load on demand, not as script tags ahead of app.js');
 requireText('firebase loads on demand',read('app.js'),'function loadFirebase()');
+
+/* Nudges speak first, so the budget matters more than the copy: a card (never a dialog),
+   at most three appearances per period, at most one a day, and acting on it ends it. */
+{
+  const app=read('app.js'), ui=read('core-ui.js');
+  requireText('nudge budget',app,'const NUDGE_LIMIT = 3;');
+  requireText('weekly period',app,'function isoWeekKey(');
+  requireText('two-day stash period',app,'Math.floor(Date.now() / 172800000)');
+  requireText('one appearance a day',app,"if(rec.lastShown === stamp) return;");
+  requireText('acting ends it',app,'function completeNudge(');
+  requireText('nudge is a card',ui,'function nudgeCard(');
+  if(/showModal\(\)[^;]*nudge/i.test(app))failures.push('nudges must be a dismissible card, not a dialog');
+}
 /* Both heroes answer the same two questions in the same place. The hero is reviewed at phone
    width, so the composition has a 393pt step and a 375pt step - a Pro-sized photo beside a
    column that still fits a greeting with a name in it. */

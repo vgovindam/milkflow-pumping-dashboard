@@ -50,7 +50,12 @@ for(const theme of themes){
   if(!experience.includes(`theme-icons/${theme}.svg`))throw new Error(`Theme manifest is not using independent ${theme} icon sprite.`);
 }
 for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
-for(const token of ['Choose a theme','Make this little adventure yours','Profile &amp; Personalization','Different themes.','mf-preview-scene'])if(!experience.includes(token))throw new Error(`Settings storybook contract missing: ${token}`);
+/* Appearance is ONE screen: the world picker, light/dark and sounds together. Settings keeps
+   a single row that leads there. The picker used to be injected into both, with a separate
+   Dark Mode row beside it - three places to change how the app looks. */
+for(const token of ['Choose your family world','Make this little adventure yours','Different themes.','mf-preview-scene'])if(!experience.includes(token))throw new Error(`Appearance contract missing: ${token}`);
+if(!experience.includes("if(screen!=='set-appearance')return;"))throw new Error('The world picker must live on Appearance only');
+if(experience.includes("data-view=\"set-reminders\""))throw new Error('Appearance must not duplicate rows the Settings list already has');
 /* The Baby single-layer contract: legacy decorative pseudo-elements stay suppressed. The
    card's own geometry is no longer pinned here - it moved next to the component in
    core-ui.js, where it needs no !important, so pinning pixel values in theme.css would

@@ -106,6 +106,19 @@ body[data-screen="doctor"] .daily-cell span{color:#65727d}
   body.mf-printing-report> :is(.shell,.bottom-nav,.scrim,.sheet,.dialog,.toast,#syncFoot){
     display:none!important;
   }
+  /* Printing was slow because display:none does not stop the engine paginating what is still
+     in the document: twenty-three backdrop-filters, fixed-attachment theme plates, blurs and
+     shadows all get rasterized for the print surface first. Strip the expensive paint off
+     everything that is not the report, and take the plates out entirely. */
+  body.mf-printing-report *:not(.mf-doctor-print):not(.mf-doctor-print *){
+    backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+    filter:none!important;box-shadow:none!important;text-shadow:none!important;
+    background-image:none!important;animation:none!important;transition:none!important;
+  }
+  body.mf-printing-report :is(.main,.topbar,.view,.page-head)::before,
+  body.mf-printing-report :is(.main,.topbar,.view,.page-head)::after{
+    content:none!important;display:none!important;
+  }
   body.mf-printing-report .mf-doctor-print{display:block}
 
   html,body{
