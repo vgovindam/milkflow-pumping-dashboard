@@ -37,23 +37,46 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
   event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
 });
+/* This used to be network-first for EVERYTHING: every launch re-fetched index.html, all the
+ * stylesheets, all eighteen scripts and the theme artwork, and the cache only came into play
+ * when the network failed outright. On a phone that is the pause where the background is
+ * painted and nothing else is - the app was effectively not cached at all.
+ *
+ * Every asset is versioned (?v=<version>) and the cache is named for the version, so a new
+ * release always means a new cache and a fresh fetch. That makes cache-first safe for assets.
+ * The document itself stays network-first, so a new release is still picked up on launch, and
+ * falls back to the cached shell when there is no signal.
+ */
 self.addEventListener('fetch',event=>{
   const req=event.request;
   if(req.method!=='GET')return;
   const url=new URL(req.url);
   if(url.origin!==self.location.origin||url.pathname.endsWith('/sw.js'))return;
-  event.respondWith(fetch(req).then(res=>{
-    if(res&&res.ok){const copy=res.clone();caches.open(VERSION).then(c=>c.put(req,copy)).catch(()=>{});}
-    return res;
-  }).catch(async()=>{
-    const hit=await caches.match(req,{ignoreSearch:true});
-    if(hit)return hit;
-    if(req.mode==='navigate'){
+
+  if(req.mode==='navigate'){
+    event.respondWith(fetch(req).then(res=>{
+      if(res&&res.ok){const copy=res.clone();caches.open(VERSION).then(c=>c.put(req,copy)).catch(()=>{});}
+      return res;
+    }).catch(async()=>{
+      const hit=await caches.match(req,{ignoreSearch:true});
+      if(hit)return hit;
       const shell=await caches.match('./index.html',{ignoreSearch:true});
-      if(shell)return shell;
-    }
-    return Response.error();
-  }));
+      return shell||Response.error();
+    }));
+    return;
+  }
+
+  event.respondWith((async()=>{
+    const cache=await caches.open(VERSION);
+    const hit=await cache.match(req,{ignoreSearch:true});
+    const fresh=fetch(req).then(res=>{
+      if(res&&res.ok)cache.put(req,res.clone()).catch(()=>{});
+      return res;
+    }).catch(()=>null);
+    if(hit){event.waitUntil(fresh);return hit;}
+    const res=await fresh;
+    return res||Response.error();
+  })());
 });
 self.addEventListener('notificationclick',event=>{
   event.notification.close();

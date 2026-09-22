@@ -459,7 +459,13 @@
    surface contract is a screen that will break the first time the palette moves. */
 :root:not([data-experience-theme="clean"]) body[data-realm] .shell
   :is(.panel,.grp,.metric,.timeline-card,.daily-row,.act-row,.mf-core-plan,.empty,.rows,.qa-grid,.daily-table,.journey,.stage-card,.ms-group,.mf-experience-panel,.mf-experience-option,.mf-settings-shortcuts,.mf-dream-journey){
-  background:var(--mf-world-surface-strong)!important;
+  /* background-COLOR, not the background shorthand. The shorthand also cleared every
+     component's background-image, which is where the semantic tint lives - the realm gradient
+     on a metric tile, the blue/amber/violet on a care card. Every inner screen came out the
+     same near-white, which is the "no color anywhere but the landing page" problem. Setting
+     only the color gives the opaque floor the contrast needs and lets the component's own
+     tint sit on top of it. */
+  background-color:var(--mf-world-surface-strong)!important;
   border:1px solid var(--mf-world-line)!important;
   box-shadow:0 10px 26px var(--mf-world-shadow)!important;
 }

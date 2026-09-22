@@ -584,7 +584,7 @@ function cleanup(){
 function decorateApp(){
   const screen=document.body.dataset.screen||'',baby=screen.startsWith('baby-')||screen==='development'||screen==='doctor',mom=screen.startsWith('mom-');
   document.body.dataset.realm=baby?'baby':mom?'mom':'family';
-  const head=document.querySelector('#view .page-head');if(!head||head.querySelector('.mf-section-animal,.mf-head-dream'))return;
+  const head=document.querySelector('#view .page-head');if(!head||head.querySelector('.mf-section-animal,.mf-head-dream,.mf-section-motif'))return;
   /* Section headers used to show an unrelated stock animal - a whale on Trends, a fox on
      Doctor - that belonged to no theme. They now carry the selected world's own motif. */
   if(baby){const motif=window.MilkFlowExperience?.themeMotif?.();

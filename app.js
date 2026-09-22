@@ -2053,10 +2053,26 @@ async function toggleReminders(){
   if(turningOn&&'Notification'in window&&Notification.permission==='default'){ try{ await Notification.requestPermission(); }catch{} }
   S.reminders.enabled=turningOn; save(); try{ await pushProfile(); }catch{} render(); toast(turningOn?'Pump reminders are on.':'Pump reminders are off.');
 }
+/* iOS does not implement the Notification CONSTRUCTOR in an installed PWA - only
+ * ServiceWorkerRegistration.showNotification. `new Notification(...)` throws there, inside a
+ * try/catch, so reminders silently stopped appearing on the one device this app is used on.
+ * Go through the service worker when there is one and keep the constructor as the desktop
+ * fallback. Permission still has to be asked from a real tap, which the Settings toggle does.
+ */
+async function notify(title, options){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return false;
+  try{
+    const reg = await navigator.serviceWorker?.getRegistration?.();
+    if(reg?.showNotification){ await reg.showNotification(title, options); return true; }
+  }catch{}
+  try{ new Notification(title, options); return true; }catch{}
+  return false;
+}
+
 function tickReminders(){
   feedReminderTick();
   if(!S.reminders.enabled) return; const d=new Date(), m=d.getHours()*60+d.getMinutes(), dt=today();
-  S.schedule.forEach((t,i)=>{ const target=+t.slice(0,2)*60 + +t.slice(3)-(+S.reminders.leadMin||0), key=`${dt}-${i}-${target}`; if(Math.abs(m-target)<=1&&S.reminders.lastSentKey!==key&&dayP(dt).length<=i){ toast(`Pump ${i+1} is coming up · ${to12(t)}`,7000); if('Notification'in window&&Notification.permission==='granted'){ try{ new Notification('Pump reminder',{body:`Pump ${i+1} · ${to12(t)}`}); }catch{} } S.reminders.lastSentKey=key; save(); } });
+  S.schedule.forEach((t,i)=>{ const target=+t.slice(0,2)*60 + +t.slice(3)-(+S.reminders.leadMin||0), key=`${dt}-${i}-${target}`; if(Math.abs(m-target)<=1&&S.reminders.lastSentKey!==key&&dayP(dt).length<=i){ toast(`Pump ${i+1} is coming up · ${to12(t)}`,7000); notify('Pump reminder',{body:`Pump ${i+1} · ${to12(t)}`,tag:'milkflow-pump'}); S.reminders.lastSentKey=key; save(); } });
 }
 
 // Fires once per due feed while the app is open. Browsers cannot wake a closed page,
@@ -2071,9 +2087,7 @@ function feedReminderTick(){
   S.reminders.feedLastKey = key; save();
   const msg = `${S.baby.name} is due for a feed`;
   toast(msg, 8000, {label:'Log', run:()=>feedSheet()});
-  if('Notification' in window && Notification.permission === 'granted'){
-    try{ new Notification('Feed reminder',{body:`${msg} · last feed ${sinceLabel(last.date,last.time)||''}`,tag:'milkflow-feed'}); }catch{}
-  }
+  notify('Feed reminder',{body:`${msg} · last feed ${sinceLabel(last.date,last.time)||''}`,tag:'milkflow-feed'});
 }
 async function toggleFeedReminders(){
   const on = !S.reminders.feedEnabled;
