@@ -84,8 +84,12 @@ try{
         if(route==='baby-home'&&iconArt&&!m.feedIcon.includes(`${iconArt}milk.svg`))failures.push(`${theme}/${mode}/${route}: Baby feed card icon is not ${iconArt}milk.svg (got ${m.feedIcon||'none'})`);
         if(route==='baby-home'&&iconArt&&!m.diaperIcon.includes(`${iconArt}wet.svg`))failures.push(`${theme}/${mode}/${route}: Baby diaper icon is not ${iconArt}wet.svg (got ${m.diaperIcon||'none'})`);
         if(route==='mom-home'&&iconArt&&!m.pumpIcon.includes(`${iconArt}pump.svg`))failures.push(`${theme}/${mode}/${route}: Mom pump tile icon is not ${iconArt}pump.svg (got ${m.pumpIcon||'none'})`);
-        if(route==='set-appearance'&&(m.themeCards!==4||m.selected!==1||m.previewImages!==4||m.loadedPreviews!==4))failures.push(`${theme}/${mode}/${route}: theme selector previews invalid cards=${m.themeCards} selected=${m.selected} images=${m.previewImages} loaded=${m.loadedPreviews}`);
-        if(route==='settings'&&theme!=='clean'&&(!m.mainBg.includes(art)||m.themeCards!==4||m.selected!==1||m.previewImages!==4||m.loadedPreviews!==4||m.settingsShortcuts!==4||!m.settingsMotto))failures.push(`${theme}/${mode}/${route}: immersive Settings invalid cards=${m.themeCards} selected=${m.selected} previews=${m.loadedPreviews}/${m.previewImages} shortcuts=${m.settingsShortcuts} motto=${m.settingsMotto}`);
+        /* Appearance is the one screen that owns how the app looks: the four worlds with their
+           previews, plus the light/dark and sound controls that used to sit on Settings. */
+        if(route==='set-appearance'&&(m.themeCards!==4||m.selected!==1||m.previewImages!==4||m.loadedPreviews!==4||m.settingsShortcuts!==2))failures.push(`${theme}/${mode}/${route}: Appearance invalid cards=${m.themeCards} selected=${m.selected} previews=${m.loadedPreviews}/${m.previewImages} shortcuts=${m.settingsShortcuts}`);
+        /* Settings keeps the scene and its own list. The picker moved to Appearance, so asserting
+           the cards here was asserting the duplication that was removed. */
+        if(route==='settings'&&theme!=='clean'&&(!m.mainBg.includes(art)||m.themeCards!==0||m.settingsShortcuts!==0))failures.push(`${theme}/${mode}/${route}: Settings must not duplicate Appearance (cards=${m.themeCards} shortcuts=${m.settingsShortcuts})`);
         const shot=await cdp('Page.captureScreenshot',{format:'png',fromSurface:true});const file=`${String(report.length+1).padStart(3,'0')}-${theme}-${mode}-${route}.png`;fs.writeFileSync(path.join(OUT,file),Buffer.from(shot.data,'base64'));report.push({theme,mode,route,file,...m});
       }
     }

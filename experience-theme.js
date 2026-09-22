@@ -140,6 +140,13 @@ function afterCanonicalRender(){if(queued)return;queued=true;queueMicrotask(()=>
 
 window.MilkFlowExperience={manifest:THEME_MANIFEST,current:read,apply,save,careIcon,themeMotif,careIconActions:[...CARE_ICON_ACTIONS]};
 apply();
+/* app.js renders its first screen at the end of its own execution, and this file loads after
+   it - so that first paint asks for careIcon() before the registry exists and falls back to a
+   plain glyph. apply() alone does not fix that, because only save() announces a change, and
+   on a cold start nobody saves. Announce once on load so the canonical render picks up the
+   illustrated icons instead of leaving the Mom tiles on fallback glyphs until the next
+   interaction. Everything listening is idempotent, so this costs one extra render at boot. */
+window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{reason:'registry-ready'}}));
 document.addEventListener('click',e=>{const btn=e.target.closest('[data-experience-theme-pick]');if(btn)save(btn.dataset.experienceThemePick);if(e.target.closest('[data-theme-pick]'))setTimeout(afterCanonicalRender,0);const sound=e.target.closest('[data-sound-toggle]');if(sound){const enabled=sound.getAttribute('aria-pressed')!=='true';localStorage.setItem('milkflow-interface-sounds-v1',enabled?'on':'off');sound.setAttribute('aria-pressed',String(enabled));sound.querySelector('.mf-settings-switch')?.classList.toggle('on',enabled);}});
 window.addEventListener('storage',e=>{if(e.key===KEY)afterCanonicalRender();});
 window.addEventListener('milkflow:base-rendered',afterCanonicalRender);

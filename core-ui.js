@@ -573,13 +573,18 @@ function renderMom(s){
   card.className='mf-core-plan mf-dream-journey';
   const stops=[...(x.actual||[]).map(e=>({kind:'done',time:mins(e.time),amount:Number(e.amountMl)||0})),...(x.future||[]).map((m,i)=>({kind:i===0?'next':'future',time:m}))];
   card.innerHTML=`<div class="mf-journey-head"><div><span>Today’s journey</span><strong>${x.remaining?'One gentle session at a time':'Today’s rhythm is complete'}</strong></div><em>${x.actual.length} of ${x.target}</em></div><div class="mf-journey-track">${stops.map((stop,i)=>`<div class="mf-journey-stop ${stop.kind}"><i>${stop.kind==='done'?'✓':stop.kind==='next'?'●':'○'}</i><strong>${to12(stop.time)}</strong><small>${stop.kind==='done'?`${stop.amount} mL`:stop.kind==='next'?'Next up':'Later'}</small></div>`).join('')}</div><p>${x.source==='override'?'Today’s times were adjusted for you.':x.source==='actual'&&x.last?`Spaced out from your ${to12(mins(x.last.time))} pump so the gaps stay comfortable.`:'Starts from your usual schedule and adjusts each time you log a pump.'}</p>`;
+  /* Insert ONLY when it is not already in place. render-lifecycle.js watches #view's childList
+     and re-runs this pass on every change, so re-inserting the card unconditionally made each
+     render trigger the next one - an infinite loop that pegged the main thread and hung the
+     visual QA for half an hour before it was spotted. Same reason the journey card above is
+     created once and then only refilled. */
   let nudge=document.getElementById('mfMomNudge');
   const nudgeHtml=nudgeCard('mom');
   if(nudgeHtml){
     if(!nudge){nudge=document.createElement('div');nudge.id='mfMomNudge';}
-    nudge.innerHTML=nudgeHtml;
-    hero.insertAdjacentElement('afterend',nudge);
-  }else nudge?.remove();
+    if(nudge.innerHTML!==nudgeHtml)nudge.innerHTML=nudgeHtml;
+    if(nudge.previousElementSibling!==hero)hero.insertAdjacentElement('afterend',nudge);
+  }else if(nudge)nudge.remove();
   maybeAskTomorrow(x);
 }
 
