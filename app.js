@@ -1567,7 +1567,7 @@ function setAppearance(){
 /* The Settings row says which world is on, because the picker itself now lives one screen in. */
 function themeLabelForSettings(){
   const id=window.MilkFlowExperience?.current?.()||'clean';
-  return ({deepspace:'Deep Space',aurora:'Aurora',neonreef:'Neon Reef',crystalcity:'Crystal City',clean:'Simple'})[id]||'Simple';
+  return ({nocturne:'Nocturne',tide:'Tide',ember:'Ember',meadow:'Meadow',clean:'Simple'})[id]||'Simple';
 }
 
 /* ------------------------------------------------------------------------ nudges --

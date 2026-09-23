@@ -5,7 +5,7 @@
    One manifest owns visual assets/tokens only. Care data, routing, Firestore,
    notifications and semantic care behavior stay with the canonical app. */
 const KEY='milkflow-experience-theme-v1';
-const THEMES=new Set(['deepspace','aurora','neonreef','crystalcity','clean']);
+const THEMES=new Set(['nocturne','tide','ember','meadow','clean']);
 const root=document.documentElement;
 
 /* One explicit asset owns each visual job. Light and dark are separately authored scenes,
@@ -13,7 +13,7 @@ const root=document.documentElement;
 
    Every world is a vector scene now. The previous four shipped painted WebP plates at three
    widths, which is why they needed a width picker - and why dark mode was the light painting
-   pushed towards black until the animals disappeared into it. Stars, aurora, bioluminescence
+   pushed towards black until the animals disappeared into it. Stars, tide, bioluminescence
    and lit glass are all things a gradient does better than a photograph anyway, and one SVG
    is smaller than the smallest of the three WebPs it replaces. */
 const plate=(theme,mode,role)=>`./assets/themes-v2/${theme}/${mode}/${role}.svg`;
@@ -25,10 +25,10 @@ const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
   preview:plate(theme,mode,'settings-preview')
 }]));
 const THEME_MANIFEST={
-  deepspace:{title:'Deep Space',subtitle:'Small hands, far horizons',assets:assetSet('deepspace'),iconSprite:'./assets/theme-icons/deepspace.svg'},
-  aurora:{title:'Aurora',subtitle:'Quiet nights, bright skies',assets:assetSet('aurora'),iconSprite:'./assets/theme-icons/aurora.svg'},
-  neonreef:{title:'Neon Reef',subtitle:'Little wonders, deep glow',assets:assetSet('neonreef'),iconSprite:'./assets/theme-icons/neonreef.svg'},
-  crystalcity:{title:'Crystal City',subtitle:'Built for tomorrow',assets:assetSet('crystalcity'),iconSprite:'./assets/theme-icons/crystalcity.svg'},
+  nocturne:{title:'Nocturne',subtitle:'Deep indigo, quiet hours',assets:assetSet('nocturne'),iconSprite:'./assets/theme-icons/nocturne.svg'},
+  tide:{title:'Tide',subtitle:'Cool slate, clear water',assets:assetSet('tide'),iconSprite:'./assets/theme-icons/tide.svg'},
+  ember:{title:'Ember',subtitle:'Warm charcoal, low light',assets:assetSet('ember'),iconSprite:'./assets/theme-icons/ember.svg'},
+  meadow:{title:'Meadow',subtitle:'Soft stone, green shade',assets:assetSet('meadow'),iconSprite:'./assets/theme-icons/meadow.svg'},
   clean:{title:'Clean',subtitle:'Quiet MilkFlow canvas',assets:{light:{},dark:{}},iconSprite:''}
 };
 
@@ -38,7 +38,7 @@ const THEME_MANIFEST={
    null when a combination does not exist, so the caller keeps ownership of its own fallback
    instead of this module reaching into the DOM to patch icons in after render. */
 const CARE_ICON_ACTIONS=new Set(['milk','nurse','formula','wet','poop','mixed','pump']);
-const CARE_ICON_THEMES=new Set(['deepspace','aurora','neonreef','crystalcity']);
+const CARE_ICON_THEMES=new Set(['nocturne','tide','ember','meadow']);
 function careIcon(action,themeName){
   const theme=normalize(themeName===undefined?read():themeName);
   if(!CARE_ICON_ACTIONS.has(action)||!CARE_ICON_THEMES.has(theme))return null;
@@ -53,9 +53,9 @@ function themeMotif(themeName){
 
 /* Old worlds map to the new one closest in mood, so a family that had chosen something does
    not get silently reset to the default. jungle and storybook are two generations back. */
-const RETIRED={jungle:'deepspace',storybook:'deepspace',safari:'deepspace',butterfly:'aurora',princess:'neonreef',unicorn:'crystalcity'};
-function normalize(value){if(RETIRED[value])return RETIRED[value];return THEMES.has(value)?value:'deepspace';}
-function read(){try{return normalize(localStorage.getItem(KEY));}catch{return 'deepspace';}}
+const RETIRED={jungle:'nocturne',storybook:'nocturne',safari:'nocturne',butterfly:'tide',princess:'ember',unicorn:'meadow',deepspace:'nocturne',aurora:'tide',neonreef:'ember',crystalcity:'meadow'};
+function normalize(value){if(RETIRED[value])return RETIRED[value];return THEMES.has(value)?value:'nocturne';}
+function read(){try{return normalize(localStorage.getItem(KEY));}catch{return 'nocturne';}}
 function assetUrl(path){return path?`url("${path}")`:'none';}
 function mode(){return root.dataset.theme==='dark'?'dark':'light';}
 function preloadTheme(theme,assets){
@@ -87,7 +87,7 @@ function apply(name=read()){
 function save(name){const value=normalize(name);try{localStorage.setItem(KEY,value);}catch{}apply(value);window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{theme:value}}));}
 function previewFor(key){return THEME_MANIFEST[key].assets[mode()].preview;}
 function themeCard(key,title,subtitle){return `<button type="button" class="mf-experience-option" data-experience-theme-pick="${key}" data-theme-card="${key}" aria-pressed="false"><span class="mf-experience-preview" aria-hidden="true"><img class="mf-preview-scene" src="${previewFor(key)}" alt="" decoding="async" loading="lazy"></span><span class="mf-experience-copy"><strong>${title}</strong><small>${subtitle}</small></span></button>`;}
-function themeCards(){return `${themeCard('deepspace','Deep Space','Small hands, far horizons')}${themeCard('aurora','Aurora','Quiet nights, bright skies')}${themeCard('neonreef','Neon Reef','Little wonders, deep glow')}${themeCard('crystalcity','Crystal City','Built for tomorrow')}`;}
+function themeCards(){return `${themeCard('nocturne','Nocturne','Deep indigo, quiet hours')}${themeCard('tide','Tide','Cool slate, clear water')}${themeCard('ember','Ember','Warm charcoal, low light')}${themeCard('meadow','Meadow','Soft stone, green shade')}`;}
 /* The theme picker used to be injected into the Settings landing page AND into Appearance,
    with a separate Dark Mode row next to it - three places to change how the app looks, two of
    them saying the same thing. It lives on Appearance only now, beside the light/dark control,

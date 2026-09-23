@@ -1,15 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {WORLDS, WORLD_IDS} from './theme-scenes/worlds.mjs';
 
-/* Ten files per theme from one authored scene per mode.
+/* Ten files per world from one authored field per mode.
  *
- * The five roles are crops of the same 1000x2200 composite, so a change to a scene moves all
- * of them together and they cannot drift apart. Light and dark are separate authored scenes:
- * the previous generation derived dark by replacing hex values in the light artwork, which
- * turned four different worlds into the same dark murk with the subject barely visible.
+ * The five roles are crops of the same 1000x2200 composite, so a palette change moves all of
+ * them together and they cannot drift apart. Light and dark are separately authored: deriving
+ * one from the other by pushing colours around is what turned four different worlds into the
+ * same murk last time.
  */
 const root = process.cwd();
-const themes = ['deepspace', 'aurora', 'neonreef', 'crystalcity'];
 const roles = ['baby-background', 'baby-hero', 'mom-background', 'mom-hero', 'settings-preview'];
 const roleViewBox = {
   'baby-background': '0 0 1000 2200', 'baby-hero': '0 0 1000 860',
@@ -19,14 +19,13 @@ const roleViewBox = {
 function crop(source, theme, mode, role){
   return source
     .replace(/viewBox="[^"]+"/, `viewBox="${roleViewBox[role]}"`)
-    .replace(/aria-label="[^"]+"/, `aria-label="${theme} ${mode} ${role.replaceAll('-', ' ')} illustration"`);
+    .replace(/aria-label="[^"]+"/, `aria-label="${theme} ${mode} ${role.replaceAll('-', ' ')} background"`);
 }
 
 let written = 0;
-for(const theme of themes){
-  const scene = await import(`./theme-scenes/${theme}.mjs`);
+for(const theme of WORLD_IDS){
   for(const mode of ['light', 'dark']){
-    const source = scene[mode]();
+    const source = WORLDS[theme][mode]();
     const dir = path.join(root, 'assets/themes-v2', theme, mode);
     fs.mkdirSync(dir, {recursive: true});
     for(const role of roles){
@@ -35,4 +34,4 @@ for(const theme of themes){
     }
   }
 }
-console.log(`Generated ${written} self-contained theme assets.`);
+console.log(`Generated ${written} self-contained theme backgrounds.`);

@@ -76,7 +76,7 @@ function verifyIndexRefs(){
 fs.rmSync(DIST,{recursive:true,force:true});fs.mkdirSync(DIST,{recursive:true});
 TEXT_FILES.forEach(copyText);BINARY_FILES.forEach(copyBinary);
 copyTree(path.join(ROOT,'assets'),path.join(DIST,'assets'));
-for(const theme of ['deepspace','aurora','neonreef','crystalcity']){
+for(const theme of ['nocturne','tide','ember','meadow']){
   for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
     const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${role}.svg`);
     if(!fs.existsSync(scene))throw new Error(`Missing canonical self-contained ${theme}/${mode}/${role} scene`);

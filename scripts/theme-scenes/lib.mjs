@@ -1,69 +1,96 @@
-/* Shared vocabulary for the four world scenes.
+/* The scene vocabulary.
  *
- * Every scene is one 1000x2200 composite, because the five roles the app needs (two heroes,
- * two page backgrounds, one settings preview) are all crops of it - see roleViewBox in
- * generate-theme-assets.mjs. That is why the interest lives at the top and along the edges:
- * the middle band is where the app's own cards sit, and a busy middle is just noise behind
- * text.
+ * Every world is one 1000x2200 composite; the five roles the app needs (two heroes, two page
+ * backgrounds, one settings preview) are crops of it, so they cannot drift apart.
  *
- * Light and dark are authored, not derived. The previous generation produced dark by
- * search-and-replacing hex values in the light artwork, which is how three different worlds
- * ended up as the same brown murk with the animals barely visible.
+ * These are ATMOSPHERES, not pictures. The first attempt at this file drew subjects - a
+ * planet, a fox, a jellyfish - and a subject in a wallpaper is a liability: it lands wherever
+ * the crop puts it, which on a phone meant a cartoon planet sliced in half by the hero card.
+ * What reads as a finished product is a deep colour field with real structure in it: a few
+ * wide light sources, one piece of restrained geometry, and grain. Nothing competes with the
+ * cards, and there is nothing to clip.
  */
 
-/* Deterministic so a rebuild produces an identical file and the diff stays honest. */
 export function rng(seed){
   let s = seed >>> 0;
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
-
 export const round = (n, p = 1) => Number(n.toFixed(p));
 
-/* A star field, thinning towards the bottom of the frame so the sky reads as depth rather
-   than as confetti. */
-export function stars(seed, {count = 150, to = 1500, fill = '#ffffff', max = 2.6} = {}){
-  const r = rng(seed);
+/* Grain is most of the difference between a gradient that looks designed and one that looks
+   unfinished. It is generated inside a 160px tile and tiled, rather than run across the whole
+   2200px frame, because feTurbulence over that area is genuinely slow on a phone. */
+export function grain(opacity = 0.055){
+  return {
+    def: `<filter id="grainF" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.86" numOctaves="2" stitchTiles="stitch" result="n"/>
+  <feColorMatrix type="saturate" values="0"/>
+</filter>
+<pattern id="grain" width="160" height="160" patternUnits="userSpaceOnUse">
+  <rect width="160" height="160" filter="url(#grainF)"/>
+</pattern>`,
+    shape: `<rect width="1000" height="2200" fill="url(#grain)" opacity="${opacity}"/>`
+  };
+}
+
+/* A wide, soft light source. Four or five of these at different scales is what gives a flat
+   gradient somewhere to come from. */
+export function lamp(id, x, y, rx, ry, opacity = 1){
+  return `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#${id})" opacity="${opacity}"/>`;
+}
+export function lampDef(id, color, stop = 0.85){
+  return `<radialGradient id="${id}"><stop stop-color="${color}" stop-opacity="${stop}"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></radialGradient>`;
+}
+
+/* Hairline concentric arcs. The one piece of geometry each world gets: enough to read as
+   deliberate, far too quiet to compete with a card sitting on top of it. */
+export function contours(cx, cy, from, count, step, color, opacity = 0.14){
   let out = '';
   for(let i = 0; i < count; i++){
-    const y = Math.pow(r(), 1.5) * to;
-    const x = r() * 1000;
-    const rad = round(0.7 + r() * max, 2);
-    const o = round(0.25 + r() * 0.7, 2);
-    out += `<circle cx="${round(x)}" cy="${round(y)}" r="${rad}" fill="${fill}" opacity="${o}"/>`;
+    const r = from + i * step;
+    out += `<circle cx="${cx}" cy="${cy}" r="${round(r)}" fill="none" stroke="${color}" stroke-width="1.1" opacity="${round(opacity * (1 - i / (count * 1.6)), 3)}"/>`;
   }
   return out;
 }
 
-/* Four-pointed sparkles: the thing that reads as "space" at a glance where a round dot
-   reads as dust. */
-export function sparkle(x, y, s, fill, o = 1){
-  return `<path d="M${x} ${y - s}q${s * 0.18} ${s * 0.82} ${s} ${s}q-${s * 0.82} ${s * 0.18} -${s} ${s}q-${s * 0.18} -${s * 0.82} -${s} -${s}q${s * 0.82} -${s * 0.18} ${s} -${s}Z" fill="${fill}" opacity="${o}"/>`;
+/* A long, slow diagonal sweep across the frame. */
+export function sweep(id, d, width, opacity){
+  return `<path d="${d}" fill="none" stroke="url(#${id})" stroke-width="${width}" stroke-linecap="round" opacity="${opacity}" filter="url(#soften)"/>`;
 }
-
-export function sparkles(seed, list, fill){
-  return list.map(([x, y, s, o]) => sparkle(x, y, s, fill, o ?? 1)).join('');
-}
-
-/* Bubbles / motes: same job as stars, for the worlds that are underwater or indoors. */
-export function motes(seed, {count = 40, from = 900, to = 2200, fill = '#ffffff', max = 9} = {}){
-  const r = rng(seed);
-  let out = '';
-  for(let i = 0; i < count; i++){
-    const x = round(r() * 1000), y = round(from + r() * (to - from));
-    const rad = round(2 + r() * max, 1), o = round(0.08 + r() * 0.3, 2);
-    out += `<circle cx="${x}" cy="${y}" r="${rad}" fill="none" stroke="${fill}" stroke-width="1.6" opacity="${o}"/>`;
-  }
-  return out;
-}
-
-/* The defs every scene wants: a blur for glow, a stronger one for bloom, and a drop shadow
-   for the few solid objects. */
-export function commonDefs({glow = 26, bloom = 60} = {}){
-  return `<filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${glow}"/></filter>
-<filter id="bloom" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="${bloom}"/></filter>
-<filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="9"/></filter>`;
+export function sweepDef(id, color, x1, y1, x2, y2){
+  return `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">
+  <stop stop-color="${color}" stop-opacity="0"/><stop offset=".45" stop-color="${color}" stop-opacity=".9"/><stop offset="1" stop-color="${color}" stop-opacity="0"/>
+</linearGradient>`;
 }
 
 export function doc(label, body){
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 2200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${label}">\n${body}\n</svg>\n`;
+}
+
+/* One composition, four palettes. A design system has one layout and many skins; four
+   hand-arranged scenes is four things to keep in step and four chances to get one wrong. */
+export function field({label, base, lamps, sweeps, contour, grainAmount = 0.055, vignette}){
+  const lampDefs = lamps.map((l, i) => lampDef(`L${i}`, l.color, l.stop ?? 0.85)).join('\n');
+  const lampShapes = lamps.map((l, i) => lamp(`L${i}`, l.x, l.y, l.rx, l.ry, l.opacity ?? 1)).join('\n');
+  const sweepDefs = sweeps.map((s, i) => sweepDef(`S${i}`, s.color, ...s.line)).join('\n');
+  const sweepShapes = sweeps.map((s, i) => sweep(`S${i}`, s.d, s.width, s.opacity)).join('\n');
+  const g = grain(grainAmount);
+  return doc(label, `<defs>
+<linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
+${base.map((c, i) => `  <stop offset="${round(i / (base.length - 1), 3)}" stop-color="${c}"/>`).join('\n')}
+</linearGradient>
+<filter id="soften" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="70"/></filter>
+<radialGradient id="vig" cx=".5" cy=".42"><stop offset=".55" stop-color="${vignette}" stop-opacity="0"/><stop offset="1" stop-color="${vignette}" stop-opacity=".5"/></radialGradient>
+${lampDefs}
+${sweepDefs}
+${g.def}
+</defs>
+<rect width="1000" height="2200" fill="url(#base)"/>
+<g filter="url(#soften)">
+${lampShapes}
+</g>
+${sweepShapes}
+<g>${contours(contour.cx, contour.cy, contour.from, contour.count, contour.step, contour.color, contour.opacity)}</g>
+<rect width="1000" height="2200" fill="url(#vig)"/>
+${g.shape}`);
 }

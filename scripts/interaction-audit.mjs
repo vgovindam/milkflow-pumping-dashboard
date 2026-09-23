@@ -25,10 +25,10 @@ need('canonical theme composition',themeEntry,'experience-system.css');
 need('canonical component theme composition',themeEntry,'experience-components.css');
 need('canonical experience layer',themeEntry,'layer(milkflow-experience)');
 
-for(const text of ["const KEY='milkflow-experience-theme-v1'","new Set(['deepspace','aurora','neonreef','crystalcity','clean'])","const RETIRED={jungle:'deepspace'","themeCard('deepspace','Deep Space'","themeCard('aurora','Aurora'","themeCard('neonreef','Neon Reef'","themeCard('crystalcity','Crystal City'",'data-experience-theme-pick="clean"'])need('experience theme controller',experienceJs,text);
+for(const text of ["const KEY='milkflow-experience-theme-v1'","new Set(['nocturne','tide','ember','meadow','clean'])","const RETIRED={jungle:'nocturne'","themeCard('nocturne','Nocturne'","themeCard('tide','Tide'","themeCard('ember','Ember'","themeCard('meadow','Meadow'",'data-experience-theme-pick="clean"'])need('experience theme controller',experienceJs,text);
 if(experienceJs.includes('MutationObserver'))failures.push('experience theme controller: observer loop is not allowed');
 need('both modes published',experienceJs,'const SCENE_ROLES=');
-for(const theme of ['deepspace','aurora','neonreef','crystalcity']){
+for(const theme of ['nocturne','tide','ember','meadow']){
   need('theme asset matrix manifest',experienceJs,`assetSet('${theme}')`);
   need('theme icon manifest',experienceJs,`theme-icons/${theme}.svg`);
 }

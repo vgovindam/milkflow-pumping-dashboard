@@ -35,7 +35,7 @@ const familyChatServer=fs.readFileSync(path.join(ROOT,'functions/family-chat.js'
 for(const token of ["PENDING_KEY='milkflow-family-chat-pending-v1'",'recoverCloudRequest','recoverLegacyHistory','resumePending','retryRequest',"mode:'status'",'requestId'])if(!familyChat.includes(token))throw new Error(`Family chat recovery contract missing: ${token}`);
 for(const token of ["collection('familyChatRequests')", "mode==='status'", "status:'processing'", "status:'completed'", "${requestId}-user", "${requestId}-assistant"] )if(!familyChatServer.includes(token))throw new Error(`Family chat server recovery contract missing: ${token}`);
 
-const themes=['deepspace','aurora','neonreef','crystalcity'];
+const themes=['nocturne','tide','ember','meadow'];
 for(const theme of themes){
   const icons=`assets/theme-icons/${theme}.svg`;
   if(!fs.existsSync(path.join(ROOT,icons)))throw new Error(`Theme asset contract missing: ${icons}`);
@@ -44,7 +44,14 @@ for(const theme of themes){
     if(!fs.existsSync(path.join(ROOT,scene)))throw new Error(`Theme asset contract missing: ${scene}`);
     const svg=fs.readFileSync(path.join(ROOT,scene),'utf8');
     if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be fully self-contained.`);
-    if(svg.length<4500)throw new Error(`${scene} is too sparse to qualify as production artwork.`);
+    /* Structure, not byte count. The old contract asked for 4500 bytes as a stand-in for "not
+       a placeholder", which was reasonable when a scene was a drawing with a subject in it and
+       is meaningless now: a colour field is a handful of elements and the quality is in the
+       ramp, the light and the grain. So check that those are actually present. */
+    for(const part of ['id="base"','id="vig"','url(#grain)','radialGradient id="L0"','radialGradient id="L1"'])
+      if(!svg.includes(part))throw new Error(`${scene} is missing ${part}: not a finished background.`);
+    const stops=(svg.match(/<stop /g)||[]).length;
+    if(stops<12)throw new Error(`${scene} has only ${stops} gradient stops; a flat wash is not a background.`);
   }
   if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} asset matrix.`);
   if(!experience.includes(`theme-icons/${theme}.svg`))throw new Error(`Theme manifest is not using independent ${theme} icon sprite.`);
@@ -84,16 +91,16 @@ for(const [file,text] of [['app.js',app],['core-ui.js',core],['doctor-summary.js
   /* The care icons are an illustrated cast, one character per action per theme, composed from
      shared parts so the set stays consistent. A theme is a cast file plus a palette entry. */
   const iconDir=path.join(ROOT,'scripts/care-icons');
-  for(const f of ['index.mjs','palette.mjs','props.mjs','parts.mjs','cast/deepspace.mjs','cast/aurora.mjs','cast/neonreef.mjs','cast/crystalcity.mjs'])
+  for(const f of ['index.mjs','palette.mjs','props.mjs','parts.mjs','cast/nocturne.mjs','cast/tide.mjs','cast/ember.mjs','cast/meadow.mjs'])
     if(!fs.existsSync(path.join(iconDir,f)))throw new Error(`Care icon design system is missing: scripts/care-icons/${f}`);
   const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'assets/care-icons/manifest.json'),'utf8'));
-  for(const theme of ['deepspace','aurora','neonreef','crystalcity'])
+  for(const theme of ['nocturne','tide','ember','meadow'])
     if(!manifest.themes?.[theme]?.label)throw new Error(`Care icon manifest has no cast label for ${theme} - run node scripts/generate-care-icons.mjs`);
 }
 {
   const iconRoot=path.join(ROOT,'assets/care-icons');
   const actions=['milk','nurse','formula','wet','poop','mixed','pump'];
-  for(const theme of ['deepspace','aurora','neonreef','crystalcity']){
+  for(const theme of ['nocturne','tide','ember','meadow']){
     for(const action of [...actions,'motif'])
       if(!fs.existsSync(path.join(iconRoot,theme,`${action}.svg`)))
         throw new Error(`Generated care icon missing: ${theme}/${action}.svg - run node scripts/generate-care-icons.mjs`);

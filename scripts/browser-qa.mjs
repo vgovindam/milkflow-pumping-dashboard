@@ -49,10 +49,10 @@ try{
   const routes=['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','more','settings','set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about'];
   const momRoutes=new Set(['mom-home','mom-history','mom-trends','mom-stash']);
   const babyRoutes=new Set(['baby-home','baby-history','baby-trends','baby-growth','development','doctor']);
-  const themes=['deepspace','aurora','neonreef','crystalcity','clean'];
-  const expected=Object.fromEntries(['deepspace','aurora','neonreef','crystalcity'].map(t=>[t,`themes-v2/${t}/`]));
+  const themes=['nocturne','tide','ember','meadow','clean'];
+  const expected=Object.fromEntries(['nocturne','tide','ember','meadow'].map(t=>[t,`themes-v2/${t}/`]));
   /* Care icons come from the generated per-action design system, not a shared sprite sheet. */
-  const expectedIcons=Object.fromEntries(['deepspace','aurora','neonreef','crystalcity'].map(t=>[t,`care-icons/${t}/`]));
+  const expectedIcons=Object.fromEntries(['nocturne','tide','ember','meadow'].map(t=>[t,`care-icons/${t}/`]));
   const failures=[],report=[];
   async function reach(route){await evalJs(`location.hash=${JSON.stringify('#'+route)}`);for(let i=0;i<20;i++){await sleep(100);if(await evalJs('document.body.dataset.screen||""')===route)return true;}return false;}
 

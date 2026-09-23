@@ -21,32 +21,32 @@
   --mf-theme-preview:var(--mf-theme-preview-dark,none)
 }
 
-:root[data-experience-theme="deepspace"]{
-  --mf-theme-name:"Deep Space";--mf-theme-tagline:"Small hands, far horizons";
-  --mf-world-base:#e9edfb;--mf-world-deep:#2b3570;--mf-world-accent:#5a63ad;--mf-world-accent-2:#3fa8c8;
-  --mf-world-surface:#fbfcff;--mf-world-surface-strong:#fefeff;
-  --mf-world-line:rgba(70,80,150,.19);--mf-world-shadow:rgba(40,48,104,.17);--mf-world-text:#252c55;--mf-world-muted:#5f6688;
+:root[data-experience-theme="nocturne"]{
+  --mf-theme-name:"Nocturne";--mf-theme-tagline:"Deep indigo, quiet hours";
+  --mf-world-base:#eceaf6;--mf-world-deep:#2a2550;--mf-world-accent:#5b4fa6;--mf-world-accent-2:#8a6fc4;
+  --mf-world-surface:#fbfaff;--mf-world-surface-strong:#fefdff;
+  --mf-world-line:rgba(70,60,140,.18);--mf-world-shadow:rgba(38,32,86,.16);--mf-world-text:#231f47;--mf-world-muted:#5d5880;
   --mf-page-focus:center 18%;--mf-baby-focus:center 8%;--mf-mom-focus:center 12%
 }
-:root[data-experience-theme="aurora"]{
-  --mf-theme-name:"Aurora";--mf-theme-tagline:"Quiet nights, bright skies";
-  --mf-world-base:#e4f3fa;--mf-world-deep:#1d4f63;--mf-world-accent:#3f8ba3;--mf-world-accent-2:#43b394;
-  --mf-world-surface:#fbfeff;--mf-world-surface-strong:#fdffff;
-  --mf-world-line:rgba(43,101,124,.19);--mf-world-shadow:rgba(24,68,86,.16);--mf-world-text:#173c4c;--mf-world-muted:#517182;
+:root[data-experience-theme="tide"]{
+  --mf-theme-name:"Tide";--mf-theme-tagline:"Cool slate, clear water";
+  --mf-world-base:#e6f1f4;--mf-world-deep:#12414f;--mf-world-accent:#2f7d8e;--mf-world-accent-2:#3f95a8;
+  --mf-world-surface:#f9fdfe;--mf-world-surface-strong:#fdffff;
+  --mf-world-line:rgba(24,92,110,.18);--mf-world-shadow:rgba(10,58,72,.15);--mf-world-text:#103641;--mf-world-muted:#4d6d77;
   --mf-page-focus:center 20%;--mf-baby-focus:center 9%;--mf-mom-focus:center 13%
 }
-:root[data-experience-theme="neonreef"]{
-  --mf-theme-name:"Neon Reef";--mf-theme-tagline:"Little wonders, deep glow";
-  --mf-world-base:#dff5f7;--mf-world-deep:#0f4a5a;--mf-world-accent:#2b8ba1;--mf-world-accent-2:#d2628f;
-  --mf-world-surface:#f9feff;--mf-world-surface-strong:#fdffff;
-  --mf-world-line:rgba(26,110,130,.19);--mf-world-shadow:rgba(12,66,80,.16);--mf-world-text:#0f3b48;--mf-world-muted:#4c6e78;
+:root[data-experience-theme="ember"]{
+  --mf-theme-name:"Ember";--mf-theme-tagline:"Warm charcoal, low light";
+  --mf-world-base:#f5ece3;--mf-world-deep:#4a2d1c;--mf-world-accent:#9a5a2e;--mf-world-accent-2:#b87a3a;
+  --mf-world-surface:#fffbf7;--mf-world-surface-strong:#fffdfb;
+  --mf-world-line:rgba(120,70,36,.18);--mf-world-shadow:rgba(74,42,20,.15);--mf-world-text:#3d2618;--mf-world-muted:#71594a;
   --mf-page-focus:center 16%;--mf-baby-focus:center 7%;--mf-mom-focus:center 11%
 }
-:root[data-experience-theme="crystalcity"]{
-  --mf-theme-name:"Crystal City";--mf-theme-tagline:"Built for tomorrow";
-  --mf-world-base:#eeecfc;--mf-world-deep:#3a2f7a;--mf-world-accent:#6a5bb5;--mf-world-accent-2:#c063a8;
-  --mf-world-surface:#fbfaff;--mf-world-surface-strong:#fefdff;
-  --mf-world-line:rgba(96,84,170,.19);--mf-world-shadow:rgba(60,50,120,.17);--mf-world-text:#2f2861;--mf-world-muted:#645d89;
+:root[data-experience-theme="meadow"]{
+  --mf-theme-name:"Meadow";--mf-theme-tagline:"Soft stone, green shade";
+  --mf-world-base:#eaf0e7;--mf-world-deep:#22432f;--mf-world-accent:#43764f;--mf-world-accent-2:#5f9161;
+  --mf-world-surface:#fbfdf9;--mf-world-surface-strong:#fefffc;
+  --mf-world-line:rgba(50,96,62,.18);--mf-world-shadow:rgba(28,62,38,.15);--mf-world-text:#1e3a2a;--mf-world-muted:#556b5b;
   --mf-page-focus:center 17%;--mf-baby-focus:center 8%;--mf-mom-focus:center 12%
 }
 
@@ -156,7 +156,7 @@
    art keeps reading. A theme with no painted plate falls back to a pale generated SVG whose
    luminance cannot be relied on, so it gets a scrim that stays above ~0.7 alpha for the whole
    text column — enough to hold 4.5:1 for 12px copy even over a black pixel. */
-:root[data-experience-theme="crystalcity"] body[data-screen="mom-home"] .mf-dream-hero::before{
+:root[data-experience-theme="meadow"] body[data-screen="mom-home"] .mf-dream-hero::before{
   background:linear-gradient(168deg,
     color-mix(in srgb,var(--mf-world-surface-strong) 93%,transparent) 0%,
     color-mix(in srgb,var(--mf-world-surface-strong) 84%,transparent) 44%,
@@ -225,26 +225,54 @@
   border:1px solid var(--mf-world-line);border-radius:28px;overflow:hidden;
   background:var(--mf-world-surface)!important;box-shadow:0 11px 26px var(--mf-world-shadow);backdrop-filter:none
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{border:1px solid rgba(255,255,255,.60)!important;overflow:hidden;box-shadow:0 7px 17px rgba(49,58,48,.07)!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{overflow:hidden;box-shadow:0 6px 16px var(--mf-world-shadow)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>.mf-animal-sticker,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>svg{display:none!important}
-/* Feed and Diapers used to share blue and violet - two of three each - so the two groups read
-   as one block of pastels. Feed is the warm/green family now: teal, rose, coral. Diapers keep
-   the blue, amber and violet they have always had, and nothing is repeated between them. */
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.milk{background:linear-gradient(145deg,#c9f2e2,#a9e2cd 62%,#96d9c1)!important;color:#0d4b38!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.nurse{background:linear-gradient(145deg,#ffd9e7,#f5bfd3)!important;color:#7b294d!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.formula{background:linear-gradient(145deg,#ffdfcb,#ffc2a1)!important;color:#75331a!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card :is(strong,small,span){color:inherit!important;opacity:1!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob{border:1px solid rgba(255,255,255,.60)!important;box-shadow:0 7px 17px rgba(65,53,39,.07)!important;overflow:hidden}
+/* Six tiles, one surface, six accents.
+   These used to be six filled pastels - mint, pink, peach, blue, yellow, lilac - and six
+   filled pastels side by side is a toy box, not a product. The accent still has to carry the
+   difference (Feed and Diapers once shared blue and violet and read as one block), so it now
+   does it the way a real surface system does: the card is the world's own surface with a
+   trace of the accent mixed in, a border of the same hue, and the accent at full strength
+   only where it is small - the icon plate and the sub-label. Legible at a glance, and no
+   sugar. */
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){
+  background:color-mix(in srgb,var(--tile) 9%,var(--mf-world-surface))!important;
+  border:1px solid color-mix(in srgb,var(--tile) 26%,transparent)!important;
+  color:var(--mf-world-text)!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){
+  background:color-mix(in srgb,var(--tile) 16%,var(--mf-world-surface))!important;
+  border-color:color-mix(in srgb,var(--tile) 34%,transparent)!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.milk{--tile:#14a085}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.nurse{--tile:#d6467e}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.formula{--tile:#e07a2f}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.wet{--tile:#2e8fd0}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.poop{--tile:#b8862b}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.both{--tile:#7a5bd4}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) strong{color:var(--mf-world-text)!important;opacity:1!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) :is(small,span){color:color-mix(in srgb,var(--tile) 76%,var(--mf-world-text))!important;opacity:1!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) :is(small,span){
+  color:color-mix(in srgb,var(--tile) 52%,var(--mf-world-text))!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob{overflow:hidden;box-shadow:0 6px 16px var(--mf-world-shadow)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>.mf-animal-sticker,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>svg{display:none!important}
 /* The count badge is the component layer's, in both light and dark. This rule used to restate
    its geometry and hard-code a white pill with no dark variant, which in dark mode painted a
    white circle with white text inside it. A theme does not own a badge. */
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.wet{background:linear-gradient(145deg,#c8eaff,#addeff)!important;color:#165278!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.poop{background:linear-gradient(145deg,#ffe7ac,#ffd17b)!important;color:#6d451a!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.both{background:linear-gradient(145deg,#e2d4ff,#c6aff6)!important;color:#4c3484!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob :is(strong,small,span){color:inherit!important;opacity:1!important}
+
+
+/* The photo ring. Both heroes hard-code a near-white disc, which in a dark world is the
+   brightest object on the screen by a wide margin - a cream circle shouting next to a name.
+   It belongs to the world like everything else: the surface, lifted a little, with a hairline
+   of the accent. A real photo covers all of this anyway; it only shows while there is none. */
+:root:not([data-experience-theme="clean"]) :is(.mf-animal-profile .mf-profile-photo,.mf-dream-photo){
+  background:color-mix(in srgb,var(--mf-world-accent) 12%,var(--mf-world-surface))!important;
+  border:1px solid color-mix(in srgb,var(--mf-world-accent) 30%,transparent)!important;
+  color:var(--mf-world-accent)!important;
+  box-shadow:0 10px 26px var(--mf-world-shadow)!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) :is(.mf-animal-profile .mf-profile-photo,.mf-dream-photo){
+  background:color-mix(in srgb,var(--mf-world-accent) 18%,var(--mf-world-surface))!important;
+  border-color:color-mix(in srgb,var(--mf-world-accent) 38%,transparent)!important}
 
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.sheet,.dialog){border-color:color-mix(in srgb,var(--mf-world-accent) 34%,var(--line))!important}
 
@@ -262,10 +290,10 @@
 .mf-experience-panel .mf-experience-option:active{transform:scale(.985)}.mf-experience-panel .mf-experience-option:focus-visible,.mf-experience-clean:focus-visible{outline:3px solid color-mix(in srgb,var(--mf-world-accent,var(--accent)) 60%,#fff);outline-offset:3px}
 
 /* Dark mode selects dedicated night artwork and solid surfaces. */
-:root[data-theme="dark"][data-experience-theme="deepspace"]{--mf-world-base:#10132b;--mf-world-deep:#ccd4ff;--mf-world-accent:#8e99e0;--mf-world-surface:#121630;--mf-world-surface-strong:#10142b;--mf-world-line:rgba(196,204,246,.18);--mf-world-shadow:rgba(0,0,0,.36);--mf-world-text:#f0f2ff;--mf-world-muted:#c5cae4}
-:root[data-theme="dark"][data-experience-theme="aurora"]{--mf-world-base:#0b2130;--mf-world-deep:#cdeefb;--mf-world-accent:#74b9d4;--mf-world-surface:#0d2534;--mf-world-surface-strong:#0a1f2d;--mf-world-line:rgba(186,222,238,.18);--mf-world-shadow:rgba(0,0,0,.36);--mf-world-text:#eaf8ff;--mf-world-muted:#bcd3de}
-:root[data-theme="dark"][data-experience-theme="neonreef"]{--mf-world-base:#07222e;--mf-world-deep:#c8f2fb;--mf-world-accent:#5fbdd2;--mf-world-surface:#092733;--mf-world-surface-strong:#06202b;--mf-world-line:rgba(176,228,240,.18);--mf-world-shadow:rgba(0,0,0,.36);--mf-world-text:#e8fbff;--mf-world-muted:#b2cfd8}
-:root[data-theme="dark"][data-experience-theme="crystalcity"]{--mf-world-base:#140f30;--mf-world-deep:#e2dbff;--mf-world-accent:#9d8fe8;--mf-world-surface:#171236;--mf-world-surface-strong:#13102d;--mf-world-line:rgba(206,196,250,.18);--mf-world-shadow:rgba(0,0,0,.37);--mf-world-text:#f4f1ff;--mf-world-muted:#cbc5e6}
+:root[data-theme="dark"][data-experience-theme="nocturne"]{--mf-world-base:#0d0e1e;--mf-world-deep:#d5d1f5;--mf-world-accent:#8d84dc;--mf-world-surface:#101123;--mf-world-surface-strong:#0c0d1c;--mf-world-line:rgba(180,174,236,.16);--mf-world-shadow:rgba(0,0,0,.42);--mf-world-text:#f0eefb;--mf-world-muted:#b6b2cf}
+:root[data-theme="dark"][data-experience-theme="tide"]{--mf-world-base:#08161d;--mf-world-deep:#c8e6ec;--mf-world-accent:#6fb4c2;--mf-world-surface:#0a1a22;--mf-world-surface-strong:#07141a;--mf-world-line:rgba(160,210,222,.16);--mf-world-shadow:rgba(0,0,0,.42);--mf-world-text:#e9f6fa;--mf-world-muted:#a9c2ca}
+:root[data-theme="dark"][data-experience-theme="ember"]{--mf-world-base:#160f0c;--mf-world-deep:#f0dbc9;--mf-world-accent:#cf9463;--mf-world-surface:#19110e;--mf-world-surface-strong:#140e0b;--mf-world-line:rgba(226,190,158,.16);--mf-world-shadow:rgba(0,0,0,.44);--mf-world-text:#fbf1e8;--mf-world-muted:#cbb3a2}
+:root[data-theme="dark"][data-experience-theme="meadow"]{--mf-world-base:#0c1410;--mf-world-deep:#d3e6d6;--mf-world-accent:#77ab84;--mf-world-surface:#0e1712;--mf-world-surface-strong:#0b130f;--mf-world-line:rgba(180,214,188,.16);--mf-world-shadow:rgba(0,0,0,.42);--mf-world-text:#eff7f0;--mf-world-muted:#b0c4b5}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.panel,.grp,.metric,.row,.stash-hero,.data-status){color:var(--mf-world-text)!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head :is(h2,.eyebrow){color:#fff!important;text-shadow:0 2px 12px rgba(0,0,0,.30)!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{background-image:var(--mf-theme-mom-hero)!important;border-color:rgba(255,255,255,.16)!important}
@@ -346,7 +374,7 @@
 
 /* Contrast floor for text sitting over a painted plate.
    The illustrated worlds carry far more local contrast than the generated SVG scenes the
-   alphas above were tuned against. Measured against deepspace/light from the rendered scene
+   alphas above were tuned against. Measured against nocturne/light from the rendered scene
    pixels: the care section label fell to 1.5:1, the hero greeting to 2.5:1 and the stat
    pills to ~3.2:1. The theme package's own measurement puts the minimum surface alpha for
    body text over a plate at 0.62, so every carrier here clears that.

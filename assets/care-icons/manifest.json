@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-23T04:25:13.633Z",
+  "generated": "2026-09-23T10:07:10.117Z",
   "actions": [
     "milk",
     "nurse",
@@ -10,7 +10,7 @@
     "pump"
   ],
   "themes": {
-    "deepspace": {
+    "nocturne": {
       "label": "Deep Space crew",
       "actions": [
         "milk",
@@ -22,7 +22,7 @@
         "pump"
       ]
     },
-    "aurora": {
+    "tide": {
       "label": "Aurora friends",
       "actions": [
         "milk",
@@ -34,7 +34,7 @@
         "pump"
       ]
     },
-    "neonreef": {
+    "ember": {
       "label": "Neon Reef friends",
       "actions": [
         "milk",
@@ -46,7 +46,7 @@
         "pump"
       ]
     },
-    "crystalcity": {
+    "meadow": {
       "label": "Crystal City friends",
       "actions": [
         "milk",
