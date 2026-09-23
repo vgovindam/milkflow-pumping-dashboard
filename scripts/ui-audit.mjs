@@ -92,6 +92,9 @@ requireText('day view is newest first',read('app.js'),"sort((a,b) => (b.time||''
   if(/addEventListener\('controllerchange',\s*\(\)\s*=>\s*\{[^}]*show\(\)/.test(notice))
     failures.push('controllerchange must not show the banner unconditionally');
 }
+/* The scene must be chosen by the same attribute as every other colour, or light mode keeps
+   showing the dark plate until something happens to re-run the theme controller. */
+requireText('scene resolves in CSS',read('experience-system.css'),':root[data-theme="dark"]{\n  --mf-theme-baby-scene:var(--mf-theme-baby-scene-dark,none);');
 /* A surface the dark layer forgets is a white card with white text on it. */
 requireText('stash hero has a dark surface',read('core-ui.js'),':root[data-theme="dark"] body[data-realm] .stash-hero');
 /* Both heroes answer the same two questions in the same place. The hero is reviewed at phone

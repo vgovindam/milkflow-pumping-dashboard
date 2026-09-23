@@ -8,7 +8,7 @@ const version=JSON.parse(fs.readFileSync(path.join(ROOT,'version.json'),'utf8'))
 const fail=[];
 const must=['index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-themes.css','experience-system.css','experience-components.css','doctor-summary.css','app.js','cross-device-alerts.js','experience-theme.js','sw.js','manifest.webmanifest','build-manifest.json','icon.svg','milkflow-family-v3-192.png'];
 for(const f of must)if(!fs.existsSync(path.join(DIST,f)))fail.push(`missing dist/${f}`);
-const themes=['safari','butterfly','princess','unicorn'];
+const themes=['deepspace','aurora','neonreef','crystalcity'];
 for(const theme of themes){
   if(!fs.existsSync(path.join(DIST,`assets/theme-icons/${theme}.svg`)))fail.push(`missing dist/assets/theme-icons/${theme}.svg`);
   for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){

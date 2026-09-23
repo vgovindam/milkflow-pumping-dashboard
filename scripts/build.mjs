@@ -24,7 +24,7 @@ function transform(text){
     .replaceAll('__MILKFLOW_COMMIT__',COMMIT)
     .replace(/\?build=stable45-human\d+/g,`?v=${VERSION}`)
     .replace(/stable45-human\d+/g,`v${VERSION}`)
-    .replace(/safari-world-v2\.svg/g,'safari-world.svg');
+    ;
 }
 function copyText(rel){
   const src=path.join(ROOT,rel),dest=path.join(DIST,rel);
@@ -38,7 +38,7 @@ function copyBinary(rel){
 function copyTree(srcDir,destDir){
   if(!fs.existsSync(srcDir))return;
   for(const entry of fs.readdirSync(srcDir,{withFileTypes:true})){
-    if(entry.name==='.DS_Store'||entry.name==='safari-world-v2.svg')continue;
+    if(entry.name==='.DS_Store')continue;
     const src=path.join(srcDir,entry.name),dest=path.join(destDir,entry.name);
     if(entry.isDirectory())copyTree(src,dest);
     else{ensureDir(dest);fs.copyFileSync(src,dest);}
@@ -76,7 +76,7 @@ function verifyIndexRefs(){
 fs.rmSync(DIST,{recursive:true,force:true});fs.mkdirSync(DIST,{recursive:true});
 TEXT_FILES.forEach(copyText);BINARY_FILES.forEach(copyBinary);
 copyTree(path.join(ROOT,'assets'),path.join(DIST,'assets'));
-for(const theme of ['safari','butterfly','princess','unicorn']){
+for(const theme of ['deepspace','aurora','neonreef','crystalcity']){
   for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
     const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${role}.svg`);
     if(!fs.existsSync(scene))throw new Error(`Missing canonical self-contained ${theme}/${mode}/${role} scene`);

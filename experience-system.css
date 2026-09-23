@@ -2,33 +2,52 @@
    One self-contained SVG scene owns each experience. Core layout, routing, forms,
    data, sync and notifications remain outside this file. */
 
-:root[data-experience-theme="safari"]{
-  --mf-theme-name:"Safari Adventure";--mf-theme-tagline:"Wild days, bigger dreams";
-  --mf-world-base:#e7efdc;--mf-world-deep:#224b37;--mf-world-accent:#4f7959;--mf-world-accent-2:#b27f42;
-  --mf-world-surface:#fffcee;--mf-world-surface-strong:#fffef4;
-  --mf-world-line:rgba(57,97,65,.20);--mf-world-shadow:rgba(35,70,43,.18);--mf-world-text:#1f382a;--mf-world-muted:#5c6f60;
-  --mf-page-focus:center 20%;--mf-baby-focus:center 10%;--mf-mom-focus:center 13%
+/* Scene resolver. experience-theme.js publishes both modes of every plate; which one is in
+   use is decided here, by the same attribute that decides every other colour in the app. That
+   is deliberate: when JS owned the choice it had to be re-run at the instant the mode changed,
+   and anything that flipped data-theme on its own left light cards sitting on dark artwork. */
+:root{
+  --mf-theme-baby-scene:var(--mf-theme-baby-scene-light,none);
+  --mf-theme-baby-hero:var(--mf-theme-baby-hero-light,none);
+  --mf-theme-mom-scene:var(--mf-theme-mom-scene-light,none);
+  --mf-theme-mom-hero:var(--mf-theme-mom-hero-light,none);
+  --mf-theme-preview:var(--mf-theme-preview-light,none)
 }
-:root[data-experience-theme="butterfly"]{
-  --mf-theme-name:"Butterfly Garden";--mf-theme-tagline:"Little moments, big magic";
-  --mf-world-base:#f6ecf7;--mf-world-deep:#6c4c82;--mf-world-accent:#986eaa;--mf-world-accent-2:#d282a3;
-  --mf-world-surface:#fffaff;--mf-world-surface-strong:#fffdff;
-  --mf-world-line:rgba(143,105,166,.18);--mf-world-shadow:rgba(99,71,130,.17);--mf-world-text:#42354d;--mf-world-muted:#76647d;
+:root[data-theme="dark"]{
+  --mf-theme-baby-scene:var(--mf-theme-baby-scene-dark,none);
+  --mf-theme-baby-hero:var(--mf-theme-baby-hero-dark,none);
+  --mf-theme-mom-scene:var(--mf-theme-mom-scene-dark,none);
+  --mf-theme-mom-hero:var(--mf-theme-mom-hero-dark,none);
+  --mf-theme-preview:var(--mf-theme-preview-dark,none)
+}
+
+:root[data-experience-theme="deepspace"]{
+  --mf-theme-name:"Deep Space";--mf-theme-tagline:"Small hands, far horizons";
+  --mf-world-base:#e9edfb;--mf-world-deep:#2b3570;--mf-world-accent:#5a63ad;--mf-world-accent-2:#3fa8c8;
+  --mf-world-surface:#fbfcff;--mf-world-surface-strong:#fefeff;
+  --mf-world-line:rgba(70,80,150,.19);--mf-world-shadow:rgba(40,48,104,.17);--mf-world-text:#252c55;--mf-world-muted:#5f6688;
   --mf-page-focus:center 18%;--mf-baby-focus:center 8%;--mf-mom-focus:center 12%
 }
-:root[data-experience-theme="princess"]{
-  --mf-theme-name:"Princess Palace";--mf-theme-tagline:"Kind hearts change the world";
-  --mf-world-base:#f7edf5;--mf-world-deep:#60436f;--mf-world-accent:#8b6aa7;--mf-world-accent-2:#c47f9a;
-  --mf-world-surface:#fff9fd;--mf-world-surface-strong:#fffdfc;
-  --mf-world-line:rgba(124,89,151,.19);--mf-world-shadow:rgba(91,61,119,.17);--mf-world-text:#49384f;--mf-world-muted:#786878;
-  --mf-page-focus:center 17%;--mf-baby-focus:center 9%;--mf-mom-focus:center 12%
+:root[data-experience-theme="aurora"]{
+  --mf-theme-name:"Aurora";--mf-theme-tagline:"Quiet nights, bright skies";
+  --mf-world-base:#e4f3fa;--mf-world-deep:#1d4f63;--mf-world-accent:#3f8ba3;--mf-world-accent-2:#43b394;
+  --mf-world-surface:#fbfeff;--mf-world-surface-strong:#fdffff;
+  --mf-world-line:rgba(43,101,124,.19);--mf-world-shadow:rgba(24,68,86,.16);--mf-world-text:#173c4c;--mf-world-muted:#517182;
+  --mf-page-focus:center 20%;--mf-baby-focus:center 9%;--mf-mom-focus:center 13%
 }
-:root[data-experience-theme="unicorn"]{
-  --mf-theme-name:"Unicorn Dreams";--mf-theme-tagline:"Believe in brighter tomorrows";
-  --mf-world-base:#eeedfc;--mf-world-deep:#514987;--mf-world-accent:#7569ba;--mf-world-accent-2:#c780b3;
-  --mf-world-surface:#faf9ff;--mf-world-surface-strong:#fffdff;
-  --mf-world-line:rgba(113,100,183,.18);--mf-world-shadow:rgba(76,65,136,.17);--mf-world-text:#3d3860;--mf-world-muted:#6d6885;
-  --mf-page-focus:center 15%;--mf-baby-focus:center 8%;--mf-mom-focus:center 10%
+:root[data-experience-theme="neonreef"]{
+  --mf-theme-name:"Neon Reef";--mf-theme-tagline:"Little wonders, deep glow";
+  --mf-world-base:#dff5f7;--mf-world-deep:#0f4a5a;--mf-world-accent:#2b8ba1;--mf-world-accent-2:#d2628f;
+  --mf-world-surface:#f9feff;--mf-world-surface-strong:#fdffff;
+  --mf-world-line:rgba(26,110,130,.19);--mf-world-shadow:rgba(12,66,80,.16);--mf-world-text:#0f3b48;--mf-world-muted:#4c6e78;
+  --mf-page-focus:center 16%;--mf-baby-focus:center 7%;--mf-mom-focus:center 11%
+}
+:root[data-experience-theme="crystalcity"]{
+  --mf-theme-name:"Crystal City";--mf-theme-tagline:"Built for tomorrow";
+  --mf-world-base:#eeecfc;--mf-world-deep:#3a2f7a;--mf-world-accent:#6a5bb5;--mf-world-accent-2:#c063a8;
+  --mf-world-surface:#fbfaff;--mf-world-surface-strong:#fefdff;
+  --mf-world-line:rgba(96,84,170,.19);--mf-world-shadow:rgba(60,50,120,.17);--mf-world-text:#2f2861;--mf-world-muted:#645d89;
+  --mf-page-focus:center 17%;--mf-baby-focus:center 8%;--mf-mom-focus:center 12%
 }
 
 /* One scene per realm. No veil, duplicate wallpaper or decorative pseudo-layer.
@@ -137,7 +156,7 @@
    art keeps reading. A theme with no painted plate falls back to a pale generated SVG whose
    luminance cannot be relied on, so it gets a scrim that stays above ~0.7 alpha for the whole
    text column — enough to hold 4.5:1 for 12px copy even over a black pixel. */
-:root[data-experience-theme="unicorn"] body[data-screen="mom-home"] .mf-dream-hero::before{
+:root[data-experience-theme="crystalcity"] body[data-screen="mom-home"] .mf-dream-hero::before{
   background:linear-gradient(168deg,
     color-mix(in srgb,var(--mf-world-surface-strong) 93%,transparent) 0%,
     color-mix(in srgb,var(--mf-world-surface-strong) 84%,transparent) 44%,
@@ -243,10 +262,10 @@
 .mf-experience-panel .mf-experience-option:active{transform:scale(.985)}.mf-experience-panel .mf-experience-option:focus-visible,.mf-experience-clean:focus-visible{outline:3px solid color-mix(in srgb,var(--mf-world-accent,var(--accent)) 60%,#fff);outline-offset:3px}
 
 /* Dark mode selects dedicated night artwork and solid surfaces. */
-:root[data-theme="dark"][data-experience-theme="safari"]{--mf-world-base:#0f1f18;--mf-world-deep:#c8ead0;--mf-world-accent:#83b48e;--mf-world-surface:#111f18;--mf-world-surface-strong:#0f1c16;--mf-world-line:rgba(190,218,198,.18);--mf-world-shadow:rgba(0,0,0,.34);--mf-world-text:#edf7ef;--mf-world-muted:#c0d0c4}
-:root[data-theme="dark"][data-experience-theme="butterfly"]{--mf-world-base:#171629;--mf-world-deep:#eadcf7;--mf-world-accent:#c6a0dc;--mf-world-surface:#1b182b;--mf-world-surface-strong:#191629;--mf-world-line:rgba(218,198,233,.17);--mf-world-shadow:rgba(0,0,0,.35);--mf-world-text:#f7effb;--mf-world-muted:#d5c7dc}
-:root[data-theme="dark"][data-experience-theme="princess"]{--mf-world-base:#191528;--mf-world-deep:#f2e5f5;--mf-world-accent:#c4a2d5;--mf-world-surface:#1e182a;--mf-world-surface-strong:#1c1628;--mf-world-line:rgba(228,204,232,.17);--mf-world-shadow:rgba(0,0,0,.35);--mf-world-text:#fbf3fb;--mf-world-muted:#ddcddd}
-:root[data-theme="dark"][data-experience-theme="unicorn"]{--mf-world-base:#11162f;--mf-world-deep:#eeebff;--mf-world-accent:#afa5f4;--mf-world-surface:#131831;--mf-world-surface-strong:#11162f;--mf-world-line:rgba(202,198,246,.18);--mf-world-shadow:rgba(0,0,0,.36);--mf-world-text:#f5f3ff;--mf-world-muted:#cfcae6}
+:root[data-theme="dark"][data-experience-theme="deepspace"]{--mf-world-base:#10132b;--mf-world-deep:#ccd4ff;--mf-world-accent:#8e99e0;--mf-world-surface:#121630;--mf-world-surface-strong:#10142b;--mf-world-line:rgba(196,204,246,.18);--mf-world-shadow:rgba(0,0,0,.36);--mf-world-text:#f0f2ff;--mf-world-muted:#c5cae4}
+:root[data-theme="dark"][data-experience-theme="aurora"]{--mf-world-base:#0b2130;--mf-world-deep:#cdeefb;--mf-world-accent:#74b9d4;--mf-world-surface:#0d2534;--mf-world-surface-strong:#0a1f2d;--mf-world-line:rgba(186,222,238,.18);--mf-world-shadow:rgba(0,0,0,.36);--mf-world-text:#eaf8ff;--mf-world-muted:#bcd3de}
+:root[data-theme="dark"][data-experience-theme="neonreef"]{--mf-world-base:#07222e;--mf-world-deep:#c8f2fb;--mf-world-accent:#5fbdd2;--mf-world-surface:#092733;--mf-world-surface-strong:#06202b;--mf-world-line:rgba(176,228,240,.18);--mf-world-shadow:rgba(0,0,0,.36);--mf-world-text:#e8fbff;--mf-world-muted:#b2cfd8}
+:root[data-theme="dark"][data-experience-theme="crystalcity"]{--mf-world-base:#140f30;--mf-world-deep:#e2dbff;--mf-world-accent:#9d8fe8;--mf-world-surface:#171236;--mf-world-surface-strong:#13102d;--mf-world-line:rgba(206,196,250,.18);--mf-world-shadow:rgba(0,0,0,.37);--mf-world-text:#f4f1ff;--mf-world-muted:#cbc5e6}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.panel,.grp,.metric,.row,.stash-hero,.data-status){color:var(--mf-world-text)!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head :is(h2,.eyebrow){color:#fff!important;text-shadow:0 2px 12px rgba(0,0,0,.30)!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{background-image:var(--mf-theme-mom-hero)!important;border-color:rgba(255,255,255,.16)!important}
@@ -327,7 +346,7 @@
 
 /* Contrast floor for text sitting over a painted plate.
    The illustrated worlds carry far more local contrast than the generated SVG scenes the
-   alphas above were tuned against. Measured against safari/light from the decoded plate
+   alphas above were tuned against. Measured against deepspace/light from the rendered scene
    pixels: the care section label fell to 1.5:1, the hero greeting to 2.5:1 and the stat
    pills to ~3.2:1. The theme package's own measurement puts the minimum surface alpha for
    body text over a plate at 0.62, so every carrier here clears that.

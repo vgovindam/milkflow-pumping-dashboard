@@ -3,9 +3,9 @@
  *   icon(theme, action) = disc(theme) + character(theme.cast[action]) + propBadge(action)
  *
  * Two layers with two jobs:
- *   - the CHARACTER is the theme. Safari gets savannah babies, Butterfly gets garden bugs,
- *     Princess gets royal pets, Unicorn gets storybook creatures. It is what a two-year-old
- *     looks at.
+ *   - the CHARACTER is the theme. Deep Space gets the crew, Aurora gets the cold-weather
+ *     animals, Neon Reef gets reef babies, Crystal City gets its small residents. It is what
+ *     a two-year-old looks at.
  *   - the PROP BADGE is the meaning. It is the same bottle, drop and tin in every theme, in
  *     the theme's darkest ink on a near-white badge, so the icon is still readable at a
  *     glance and still passes contrast when the theme changes.
@@ -16,14 +16,14 @@
 import {palette} from './palette.mjs';
 import {ACTIONS, placeProp} from './props.mjs';
 import {BADGE} from './parts.mjs';
-import safari from './cast/safari.mjs';
-import butterfly from './cast/butterfly.mjs';
-import princess from './cast/princess.mjs';
-import unicorn from './cast/unicorn.mjs';
+import deepspace from './cast/deepspace.mjs';
+import aurora from './cast/aurora.mjs';
+import neonreef from './cast/neonreef.mjs';
+import crystalcity from './cast/crystalcity.mjs';
 
 export {ACTIONS};
 
-const CASTS = {safari, butterfly, princess, unicorn};
+const CASTS = {deepspace, aurora, neonreef, crystalcity};
 export const THEME_IDS = Object.keys(CASTS);
 
 function colors(themeId, character) {

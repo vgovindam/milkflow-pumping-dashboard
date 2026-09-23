@@ -257,3 +257,72 @@ export function eyes(c, {dx = 6.4, dy = -0.4, rx = 3.1, ry = 3.6, style = 'open'
 export function cheeks(c, {dx = 12.4, dy = 5.4, rx = 3.2, ry = 2.2} = {}) {
   return [-1, 1].map(s => ellipse(HEAD.cx + s * dx, HEAD.cy + dy, rx, ry, c.blush, 'fill-opacity=".62"')).join('');
 }
+
+/* ------------------------------------------------- futuristic additions -- */
+/* The four worlds are space, ice, reef and glass, so the grammar needed a visor, a fin, a
+   beak, tentacles and a lit antenna. Everything else - head, eyes, cheeks, muzzle, ears -
+   is the same as it was, which is what keeps the cast looking like one hand. */
+
+/** Glass dome over the head: astronauts and robots. */
+export function visor(c, {tint = '#8FE6FF', cx = HEAD.cx, cy = HEAD.cy, rx = 12.6, ry = 11.4} = {}) {
+  return [
+    ellipse(cx, cy - 0.6, rx, ry, tint, 'fill-opacity=".9"'),
+    path(`M${r(cx - rx * 0.7)} ${r(cy - ry * 0.5)}q${r(rx * 0.5)} -${r(ry * 0.55)} ${r(rx * 1.05)} -${r(ry * 0.16)}`, 'none', `stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-opacity=".7"`),
+    ellipse(cx, cy - 0.6, rx, ry, 'none', `stroke="${c.coat2}" stroke-width="1.5" stroke-opacity=".8"`)
+  ].join('');
+}
+
+/** A bright ring around the head: helmet seal, or the glow of a beacon. */
+export function halo(c, {color, cx = HEAD.cx, cy = HEAD.cy, rx = HEAD.rx + 2.2, ry = HEAD.ry + 2.2} = {}) {
+  return ellipse(cx, cy, rx, ry, 'none', `stroke="${color || c.mark}" stroke-width="1.8" stroke-opacity=".55"`);
+}
+
+/** One antenna with a lit tip. */
+export function antennaPod(c, {color, cx = HEAD.cx, top = HEAD.cy - 22.4} = {}) {
+  const tip = color || c.mark;
+  return [
+    stroke(`M${r(cx)} ${r(HEAD.cy - HEAD.ry + 1)} V${r(top + 2.4)}`, c.coat2, 2),
+    circle(cx, top, 2.6, tip),
+    circle(cx, top, 4.4, tip, 'fill-opacity=".3"')
+  ].join('');
+}
+
+/** Dorsal fin, for the reef. */
+export function finTop(c, {color, cx = HEAD.cx, cy = HEAD.cy - HEAD.ry} = {}) {
+  return path(`M${r(cx - 7)} ${r(cy + 2.4)}q${r(6)} -${r(9.4)} ${r(13.6)} -${r(1.2)}q-${r(6.6)} ${r(2.2)} -${r(13.6)} ${r(1.2)}Z`, color || c.coat2);
+}
+
+/** Side fins, drawn behind the head. */
+export function fins(c, {color, dx = 15.8, dy = 3.4, rx = 5.4, ry = 7.2} = {}) {
+  const f = color || c.coat2;
+  return [
+    ellipse(HEAD.cx - dx, HEAD.cy + dy, rx, ry, f, 'transform="rotate(-22 ' + r(HEAD.cx - dx) + ' ' + r(HEAD.cy + dy) + ')" fill-opacity=".92"'),
+    ellipse(HEAD.cx + dx, HEAD.cy + dy, rx, ry, f, 'transform="rotate(22 ' + r(HEAD.cx + dx) + ' ' + r(HEAD.cy + dy) + ')" fill-opacity=".92"')
+  ].join('');
+}
+
+/** Hanging tentacles: jellyfish and octopus. */
+export function tentacles(c, {color, count = 4, spread = 9.4, len = 7.6, top = HEAD.cy + HEAD.ry - 2.4} = {}) {
+  const col = color || c.coat2;
+  let out = '';
+  for (let i = 0; i < count; i++) {
+    const t = count === 1 ? 0.5 : i / (count - 1);
+    const x = HEAD.cx - spread + t * spread * 2;
+    const sway = (i % 2 ? 1 : -1) * 2.2;
+    out += stroke(`M${r(x)} ${r(top)}q${r(sway)} ${r(len * 0.55)} ${r(-sway * 0.4)} ${r(len)}`, col, 2.2, 'stroke-opacity=".92"');
+  }
+  return out;
+}
+
+/** A small beak for the birds. */
+export function beak(c, {color = '#F5A14B', cx = HEAD.cx, cy = HEAD.cy + 3.6, w = 4.2, h = 5.2} = {}) {
+  return path(`M${r(cx - w)} ${r(cy)}h${r(w * 2)}L${r(cx)} ${r(cy + h)}Z`, color);
+}
+
+/** Flat colour facets: crystal creatures catch the light in planes, not in fur. */
+export function facets(c, {color, at = [[-8.4, -4.6], [7.2, -6.2], [-3.4, 6.4], [9.2, 2.6]]} = {}) {
+  const col = color || c.coat2;
+  return at.map(([dx, dy]) =>
+    path(`M${r(HEAD.cx + dx)} ${r(HEAD.cy + dy - 3.2)}l${r(3.1)} ${r(3.2)}l${r(-3.1)} ${r(3.2)}l${r(-3.1)} ${r(-3.2)}Z`, col, 'fill-opacity=".5"')
+  ).join('');
+}

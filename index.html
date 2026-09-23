@@ -28,10 +28,11 @@
         const dark=pref==='dark'||(pref==='auto'&&(root.dataset.daypart==='night'||matchMedia('(prefers-color-scheme: dark)').matches));
         root.dataset.theme=dark?'dark':'light';
         const rawExperience=localStorage.getItem('milkflow-experience-theme-v1');
-        const experience=rawExperience==='jungle'||rawExperience==='storybook'?'safari':rawExperience;
-        root.dataset.experienceTheme=['safari','butterfly','princess','unicorn','clean'].includes(experience)?experience:'safari';
+        const retired={jungle:'deepspace',storybook:'deepspace',safari:'deepspace',butterfly:'aurora',princess:'neonreef',unicorn:'crystalcity'};
+        const experience=retired[rawExperience]||rawExperience;
+        root.dataset.experienceTheme=['deepspace','aurora','neonreef','crystalcity','clean'].includes(experience)?experience:'deepspace';
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content',dark?'#0e1016':'#f4f4f9');
-      }catch{root.dataset.experienceTheme='safari';}
+      }catch{root.dataset.experienceTheme='deepspace';}
       const reveal=()=>requestAnimationFrame(()=>root.classList.remove('mf-booting'));
       window.addEventListener('DOMContentLoaded',()=>{
         const timeout=new Promise(resolve=>setTimeout(resolve,650));
