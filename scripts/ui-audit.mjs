@@ -64,6 +64,34 @@ requireText('back follows real history',read('app.js'),'const from = history.sta
 requireText('back label names the real destination',read('app.js'),'const cameFrom=history.state?.from;');
 /* Every list of what happened reads newest first, the day view included. */
 requireText('day view is newest first',read('app.js'),"sort((a,b) => (b.time||'').localeCompare(a.time||''))");
+/* Un-voiding has to WRITE the field. pushBabies merges, and a key that is absent from the
+   payload leaves the cloud copy voided - so the record came back cleared on the next
+   snapshot and a milestone could never be re-ticked. */
+{
+  const app=read('app.js');
+  if(/delete\s+\w+\.voidedAt/.test(app))failures.push('un-void must set voidedAt=null, not delete it (Firestore merge ignores absent keys)');
+  requireText('snapshot cannot undo a newer local edit',app,'if(old && stampOf(old) > stampOf(r)) return;');
+}
+/* A field with no Save button has to say that it saved, or the screen looks like it ate the
+   number. */
+{
+  const app=read('app.js');
+  requireText('silent saves are confirmed',app,'function fieldSaved(');
+  for(const id of ['goalMl','stashMl'])
+    if(!new RegExp(`\\$\\('${id}'\\)[^\n]*fieldSaved`).test(app))failures.push(`${id} saves silently with no confirmation`);
+  for(const id of ['babyName','babyBirth','momName'])
+    if(!new RegExp(`\\$\\('${id}'\\)[^\n]*toast\\(`).test(app))failures.push(`${id} saves silently with no confirmation`);
+}
+/* The update banner is driven by the version, not by worker events: events fired it twice per
+   deploy and there was no way to put it away. */
+{
+  const notice=read('app-update-notice.js');
+  requireText('update banner compares versions',notice,'async function updateIsReady()');
+  requireText('update banner reads this build',notice,'window.MILKFLOW_BUILD?.version');
+  requireText('update banner can be dismissed',notice,'aun-later');
+  if(/addEventListener\('controllerchange',\s*\(\)\s*=>\s*\{[^}]*show\(\)/.test(notice))
+    failures.push('controllerchange must not show the banner unconditionally');
+}
 /* A surface the dark layer forgets is a white card with white text on it. */
 requireText('stash hero has a dark surface',read('core-ui.js'),':root[data-theme="dark"] body[data-realm] .stash-hero');
 /* Both heroes answer the same two questions in the same place. The hero is reviewed at phone

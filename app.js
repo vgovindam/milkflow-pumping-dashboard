@@ -1730,7 +1730,10 @@ async function voidRecord(kind,id){
 }
 async function restoreRecord(kind,id){
   const e=findRecord(kind,id); if(!e) return;
-  delete e.voidedAt; e.editedAt=new Date().toISOString(); e.synced=false; save(); render();
+  /* null, not delete: pushBabies writes with merge:true, and a key that is absent from the
+     payload leaves the cloud copy untouched. Deleting it locally meant the record came back
+     voided on the next snapshot, every time. */
+  e.voidedAt=null; e.editedAt=new Date().toISOString(); e.synced=false; save(); render();
   try{ kind==='mom' ? await pushMom(e) : await pushBabies([e]); }catch{}
   toast('Entry restored');
 }
@@ -2001,14 +2004,27 @@ function bindViewInputs(){
     stashField.addEventListener('input',syncStash);
     syncStash();
   }
-  $('goalMl')?.addEventListener('change',e=>{ S.profile.dailyGoalMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); });
-  $('stashMl')?.addEventListener('change',e=>{ S.profile.stashMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); });
-  $('feedingPreference')?.addEventListener('change',e=>{ S.baby.feedingPreference=e.target.value; save(); pushProfile().catch(()=>{}); render(); });
-  $('babyName')?.addEventListener('change',e=>{ const v=e.target.value.trim(); if(v){ S.baby.name=v; save(); pushProfile().catch(()=>{}); render(); } });
-  $('babyBirth')?.addEventListener('change',e=>{ S.baby.birthDate=e.target.value||''; save(); pushProfile().catch(()=>{}); render(); });
-  $('momName')?.addEventListener('change',e=>{ S.profile.momName=e.target.value.trim(); save(); pushProfile().catch(()=>{}); render(); });
-  $('feedGap')?.addEventListener('change',e=>{ S.reminders.feedGapMin=+e.target.value||180; S.reminders.feedLastKey=null; save(); pushProfile().catch(()=>{}); render(); });
-  document.querySelectorAll('[data-schedule]').forEach(x=>x.addEventListener('change',()=>{ S.schedule[+x.dataset.schedule]=x.value; save(); pushProfile().catch(()=>{}); }));
+  $('goalMl')?.addEventListener('change',e=>{ S.profile.dailyGoalMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); fieldSaved(e.target); });
+  $('stashMl')?.addEventListener('change',e=>{ S.profile.stashMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); fieldSaved(e.target); });
+  $('feedingPreference')?.addEventListener('change',e=>{ S.baby.feedingPreference=e.target.value; save(); pushProfile().catch(()=>{}); render(); toast('Feeding preference saved'); });
+  $('babyName')?.addEventListener('change',e=>{ const v=e.target.value.trim(); if(v){ S.baby.name=v; save(); pushProfile().catch(()=>{}); render(); toast('Name saved'); } });
+  $('babyBirth')?.addEventListener('change',e=>{ S.baby.birthDate=e.target.value||''; save(); pushProfile().catch(()=>{}); render(); toast('Birthday saved'); });
+  $('momName')?.addEventListener('change',e=>{ S.profile.momName=e.target.value.trim(); save(); pushProfile().catch(()=>{}); render(); toast('Name saved'); });
+  $('feedGap')?.addEventListener('change',e=>{ S.reminders.feedGapMin=+e.target.value||180; S.reminders.feedLastKey=null; save(); pushProfile().catch(()=>{}); render(); toast('Reminder gap saved'); });
+  document.querySelectorAll('[data-schedule]').forEach(x=>x.addEventListener('change',()=>{ S.schedule[+x.dataset.schedule]=x.value; save(); pushProfile().catch(()=>{}); fieldSaved(x); }));
+}
+
+/* These fields have no Save button on purpose - they commit when you leave them, which is
+   the only thing that works one-handed. What was missing was any sign that it happened, so
+   the screen looked like it had swallowed the number. */
+function fieldSaved(el, label='Saved'){
+  const field = el?.closest?.('.field'); if(!field) return;
+  let tag = field.querySelector('.field-saved');
+  if(!tag){ tag = document.createElement('em'); tag.className = 'field-saved'; field.prepend(tag); }
+  tag.textContent = label;
+  clearTimeout(tag._hide);
+  requestAnimationFrame(()=>tag.classList.add('show'));
+  tag._hide = setTimeout(()=>tag.classList.remove('show'), 2400);
 }
 
 // A marked milestone is a normal baby event, so it appears in History, syncs and exports.
@@ -2017,12 +2033,12 @@ async function toggleMilestone(id,text,group,month){
   if(existing){
     existing.voidedAt = new Date().toISOString(); existing.synced = false; save(); render();
     try{ await pushBabies([existing]); }catch{}
-    toast('Milestone cleared',5000,{label:'Undo',run:()=>{ delete existing.voidedAt; existing.editedAt=new Date().toISOString(); save(); render(); pushBabies([existing]).catch(()=>{}); }});
+    toast('Milestone cleared',5000,{label:'Undo',run:()=>{ existing.voidedAt=null; existing.editedAt=new Date().toISOString(); save(); render(); pushBabies([existing]).catch(()=>{}); }});
     return;
   }
   // restore a previously cleared one rather than creating a duplicate
   const prior = S.babyEvents.find(e => e.milestoneId === id);
-  if(prior){ delete prior.voidedAt; prior.editedAt=new Date().toISOString(); prior.synced=false; save(); render(); try{ await pushBabies([prior]); }catch{} toast('Milestone noted'); return; }
+  if(prior){ prior.voidedAt=null; prior.editedAt=new Date().toISOString(); prior.synced=false; completeNudge('dev-week'); save(); render(); try{ await pushBabies([prior]); }catch{} toast('Milestone noted'); return; }
   const x = normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'milestone',date:today(),time:now(),
     milestoneId:id,milestoneText:text,milestoneGroup:group,milestoneMonth:month,note:'',sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false});
   S.babyEvents.push(x); completeNudge('dev-week'); save(); render();
@@ -2197,7 +2213,12 @@ function startRealtime(){
     snap.docChanges().forEach(change=>{
       if(change.type==='removed') return;
       let r={...change.doc.data(),id:change.doc.id,synced:true}; if(key==='babyEvents') r=normalizeBabyEvent(r);
-      const old=current.get(r.id); const next={...(old||{}),...r};
+      const old=current.get(r.id);
+      /* A snapshot is not automatically the truth. It can be an echo of the document as it
+         was before this device's last edit, and applying it blindly walks that edit back -
+         which is how a milestone you had just ticked came back unticked. */
+      if(old && stampOf(old) > stampOf(r)) return;
+      const next={...(old||{}),...r};
       if(!old||JSON.stringify({...old,updatedAt:undefined})!==JSON.stringify({...next,updatedAt:undefined})){ current.set(r.id,next); changed=true; }
     });
     if(changed){ S[key]=[...current.values()]; save(); clearTimeout(renderTimer); renderTimer=setTimeout(render,120); }
