@@ -267,11 +267,14 @@ function setView(v,{replace=false}={}){
   withTransition(dir, () => { closeOverlays(); closeDialogs(); render(dir); restoreScroll(v,dir); });
 }
 function goBack(){
+  // Whatever pushed this screen is where Back belongs, even when that is not the screen's
+  // parent in the menu: reaching Freezer stash from a card on Mom home should not drop you
+  // on More, a screen you were never looking at. Popping the real entry also keeps the
+  // device Back button from walking forward through screens already visited.
+  const from = history.state?.from;
+  if(from && VIEWS.has(from)){ history.back(); return; }
   const p = PARENT[view];
   if(!p){ history.back(); return; }
-  // If we arrived here from the parent, pop the real entry so the device Back button
-  // does not end up walking forward through screens already visited.
-  if(history.state && history.state.from === p){ history.back(); return; }
   setView(p,{replace:true});
 }
 window.addEventListener('popstate',e => {
@@ -808,7 +811,17 @@ function momTrends(){
   ${panel('When you produce most',hBars(bandTotals.map(b => ({...b, sub:`${b.count} ${b.count===1?'pump':'pumps'}`})),{unit:' mL'}) + (topBand&&topBand.value?`<p class="chart-note">Strongest window: <strong>${topBand.label.toLowerCase()}</strong> (${topBand.sub}).</p>`:''))}
   ${panel('Recent sessions',recentMom(6),'<button data-view="mom-history">See all</button>')}`;
 }
-function momStash(){ return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Freezer stash</h2></div></div><section class="stash-hero"><div class="stash-art">${icon('snow')}</div><div><strong>${(+S.profile.stashMl||0).toLocaleString()} mL</strong><span>saved milk</span></div></section>${panel('Update stash',`<div class="stash-buttons"><button data-stash="-30">−30</button><button data-stash="30">+30</button><button data-stash="60">+60</button><button data-stash="120">+120</button></div><label class="field"><span>Exact amount (mL)</span><input id="stashExact" type="number" inputmode="numeric" min="0" value="${+S.profile.stashMl||0}"></label>`)}`; }
+/* One number, one Save. The quick buttons and the field both edit the same pending value and
+   nothing is written until Save is tapped, so there is never a moment where the screen shows
+   a figure the app has not actually stored. */
+function momStash(){
+  const ml = +S.profile.stashMl || 0;
+  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Freezer stash</h2></div></div>
+  <section class="stash-hero"><div class="stash-art">${icon('snow')}</div><div><strong id="stashPreview">${ml.toLocaleString()} mL</strong><span>saved milk</span></div></section>
+  ${panel('Update stash',`<div class="stash-buttons"><button type="button" data-stash="-30">−30</button><button type="button" data-stash="30">+30</button><button type="button" data-stash="60">+60</button><button type="button" data-stash="120">+120</button></div>
+  <label class="field"><span>Exact amount (mL)</span><input id="stashExact" type="number" inputmode="numeric" min="0" step="1" value="${ml}"></label>
+  <div class="stash-save"><span id="stashDirty" class="stash-hint" hidden>Not saved yet</span><button type="button" class="save" data-stash-save>Save stash</button></div>`)}`;
+}
 
 // ---------------------------------------------------- development stages --
 // Source: CDC "Learn the Signs. Act Early." milestone checklists (2022 revision).
@@ -1107,7 +1120,9 @@ function historyByDay(){
   }).join('');
   const filter = S.ui.babyFilter || 'all';
   const matches = e => filter==='all' || (filter==='feed' && (e.eventType==='feeding'||e.eventType==='nursing')) || e.eventType===filter;
-  const evs = babyOn(sel).filter(e => !e.exactSourceDuplicate && matches(e)).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+  /* Newest first. The last thing that happened is the thing you are checking on, so it is
+     the thing at the top - the same order History and Recent care already use. */
+  const evs = babyOn(sel).filter(e => !e.exactSourceDuplicate && matches(e)).sort((a,b) => (b.time||'').localeCompare(a.time||''));
   const list = evs.length ? evs.map(revRow).join('')
     : empty('history','Nothing here',`No ${filter==='all'?'entries':BABY_FILTERS.find(f=>f[0]===filter)[1].toLowerCase()} logged on ${fd(sel)}.`);
   return `<div class="day-strip">${strip}</div>
@@ -1366,10 +1381,17 @@ function render(dir='none'){
   document.body.dataset.screen=view;
   document.body.dataset.depth=depthOf(view);
   // Back button names where it returns to, the way an iOS nav bar does.
+  /* The label names where Back actually goes, which is the screen that pushed this one -
+     landing on "More" after tapping a card on Home was the label telling the truth about the
+     wrong thing. */
   const parent=PARENT[view];
+  const cameFrom=history.state?.from;
+  /* Only screens that were pushed get a Back control at all - a tab reached by swapping
+     workspaces is still a tab. */
+  const target=parent ? ((cameFrom && VIEWS.has(cameFrom) && cameFrom!==view) ? cameFrom : parent) : null;
   const back=$('backLabel');
-  if(back) back.textContent = parent ? (titles[parent]||'Back') : '';
-  document.querySelector('.back-btn')?.classList.toggle('show',!!parent);
+  if(back) back.textContent = target ? (titles[target]||'Back') : '';
+  document.querySelector('.back-btn')?.classList.toggle('show',!!target);
   el.innerHTML=(renderers[view]||momHome)();
   // Only the fallback path needs a class; a view transition animates its own snapshots.
   el.classList.remove('nav-forward','nav-back','nav-swap');
@@ -1554,9 +1576,10 @@ function themeLabelForSettings(){
  * for this age, and a reminder that the freezer figure goes stale if nobody touches it.
  *
  * The rule is the same for both, and it is deliberately quiet: a card at the top of the
- * screen, never a dialog. Act on it and it is done for the period. Dismiss it and it comes
- * back at most twice more, then stops until the next period. Three appearances is the whole
- * budget - an app that nags is an app that gets ignored.
+ * screen, never a dialog. Act on it and it is done for the period. Dismiss it and it is gone
+ * for the rest of the day, and comes back at most twice more on later days before it stops
+ * until the next period. Three appearances is the whole budget, and simply ignoring the card
+ * spends one - an app that nags is an app that gets ignored.
  */
 const NUDGE_LIMIT = 3;
 
@@ -1568,31 +1591,51 @@ function isoWeekKey(d = new Date()){
   return `${t.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 
+/* Each nudge's period in one place, so a screen that finishes the job can close the card
+   without knowing how its clock works. */
+const STASH_PERIOD_MS = 172800000; // two days
+function nudgePeriod(id){
+  return id === 'dev-week' ? isoWeekKey() : `stash-${Math.floor(Date.now() / STASH_PERIOD_MS)}`;
+}
 function nudgeRecord(id, period){
   const all = S.nudges || (S.nudges = {});
   const rec = all[id];
-  if(!rec || rec.period !== period){ all[id] = {period, shown: 0, done: false, lastShown: null}; }
+  if(!rec || rec.period !== period){ all[id] = {period, shown: 0, done: false, lastShown: null, snoozedOn: null}; }
   return all[id];
 }
 function nudgeIsOpen(id, period){
   const rec = nudgeRecord(id, period);
-  return !rec.done && rec.shown < NUDGE_LIMIT;
+  if(rec.done) return false;
+  const stamp = today();
+  /* Dismissed today means gone today. Without this the card reappeared the instant the
+     dismissal re-rendered the screen, which is the opposite of dismissing it. */
+  if(rec.snoozedOn === stamp) return false;
+  /* The budget is spent - but not mid-day, or the card would vanish out from under the
+     hand that is reaching for it. */
+  if((rec.shown || 0) >= NUDGE_LIMIT && rec.lastShown !== stamp) return false;
+  return true;
 }
 function markNudgeShown(id, period){
   const rec = nudgeRecord(id, period);
   const stamp = today();
   /* One appearance per day at most, so opening the app five times in a morning does not burn
-     the whole budget before lunch. */
+     the whole budget before lunch. Ignoring the card counts against the budget exactly like
+     dismissing it: three silent days is an answer too. */
   if(rec.lastShown === stamp) return;
-  rec.lastShown = stamp; save();
+  rec.lastShown = stamp; rec.shown = (rec.shown || 0) + 1; save();
 }
 function dismissNudge(id){
   const rec = S.nudges?.[id]; if(!rec) return;
-  rec.shown = (rec.shown || 0) + 1; save(); render();
+  const stamp = today();
+  rec.snoozedOn = stamp;
+  if(rec.lastShown !== stamp){ rec.lastShown = stamp; rec.shown = (rec.shown || 0) + 1; }
+  save(); render();
 }
 function completeNudge(id){
-  const rec = S.nudges?.[id]; if(!rec) return;
-  rec.done = true; save();
+  /* nudgeRecord, not a plain lookup: the job can be done before the card has ever been
+     shown, and that should still count for the period. */
+  const rec = nudgeRecord(id, nudgePeriod(id));
+  rec.done = true; rec.snoozedOn = today(); save();
 }
 
 /* What is typical for this age, and something to try. The checklist itself lives on the
@@ -1600,7 +1643,7 @@ function completeNudge(id){
 function weeklyDevelopmentNudge(){
   if(!birthDate()) return null;
   const stage = currentStage(); if(!stage) return null;
-  const period = isoWeekKey();
+  const period = nudgePeriod('dev-week');
   if(!nudgeIsOpen('dev-week', period)) return null;
   const marked = markedMilestones();
   const all = Object.values(stage.groups).flat();
@@ -1621,7 +1664,7 @@ function weeklyDevelopmentNudge(){
    somebody remembered. Two days is long enough not to be annoying and short enough that the
    number still means something. */
 function stashNudge(){
-  const period = `stash-${Math.floor(Date.now() / 172800000)}`;
+  const period = nudgePeriod('stash');
   if(!nudgeIsOpen('stash', period)) return null;
   const ml = +S.profile.stashMl || 0;
   return {
@@ -1948,7 +1991,16 @@ function bindViewInputs(){
     const next=el.querySelector('.schedule-card:not(.done)');
     if(next && el.scrollWidth > el.clientWidth) el.scrollLeft = Math.max(0, next.offsetLeft - 12);
   });
-  $('stashExact')?.addEventListener('change',e=>{ S.profile.stashMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); render(); });
+  const stashField=$('stashExact');
+  if(stashField){
+    const syncStash=()=>{
+      const v=Math.max(0,Math.round(+stashField.value||0));
+      const prev=$('stashPreview'); if(prev) prev.textContent=`${v.toLocaleString()} mL`;
+      const hint=$('stashDirty'); if(hint) hint.hidden = v===Math.max(0,+S.profile.stashMl||0);
+    };
+    stashField.addEventListener('input',syncStash);
+    syncStash();
+  }
   $('goalMl')?.addEventListener('change',e=>{ S.profile.dailyGoalMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); });
   $('stashMl')?.addEventListener('change',e=>{ S.profile.stashMl=Math.max(0,+e.target.value||0); save(); pushProfile().catch(()=>{}); });
   $('feedingPreference')?.addEventListener('change',e=>{ S.baby.feedingPreference=e.target.value; save(); pushProfile().catch(()=>{}); render(); });
@@ -1973,7 +2025,7 @@ async function toggleMilestone(id,text,group,month){
   if(prior){ delete prior.voidedAt; prior.editedAt=new Date().toISOString(); prior.synced=false; save(); render(); try{ await pushBabies([prior]); }catch{} toast('Milestone noted'); return; }
   const x = normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'milestone',date:today(),time:now(),
     milestoneId:id,milestoneText:text,milestoneGroup:group,milestoneMonth:month,note:'',sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false});
-  S.babyEvents.push(x); save(); render();
+  S.babyEvents.push(x); completeNudge('dev-week'); save(); render();
   try{ await pushBabies([x]); }catch{ toast('Saved on this device. Cloud will retry.'); }
   toast('Milestone noted');
 }
@@ -2211,6 +2263,11 @@ async function toggleFeedReminders(){
 
 function handleClick(e){
   if(e.target.closest('[data-close]')||e.target.id==='scrim'){ closeOverlays(); return; }
+  /* Before the generic [data-view] route below: the nudge's own button carries a data-view
+     too, and routing on it first meant the card was never marked answered - you went to the
+     screen and the card was still waiting for you when you came back. */
+  const nd=e.target.closest('[data-nudge-dismiss]'); if(nd){ dismissNudge(nd.dataset.nudgeDismiss); return; }
+  const na=e.target.closest('[data-nudge-go]'); if(na){ completeNudge(na.dataset.nudgeGo); setView(na.dataset.view||'more'); return; }
   const ws=e.target.closest('[data-workspace]'); if(ws){ S.ui.workspace=ws.dataset.workspace; setView(ws.dataset.workspace==='baby'?'baby-home':'mom-home'); return; }
   const route=e.target.closest('[data-view]'); if(route){ setView(route.dataset.view); return; }
   if(e.target.closest('[data-back]')){ goBack(); return; }
@@ -2248,10 +2305,9 @@ function handleClick(e){
   const br=e.target.closest('[data-baby-range]'); if(br){ S.ui.babyRange=+br.dataset.babyRange; save(); render(); return; }
   const bf=e.target.closest('[data-baby-filter]'); if(bf){ S.ui.babyFilter=bf.dataset.babyFilter; save(); render(); return; }
   const tr=e.target.closest('[data-trend-range]'); if(tr){ S.ui.trendRange=+tr.dataset.trendRange; save(); render(); return; }
-  const nd=e.target.closest('[data-nudge-dismiss]'); if(nd){ dismissNudge(nd.dataset.nudgeDismiss); return; }
-  const na=e.target.closest('[data-nudge-go]'); if(na){ completeNudge(na.dataset.nudgeGo); setView(na.dataset.view||'more'); return; }
   const dr=e.target.closest('[data-doctor-range]'); if(dr){ S.ui.doctorRange=+dr.dataset.doctorRange; save(); render(); return; }
-  const st=e.target.closest('[data-stash]'); if(st){ S.profile.stashMl=Math.max(0,(+S.profile.stashMl||0)+ +st.dataset.stash); save(); pushProfile().catch(()=>{}); render(); return; }
+  const ss=e.target.closest('[data-stash-save]'); if(ss){ const el=$('stashExact'); S.profile.stashMl=Math.max(0,Math.round(+(el?.value)||0)); save(); pushProfile().catch(()=>{}); completeNudge('stash'); render(); toast('Freezer stash updated'); return; }
+  const st=e.target.closest('[data-stash]'); if(st){ const el=$('stashExact'); if(el){ el.value=Math.max(0,Math.round((+el.value||0)+ +st.dataset.stash)); el.dispatchEvent(new Event('input',{bubbles:true})); } return; }
 }
 document.addEventListener('click',handleClick);
 

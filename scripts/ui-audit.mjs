@@ -29,17 +29,43 @@ if(/<script[^>]+gstatic\.com\/firebasejs/.test(files.html))
 requireText('firebase loads on demand',read('app.js'),'function loadFirebase()');
 
 /* Nudges speak first, so the budget matters more than the copy: a card (never a dialog),
-   at most three appearances per period, at most one a day, and acting on it ends it. */
+   at most three appearances per period, at most one a day, and acting on it ends it.
+   Dismissing has to hold for the rest of the day - without the snooze the card came straight
+   back on the re-render that the dismissal itself triggered. */
 {
   const app=read('app.js'), ui=read('core-ui.js');
   requireText('nudge budget',app,'const NUDGE_LIMIT = 3;');
   requireText('weekly period',app,'function isoWeekKey(');
-  requireText('two-day stash period',app,'Math.floor(Date.now() / 172800000)');
+  requireText('two-day stash period',app,'Math.floor(Date.now() / STASH_PERIOD_MS)');
+  requireText('two days is two days',app,'const STASH_PERIOD_MS = 172800000;');
   requireText('one appearance a day',app,"if(rec.lastShown === stamp) return;");
+  requireText('dismiss holds for the day',app,'if(rec.snoozedOn === stamp) return false;');
+  requireText('dismiss records the snooze',app,'rec.snoozedOn = stamp;');
+  requireText('ignoring spends the budget',app,'rec.lastShown = stamp; rec.shown = (rec.shown || 0) + 1;');
   requireText('acting ends it',app,'function completeNudge(');
   requireText('nudge is a card',ui,'function nudgeCard(');
+  /* The card's own button carries a data-view, so the generic route must not claim the click
+     first - that is what left the card unanswered after you acted on it. */
+  const order=app.indexOf("closest('[data-nudge-go]')"), route=app.indexOf("const route=e.target.closest('[data-view]')");
+  if(order<0||route<0||order>route)failures.push('nudge clicks must be handled before the generic [data-view] route');
   if(/showModal\(\)[^;]*nudge/i.test(app))failures.push('nudges must be a dismissible card, not a dialog');
 }
+/* The freezer figure is typed by hand, so the screen that asks for it needs somewhere to say
+   "done" - and nothing is written to the record until that button is pressed. */
+{
+  const app=read('app.js');
+  requireText('stash has a save button',app,'data-stash-save');
+  requireText('stash save commits the field',app,"S.profile.stashMl=Math.max(0,Math.round(+(el?.value)||0))");
+  requireText('stash edits stay pending',app,'const hint=$(\'stashDirty\');');
+  requireText('saving the stash answers the card',app,"completeNudge('stash')");
+}
+/* Back goes where you came from, not where the menu says this screen lives. */
+requireText('back follows real history',read('app.js'),'const from = history.state?.from;');
+requireText('back label names the real destination',read('app.js'),'const cameFrom=history.state?.from;');
+/* Every list of what happened reads newest first, the day view included. */
+requireText('day view is newest first',read('app.js'),"sort((a,b) => (b.time||'').localeCompare(a.time||''))");
+/* A surface the dark layer forgets is a white card with white text on it. */
+requireText('stash hero has a dark surface',read('core-ui.js'),':root[data-theme="dark"] body[data-realm] .stash-hero');
 /* Both heroes answer the same two questions in the same place. The hero is reviewed at phone
    width, so the composition has a 393pt step and a 375pt step - a Pro-sized photo beside a
    column that still fits a greeting with a name in it. */
