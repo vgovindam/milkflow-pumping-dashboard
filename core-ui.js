@@ -642,6 +642,9 @@ function renderBaby(s){
   let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}
   const feedCount=st.milkCount+st.nursingCount+st.formulaCount;
   const last=lastFeed(s),lastAge=last?compactRelativeAgo(last.date,last.time):'Nothing yet';
+  const sleepStart=s.baby?.activeSleep?.date&&s.baby?.activeSleep?.time?new Date(`${s.baby.activeSleep.date}T${s.baby.activeSleep.time}:00`):null;
+  const sleepElapsed=sleepStart&&Number.isFinite(sleepStart.getTime())?Math.max(0,Math.round((Date.now()-sleepStart.getTime())/60000)):null;
+  const sleepLabel=sleepElapsed==null?'Sleep':sleepElapsed<60?`Sleep ${sleepElapsed}m`:`Sleep ${Math.floor(sleepElapsed/60)}h ${sleepElapsed%60}m`;
   const babyMeta=age;
   const todayBits=[
     feedCount?`${feedCount} feed${feedCount===1?'':'s'}`:'No feeds yet',
@@ -684,7 +687,7 @@ function renderBaby(s){
     </div>
 
     <div class="mf-care-ribbon" aria-label="More baby care">
-      <button type="button" data-sleep>${icon('moon')} Sleep</button>
+      <button type="button" data-sleep class="${sleepElapsed!=null?'sleep-live':''}">${icon('moon')} <span>${esc(sleepLabel)}</span></button>
       <button type="button" data-growth>${icon('growth')} Growth</button>
       <button type="button" data-view="baby-history">History</button>
       <button type="button" data-view="baby-trends">Trends</button>
