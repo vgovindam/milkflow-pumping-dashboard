@@ -1,6 +1,6 @@
 {
-  "version": "2.17",
-  "runtimeStatus": "nine selectable worlds; Unicorn Dream remains gated until its dedicated artwork package is complete",
+  "version": "2.18",
+  "runtimeStatus": "nine selectable worlds; six formerly placeholder worlds now use full image-backed production scenes; Unicorn Dream remains gated",
   "themeIds": [
     "animal-kingdom",
     "unicorn-dream",
@@ -121,7 +121,8 @@
         "muted coral"
       ],
       "reuseCandidates": [],
-      "runtime": "selectable"
+      "runtime": "selectable",
+      "artRuntime": "full-image-scene"
     },
     "celestial": {
       "title": "Moon & Stars",
@@ -141,7 +142,8 @@
       "reuseCandidates": [
         "assets/themes/cloud-island.svg"
       ],
-      "runtime": "selectable"
+      "runtime": "selectable",
+      "artRuntime": "full-image-scene"
     },
     "woodland": {
       "title": "Woodland Forest",
@@ -164,7 +166,8 @@
         "assets/animals/fox.svg",
         "assets/animals/rabbit.svg"
       ],
-      "runtime": "selectable"
+      "runtime": "selectable",
+      "artRuntime": "full-image-scene"
     },
     "safari-sunset": {
       "title": "Safari Sunset",
@@ -186,7 +189,8 @@
         "assets/theme-details/safari.svg",
         "assets/animals/elephant.svg"
       ],
-      "runtime": "selectable"
+      "runtime": "selectable",
+      "artRuntime": "full-image-scene"
     },
     "floral-meadow": {
       "title": "Floral Meadow",
@@ -204,7 +208,8 @@
         "forest"
       ],
       "reuseCandidates": [],
-      "runtime": "selectable"
+      "runtime": "selectable",
+      "artRuntime": "full-image-scene"
     },
     "cozy-clouds": {
       "title": "Cozy Clouds",
@@ -224,7 +229,8 @@
       "reuseCandidates": [
         "assets/themes/cloud-island.svg"
       ],
-      "runtime": "selectable"
+      "runtime": "selectable",
+      "artRuntime": "full-image-scene"
     }
   }
 }
