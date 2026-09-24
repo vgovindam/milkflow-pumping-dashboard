@@ -70,7 +70,7 @@ function babyWishLine(name,nextFeed,feedCount){
   if(h>=5&&h<12)return 'Wishing you both a smooth morning';
   if(h>=12&&h<17)return `Hope your afternoon with ${baby} feels easy`;
   if(h>=17&&h<21)return 'Wishing you both a cozy evening';
-  return 'Keeping tonight calm and simple';
+  return '';
 }
 function ageLabel(birthDate){if(!birthDate)return'';const b=new Date(`${birthDate}T12:00:00`),n=new Date(`${today()}T12:00:00`),days=Math.floor((n-b)/86400000);if(!Number.isFinite(days)||days<0)return'';if(days<14)return`${days} day${days===1?'':'s'} old`;if(days<70)return`${Math.floor(days/7)} weeks old`;let m=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());if(n.getDate()<b.getDate())m--;return m<24?`${m} months old`:`${Math.floor(m/12)}y ${m%12}m`;}
 function relativeAgo(date,time){
@@ -656,10 +656,10 @@ function renderBaby(s){
         <div class="mf-animal-copy">
           <div class="welcome">${g.mark} ${esc(gl.text)}${(s.profile?.momName||'').trim()?'':'<button type="button" class="mf-name-cta" data-view="set-baby">Add your name</button>'}</div>
           <h2>${esc(babyName)}${babyMeta?`<i>${esc(babyMeta)}</i>`:''}</h2>
-          <p class="mf-baby-wish">${esc(wish)}</p>
+          ${wish?`<p class="mf-baby-wish">${esc(wish)}</p>`:''}
           <p class="mf-baby-todayline">${todayBits.map(esc).join(' · ')}</p>
           <div class="mf-baby-timing" aria-label="Baby feeding timing">
-            <span><small>Last feed</small><strong>${esc(lastAge)}</strong></span>
+            <span><small>Last feed</small><strong class="mf-last-feed-value"><b>${esc(lastAge)}</b>${last?`<em>${esc(lf.clock)}</em>`:''}</strong></span>
             <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'Learning'}</strong></span>
           </div>
         </div>
