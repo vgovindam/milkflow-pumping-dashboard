@@ -21,7 +21,7 @@ const depthOf = v => { let d=0, c=v; while(PARENT[c]){ c=PARENT[c]; d++; } retur
 const DEFAULTS = {
   version: VERSION,
   profile: { dailyGoalMl: 760, stashMl: 0, momName: '' },
-  baby: { id: 'saahas-2026', name: 'Saahas', feedingPreference: 'auto', birthDate: '', photo: '' },
+  baby: { id: 'saahas-2026', name: 'Saahas', feedingPreference: 'auto', birthDate: '', photo: '', activeSleep: null },
   schedule: ['05:40','11:05','14:35','17:45','20:45','23:35'],
   entries: [],
   babyEvents: [],
@@ -1860,7 +1860,59 @@ function commonValues(getter,step,limit=4){
 }
 const recentBottleOz = () => babyEvents().filter(e => e.eventType==='feeding').sort(byWhenDesc).slice(0,60).map(e => +e.amountOz);
 const recentNursingMin = () => babyEvents().filter(e => e.eventType==='nursing').sort(byWhenDesc).slice(0,40).map(e => +(e.durationMinutes ?? e.totalMinutes));
-const recentSleepMin = () => babyEvents().filter(e => e.eventType==='sleep').sort(byWhenDesc).slice(0,40).map(e => +e.durationMinutes);
+const recentSleepMin = () => babyEvents().filter(e => e.eventType==='sleep' && (+e.durationMinutes||0)>0).sort(byWhenDesc).slice(0,40).map(e => +e.durationMinutes);
+function sleepBucket(time){
+  const [h,m]=String(time||'').split(':').map(Number),x=(Number.isFinite(h)?h:12)*60+(Number.isFinite(m)?m:0);
+  if(x<360)return'overnight'; if(x<720)return'morning'; if(x<1020)return'afternoon'; if(x<1260)return'evening'; return'overnight';
+}
+function sleepPrediction(date=today(),time=now()){
+  const completed=babyEvents().filter(e=>e.eventType==='sleep'&&!e.exactSourceDuplicate&&(+e.durationMinutes||0)>=5&&(+e.durationMinutes||0)<=960).sort(byWhenDesc).slice(0,40);
+  const bucket=sleepBucket(time),same=completed.filter(e=>sleepBucket(e.time)===bucket);
+  const source=same.length>=3?same:completed;
+  if(source.length<3)return null;
+  const vals=source.map(e=>+e.durationMinutes).sort((a,b)=>a-b),i=Math.floor(vals.length/2),med=vals.length%2?vals[i]:(vals[i-1]+vals[i])/2;
+  return{minutes:Math.max(10,Math.round(med/5)*5),sample:source.length,basis:same.length>=3?'similar-time':'recent'};
+}
+function activeSleep(){
+  const x=S.baby?.activeSleep;
+  if(!x?.date||!x?.time)return null;
+  const started=new Date(`${x.date}T${x.time}:00`);
+  if(!Number.isFinite(started.getTime()))return null;
+  return{...x,started,elapsedMin:Math.max(0,Math.round((Date.now()-started.getTime())/60000))};
+}
+function sleepStart(minsAgo=0){
+  const d=new Date(Date.now()-Math.max(0,+minsAgo||0)*60000),date=iso(d),time=hhmm(d),pred=sleepPrediction(date,time);
+  S.baby.activeSleep={date,time,startedAt:d.toISOString(),expectedMin:pred?.minutes||null,predictionSample:pred?.sample||0,reminderAfterMin:pred?.minutes||90,remindedAt:null};
+  save(); pushProfile().catch(()=>{}); closeOverlays(); render(); confirmed();
+  toast(`${S.baby.name} marked asleep - ${to12(time)}`,4500);
+}
+async function sleepEnd(){
+  const a=activeSleep(); if(!a)return;
+  const duration=Math.max(1,a.elapsedMin),ended=new Date();
+  const x=normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:a.date,time:a.time,durationMinutes:duration,endDate:iso(ended),endTime:hhmm(ended),captureMode:'timer',predictionMinutes:a.expectedMin||null,sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false});
+  S.last.sleepMin=duration; S.baby.activeSleep=null; S.babyEvents.push(x); save(); closeOverlays();
+  try{await Promise.all([pushBabies([x]),pushProfile()]);}catch{toast('Sleep saved on this device. Cloud will retry.',4500);}
+  render(); confirmed(); toast(`Sleep logged - ${duration>=60?`${Math.floor(duration/60)}h ${duration%60}m`:`${duration} min`}`);
+}
+function sleepCancel(){
+  if(!activeSleep())return;
+  S.baby.activeSleep=null; save(); pushProfile().catch(()=>{}); closeOverlays(); render(); toast('Sleep timer discarded');
+}
+function sleepSheet(){
+  const a=activeSleep(),pred=sleepPrediction();
+  if(a){
+    const expected=a.expectedMin?`Typical recent sleep around ${a.expectedMin} min - based on ${a.predictionSample||3} logs`:'MilkFlow is still learning the sleep pattern';
+    return openSheet(`<div class="sheet-head"><strong>Sleep is running</strong><button data-close>${icon('close')}</button></div>
+      <div class="sleep-live-card"><span>${icon('moon')}</span><div><strong>${a.elapsedMin<60?`${a.elapsedMin} min`:`${Math.floor(a.elapsedMin/60)}h ${a.elapsedMin%60}m`}</strong><small>Started ${to12(a.time)} - ${esc(expected)}</small></div></div>
+      <div class="sleep-primary-actions"><button class="save baby" data-sleep-end>End sleep now</button><button data-sleep-cancel>Discard timer</button></div>`);
+  }
+  const learned=pred?`Recent typical sleep: about ${pred.minutes} min - ${pred.sample} logged sleeps`:'MilkFlow will learn a typical duration after a few completed sleep logs.';
+  return openSheet(`<div class="sheet-head"><strong>Sleep</strong><buttton data-close>${icon('close')}</button></div>
+    <p class="sheet-intro">${esc(learned)}</p>
+    <button class="sleep-start-main" data-sleep-start="0">${icon('moon')}<span><strong>Start sleep now</strong><small>Keep a timer running until baby wakes</small></span></button>
+    <div class="sleep-offsets"><button data-sleep-start="15">Started 15m ago</button><button data-sleep-start="30">30m ago</button><button data-sleep-start="60">1h ago</button></div>
+    <button class="sleep-complete-link" data-sleep-complete>Log a completed sleep instead</button>`);
+}
 const recentPumpMl = () => pumps().sort(byWhenDesc).slice(0,40).map(e => +e.amountMl);
 const recentPumpMin = () => pumps().sort(byWhenDesc).slice(0,40).map(e => +e.durationMin);
 
@@ -1971,15 +2023,17 @@ function openFeedDialog(type,isEdit=false){
 }
 function openSleepDialog(isEdit=false){
   closeOverlays(); if(!isEdit) editing=null;
+  const pred=sleepPrediction();
   $('sleepFormBody').innerHTML =
-    dialogHead((isEdit?'Edit ':'')+'Sleep','sleepDialog') +
+    dialogHead((isEdit?'Edit ':'')+'Completed sleep','sleepDialog') +
     `<section class="form-section"><div class="form-section-title">How long did ${esc(S.baby.name)} sleep?</div>
+      ${pred?`<p class="form-helper">Recent typical sleep is about <strong>${pred.minutes} min</strong> from ${pred.sample} logged sleeps. This is a personal logging shortcut, not a sleep recommendation.</p>`:''}
       ${stepper('sleepMinutes',{unit:'min',step:15,max:960,presets:commonValues(recentSleepMin,15),tone:'baby'})}
     </section>
     <section class="form-section"><div class="form-section-title">Started</div>${whenRow('sleepDate','sleepTime')}</section>` +
-    dialogActions('sleepDialog','Save','baby');
+    dialogActions('sleepDialog','Save sleep','baby');
   setWhen('sleepTime',0);
-  if(S.last.sleepMin) $('sleepMinutes').value = S.last.sleepMin;
+  if(isEdit&&S.last.sleepMin) $('sleepMinutes').value = S.last.sleepMin;
   showDialog('sleepDialog',isEdit);
 }
 function openGrowthDialog(isEdit=false){
@@ -2336,7 +2390,18 @@ async function notify(title, options){
   return false;
 }
 
+function sleepReminderTick(){
+  const a=activeSleep(); if(!a)return;
+  const threshold=Math.max(30,+a.reminderAfterMin||90);
+  if(a.elapsedMin<threshold||S.baby.activeSleep?.remindedAt)return;
+  S.baby.activeSleep.remindedAt=new Date().toISOString(); save(); pushProfile().catch(()=>{});
+  const elapsed=a.elapsedMin<60?`${a.elapsedMin} min`:`${Math.floor(a.elapsedMin/60)}h ${a.elapsedMin%60}m`;
+  const basis=a.expectedMin?`around the recent ${a.expectedMin}-min pattern`:'after 90 minutes';
+  toast(`${S.baby.name} has been marked asleep for ${elapsed}. Still sleeping?`,9000,{label:'End sleep',run:()=>sleepEnd()});
+  notify(`Is ${S.baby.name} still sleeping?`,{body:`Timer has run ${elapsed} - reminder ${basis}`,tag:'milkflow-sleep'});
+}
 function tickReminders(){
+  sleepReminderTick();
   feedReminderTick();
   if(!S.reminders.enabled) return; const d=new Date(), m=d.getHours()*60+d.getMinutes(), dt=today();
   S.schedule.forEach((t,i)=>{ const target=+t.slice(0,2)*60 + +t.slice(3)-(+S.reminders.leadMin||0), key=`${dt}-${i}-${target}`; if(Math.abs(m-target)<=1&&S.reminders.lastSentKey!==key&&dayP(dt).length<=i){ toast(`Pump ${i+1} is coming up · ${to12(t)}`,7000); notify(`Pump ${i+1} at ${to12(t)}`,{body:`${dayLogged(dt)} mL logged so far today`,tag:'milkflow-pump'}); S.reminders.lastSentKey=key; save(); } });
@@ -2396,7 +2461,11 @@ function handleClick(e){
   const ft=e.target.closest('[data-feed-type]'); if(ft){ openFeedDialog(ft.dataset.feedType); return; }
   const diaper=e.target.closest('[data-diaper]'); if(diaper){ openDiaperDialog(diaper.dataset.diaper); return; }
   if(e.target.closest('[data-growth]')){ openGrowthDialog(); return; }
-  if(e.target.closest('[data-sleep]')){ openSleepDialog(); return; }
+  const sleepStartBtn=e.target.closest('[data-sleep-start]'); if(sleepStartBtn){ sleepStart(+sleepStartBtn.dataset.sleepStart||0); return; }
+  if(e.target.closest('[data-sleep-end]')){ sleepEnd(); return; }
+  if(e.target.closest('[data-sleep-cancel]')){ sleepCancel(); return; }
+  if(e.target.closest('[data-sleep-complete]')){ closeOverlays(); openSleepDialog(); return; }
+  if(e.target.closest('[data-sleep]')){ sleepSheet(); return; }
   if(e.target.closest('[data-import]')){ $('importFile').click(); return; }
   if(e.target.closest('[data-export]')){ exportBackup(); return; }
   if(e.target.closest('[data-cloud-check]')){ verifyCloud().then(render); return; }
@@ -2421,7 +2490,7 @@ $('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const w
 $('feedForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('feedType').value, wasEdit=!!editing, stamp=new Date().toISOString();
   if(type==='nursing'){ S.last.nursingMin=+$('feedDuration').value||null; S.last.nursingSide=$('feedSide')?.value||null; } else { S.last.bottleOz=+$('feedAmount').value||null; } const built=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}); const x=commitRecord(S.babyEvents,built); save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Feed logged'); });
 $('growthForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'growth',date:$('growthDate').value,time:'12:00',weightLb:$('growthWeightLb').value===''?null:+$('growthWeightLb').value,weightOz:$('growthWeightOz').value===''?null:+$('growthWeightOz').value,lengthIn:$('growthLength').value===''?null:+$('growthLength').value,headIn:$('growthHead').value===''?null:+$('growthHead').value,note:$('growthNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('growthDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} setView('baby-growth'); confirmed(); toast(wasEdit?'Measurement updated':'Measurement saved'); });
-$('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; S.last.sleepMin=+$('sleepMinutes').value||null; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:+$('sleepMinutes').value||0,sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Sleep logged'); });
+$('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing,duration=Math.max(1,+$('sleepMinutes').value||0); S.last.sleepMin=duration; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:duration,captureMode:wasEdit?'edited':'completed',sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); if(!x)return; save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Sleep logged'); });
 $('authForm').addEventListener('submit',async e=>{ e.preventDefault(); if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.signInWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('createAccount').addEventListener('click',async()=>{ if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.createUserWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('importFile').addEventListener('change',e=>{ const f=e.target.files?.[0]; if(f) importBackup(f); e.target.value=''; });
