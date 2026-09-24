@@ -776,6 +776,13 @@ const TIME_BANDS = [
 ];
 const inBand = (t,b) => { const m = mins(t); return b.from < b.to ? (m >= b.from && m < b.to) : (m >= b.from || m < b.to); };
 
+function insightsPanel(model,realm='mom',compact=false){
+  if(!model)return '';
+  const safeTone=t=>['up','down','steady','insufficient'].includes(t)?t:'neutral';
+  const observations=(model.observations||[]).map(o=>`<article class="mf-insight-card" data-tone="${safeTone(o.tone)}"><span>${esc(o.label)}</span><strong>${esc(o.value)}</strong><p>${esc(o.detail)}</p></article>`).join('');
+  const education=compact?'':(model.education||[]).map(e=>`<article class="mf-education-card"><div><span>TRUSTED GUIDANCE</span><strong>${esc(e.title)}</strong><p>${esc(e.body)}</p></div>${e.source?.url?`<a href="${esc(e.source.url)}" target="_blank" rel="noopener noreferrer">${esc(e.source.label||'View source')}</a>`:''}</article>`).join('');
+  return `<section class="mf-insights ${realm}" aria-label="What your data is showing"><header class="mf-insights-head"><div><span class="eyebrow">YOUR DATA</span><h3>${esc(model.headline)}</h3><p>${esc(model.summary)}</p></div></header><div class="mf-insight-grid">${observations}</div>${education?`<div class="mf-education"><div class="mf-education-title"><strong>Learn from trusted sources</strong><span>Education is kept separate from your logged observations.</span></div>${education}</div>`:''}<p class="mf-insight-disclaimer">${esc(model.disclaimer||'')}</p></section>`;
+}
 function momTrends(){
   const range = S.ui.trendRange ?? 14, days = dateList(rangeDays(range,'mom'));
   const buckets = bucketDays(days);
@@ -798,6 +805,11 @@ function momTrends(){
   });
   const topBand = bandTotals.slice().sort((a,b) => b.value-a.value)[0];
   const adjustedDays = days.filter(dayAdjusted).length;
+  const insightModel=window.MilkFlowInsights?.mom?.({
+    days:days.map(d=>({date:d,totalMl:dayTotal(d)})),
+    sessions:sessions.map(e=>({date:e.date,time:e.time,amountMl:+e.amountMl||0})),
+    bands:bandTotals
+  })||null;
 
   // 7-day rolling average, so the supply direction is readable through daily noise.
   const rollingBy = new Map(days.map((d,i) => { const w = days.slice(Math.max(0,i-6), i+1).map(dayTotal).filter(v => v > 0); return [d, w.length ? Math.round(sum(w)/w.length) : 0]; }));
@@ -805,6 +817,7 @@ function momTrends(){
   return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Milk trends</h2></div></div>
   ${pills(RANGE_PILLS,range,'data-trend-range')}
   <div class="metric-grid">${metric('Per pumping day',`${perDay} mL`,`${activeDays.length} active days`,'chart')}${metric('Avg pump',`${avgSession} mL`,`${sessions.length} sessions`,'drop')}${metric('Best pump',`${best?.amountMl||0} mL`,best?fd(best.date):'—','spark')}${metric('Pumps / day',sessionsPerDay,'on active days','timer')}</div>
+  ${insightsPanel(insightModel,'mom')}
   ${panel(`Daily output${adjustedDays?' ':''}`,barChart(buckets,{value:b => Math.round(avg(b.days.map(dayTotal))), color:'var(--mom)', emptyLabel:'No pumping logged in this range'}) + (adjustedDays?`<p class="chart-note">${adjustedDays} day${adjustedDays>1?'s':''} use a confirmed daily total that is higher than the sessions logged individually.</p>`:''),
     `<span class="panel-note">${days.length} days</span>`)}
   ${panel('Supply direction',areaChart(buckets,{value:b => Math.round(avg(b.days.map(d => rollingBy.get(d) || 0))), color:'var(--mom)', unit:' mL', emptyLabel:'Needs a few more days'}),trendBadge(recentAvg,priorAvg,{goodIsUp:true}))}
@@ -1174,10 +1187,16 @@ function babyTrends(){
   const priorFeeds = avg(rows.slice(0,half).filter(r => r.feeds).map(r => r.feeds));
   const recentOz = avg(rows.slice(half).filter(r => r.bottleOz).map(r => r.bottleOz));
   const priorOz = avg(rows.slice(0,half).filter(r => r.bottleOz).map(r => r.bottleOz));
+  const insightModel=window.MilkFlowInsights?.baby?.({
+    rows,ageDays:ageDays(),ageMonths:ageMonths(),
+    feedingPreference:feedingPreference(),name:S.baby.name||'Baby'
+  })||null;
 
   return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Daily trends</h2></div></div>
   ${pills(RANGE_PILLS,range,'data-trend-range')}
   <div class="metric-grid baby-summary">${metric('Wet / day',avgFromActive(rows,'wetTotal'),'includes mixed','drop','baby')}${metric('Poopy / day',avgFromActive(rows,'poopTotal'),'includes mixed','poop','baby')}${metric('Feeds / day',avgFromActive(rows,'feeds'),'nursing + bottles','bottle','baby')}${metric('Bottle milk / day',`${avgFromActive(rows,'bottleOz')} oz`,'logged bottles','bottle','baby')}</div>
+
+  ${insightsPanel(insightModel,'baby')}
 
   ${panel('Diapers per day',barChart(buckets,{
     value: b => avg(b.days.map(d => byDate.get(d)?.diapers || 0)),
@@ -1283,6 +1302,7 @@ function doctorView(){
   return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Doctor summary</h2></div><button class="round-action baby" data-print>${icon('steth')}<span>Print</span></button></div>${pills(RANGE_PILLS,S.ui.doctorRange ?? 14,'data-doctor-range')}
   <section class="doctor-summary-card"><div>${icon('steth')}</div><div><strong>${esc(r.baby.name)} · ${r.period.days}-day snapshot</strong><span>Everything below is on the printed summary too</span></div></section>
   <div class="qa-grid">${r.measures.map(card).join('')}</div>
+  ${insightsPanel(r.insights,'baby',true)}
   ${panel('Daily review',babyDailyTable(rows))}
   <div class="clinical-note">This is a log summary, not a diagnosis. Around and after 6 weeks, stool frequency can vary widely, so your pediatrician may look at feeding, wet diapers, growth and the overall pattern together.</div>`;
 }
@@ -1311,9 +1331,14 @@ function doctorReport(){
   const pref=feedingPreference();
   const prefLabel=pref==='mostly_formula'?'Mostly formula':pref==='mixed'?'Mixed feeding':'Mostly breastfed';
   const one=v=>(Math.round(v*10)/10).toFixed(1);
+  const insights=window.MilkFlowInsights?.baby?.({
+    rows,ageDays:ageDays(),ageMonths:ageMonths(),
+    feedingPreference:pref,name:S.baby.name||'Baby'
+  })||null;
 
   return {
     generatedAt:new Date().toISOString(),
+    insights,
     baby:{name:S.baby.name||'Baby', birthDate:birthDate()||null, age:ageLabel()||null},
     period:{days:n, from:rows[0]?.d||null, to:rows.at(-1)?.d||null, daysWithRecords:active.length},
     feeding:{
