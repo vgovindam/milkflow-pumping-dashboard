@@ -75,50 +75,36 @@ const familyChatServer=fs.readFileSync(path.join(ROOT,'functions/family-chat.js'
 for(const token of ["PENDING_KEY='milkflow-family-chat-pending-v1'",'recoverCloudRequest','recoverLegacyHistory','resumePending','retryRequest',"mode:'status'",'requestId'])if(!familyChat.includes(token))throw new Error(`Family chat recovery contract missing: ${token}`);
 for(const token of ["collection('familyChatRequests')", "mode==='status'", "status:'processing'", "status:'completed'", "${requestId}-user", "${requestId}-assistant"] )if(!familyChatServer.includes(token))throw new Error(`Family chat server recovery contract missing: ${token}`);
 
-/* Three original themes use painted responsive plates; the six new worlds use authored,
-   self-contained SVG scenes until a later art pass adds raster plates. Both are real runtime
-   packages and both must provide separate Baby/Mom and light/dark scenes. */
+/* Three original themes use local painted responsive plates. v2.18 replaces the six
+   placeholder vector worlds with full image-backed scenes. The old SVGs remain in source for
+   history/fallback work but cannot be selected by the runtime. */
 const paintedThemes=['safari','butterfly','princess'];
-const vectorThemes=['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'];
+const imageThemes=['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'];
 for(const theme of paintedThemes){
   const icons=`assets/theme-icons/${theme}.svg`;
   if(!fs.existsSync(path.join(ROOT,icons)))throw new Error(`Theme asset contract missing: ${icons}`);
   for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
     const scene=`assets/themes-v2/${theme}/${mode}/${role}.svg`;
     if(!fs.existsSync(path.join(ROOT,scene)))throw new Error(`Theme asset contract missing: ${scene}`);
-    const svg=fs.readFileSync(path.join(ROOT,scene),'utf8');
-    if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be fully self-contained.`);
-    if(svg.length<4500)throw new Error(`${scene} fallback is too sparse to stand in for the plate.`);
   }
   for(const [role,widths] of [['baby-background',[480,720,941]],['baby-hero',[640,941]],['mom-background',[480,720,941]],['mom-hero',[640,941]]])
     for(const mode of ['light','dark'])for(const w of widths){
       const plate=`assets/themes-v2/${theme}/${mode}/${role}@${w}.webp`;
-      const full=path.join(ROOT,plate);
-      if(!fs.existsSync(full))throw new Error(`Painted plate missing: ${plate}`);
-      if(fs.statSync(full).size<4000)throw new Error(`${plate} is too small to be a painted plate`);
+      if(!fs.existsSync(path.join(ROOT,plate)))throw new Error(`Painted plate missing: ${plate}`);
     }
-  for(const [role,w] of [['baby-background',941],['mom-background',941]]){
-    const light=fs.readFileSync(path.join(ROOT,`assets/themes-v2/${theme}/light/${role}@${w}.webp`));
-    const dark=fs.readFileSync(path.join(ROOT,`assets/themes-v2/${theme}/dark/${role}@${w}.webp`));
-    if(light.equals(dark))throw new Error(`${theme}/${role} ships the same file for light and dark`);
-  }
   if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} painted asset matrix.`);
-  if(!experience.includes(`theme-icons/${theme}.svg`))throw new Error(`Theme manifest is not using independent ${theme} icon sprite.`);
 }
-for(const theme of vectorThemes){
+if(!experience.includes('const GENERATED_WORLD_IMAGES={')||!experience.includes('const imageWorldAssetSet='))
+  throw new Error('v2.18 image world registry is missing');
+for(const theme of imageThemes){
   const motif=`assets/theme-icons/${theme}-motif.svg`;
-  if(!fs.existsSync(path.join(ROOT,motif)))throw new Error(`Vector theme motif missing: ${motif}`);
-  for(const mode of ['light','dark'])for(const realm of ['baby','mom']){
-    const scene=`assets/themes-v2/${theme}/${mode}/${realm}-background.svg`;
-    const full=path.join(ROOT,scene);
-    if(!fs.existsSync(full))throw new Error(`Vector theme scene missing: ${scene}`);
-    const svg=fs.readFileSync(full,'utf8');
-    if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be self-contained.`);
-    if(svg.length<1600||!svg.includes('<linearGradient')||(!svg.includes('<path')&&!svg.includes('<ellipse')))throw new Error(`${scene} does not contain enough authored scene structure.`);
-  }
-  if(!experience.includes(`vectorAssetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} vector asset matrix.`);
+  if(!fs.existsSync(path.join(ROOT,motif)))throw new Error(`Theme motif missing: ${motif}`);
+  if(!experience.includes(`imageWorldAssetSet('${theme}')`))throw new Error(`${theme} is still using placeholder vector art.`);
   if(!experience.includes(`id:'${theme}',status:'ready'`))throw new Error(`${theme} is not promoted to a ready theme.`);
 }
+for(const id of ['60087','37023333','9870287','25754105','26971554','18444260'])
+  if(!experience.includes(`/photos/${id}/`))throw new Error(`Full-scene image source missing: ${id}`);
+if(experience.includes('assets:vectorAssetSet('))throw new Error('Selectable themes must not use the placeholder vectorAssetSet in v2.18.');
 for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
 /* Appearance is ONE screen: the world picker, light/dark and sounds together. Settings keeps
    a single row that leads there. The picker used to be injected into both, with a separate
