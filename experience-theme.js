@@ -5,7 +5,7 @@
    One manifest owns visual assets/tokens only. Care data, routing, Firestore,
    notifications and semantic care behavior stay with the canonical app. */
 const KEY='milkflow-experience-theme-v1';
-const THEMES=new Set(['safari','butterfly','princess','clean']);
+const THEMES=new Set(['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds','clean']);
 /* The theme library is larger than the live selector. A world becomes selectable only when
    its complete Baby/Mom + light/dark + preview + care-art package exists. This lets future
    themes plug into the same mechanism without exposing half-finished skins. */
@@ -14,12 +14,12 @@ const THEME_LIBRARY={
   butterfly:{id:'butterfly-garden',status:'ready',title:'Butterfly Garden',subtitle:'Little moments, big magic',mood:'elegant botanical garden'},
   princess:{id:'princess-palace',status:'ready',title:'Princess Palace',subtitle:'Kind hearts change the world',mood:'storybook palace garden'},
   unicorn:{id:'unicorn-dream',status:'artwork-needed',title:'Unicorn Dream',subtitle:'Clouds, starlight, and gentle magic',mood:'luminous magical sky'},
-  ocean:{id:'ocean',status:'artwork-needed',title:'Ocean',subtitle:'Calm tides, curious little explorers',mood:'clear water, whales, turtles, coral'},
-  celestial:{id:'celestial',status:'artwork-needed',title:'Moon & Stars',subtitle:'Soft nights, bright little moments',mood:'moonlit clouds and constellations'},
-  woodland:{id:'woodland',status:'artwork-needed',title:'Woodland Forest',subtitle:'Cozy trails and tiny adventures',mood:'deer, fox, rabbit, bear, moss'},
-  'safari-sunset':{id:'safari-sunset',status:'artwork-needed',title:'Safari Sunset',subtitle:'Golden light and wild little days',mood:'golden-hour savanna'},
-  'floral-meadow':{id:'floral-meadow',status:'artwork-needed',title:'Floral Meadow',subtitle:'Soft blooms and sunny moments',mood:'refined meadow and wildflowers'},
-  'cozy-clouds':{id:'cozy-clouds',status:'artwork-needed',title:'Cozy Clouds',subtitle:'A quieter little sky',mood:'minimal dimensional cloud world'}
+  ocean:{id:'ocean',status:'ready',title:'Ocean',subtitle:'Calm tides, curious little explorers',mood:'clear water, whales, turtles, coral'},
+  celestial:{id:'celestial',status:'ready',title:'Moon & Stars',subtitle:'Soft nights, bright little moments',mood:'moonlit clouds and constellations'},
+  woodland:{id:'woodland',status:'ready',title:'Woodland Forest',subtitle:'Cozy trails and tiny adventures',mood:'deer, fox, rabbit, bear, moss'},
+  'safari-sunset':{id:'safari-sunset',status:'ready',title:'Safari Sunset',subtitle:'Golden light and wild little days',mood:'golden-hour savanna'},
+  'floral-meadow':{id:'floral-meadow',status:'ready',title:'Floral Meadow',subtitle:'Soft blooms and sunny moments',mood:'refined meadow and wildflowers'},
+  'cozy-clouds':{id:'cozy-clouds',status:'ready',title:'Cozy Clouds',subtitle:'A quieter little sky',mood:'minimal dimensional cloud world'}
 };
 const root=document.documentElement;
 
@@ -50,10 +50,23 @@ const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
   momHero:plate(theme,mode,'mom-hero',HERO_WIDTHS),
   preview:`./assets/themes-v2/${theme}/${mode}/settings-preview.webp`
 }]));
+const vectorAssetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
+  babyPage:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`,
+  babyHero:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`,
+  momPage:`./assets/themes-v2/${theme}/${mode}/mom-background.svg`,
+  momHero:`./assets/themes-v2/${theme}/${mode}/mom-background.svg`,
+  preview:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`
+}]));
 const THEME_MANIFEST={
   safari:{...THEME_LIBRARY.safari,assets:assetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
   butterfly:{...THEME_LIBRARY.butterfly,assets:assetSet('butterfly'),iconSprite:'./assets/theme-icons/butterfly.svg'},
   princess:{...THEME_LIBRARY.princess,assets:assetSet('princess'),iconSprite:'./assets/theme-icons/princess.svg'},
+  ocean:{...THEME_LIBRARY.ocean,assets:vectorAssetSet('ocean'),iconSprite:''},
+  celestial:{...THEME_LIBRARY.celestial,assets:vectorAssetSet('celestial'),iconSprite:''},
+  woodland:{...THEME_LIBRARY.woodland,assets:vectorAssetSet('woodland'),iconSprite:''},
+  'safari-sunset':{...THEME_LIBRARY['safari-sunset'],assets:vectorAssetSet('safari-sunset'),iconSprite:''},
+  'floral-meadow':{...THEME_LIBRARY['floral-meadow'],assets:vectorAssetSet('floral-meadow'),iconSprite:''},
+  'cozy-clouds':{...THEME_LIBRARY['cozy-clouds'],assets:vectorAssetSet('cozy-clouds'),iconSprite:''},
   clean:{id:'clean',status:'ready',title:'Clean',subtitle:'Quiet MilkFlow canvas',assets:{light:{},dark:{}},iconSprite:''}
 };
 
@@ -71,9 +84,12 @@ function careIcon(action,themeName){
 }
 /* The world's own signature, for section headers that want theme flavour without implying
    a care action. */
+const VECTOR_MOTIF_THEMES=new Set(['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']);
 function themeMotif(themeName){
   const theme=normalize(themeName===undefined?read():themeName);
-  return CARE_ICON_THEMES.has(theme)?`./assets/care-icons/${theme}/motif.svg`:null;
+  if(CARE_ICON_THEMES.has(theme))return `./assets/care-icons/${theme}/motif.svg`;
+  if(VECTOR_MOTIF_THEMES.has(theme))return `./assets/theme-icons/${theme}-motif.svg`;
+  return null;
 }
 
 /* Old worlds map to the new one closest in mood, so a family that had chosen something does
