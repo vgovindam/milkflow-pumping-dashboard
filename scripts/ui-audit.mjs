@@ -154,7 +154,8 @@ requireText('Baby tab has explicit contrast',read('experience-system.css'),'#per
    than one of three full-width dashboard boxes. */
 requireText('next feed stays in compact Baby timing',read('core-ui.js'),'aria-label="Baby feeding timing"');
 requireText('Last feed receives more width',read('component-theme-core.css'),'grid-template-columns:minmax(142px,1.7fr) minmax(74px,.7fr)');
-requireText('Last feed has intrinsic separator',read('core-ui.js'),'&nbsp;·&nbsp;');\nrequireText('Last feed stays on one line',read('component-theme-core.css'),'display:block;min-width:0;white-space:nowrap;overflow:visible');
+requireText('Last feed has intrinsic separator',read('core-ui.js'),'&nbsp;·&nbsp;');
+requireText('Last feed stays on one line',read('component-theme-core.css'),'display:block;min-width:0;white-space:nowrap;overflow:visible');
 if(/mf-hero-facts three/.test(read('core-ui.js')))failures.push('Baby Home must not restore the three full-width hero fact boxes');
 /* A surface the dark layer forgets is a white card with white text on it. */
 requireText('stash hero has a dark surface',read('core-ui.js'),':root[data-theme="dark"] body[data-realm] .stash-hero');
