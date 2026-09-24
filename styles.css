@@ -933,8 +933,8 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
   body[data-depth="0"] .mobile-workspace{display:flex;margin:0 auto}
   /* A sub-page belongs to one side of the app, so the switch is hidden there. */
   body:not([data-depth="0"]) .mobile-workspace{display:none}
-  .mobile-workspace{gap:3px;padding:3px;background:var(--line-soft);border-radius:13px;min-width:196px}
-  .mobile-workspace button{flex:1;border:0;background:transparent;border-radius:10px;min-height:36px;padding:0 15px;font:inherit;font-size:13.5px;font-weight:850;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .16s,color .16s,box-shadow .16s}
+  .mobile-workspace{gap:3px;padding:3px;background:var(--line-soft);border-radius:999px;min-width:196px;overflow:hidden}
+  .mobile-workspace button{flex:1;border:0;background:transparent;border-radius:999px;min-height:36px;padding:0 15px;font:inherit;font-size:13.5px;font-weight:850;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .16s,color .16s,box-shadow .16s}
   .mobile-workspace button.active{background:var(--surface);box-shadow:0 2px 8px rgba(28,32,48,.1)}
   .mobile-workspace button:first-child.active{color:var(--mom-ink)}
   .mobile-workspace button:last-child.active{color:var(--baby-ink)}

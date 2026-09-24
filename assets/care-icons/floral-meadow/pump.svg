@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="rose — pump">
   <defs><linearGradient id="d-floral-meadow-pump" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#F7FBE8"/><stop offset="1" stop-color="#DCEFCB"/></linearGradient></defs>
   <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M29 34V48M29 42Q21 35 16 40M29 43Q39 36 44 40" fill="none" stroke="#61906b" stroke-width="2.8"/><path d="M29 14Q39 9 43 21Q48 29 40 38Q32 44 21 38Q12 33 16 24Q17 16 29 14Z" fill="#DB7C9B"/><path d="M20 27Q28 17 38 24Q42 30 32 35Q22 37 24 26Q29 21 35 26" fill="none" stroke="#E998A8" stroke-width="2.5"/><circle cx="29" cy="28" r="2" fill="#F7C968" stroke="none"/></g>
-  <circle cx="46" cy="46" r="11.299999999999999" fill="#DCEFCB" fill-opacity=".85"/><circle cx="46" cy="46" r="10.2" fill="#FFFCF4"/><g transform="translate(38.32 38.32) scale(0.48)"><path d="M3.4 7.6h25.2a2.2 2.2 0 0 1 2 3l-4.6 11a2.8 2.8 0 0 0-.2 1.1v.9H6.2v-.9a2.8 2.8 0 0 0-.2-1.1l-4.6-11a2.2 2.2 0 0 1 2-3Z" fill="#475B47"/>
+  <circle cx="46" cy="46" r="14.1" fill="#DCEFCB" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#FFFCF4"/><g transform="translate(34.8 34.8) scale(0.7)"><path d="M3.4 7.6h25.2a2.2 2.2 0 0 1 2 3l-4.6 11a2.8 2.8 0 0 0-.2 1.1v.9H6.2v-.9a2.8 2.8 0 0 0-.2-1.1l-4.6-11a2.2 2.2 0 0 1 2-3Z" fill="#475B47"/>
     <path d="M12.2 24.2h7.6a4.4 4.4 0 0 1 4.4 4.4v1.4H7.8v-1.4a4.4 4.4 0 0 1 4.4-4.4Z" fill="#475B47"/>
     <path d="M16 11.8c1.8 2.3 3.2 4 3.2 5.5a3.2 3.2 0 0 1-6.4 0c0-1.5 1.4-3.2 3.2-5.5Z" fill="#fff" fill-opacity=".7"/></g>
 </svg>

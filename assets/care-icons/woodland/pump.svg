@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="red squirrel — pump">
   <defs><linearGradient id="d-woodland-pump" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#F4F3E5"/><stop offset="1" stop-color="#D9E8C5"/></linearGradient></defs>
   <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M37 38Q53 46 50 29Q47 20 41 25Q51 12 55 25Q61 47 39 47Z" fill="#AD906C"/><path d="M18 18L22 10L27 18Q36 14 42 20V36Q31 48 17 39Z" fill="#C98554"/><circle cx="25" cy="27" r="1.25" fill="#24313d" stroke="none"/><circle cx="36" cy="27" r="1.25" fill="#24313d" stroke="none"/><circle cx="31" cy="36" r="2" fill="#534A34" stroke="none"/></g>
-  <circle cx="46" cy="46" r="11.299999999999999" fill="#D9E8C5" fill-opacity=".85"/><circle cx="46" cy="46" r="10.2" fill="#FFFCF4"/><g transform="translate(38.32 38.32) scale(0.48)"><path d="M3.4 7.6h25.2a2.2 2.2 0 0 1 2 3l-4.6 11a2.8 2.8 0 0 0-.2 1.1v.9H6.2v-.9a2.8 2.8 0 0 0-.2-1.1l-4.6-11a2.2 2.2 0 0 1 2-3Z" fill="#534A34"/>
+  <circle cx="46" cy="46" r="14.1" fill="#D9E8C5" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#FFFCF4"/><g transform="translate(34.8 34.8) scale(0.7)"><path d="M3.4 7.6h25.2a2.2 2.2 0 0 1 2 3l-4.6 11a2.8 2.8 0 0 0-.2 1.1v.9H6.2v-.9a2.8 2.8 0 0 0-.2-1.1l-4.6-11a2.2 2.2 0 0 1 2-3Z" fill="#534A34"/>
     <path d="M12.2 24.2h7.6a4.4 4.4 0 0 1 4.4 4.4v1.4H7.8v-1.4a4.4 4.4 0 0 1 4.4-4.4Z" fill="#534A34"/>
     <path d="M16 11.8c1.8 2.3 3.2 4 3.2 5.5a3.2 3.2 0 0 1-6.4 0c0-1.5 1.4-3.2 3.2-5.5Z" fill="#fff" fill-opacity=".7"/></g>
 </svg>

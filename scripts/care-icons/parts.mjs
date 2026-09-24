@@ -9,7 +9,7 @@
  * prop badge sits at BADGE, which is why characters are drawn slightly up and to the left.
  */
 export const HEAD = {cx: 29.6, cy: 27.4, rx: 17, ry: 16};
-export const BADGE = {cx: 46, cy: 46, r: 10.2, scale: 0.48};
+export const BADGE = {cx: 46, cy: 46, r: 13, scale: 0.70};
 
 const r = n => Math.round(n * 100) / 100;
 

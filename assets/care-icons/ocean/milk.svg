@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="clownfish — milk">
   <defs><linearGradient id="d-ocean-milk" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#E5FBF8"/><stop offset="1" stop-color="#B9E7EB"/></linearGradient></defs>
   <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M9 28Q24 9 44 25L51 17V39L43 32Q23 47 9 28Z" fill="#EF9C62"/><path d="M21 18Q26 27 22 37M34 19Q37 28 34 37" fill="none" stroke="#FFF3CC" stroke-width="4"/><circle cx="17" cy="26" r="1.25" fill="#24313d" stroke="none"/></g>
-  <circle cx="46" cy="46" r="11.299999999999999" fill="#B9E7EB" fill-opacity=".85"/><circle cx="46" cy="46" r="10.2" fill="#F7FEFC"/><g transform="translate(38.32 38.32) scale(0.48)"><path d="M13.4 2.2h5.2a2 2 0 0 1 2 2v1.1a2 2 0 0 1-2 2h-5.2a2 2 0 0 1-2-2V4.2a2 2 0 0 1 2-2Z" fill="#315978"/>
+  <circle cx="46" cy="46" r="14.1" fill="#B9E7EB" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#F7FEFC"/><g transform="translate(34.8 34.8) scale(0.7)"><path d="M13.4 2.2h5.2a2 2 0 0 1 2 2v1.1a2 2 0 0 1-2 2h-5.2a2 2 0 0 1-2-2V4.2a2 2 0 0 1 2-2Z" fill="#315978"/>
     <path d="M13.9 8.1h4.2v2.1h-4.2z" fill="#315978"/>
     <path d="M12.6 11.3q3.4-1.6 6.8 0a3.6 3.6 0 0 1 1.9 3.2v11.1a4.3 4.3 0 0 1-4.3 4.3h-2a4.3 4.3 0 0 1-4.3-4.3V14.5a3.6 3.6 0 0 1 1.9-3.2Z" fill="#315978"/>
     <path d="M11 17.4h10v1.9H11zM13.2 21.6h5.6v1.6h-5.6z" fill="#fff" fill-opacity=".58"/></g>

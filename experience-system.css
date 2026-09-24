@@ -629,10 +629,10 @@
 :root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs{
   background:var(--mf-world-surface-strong);border:1px solid color-mix(in srgb,var(--mf-world-deep) 24%,transparent);
   box-shadow:0 5px 14px color-mix(in srgb,var(--mf-world-shadow) 72%,transparent);
-  backdrop-filter:none;-webkit-backdrop-filter:none;overflow:hidden
+  backdrop-filter:none;-webkit-backdrop-filter:none;overflow:hidden;border-radius:999px
 }
 :root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button{
-  background:transparent;box-shadow:none;text-shadow:none;font-weight:850
+  background:transparent;box-shadow:none;text-shadow:none;font-weight:850;border-radius:999px
 }
 :root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button:first-child{color:#76538c}
 :root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button:last-child{color:#176d78}
@@ -757,4 +757,3 @@
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .day-strip .day-chip.sel :is(b,span){
   color:var(--mf-world-base)!important;opacity:1!important;
 }
-

@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="wind swirl — poop">
   <defs><linearGradient id="d-cozy-clouds-poop" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#EDF8FF"/><stop offset="1" stop-color="#DDE8FC"/></linearGradient></defs>
   <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M8 23H42Q52 23 50 16Q47 10 40 15M7 30H48Q55 31 51 38Q47 43 42 39M14 37H31Q38 38 35 44Q32 48 27 45" fill="none" stroke="#B4C9EA" stroke-width="4"/><path d="M14 11L14.81 13.19L17 14L14.81 14.81L14 17L13.19 14.81L11 14L13.19 13.19Z" fill="#FFF8E5"/></g>
-  <circle cx="46" cy="46" r="11.299999999999999" fill="#DDE8FC" fill-opacity=".85"/><circle cx="46" cy="46" r="10.2" fill="#FFFDFC"/><g transform="translate(38.32 38.32) scale(0.48)"><path d="M16 4.1c3.6.8 4.6 3 3.7 5.2h1.4c3.6 0 6 2.1 6 4.6 0 1.2-.5 2.3-1.4 3.1 2.9.8 4.5 2.7 4.5 4.8 0 2.9-3.2 5.2-7.2 5.2H8c-4 0-7.2-2.3-7.2-5.2 0-2.1 1.6-4 4.5-4.8a4.2 4.2 0 0 1-1.4-3.1c0-2.5 2.4-4.6 6-4.6h1.4C10.4 7.1 11.4 4.9 16 4.1Z" fill="#5A6886"/>
+  <circle cx="46" cy="46" r="14.1" fill="#DDE8FC" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#FFFDFC"/><g transform="translate(34.8 34.8) scale(0.7)"><path d="M16 4.1c3.6.8 4.6 3 3.7 5.2h1.4c3.6 0 6 2.1 6 4.6 0 1.2-.5 2.3-1.4 3.1 2.9.8 4.5 2.7 4.5 4.8 0 2.9-3.2 5.2-7.2 5.2H8c-4 0-7.2-2.3-7.2-5.2 0-2.1 1.6-4 4.5-4.8a4.2 4.2 0 0 1-1.4-3.1c0-2.5 2.4-4.6 6-4.6h1.4C10.4 7.1 11.4 4.9 16 4.1Z" fill="#5A6886"/>
     <circle cx="11.8" cy="18.2" r="1.7" fill="#fff" fill-opacity=".58"/>
     <circle cx="20.2" cy="18.2" r="1.7" fill="#fff" fill-opacity=".58"/></g>
 </svg>

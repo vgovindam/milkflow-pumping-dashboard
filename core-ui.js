@@ -566,11 +566,11 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 .mf-baby-timing{min-width:0;gap:10px}
 .mf-last-feed-slot{min-width:0}
 /* The whole quick-log tile is the action; its illustrated mark deserves the same hierarchy as its label. */
-.mf-feed-card,.mf-diaper-blob{height:128px;min-height:128px;box-sizing:border-box;justify-content:flex-end}
-.mf-feed-card{padding:72px 5px 14px}
-.mf-feed-card>span.mf-care-mark{left:50%;top:10px;right:auto;transform:translateX(-50%);width:62px;height:62px}
-.mf-diaper-blob{display:flex;flex-direction:column;align-items:center;padding:80px 5px 10px}
-.mf-diaper-blob>span.mf-care-mark{left:50%;top:36px;right:auto;transform:translateX(-50%);width:46px;height:46px}
+.mf-feed-card,.mf-diaper-blob{box-sizing:border-box;justify-content:flex-end}
+.mf-feed-card{height:108px;min-height:108px;padding:79px 4px 7px}
+.mf-feed-card>span.mf-care-mark{left:50%;top:1px;right:auto;transform:translateX(-50%);width:86px;height:86px}
+.mf-diaper-blob{height:112px;min-height:112px;display:flex;flex-direction:column;align-items:center;padding:71px 4px 7px}
+.mf-diaper-blob>span.mf-care-mark{left:1px;top:4px;right:auto;transform:none;width:70px;height:70px}
 .mf-feed-card strong,.mf-diaper-blob strong{font-size:clamp(14px,4vw,19px);line-height:1.16;white-space:nowrap}
 .mf-diaper-blob span:not(.mf-care-mark){font-size:12px;line-height:1.2;margin-top:3px}
 .mf-diaper-blob b{z-index:3}

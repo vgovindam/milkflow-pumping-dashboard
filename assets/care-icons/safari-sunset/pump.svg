@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="baobab — pump">
   <defs><linearGradient id="d-safari-sunset-pump" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#FFF1D4"/><stop offset="1" stop-color="#F3CE9D"/></linearGradient></defs>
   <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M24 47Q27 37 25 27L13 21M25 27L36 15M27 31L47 24M27 27L28 8" fill="none" stroke="#EBC16F" stroke-width="6"/><path d="M8 20Q15 13 20 20M30 10Q35 3 41 13M42 22Q48 15 53 22" fill="none" stroke="#847C60" stroke-width="6"/></g>
-  <circle cx="46" cy="46" r="11.299999999999999" fill="#F3CE9D" fill-opacity=".85"/><circle cx="46" cy="46" r="10.2" fill="#FFFAF0"/><g transform="translate(38.32 38.32) scale(0.48)"><path d="M3.4 7.6h25.2a2.2 2.2 0 0 1 2 3l-4.6 11a2.8 2.8 0 0 0-.2 1.1v.9H6.2v-.9a2.8 2.8 0 0 0-.2-1.1l-4.6-11a2.2 2.2 0 0 1 2-3Z" fill="#644A34"/>
+  <circle cx="46" cy="46" r="14.1" fill="#F3CE9D" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#FFFAF0"/><g transform="translate(34.8 34.8) scale(0.7)"><path d="M3.4 7.6h25.2a2.2 2.2 0 0 1 2 3l-4.6 11a2.8 2.8 0 0 0-.2 1.1v.9H6.2v-.9a2.8 2.8 0 0 0-.2-1.1l-4.6-11a2.2 2.2 0 0 1 2-3Z" fill="#644A34"/>
     <path d="M12.2 24.2h7.6a4.4 4.4 0 0 1 4.4 4.4v1.4H7.8v-1.4a4.4 4.4 0 0 1 4.4-4.4Z" fill="#644A34"/>
     <path d="M16 11.8c1.8 2.3 3.2 4 3.2 5.5a3.2 3.2 0 0 1-6.4 0c0-1.5 1.4-3.2 3.2-5.5Z" fill="#fff" fill-opacity=".7"/></g>
 </svg>

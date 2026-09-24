@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="fawn — formula">
   <defs><linearGradient id="d-woodland-formula" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#F4F3E5"/><stop offset="1" stop-color="#D9E8C5"/></linearGradient></defs>
   <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M14 13Q23 15 22 21Q30 18 38 21Q37 14 47 13Q46 23 42 27Q47 42 30 44Q13 42 18 27Q14 23 14 13Z" fill="#C6A775"/><path d="M23 19L19 8M36 19L42 8" fill="none" stroke="#E8C5A5" stroke-width="3"/><circle cx="23" cy="29" r="1.25" fill="#24313d" stroke="none"/><circle cx="37" cy="29" r="1.25" fill="#24313d" stroke="none"/><circle cx="30" cy="36" r="2" fill="#534A34" stroke="none"/></g>
-  <circle cx="46" cy="46" r="11.299999999999999" fill="#D9E8C5" fill-opacity=".85"/><circle cx="46" cy="46" r="10.2" fill="#FFFCF4"/><g transform="translate(38.32 38.32) scale(0.48)"><rect x="5.6" y="4.4" width="20.8" height="5.2" rx="1.8" fill="#534A34"/>
+  <circle cx="46" cy="46" r="14.1" fill="#D9E8C5" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#FFFCF4"/><g transform="translate(34.8 34.8) scale(0.7)"><rect x="5.6" y="4.4" width="20.8" height="5.2" rx="1.8" fill="#534A34"/>
     <path d="M7.4 11h17.2v13.8a4.8 4.8 0 0 1-4.8 4.8h-7.6a4.8 4.8 0 0 1-4.8-4.8Z" fill="#534A34"/>
     <path d="M10 15.6h12v4.6H10z" fill="#fff" fill-opacity=".58"/>
     <path d="M12.4 22.8h7.2v1.7h-7.2z" fill="#fff" fill-opacity=".38"/></g>

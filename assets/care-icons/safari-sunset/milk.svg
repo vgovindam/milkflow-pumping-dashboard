@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="acacia tree — milk">
   <defs><linearGradient id="d-safari-sunset-milk" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#FFF1D4"/><stop offset="1" stop-color="#F3CE9D"/></linearGradient></defs>
   <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M30 21V47M30 29L17 20M30 26L43 18" fill="none" stroke="#D8A172" stroke-width="4"/><path d="M7 20Q7 12 20 12Q24 5 30 12Q38 6 42 14Q52 12 53 22Q45 28 35 23Q27 29 19 23Q10 27 7 20Z" fill="#758C59"/></g>
-  <circle cx="46" cy="46" r="11.299999999999999" fill="#F3CE9D" fill-opacity=".85"/><circle cx="46" cy="46" r="10.2" fill="#FFFAF0"/><g transform="translate(38.32 38.32) scale(0.48)"><path d="M13.4 2.2h5.2a2 2 0 0 1 2 2v1.1a2 2 0 0 1-2 2h-5.2a2 2 0 0 1-2-2V4.2a2 2 0 0 1 2-2Z" fill="#644A34"/>
+  <circle cx="46" cy="46" r="14.1" fill="#F3CE9D" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#FFFAF0"/><g transform="translate(34.8 34.8) scale(0.7)"><path d="M13.4 2.2h5.2a2 2 0 0 1 2 2v1.1a2 2 0 0 1-2 2h-5.2a2 2 0 0 1-2-2V4.2a2 2 0 0 1 2-2Z" fill="#644A34"/>
     <path d="M13.9 8.1h4.2v2.1h-4.2z" fill="#644A34"/>
     <path d="M12.6 11.3q3.4-1.6 6.8 0a3.6 3.6 0 0 1 1.9 3.2v11.1a4.3 4.3 0 0 1-4.3 4.3h-2a4.3 4.3 0 0 1-4.3-4.3V14.5a3.6 3.6 0 0 1 1.9-3.2Z" fill="#644A34"/>
     <path d="M11 17.4h10v1.9H11zM13.2 21.6h5.6v1.6h-5.6z" fill="#fff" fill-opacity=".58"/></g>

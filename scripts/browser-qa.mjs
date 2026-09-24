@@ -101,6 +101,11 @@ try{
           if(!pr?.ok||!pr?.built||pr.ms>700)failures.push(`${theme}/${mode}/${route}: Doctor Print is not promptly prepared ok=${pr?.ok} built=${pr?.built} ms=${Math.round(pr?.ms||9999)}`);
         }
         if(route==='baby-home'){
+          const geometry=await evalJs(`(()=>{const feed=document.querySelector('.mf-feed-card'),diaper=document.querySelector('.mf-diaper-blob'),feedArt=feed?.querySelector('.mf-care-mark'),diaperArt=diaper?.querySelector('.mf-care-mark'),tabs=document.querySelector('#personaTabs'),active=tabs?.querySelector('button.active');return{feedHeight:feed?.getBoundingClientRect().height||0,diaperHeight:diaper?.getBoundingClientRect().height||0,feedArtWidth:feedArt?.getBoundingClientRect().width||0,diaperArtWidth:diaperArt?.getBoundingClientRect().width||0,tabsRadius:parseFloat(getComputedStyle(tabs).borderTopLeftRadius)||0,activeRadius:active?parseFloat(getComputedStyle(active).borderTopLeftRadius)||0:0}})()`);
+          if(geometry.feedHeight>112||geometry.diaperHeight>116||geometry.feedArtWidth<82||geometry.diaperArtWidth<68)
+            failures.push(`${theme}/${mode}/${route}: quick-log proportions are wrong ${JSON.stringify(geometry)}`);
+          if(geometry.tabsRadius<18||geometry.activeRadius<18)
+            failures.push(`${theme}/${mode}/${route}: persona switch has square corners ${JSON.stringify(geometry)}`);
           if(m.babyHeroHeight>198)failures.push(`${theme}/${mode}/${route}: Baby hero too tall at ${m.babyHeroHeight.toFixed(1)}px; compact identity card budget is 198px`);
           if(m.babyPhotoWidth<124)failures.push(`${theme}/${mode}/${route}: Baby photo is too small at ${m.babyPhotoWidth.toFixed(1)}px`);
           if(m.babyTimingCount!==2)failures.push(`${theme}/${mode}/${route}: Baby hero should show exactly Last feed and Next feed timing facts`);
