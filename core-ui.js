@@ -654,7 +654,7 @@ function renderBaby(s){
         </div>
         <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}${photo?'':'<span class="mf-photo-add">+ Photo</span>'}</button>
       </div>
-    </div>`;
+    </div>
 
     ${nudgeCard('baby')}
 
