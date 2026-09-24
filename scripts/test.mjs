@@ -102,8 +102,11 @@ for(const theme of imageThemes){
   if(!experience.includes(`imageWorldAssetSet('${theme}')`))throw new Error(`${theme} is still using placeholder vector art.`);
   if(!experience.includes(`id:'${theme}',status:'ready'`))throw new Error(`${theme} is not promoted to a ready theme.`);
 }
+const buildSource=fs.readFileSync(path.join(ROOT,'scripts/build.mjs'),'utf8');
 for(const id of ['60087','37023333','9870287','25754105','26971554','18444260'])
-  if(!experience.includes(`/photos/${id}/`))throw new Error(`Full-scene image source missing: ${id}`);
+  if(!buildSource.includes(`/photos/${id}/`))throw new Error(`Full-scene build source missing: ${id}`);
+for(const theme of imageThemes)
+  if(!experience.includes(`./assets/generated-themes/${theme}.jpg`))throw new Error(`${theme} runtime does not use the local production image artifact`);
 if(experience.includes('assets:vectorAssetSet('))throw new Error('Selectable themes must not use the placeholder vectorAssetSet in v2.18.');
 for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
 /* Appearance is ONE screen: the world picker, light/dark and sounds together. Settings keeps
