@@ -108,7 +108,7 @@ try{
           if(!m.fallbackFeedGlyphContained)failures.push(`${theme}/${mode}/${route}: fallback feed glyph escapes its icon carrier`);
           if(m.diaperIconBadgeOverlap)failures.push(`${theme}/${mode}/${route}: diaper care icon overlaps its count badge`);
           if(m.lastFeedHasClock&&(m.lastFeedOverflow||m.lastFeedWidth<100||m.lastFeedClockFont<11.5))failures.push(`${theme}/${mode}/${route}: Last feed elapsed + clock does not fit width=${m.lastFeedWidth.toFixed(1)} font=${m.lastFeedClockFont.toFixed(1)} overflow=${m.lastFeedOverflow}`);
-          if(!iconArt&&theme!=='clean'&&m.fallbackCareSvgCount<6)failures.push(`${theme}/${mode}/${route}: fallback semantic care icons are incomplete (${m.fallbackCareSvgCount}/6)`);
+          if(!expectedIcons[theme]&&theme!=='clean'&&m.fallbackCareSvgCount<6)failures.push(`${theme}/${mode}/${route}: fallback semantic care icons are incomplete (${m.fallbackCareSvgCount}/6)`);
         }
         if(route==='mom-home'&&mode==='dark'&&(m.darkCriticalCount<4||!m.darkReadable))failures.push(`${theme}/${mode}/${route}: critical Mom numbers/buttons are not visibly readable`);
         const art=expected[theme],iconArt=expectedIcons[theme],themedRealm=momRoutes.has(route)||babyRoutes.has(route);
