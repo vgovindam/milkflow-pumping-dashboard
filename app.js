@@ -1724,7 +1724,7 @@ function openRecordSheet(kind,id){
 async function voidRecord(kind,id){
   const e=findRecord(kind,id); if(!e) return;
   closeOverlays();
-  e.voidedAt=new Date().toISOString(); e.synced=false; save(); render();
+  e.voidedAt=new Date().toISOString(); e.synced=false; save(); render(); confirmed('undone');
   try{ kind==='mom' ? await pushMom(e) : await pushBabies([e]); }catch{}
   toast('Entry removed',6000,{label:'Undo',run:()=>restoreRecord(kind,id)});
 }
@@ -2027,11 +2027,62 @@ function fieldSaved(el, label='Saved'){
   tag._hide = setTimeout(()=>tag.classList.remove('show'), 2400);
 }
 
+/* ------------------------------------------------------------- confirmation --
+ * Logging a feed at 3am, one-handed, in the dark, you are not reading the screen. The app
+ * had a Sounds switch in Settings that was wired to nothing at all - it saved a preference
+ * and no code ever read it - so a save was silent and you had to look to know it worked.
+ *
+ * Two short sine notes, quiet, and a vibration. The tone is generated rather than shipped as
+ * a file: it is forty lines of arithmetic against an audio download on every launch, and it
+ * cannot be the wrong sample rate.
+ *
+ * Haptics are honest about where they work. navigator.vibrate is Android and desktop Chrome;
+ * iOS Safari does not implement it, so on an iPhone the sound is the confirmation and the
+ * call below is a no-op. Nothing pretends otherwise.
+ */
+const FEEDBACK_KEY = 'milkflow-interface-sounds-v1';
+let audioCtx = null;
+function feedbackOn(){ try{ return localStorage.getItem(FEEDBACK_KEY) !== 'off'; }catch{ return true; } }
+function haptic(pattern){ try{ navigator.vibrate?.(pattern); }catch{} }
+function chime(notes){
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext; if(!Ctx) return;
+    audioCtx = audioCtx || new Ctx();
+    /* Every caller is inside a click or submit, which is what iOS requires before it will
+       let a context make a sound. */
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const t0 = audioCtx.currentTime;
+    notes.forEach(([freq, at], i) => {
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      const start = t0 + at;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.055, start + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.19);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(start); osc.stop(start + 0.21);
+    });
+  }catch{}
+}
+/* Three shapes, so the app can say different things without a word: something was written,
+   something was taken back, something did not go through. */
+const FEEDBACK = {
+  saved:   {notes: [[587.33, 0], [880.00, 0.075]], buzz: [14, 28, 20]},
+  undone:  {notes: [[523.25, 0], [392.00, 0.075]], buzz: [22]},
+  problem: {notes: [[349.23, 0], [277.18, 0.09]],  buzz: [30, 60, 30]}
+};
+function confirmed(kind = 'saved'){
+  const f = FEEDBACK[kind] || FEEDBACK.saved;
+  if(!feedbackOn()) return;
+  chime(f.notes); haptic(f.buzz);
+}
+window.MilkFlowFeedback = {confirmed, enabled: feedbackOn};
+
 // A marked milestone is a normal baby event, so it appears in History, syncs and exports.
 async function toggleMilestone(id,text,group,month){
   const existing = S.babyEvents.find(e => e.milestoneId === id && !e.voidedAt);
   if(existing){
-    existing.voidedAt = new Date().toISOString(); existing.synced = false; save(); render();
+    existing.voidedAt = new Date().toISOString(); existing.synced = false; save(); render(); confirmed('undone');
     try{ await pushBabies([existing]); }catch{}
     toast('Milestone cleared',5000,{label:'Undo',run:()=>{ existing.voidedAt=null; existing.editedAt=new Date().toISOString(); save(); render(); pushBabies([existing]).catch(()=>{}); }});
     return;
@@ -2043,7 +2094,7 @@ async function toggleMilestone(id,text,group,month){
     milestoneId:id,milestoneText:text,milestoneGroup:group,milestoneMonth:month,note:'',sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false});
   S.babyEvents.push(x); completeNudge('dev-week'); save(); render();
   try{ await pushBabies([x]); }catch{ toast('Saved on this device. Cloud will retry.'); }
-  toast('Milestone noted');
+  confirmed(); toast('Milestone noted');
 }
 
 // Photos are downscaled before storing so the profile document stays small.
@@ -2246,18 +2297,24 @@ async function toggleReminders(){
  */
 async function notify(title, options){
   if(!('Notification' in window) || Notification.permission !== 'granted') return false;
+  /* The phone adds its own line with the app's name, above or below whatever we send, and
+     nothing an app does removes it. So the one line we DO own has to earn its place: not the
+     word "reminder", which only repeats what a notification already is, but the thing you
+     would have opened the app to find out. The icon and badge are here for the same reason -
+     a notification without them reads as a browser alert rather than as this app. */
+  const opts = {icon:'./milkflow-family-icon-192.png', badge:'./milkflow-family-icon-192.png', vibrate:[18,60,24], ...options};
   try{
     const reg = await navigator.serviceWorker?.getRegistration?.();
-    if(reg?.showNotification){ await reg.showNotification(title, options); return true; }
+    if(reg?.showNotification){ await reg.showNotification(title, opts); return true; }
   }catch{}
-  try{ new Notification(title, options); return true; }catch{}
+  try{ new Notification(title, opts); return true; }catch{}
   return false;
 }
 
 function tickReminders(){
   feedReminderTick();
   if(!S.reminders.enabled) return; const d=new Date(), m=d.getHours()*60+d.getMinutes(), dt=today();
-  S.schedule.forEach((t,i)=>{ const target=+t.slice(0,2)*60 + +t.slice(3)-(+S.reminders.leadMin||0), key=`${dt}-${i}-${target}`; if(Math.abs(m-target)<=1&&S.reminders.lastSentKey!==key&&dayP(dt).length<=i){ toast(`Pump ${i+1} is coming up · ${to12(t)}`,7000); notify('Pump reminder',{body:`Pump ${i+1} · ${to12(t)}`,tag:'milkflow-pump'}); S.reminders.lastSentKey=key; save(); } });
+  S.schedule.forEach((t,i)=>{ const target=+t.slice(0,2)*60 + +t.slice(3)-(+S.reminders.leadMin||0), key=`${dt}-${i}-${target}`; if(Math.abs(m-target)<=1&&S.reminders.lastSentKey!==key&&dayP(dt).length<=i){ toast(`Pump ${i+1} is coming up · ${to12(t)}`,7000); notify(`Pump ${i+1} at ${to12(t)}`,{body:`${dayLogged(dt)} mL logged so far today`,tag:'milkflow-pump'}); S.reminders.lastSentKey=key; save(); } });
 }
 
 // Fires once per due feed while the app is open. Browsers cannot wake a closed page,
@@ -2271,8 +2328,9 @@ function feedReminderTick(){
   if(S.reminders.feedLastKey === key) return;
   S.reminders.feedLastKey = key; save();
   const msg = `${S.baby.name} is due for a feed`;
+  const since = sinceLabel(last.date, last.time) || '';
   toast(msg, 8000, {label:'Log', run:()=>feedSheet()});
-  notify('Feed reminder',{body:`${msg} · last feed ${sinceLabel(last.date,last.time)||''}`,tag:'milkflow-feed'});
+  notify(`${S.baby.name} is due for a feed`,{body:since?`Last feed ${since} · ${to12(last.time)}`:'Tap to log it',tag:'milkflow-feed'});
 }
 async function toggleFeedReminders(){
   const on = !S.reminders.feedEnabled;
@@ -2327,18 +2385,18 @@ function handleClick(e){
   const bf=e.target.closest('[data-baby-filter]'); if(bf){ S.ui.babyFilter=bf.dataset.babyFilter; save(); render(); return; }
   const tr=e.target.closest('[data-trend-range]'); if(tr){ S.ui.trendRange=+tr.dataset.trendRange; save(); render(); return; }
   const dr=e.target.closest('[data-doctor-range]'); if(dr){ S.ui.doctorRange=+dr.dataset.doctorRange; save(); render(); return; }
-  const ss=e.target.closest('[data-stash-save]'); if(ss){ const el=$('stashExact'); S.profile.stashMl=Math.max(0,Math.round(+(el?.value)||0)); save(); pushProfile().catch(()=>{}); completeNudge('stash'); render(); toast('Freezer stash updated'); return; }
+  const ss=e.target.closest('[data-stash-save]'); if(ss){ const el=$('stashExact'); S.profile.stashMl=Math.max(0,Math.round(+(el?.value)||0)); save(); pushProfile().catch(()=>{}); completeNudge('stash'); render(); confirmed(); toast('Freezer stash updated'); return; }
   const st=e.target.closest('[data-stash]'); if(st){ const el=$('stashExact'); if(el){ el.value=Math.max(0,Math.round((+el.value||0)+ +st.dataset.stash)); el.dispatchEvent(new Event('input',{bubbles:true})); } return; }
 }
 document.addEventListener('click',handleClick);
 
 $('momForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('momType').value, wasEdit=!!editing;
-  if(type==='pump'){ S.last.pumpMl=+$('momAmount').value||null; S.last.pumpMin=+$('momDuration').value||null; } else { S.last.nursingMin=+$('momDuration').value||null; S.last.nursingSide=$('momSide')?.value||null; } const x=commitRecord(S.entries,{id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false}); save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved')); });
-$('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'diaper',date:$('diaperDate').value,time:$('diaperTime').value,subtype:$('diaperKind').value,note:$('diaperNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('diaperDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Diaper logged'); });
+  if(type==='pump'){ S.last.pumpMl=+$('momAmount').value||null; S.last.pumpMin=+$('momDuration').value||null; } else { S.last.nursingMin=+$('momDuration').value||null; S.last.nursingSide=$('momSide')?.value||null; } const x=commitRecord(S.entries,{id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false}); save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved')); });
+$('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'diaper',date:$('diaperDate').value,time:$('diaperTime').value,subtype:$('diaperKind').value,note:$('diaperNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('diaperDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Diaper logged'); });
 $('feedForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('feedType').value, wasEdit=!!editing, stamp=new Date().toISOString();
-  if(type==='nursing'){ S.last.nursingMin=+$('feedDuration').value||null; S.last.nursingSide=$('feedSide')?.value||null; } else { S.last.bottleOz=+$('feedAmount').value||null; } const built=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}); const x=commitRecord(S.babyEvents,built); save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Feed logged'); });
-$('growthForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'growth',date:$('growthDate').value,time:'12:00',weightLb:$('growthWeightLb').value===''?null:+$('growthWeightLb').value,weightOz:$('growthWeightOz').value===''?null:+$('growthWeightOz').value,lengthIn:$('growthLength').value===''?null:+$('growthLength').value,headIn:$('growthHead').value===''?null:+$('growthHead').value,note:$('growthNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('growthDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} setView('baby-growth'); toast(wasEdit?'Measurement updated':'Measurement saved'); });
-$('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; S.last.sleepMin=+$('sleepMinutes').value||null; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:+$('sleepMinutes').value||0,sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); toast(wasEdit?'Entry updated':'Sleep logged'); });
+  if(type==='nursing'){ S.last.nursingMin=+$('feedDuration').value||null; S.last.nursingSide=$('feedSide')?.value||null; } else { S.last.bottleOz=+$('feedAmount').value||null; } const built=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}); const x=commitRecord(S.babyEvents,built); save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Feed logged'); });
+$('growthForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'growth',date:$('growthDate').value,time:'12:00',weightLb:$('growthWeightLb').value===''?null:+$('growthWeightLb').value,weightOz:$('growthWeightOz').value===''?null:+$('growthWeightOz').value,lengthIn:$('growthLength').value===''?null:+$('growthLength').value,headIn:$('growthHead').value===''?null:+$('growthHead').value,note:$('growthNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('growthDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} setView('baby-growth'); confirmed(); toast(wasEdit?'Measurement updated':'Measurement saved'); });
+$('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; S.last.sleepMin=+$('sleepMinutes').value||null; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:+$('sleepMinutes').value||0,sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Sleep logged'); });
 $('authForm').addEventListener('submit',async e=>{ e.preventDefault(); if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.signInWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('createAccount').addEventListener('click',async()=>{ if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.createUserWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('importFile').addEventListener('change',e=>{ const f=e.target.files?.[0]; if(f) importBackup(f); e.target.value=''; });

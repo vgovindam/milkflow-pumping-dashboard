@@ -319,6 +319,15 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none}
    "where today stands" read identically whichever person you are looking at. Each box is a
    label, the number, and the one piece of context that makes the number mean something. */
 .mf-hero-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}
+/* Three, because the third is the next feed - which used to be a whole card of its own under
+   the hero saying one number. Folding it in answers both halves of the same complaint: the
+   hero stops wasting the space beside the name, and the facts stop being two wide slabs. */
+.mf-hero-facts.three{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.mf-hero-facts.three .mf-hero-fact{padding:7px 9px}
+.mf-hero-facts.three .mf-hero-fact strong{font-size:15px;letter-spacing:-.02em}
+.mf-hero-facts.three .mf-hero-fact small{font-size:8.5px}
+.mf-hero-facts.three .mf-hero-fact em{font-size:9.5px}
+.mf-hero-fact.due strong{color:var(--mf-world-accent,currentColor)}
 .mf-hero-fact{display:grid;align-content:start;gap:1px;min-width:0;padding:8px 11px;border-radius:17px;
   background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.22);backdrop-filter:blur(14px)}
 .mf-hero-fact small{font-size:9.5px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;opacity:.82}
@@ -377,18 +386,21 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none}
 .mf-care-mark{position:absolute;display:grid;place-items:center;border-radius:50%;color:inherit;
   background:rgba(255,255,255,.92);box-shadow:inset 0 0 0 1px rgba(255,255,255,.72),0 6px 15px rgba(30,44,66,.13)}
 .mf-care-mark svg{width:62%;height:62%;fill:none;stroke:currentColor;stroke-width:2.9;stroke-linecap:round;stroke-linejoin:round}
-/* is-art: the generated theme icon supplies its own disc and palette, so the neutral
-   carrier steps aside entirely rather than showing a ring around it. */
+/* is-art: the illustrated mark brings its own shape, so the neutral carrier steps aside.
+   The icon used to draw a filled disc too, which meant a rounded tile, then this plate, then
+   that disc, then the character - three containers around one drawing. The disc is gone from
+   the generated file now, so the art sits straight on the tile and can be drawn larger in the
+   same box. */
 .mf-care-mark.is-art{background:none;box-shadow:none}
-.mf-care-mark.is-art .mf-care-art{width:100%;height:100%;display:block;border-radius:50%}
+.mf-care-mark.is-art .mf-care-art{width:100%;height:100%;display:block;border-radius:0}
 .mf-section-motif{position:absolute;right:14px;bottom:8px;width:56px;height:56px;opacity:.9;pointer-events:none}
 
 /* The mark is a span, and the rule .mf-diaper-blob span{position:relative} outranks a lone
    .mf-care-mark, so these carry the element type to win the specificity contest. */
-.mf-feed-card>span.mf-care-mark{position:absolute;left:50%;right:auto;top:10px;transform:translateX(-50%);width:54px;height:54px}
-.mf-diaper-blob>span.mf-care-mark{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:54px;height:54px}
+.mf-feed-card>span.mf-care-mark{position:absolute;left:50%;right:auto;top:7px;transform:translateX(-50%);width:62px;height:62px}
+.mf-diaper-blob>span.mf-care-mark{position:absolute;left:50%;top:7px;transform:translateX(-50%);width:62px;height:62px}
 .mf-animal-checkin>span.mf-care-mark{position:relative;left:auto;top:auto;transform:none;width:44px;height:44px}
-:root[data-theme="dark"] .mf-animal-checkin>span.mf-care-mark{background:rgba(255,255,255,.15);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+:root[data-theme="dark"] .mf-animal-checkin>span.mf-care-mark:not(.is-art){background:rgba(255,255,255,.15);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
 /* Two tones per card: the title carries the accent, the caption steps back a measured
    amount. Previously both sat on one color at .84 opacity, which read as a single flat ink. */
 .mf-feed-card small,.mf-diaper-blob span{color:var(--mf-card-sub,currentColor);opacity:1;font-weight:800}
@@ -496,7 +508,7 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
    last one won by being last - including a max-width:74% from the days when the line ran
    the full width of the card rather than sitting beside a photo. */
   .mf-dream-main h2{grid-area:title;max-width:none;font-size:26px;line-height:1.06;margin:6px 0 0;align-self:start;text-wrap:balance;letter-spacing:-.025em}.mf-dream-main>p{display:none}.mf-dream-next{grid-area:next;width:100%;margin-top:9px;padding:8px 11px 8px 13px;border-radius:18px;gap:9px}.mf-dream-next>div strong{font-size:16px}.mf-dream-next>div small{font-size:9px}.mf-dream-next button{min-height:48px;width:auto;min-width:91px;padding:0 12px;justify-content:center;border-radius:15px}.mf-dream-next button span{display:inline;font-size:10px}.mf-dream-photo{grid-area:photo;align-self:center;justify-self:end;width:118px;height:118px;border-width:5px}.mf-hero-facts{grid-area:facts;margin-top:11px;gap:8px}.mf-dream-photo .placeholder{font-size:32px}.mf-dream-journey{padding:17px 15px}.mf-journey-track{margin-top:14px;grid-auto-columns:82px}.mf-dream-actions .quick-tile{min-height:116px;padding:58px 13px 15px}.mf-dream-actions .quick-tile strong{font-size:19px}.mf-dream-actions .quick-tile .tile-art{width:54px;height:54px}
-  .mf-animal-hero{padding:15px;border-radius:29px 36px 28px 34px / 33px 28px 37px 30px}.mf-animal-profile .mf-profile-photo{width:138px;height:138px;border-width:7px;box-shadow:0 12px 28px rgba(38,99,102,.2)}.mf-animal-copy .welcome{display:inline-block;padding:5px 7px;border-radius:9px;background:rgba(255,255,255,.55);color:#29606b;font-size:9px;line-height:1.15;letter-spacing:.055em;opacity:1}.mf-animal-copy h2{margin-top:7px;font-size:25px;color:#163f52}.mf-animal-copy small{font-size:9.5px;color:#41636a;opacity:1}.mf-animal-hero>.bear{width:70px;height:70px;right:80px;bottom:-1px}.mf-animal-hero>.bunny{width:57px;height:57px;right:20px;bottom:2px}.mf-animal-star.one{left:48%;top:16px}.mf-animal-checkin{grid-template-columns:44px minmax(0,1fr) auto;padding:10px 11px}.mf-animal-checkin>.mf-animal-sticker{width:42px;height:42px}
+  .mf-animal-hero{padding:15px;border-radius:29px 36px 28px 34px / 33px 28px 37px 30px}.mf-animal-profile .mf-profile-photo{width:138px;height:138px;border-width:7px;box-shadow:0 12px 28px rgba(38,99,102,.2)}.mf-animal-copy .welcome{display:inline-flex;flex-wrap:wrap;padding:5px 7px;border-radius:9px;background:rgba(255,255,255,.55);color:#29606b;font-size:9px;line-height:1.2;letter-spacing:.055em;opacity:1}.mf-animal-copy h2{margin-top:7px;font-size:25px;color:#163f52}.mf-animal-copy small{font-size:9.5px;color:#41636a;opacity:1}.mf-animal-hero>.bear{width:70px;height:70px;right:80px;bottom:-1px}.mf-animal-hero>.bunny{width:57px;height:57px;right:20px;bottom:2px}.mf-animal-star.one{left:48%;top:16px}.mf-animal-checkin{grid-template-columns:44px minmax(0,1fr) auto;padding:10px 11px}.mf-animal-checkin>.mf-animal-sticker{width:42px;height:42px}
   .mf-profile-photo{width:60px;height:60px}.mf-profile-copy h2{font-size:27px}
   .mf-top-orb-wrap{width:52px}.mf-top-orb{width:50px;height:50px}.mf-top-orb strong{font-size:14px}.mf-top-orb-wrap>span{font-size:9.5px}
   .mf-mom-orbs{margin-top:5px}.ring.mf-mom-photo-ring,.mf-mom-hero-photo{width:116px;height:116px}
@@ -615,19 +627,14 @@ function renderBaby(s){
         <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}</button>
         <div class="mf-animal-copy"><div class="welcome">${g.mark} ${esc(gl.text)}${(s.profile?.momName||'').trim()?'':'<button type="button" class="mf-name-cta" data-view="set-baby">Add your name</button>'}</div><h2>${esc(babyName)}${babyMeta?`<i>${esc(babyMeta)}</i>`:''}</h2></div>
       </div>
-      <div class="mf-hero-facts" aria-label="Baby today summary">
+      <div class="mf-hero-facts three" aria-label="Baby today summary">
         <span class="mf-hero-fact"><small>Last feed</small><strong>${esc(lf.age==='—'?'Nothing yet':lf.age)}</strong><em>${esc(lf.main)}${lf.clock&&lf.clock!=='Tap a feed option below'?` · ${esc(lf.clock)}`:''}</em></span>
-        <span class="mf-hero-fact"><small>Today</small><strong>${snap.todayOz.toFixed(1)} oz · ${snap.diapers} diaper${snap.diapers===1?'':'s'}</strong></span>
+        <span class="mf-hero-fact"><small>Today</small><strong>${snap.todayOz.toFixed(1)} oz</strong><em>${snap.diapers} diaper${snap.diapers===1?'':'s'}</em></span>
+        <span class="mf-hero-fact ${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed due':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'—'}</strong><em>${nextFeed?(nextFeed.overdue?'Expected':'Around'):'Needs a few feeds'}</em></span>
       </div>
     </div>
 
     ${nudgeCard('baby')}
-
-    <div class="mf-animal-checkin" aria-label="Next feeding">
-      ${careMark('clock')}
-      <span class="mf-last-feed-primary"><strong>${nextFeed&&nextFeed.overdue?'Feed is due':'Next feed'}</strong><small>${nextFeed?(nextFeed.overdue?'It has been a while since the last one':'Based on the gaps between recent feeds'):'A few more feeds and this will start predicting'}</small></span>
-      ${nextFeed?`<span class="mf-last-feed-age"><strong>${esc(nextFeed.label)}</strong><small>${nextFeed.overdue?'Expected':'Around'}</small></span>`:''}
-    </div>
 
     <div class="mf-care-label"><span>Feed</span><small>Quick log</small></div>
     <div class="mf-feed-zone">

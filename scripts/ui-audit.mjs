@@ -95,6 +95,34 @@ requireText('day view is newest first',read('app.js'),"sort((a,b) => (b.time||''
 /* The scene must be chosen by the same attribute as every other colour, or light mode keeps
    showing the dark plate until something happens to re-run the theme controller. */
 requireText('scene resolves in CSS',read('experience-system.css'),':root[data-theme="dark"]{\n  --mf-theme-baby-scene:var(--mf-theme-baby-scene-dark,none);');
+/* The Sounds switch shipped wired to nothing: it stored a preference that no code ever read.
+   A control that does not control anything is worse than no control. */
+{
+  const app=read('app.js'), exp=read('experience-theme.js');
+  requireText('save confirmation exists',app,'function confirmed(');
+  requireText('confirmation respects the setting',app,"localStorage.getItem(FEEDBACK_KEY) !== 'off'");
+  requireText('haptics are attempted',app,'navigator.vibrate?.(pattern)');
+  if((app.match(/confirmed\((?!kind)/g)||[]).length<7)failures.push('every save point should confirm itself');
+  requireText('the switch says what it does',exp,'Sound and vibration');
+}
+/* The phone owns one line of a notification whatever we do, so the line we own must not be
+   the word "reminder" - it has to be the thing you would have opened the app to find out. */
+{
+  const app=read('app.js');
+  requireText('notification carries the news',app,'notify(`Pump ${i+1} at ${to12(t)}`');
+  requireText('feed notification names the baby',app,'notify(`${S.baby.name} is due for a feed`');
+  requireText('notifications look like this app',app,"icon:'./milkflow-family-icon-192.png'");
+  if(/notify\('(Pump|Feed) reminder'/.test(app))failures.push('a notification title should say what happened, not that it is a reminder');
+}
+/* One drawing, one container. The icon used to supply a disc AND sit on a plate AND sit in a
+   tile. */
+{
+  const icons=read('scripts/care-icons/index.mjs'), ui=read('core-ui.js');
+  if(/<circle cx="32" cy="32" r="31"/.test(icons))failures.push('care icons must not draw their own disc: the tile is the container');
+  requireText('illustrated marks have no plate',ui,'.mf-care-mark.is-art{background:none;box-shadow:none}');
+}
+/* The next feed lives in the hero, not in a card of its own under it. */
+requireText('next feed is a hero fact',read('core-ui.js'),'mf-hero-facts three');
 /* A surface the dark layer forgets is a white card with white text on it. */
 requireText('stash hero has a dark surface',read('core-ui.js'),':root[data-theme="dark"] body[data-realm] .stash-hero');
 /* Both heroes answer the same two questions in the same place. The hero is reviewed at phone

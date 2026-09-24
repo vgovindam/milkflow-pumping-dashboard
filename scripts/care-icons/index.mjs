@@ -1,6 +1,6 @@
 /* MilkFlow care-icon design system.
  *
- *   icon(theme, action) = disc(theme) + character(theme.cast[action]) + propBadge(action)
+ *   icon(theme, action) = character(theme.cast[action]) + propBadge(action)
  *
  * Two layers with two jobs:
  *   - the CHARACTER is the theme. Nocturne gets the night crew, Tide gets reef babies,
@@ -32,12 +32,19 @@ function colors(themeId, character) {
   return {...character, ink: p.ink, blush: character.blush || p.blush};
 }
 
-function disc(themeId, gid) {
+/* There is no disc any more.
+ *
+ * The icon used to draw its own filled circle, and the card it sits on wrapped that in a
+ * white plate, inside a rounded tile: a square, then a circle, then another circle, then the
+ * character. Three containers for one drawing. The tile is a real tinted surface now, so the
+ * character can sit straight on it - one shape instead of four, and the illustration reads
+ * bigger at the same box size.
+ *
+ * The prop badge stays. It is not a container; it is the part that says bottle rather than
+ * drop, and it is the only thing in the icon that is identical across every world. */
+function discGradient(themeId, gid) {
   const p = palette(themeId);
-  return {
-    def: `<linearGradient id="${gid}" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="${p.disc[0]}"/><stop offset="1" stop-color="${p.disc[1]}"/></linearGradient>`,
-    shape: `<circle cx="32" cy="32" r="31" fill="url(#${gid})"/>`
-  };
+  return `<linearGradient id="${gid}" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="${p.disc[0]}"/><stop offset="1" stop-color="${p.disc[1]}"/></linearGradient>`;
 }
 
 /** The semantic prop on its own badge, bottom-right, always on a near-white plate. */
@@ -63,9 +70,8 @@ export function renderIcon(themeId, action) {
   const character = theme.cast[action];
   if (!character) throw new Error(`Theme ${themeId} has no character for action: ${action}`);
   const gid = `d-${themeId}-${action}`;
-  const d = disc(themeId, gid);
   const label = `${character.name} — ${action}`;
-  return svg(label, [d.shape, character.render(colors(themeId, character)), propBadge(themeId, action)].join('\n  '), d.def);
+  return svg(label, [character.render(colors(themeId, character)), propBadge(themeId, action)].join('\n  '), discGradient(themeId, gid));
 }
 
 /** The theme's mascot with no prop: used for section headers and theme pickers. */
@@ -73,9 +79,8 @@ export function renderMascot(themeId) {
   const theme = CASTS[themeId];
   if (!theme) throw new Error(`Unknown care-icon theme: ${themeId}`);
   const gid = `m-${themeId}`;
-  const d = disc(themeId, gid);
   const c = colors(themeId, theme.mascot);
-  return svg(`${theme.label} mascot`, [d.shape, `<g transform="translate(2.4 3.4) scale(1.08)" transform-origin="32 32">${theme.mascot.render(c)}</g>`].join('\n  '), d.def);
+  return svg(`${theme.label} mascot`, `<g transform="translate(2.4 3.4) scale(1.08)" transform-origin="32 32">${theme.mascot.render(c)}</g>`, discGradient(themeId, gid));
 }
 
 export function themeLabel(themeId) {
