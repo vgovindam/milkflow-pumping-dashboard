@@ -28,7 +28,7 @@ need('canonical experience layer',themeEntry,'layer(milkflow-experience)');
 
 for(const text of ["const KEY='milkflow-experience-theme-v1'","new Set(['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds','clean'])","const RETIRED={jungle:'safari'","const THEME_LIBRARY={","filter(([,t])=>t.status==='ready')",'data-experience-theme-pick="clean"'])need('experience theme controller',experienceJs,text);
 for(const [key,title] of [['safari','Animal Kingdom'],['butterfly','Butterfly Garden'],['princess','Princess Palace'],['ocean','Ocean'],['celestial','Moon & Stars'],['woodland','Woodland Forest'],['safari-sunset','Safari Sunset'],['floral-meadow','Floral Meadow'],['cozy-clouds','Cozy Clouds']]){
-  need('ready theme registry',experienceJs,`${key}:{id:`);
+  need('ready theme registry',experienceJs,`id:'${key}'`);
   need('ready theme title',experienceJs,`title:'${title}'`);
 }
 if(experienceJs.includes('MutationObserver'))failures.push('experience theme controller: observer loop is not allowed');
