@@ -11,6 +11,8 @@ requireText('saved parent name',files.ui,"name=s.profile?.momName||'Mom'");
 requireText('smart Baby wish',files.ui,'function babyWishLine(');
 if(files.ui.includes('Keeping tonight calm and simple'))failures.push('Baby hero must not restore the wordy late-night wish line');
 requireText('last feed includes clock time',files.ui,'mf-last-feed-value');
+requireText('last feed uses compact elapsed value',files.ui,"replace(/ ago$/,'')");
+requireText('last feed has explicit separator',files.ui,'aria-hidden="true">·</i>');
 requireText('compact Baby timing',files.ui,'mf-baby-timing');
 requireText('compact Baby today line',files.ui,'mf-baby-todayline');
 /* Development kept the component layer's pale card in dark mode and printed light ink on it -
@@ -141,10 +143,18 @@ requireText('Baby tab has explicit contrast',read('experience-system.css'),'#per
   const icons=read('scripts/care-icons/index.mjs'), ui=read('core-ui.js');
   if(/<circle cx="32" cy="32" r="31"/.test(icons))failures.push('care icons must not draw their own disc: the tile is the container');
   requireText('illustrated marks have no plate',ui,'.mf-care-mark.is-art{background:none;box-shadow:none}');
+  requireText('feed SVG positioning is direct-child only',ui,'.mf-feed-card>svg{position:absolute');
+  requireText('diaper SVG positioning is direct-child only',ui,'.mf-diaper-blob>svg{position:absolute');
+  requireText('fallback glyph position is reset',ui,'.mf-care-mark>svg{position:static;inset:auto;');
+  requireText('diaper icon clears count badge',ui,'.mf-diaper-blob>span.mf-care-mark{position:absolute;left:11px;');
+  const expComponents=read('experience-components.css');
+  requireText('decorative care sprite retired',expComponents,'content:none!important;display:none!important;background:none!important');
 }
 /* The next feed stays in the hero, but it is now a compact timing fact beside Last feed rather
    than one of three full-width dashboard boxes. */
 requireText('next feed stays in compact Baby timing',read('core-ui.js'),'aria-label="Baby feeding timing"');
+requireText('Last feed receives more width',read('component-theme-core.css'),'grid-template-columns:minmax(0,1.5fr) minmax(72px,.78fr)');
+requireText('Last feed stays on one line',read('component-theme-core.css'),'flex-wrap:nowrap;min-width:0;white-space:nowrap');
 if(/mf-hero-facts three/.test(read('core-ui.js')))failures.push('Baby Home must not restore the three full-width hero fact boxes');
 /* A surface the dark layer forgets is a white card with white text on it. */
 requireText('stash hero has a dark surface',read('core-ui.js'),':root[data-theme="dark"] body[data-realm] .stash-hero');
