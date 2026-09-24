@@ -78,10 +78,13 @@ for(const theme of paintedThemes){
   }
 }
 for(const theme of vectorThemes){
-  if(!experience.includes(`vectorAssetSet('${theme}')`))fail.push(`${theme} vector asset matrix missing from deployed theme runtime`);
+  if(!experience.includes(`imageWorldAssetSet('${theme}')`))fail.push(`${theme} full image world missing from deployed theme runtime`);
   if(!experience.includes(`title:'${themeTitles[theme]}'`))fail.push(`${theme} canonical title missing from deployed theme runtime`);
   if(!experience.includes(`id:'${theme}',status:'ready'`))fail.push(`${theme} is not selectable in deployed theme runtime`);
 }
+if(experience.includes('assets:vectorAssetSet('))fail.push('placeholder vector worlds are still selectable in deployed runtime');
+for(const id of ['60087','37023333','9870287','25754105','26971554','18444260'])
+  if(!experience.includes(`/photos/${id}/`))fail.push(`image-backed theme source missing from runtime: ${id}`);
 if(experience.includes('theme-details/'))fail.push('deployed controller still stacks a separate detail SVG instead of using one self-contained scene');
 if(experienceCss.includes('--mf-theme-detail'))fail.push('deployed theme CSS still depends on a separate detail layer');
 if(experienceCss.includes('content:var(--mf-theme-name)'))fail.push('deployed theme CSS still renders theme-name hero badges');
@@ -118,4 +121,4 @@ for(const ref of [...index.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(m=>m[
   if(rel&&!fs.existsSync(path.join(DIST,rel)))fail.push(`broken index reference: ${ref}`);
 }
 if(fail.length){console.error(fail.map(x=>`- ${x}`).join('\n'));process.exit(1);}
-console.log(`Production audit passed for MilkFlow ${version}: nine selectable theme worlds, canonical v3 PWA artwork, dark-mode readability, service worker, data key, and notification contract are aligned.`);
+console.log(`Production audit passed for MilkFlow ${version}: nine selectable theme worlds with six image-backed scenes, canonical v3 PWA artwork, dark-mode readability, service worker, data key, and notification contract are aligned.`);
