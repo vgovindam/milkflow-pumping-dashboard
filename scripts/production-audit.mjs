@@ -1,18 +1,38 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const DIST=path.join(ROOT,'dist');
 const version=JSON.parse(fs.readFileSync(path.join(ROOT,'version.json'),'utf8')).version;
 const fail=[];
-const must=['index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-themes.css','experience-system.css','experience-components.css','doctor-summary.css','app.js','cross-device-alerts.js','experience-theme.js','sw.js','manifest.webmanifest','build-manifest.json','icon.svg','milkflow-family-v3-192.png'];
+const must=['index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-system.css','experience-components.css','doctor-summary.css','insights-engine.js','app.js','cross-device-alerts.js','experience-theme.js','sw.js','manifest.webmanifest','build-manifest.json','icon.svg','milkflow-family-v3-192.png'];
 for(const f of must)if(!fs.existsSync(path.join(DIST,f)))fail.push(`missing dist/${f}`);
+if(fs.existsSync(path.join(DIST,'experience-themes.css')))fail.push('dead experience-themes.css still ships in dist');
 const themes=['safari','butterfly','princess'];
+const themeTitles={safari:'Animal Kingdom',butterfly:'Butterfly Garden',princess:'Princess Palace'};
+const hash=file=>createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 for(const theme of themes){
   if(!fs.existsSync(path.join(DIST,`assets/theme-icons/${theme}.svg`)))fail.push(`missing dist/assets/theme-icons/${theme}.svg`);
-  for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
-    const rel=`assets/themes-v2/${theme}/${mode}/${role}.svg`;if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
+  for(const mode of ['light','dark']){
+    for(const [role,widths] of [['baby-background',[480,720,941]],['mom-background',[480,720,941]],['baby-hero',[640,941]],['mom-hero',[640,941]]]){
+      for(const width of widths){
+        const rel=`assets/themes-v2/${theme}/${mode}/${role}@${width}.webp`;
+        if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
+      }
+    }
+    const preview=`assets/themes-v2/${theme}/${mode}/settings-preview.webp`;
+    if(!fs.existsSync(path.join(DIST,preview)))fail.push(`missing dist/${preview}`);
+    for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
+      const rel=`assets/themes-v2/${theme}/${mode}/${role}.svg`;
+      if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
+    }
+  }
+  for(const role of ['baby-background','mom-background']){
+    const light=path.join(DIST,`assets/themes-v2/${theme}/light/${role}@941.webp`);
+    const dark=path.join(DIST,`assets/themes-v2/${theme}/dark/${role}@941.webp`);
+    if(fs.existsSync(light)&&fs.existsSync(dark)&&hash(light)===hash(dark))fail.push(`${theme} ${role} light/dark plates are byte-identical; dark mode must be separately authored/graded`);
   }
 }
 const textFiles=[];
@@ -31,6 +51,7 @@ const experience=fs.readFileSync(path.join(DIST,'experience-theme.js'),'utf8');
 const experienceCss=fs.readFileSync(path.join(DIST,'experience-system.css'),'utf8');
 for(const theme of themes){
   if(!experience.includes(`assetSet('${theme}')`))fail.push(`${theme} asset matrix missing from deployed theme runtime`);
+  if(!experience.includes(`title:'${themeTitles[theme]}'`))fail.push(`${theme} canonical title missing from deployed theme runtime`);
   if(!experience.includes(`theme-icons/${theme}.svg`))fail.push(`${theme} icon sprite missing from deployed theme runtime`);
   for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
     const rel=`assets/themes-v2/${theme}/${mode}/${role}.svg`,full=path.join(DIST,rel);
@@ -61,6 +82,12 @@ if(!sw.includes("icon:'./milkflow-family-v3-192.png'"))fail.push('push notificat
 if(sw.includes('./assets/themes-v2/'))fail.push('service-worker install shell eagerly downloads the 40-asset theme matrix');
 const manifest=JSON.parse(fs.readFileSync(path.join(DIST,'build-manifest.json'),'utf8'));
 if(manifest.version!==version)fail.push('build-manifest version mismatch');
+for(const legacy of ['smart-pumping.js','pump-insights.js','pump-home-controls.js','adaptive-pump-plan.js','baby-home-modern.js','modern-stickers.js','mom-profile.js','runtime-stability.js','chat-reliability.js','experience-jungle.css','experience-themes.css']){
+  if(manifest.assets?.includes(legacy))fail.push(`legacy/superseded artifact unexpectedly ships in production: ${legacy}`);
+}
+const insights=fs.readFileSync(path.join(DIST,'insights-engine.js'),'utf8');
+for(const token of ['window.MilkFlowInsights','cdc-breastfeeding-frequency','who-growth-standards','aap-safe-sleep','General educational guidance only'])if(!insights.includes(token))fail.push(`interpretation engine contract missing: ${token}`);
+if(!manifest.assets?.includes('insights-engine.js'))fail.push('interpretation engine missing from build manifest');
 if(!fs.readFileSync(path.join(DIST,'app.js'),'utf8').includes('milkflow-family-v4-state'))fail.push('canonical state key missing from production app.js');
 if(!fs.readFileSync(path.join(DIST,'cross-device-alerts.js'),'utf8').includes('milkflow-device-id-v1'))fail.push('cross-device notification identity missing from production');
 for(const ref of [...index.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(m=>m[1])){

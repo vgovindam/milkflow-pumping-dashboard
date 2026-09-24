@@ -6,7 +6,6 @@
 /* No layer() here: component-theme-core.css declares its own layers, because most of it is
    milkflow-core but the Baby home composition belongs in milkflow-screens. */
 @import url("./component-theme-core.css?build=stable45-human8");
-@import url("./experience-themes.css?build=stable45-human8") layer(milkflow-experience);
 
 @layer milkflow-controls {
   /* Core navigation and functional icons are structural UI, not theme artwork. The late

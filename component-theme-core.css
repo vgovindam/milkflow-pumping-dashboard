@@ -237,6 +237,60 @@ body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"]
 }
 
 
+
+@layer milkflow-core {
+/* -------------------------------------------------------------- interpreted insights
+   One component serves Mom Trends, Baby Trends and Doctor Summary. It is deliberately
+   quieter than the charts: the answer comes first, source-backed education comes second. */
+.mf-insights{
+  --insight-accent:var(--mom);
+  margin:14px 0 18px;padding:18px;border:1px solid color-mix(in srgb,var(--insight-accent) 20%,var(--line));
+  border-radius:26px;background:color-mix(in srgb,var(--mf-world-surface,var(--surface)) 94%,var(--insight-accent) 6%);
+  color:var(--mf-world-text,var(--ink));box-shadow:0 14px 34px color-mix(in srgb,var(--insight-accent) 10%,transparent)
+}
+.mf-insights.baby{--insight-accent:var(--baby)}
+.mf-insights-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
+.mf-insights-head .eyebrow{display:block;margin:0 0 4px;color:var(--insight-accent);font-size:10px;font-weight:900;letter-spacing:.12em}
+.mf-insights-head h3{margin:0;font-family:var(--display);font-size:21px;line-height:1.08;letter-spacing:-.025em;color:currentColor}
+.mf-insights-head p{max-width:680px;margin:6px 0 0;color:var(--mf-world-muted,var(--muted));font-size:12px;line-height:1.5}
+.mf-insight-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.mf-insight-card{
+  min-width:0;padding:13px;border:1px solid color-mix(in srgb,var(--insight-accent) 14%,var(--line));
+  border-radius:18px;background:color-mix(in srgb,var(--mf-world-surface-strong,var(--surface-2)) 96%,var(--insight-accent) 4%)
+}
+.mf-insight-card>span{display:block;color:var(--mf-world-muted,var(--muted));font-size:10px;font-weight:800;letter-spacing:.025em}
+.mf-insight-card>strong{display:block;margin-top:5px;font-family:var(--display);font-size:20px;line-height:1;color:currentColor}
+.mf-insight-card>p{margin:7px 0 0;color:var(--mf-world-muted,var(--muted));font-size:10.5px;line-height:1.4}
+.mf-insight-card[data-tone="up"]{box-shadow:inset 0 3px 0 color-mix(in srgb,var(--insight-accent) 62%,transparent)}
+.mf-insight-card[data-tone="down"]{box-shadow:inset 0 3px 0 color-mix(in srgb,var(--mf-world-muted,var(--muted)) 55%,transparent)}
+.mf-insight-card[data-tone="steady"]{box-shadow:inset 0 3px 0 color-mix(in srgb,var(--insight-accent) 34%,transparent)}
+.mf-education{margin-top:14px;padding-top:14px;border-top:1px solid color-mix(in srgb,var(--insight-accent) 14%,var(--line));display:grid;gap:9px}
+.mf-education-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.mf-education-title strong{font-size:12px}.mf-education-title span{color:var(--mf-world-muted,var(--muted));font-size:10px}
+.mf-education-card{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;padding:12px 13px;
+  border-radius:17px;background:color-mix(in srgb,var(--mf-world-surface-strong,var(--surface-2)) 97%,var(--insight-accent) 3%);
+  border:1px solid color-mix(in srgb,var(--insight-accent) 10%,var(--line))
+}
+.mf-education-card>div>span{display:block;margin-bottom:3px;color:var(--insight-accent);font-size:8.5px;font-weight:900;letter-spacing:.1em}
+.mf-education-card strong{font-size:11.5px}.mf-education-card p{margin:4px 0 0;color:var(--mf-world-muted,var(--muted));font-size:10.5px;line-height:1.4}
+.mf-education-card a{
+  align-self:center;min-height:38px;display:inline-flex;align-items:center;padding:0 11px;border-radius:12px;
+  border:1px solid color-mix(in srgb,var(--insight-accent) 24%,var(--line));background:var(--mf-world-surface,var(--surface));
+  color:var(--insight-accent);font-size:10px;font-weight:850;text-decoration:none;white-space:nowrap
+}
+.mf-education-card a:focus-visible{outline:3px solid color-mix(in srgb,var(--insight-accent) 35%,transparent);outline-offset:2px}
+.mf-insight-disclaimer{margin:12px 0 0;color:var(--mf-world-muted,var(--muted));font-size:9.5px;line-height:1.4}
+@media(max-width:760px){
+  .mf-insights{margin:11px 0 15px;padding:15px;border-radius:22px}
+  .mf-insight-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .mf-education-title{display:block}.mf-education-title span{display:block;margin-top:2px}
+  .mf-education-card{grid-template-columns:1fr}.mf-education-card a{justify-self:start}
+}
+@media(max-width:360px){.mf-insight-grid{grid-template-columns:1fr}}
+}
+
+
 @layer milkflow-screens {
 /* ---------------------------------------------------------------- Baby home
    The hero composition, and the twin of the Mom hero in core-ui.js: a greeting line with the
