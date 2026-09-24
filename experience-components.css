@@ -32,9 +32,9 @@
 
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin{position:relative}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin::after{
-  content:"";position:absolute;right:12px;bottom:6px;width:26px;height:26px;z-index:1;opacity:.5;
-  background:var(--mf-icon-sprite) no-repeat;
-  background-size:var(--mf-sprite-size);background-position:var(--mf-sprite-milk);pointer-events:none
+  /* Care symbols belong only inside explicit care controls. Decorative sprite fragments here
+     made fallback icons in newer worlds look duplicated or layered. */
+  content:none!important;display:none!important;background:none!important
 }
 
 /* Mom tiles keep their existing action contract but the visible art changes with the

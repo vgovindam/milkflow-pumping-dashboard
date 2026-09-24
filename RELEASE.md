@@ -1,5 +1,17 @@
 # MilkFlow releases
 
+## v2.17.1 — Care icon and Last feed layout correction
+
+This patch fixes two visible regressions from the expanded theme release.
+
+- Isolates fallback semantic care SVGs from legacy card-level SVG positioning so Ocean, Moon & Stars, Woodland Forest, Safari Sunset, Floral Meadow, and Cozy Clouds no longer shift or stack bottle/diaper symbols.
+- Keeps care symbols inside their explicit action controls and retires the remaining decorative care-sprite pseudo-layer.
+- Separates diaper icons from their count badges instead of letting the two occupy the same top-center space.
+- Gives Last feed more of the Baby hero timing row and keeps elapsed time plus clock time together as a readable `18m · 8:42 PM` value.
+- Adds browser regression checks for fallback-icon containment, diaper icon/badge intersection, theme-preview care leakage, and Last feed overflow.
+
+No care data, Sleep data, Firestore collection, state key, or record-ID migration is introduced.
+
 ## v2.17.0 — Expanded themes, smarter sleep, and responsive print
 
 This release broadens MilkFlow’s visual system and improves several everyday interactions.

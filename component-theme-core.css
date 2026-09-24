@@ -327,12 +327,12 @@ body[data-screen="baby-home"] .mf-baby-todayline{
   margin:5px 0 0;color:#527075;font:800 9.5px/1.3 var(--font);letter-spacing:.005em
 }
 body[data-screen="baby-home"] .mf-baby-timing{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin-top:9px;
+  display:grid;grid-template-columns:minmax(0,1.5fr) minmax(72px,.78fr);gap:0;margin-top:9px;
   border-top:1px solid rgba(44,92,83,.16);padding-top:7px
 }
-body[data-screen="baby-home"] .mf-baby-timing>span{min-width:0;padding-right:8px}
+body[data-screen="baby-home"] .mf-baby-timing>span{min-width:0;padding-right:6px}
 body[data-screen="baby-home"] .mf-baby-timing>span+span{
-  padding-left:9px;padding-right:0;border-left:1px solid rgba(44,92,83,.16)
+  padding-left:8px;padding-right:0;border-left:1px solid rgba(44,92,83,.16)
 }
 body[data-screen="baby-home"] .mf-baby-timing small{
   display:block;color:#5d777a;font:850 8px/1.1 var(--font);letter-spacing:.09em;text-transform:uppercase
@@ -341,12 +341,16 @@ body[data-screen="baby-home"] .mf-baby-timing strong{
   display:block;margin-top:3px;color:#214f53;font:850 13.5px/1.12 var(--display);
   white-space:normal;overflow-wrap:anywhere
 }
+body[data-screen="baby-home"] .mf-last-feed-slot{min-width:0}
 body[data-screen="baby-home"] .mf-last-feed-value{
-  display:flex;align-items:baseline;gap:6px;flex-wrap:wrap
+  display:flex;align-items:baseline;gap:5px;flex-wrap:nowrap;min-width:0;white-space:nowrap
 }
-body[data-screen="baby-home"] .mf-last-feed-value b{font:inherit;color:inherit}
+body[data-screen="baby-home"] .mf-last-feed-value b{font:900 14.5px/1.08 var(--display);color:inherit;white-space:nowrap}
+body[data-screen="baby-home"] .mf-last-feed-value i{
+  flex:0 0 auto;font:900 11px/1 var(--font);font-style:normal;color:#789095
+}
 body[data-screen="baby-home"] .mf-last-feed-value em{
-  font:800 12px/1.1 var(--font);font-style:normal;color:#557277;white-space:nowrap
+  min-width:0;font:850 12.5px/1.08 var(--font);font-style:normal;color:#557277;white-space:nowrap
 }
 body[data-screen="baby-home"] .mf-baby-timing .due strong{color:var(--mf-world-accent,#7a4d37)}
 body[data-screen="baby-home"] .mf-animal-hero>.bear,
@@ -366,8 +370,10 @@ body[data-screen="baby-home"] .mf-animal-star{display:none}
   body[data-screen="baby-home"] .mf-animal-copy h2{font-size:27px}
   body[data-screen="baby-home"] .mf-baby-wish{font-size:10.8px}
   body[data-screen="baby-home"] .mf-baby-todayline{font-size:9px}
+  body[data-screen="baby-home"] .mf-baby-timing{grid-template-columns:minmax(0,1.58fr) minmax(68px,.72fr)}
   body[data-screen="baby-home"] .mf-baby-timing strong{font-size:12.5px}
-  body[data-screen="baby-home"] .mf-last-feed-value em{font-size:11.5px}
+  body[data-screen="baby-home"] .mf-last-feed-value b{font-size:13.5px}
+  body[data-screen="baby-home"] .mf-last-feed-value em{font-size:12px}
 }
 @media(max-width:350px){
   body[data-screen="baby-home"] .mf-animal-profile{grid-template-columns:minmax(0,1fr) 116px;gap:10px}
@@ -384,6 +390,7 @@ body[data-screen="baby-home"] .mf-animal-star{display:none}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-timing small{color:#b6d1d6}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-timing strong{color:#f0fbfc}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-last-feed-value em{color:#c8dce0}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-last-feed-value i{color:#8fa8ad}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-photo-add{background:rgba(18,34,31,.8);color:#e9faf5}
 }
 
