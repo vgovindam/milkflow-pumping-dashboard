@@ -85,7 +85,10 @@ if(manifest.version!==version)fail.push('build-manifest version mismatch');
 for(const legacy of ['smart-pumping.js','pump-insights.js','pump-home-controls.js','adaptive-pump-plan.js','baby-home-modern.js','modern-stickers.js','mom-profile.js','runtime-stability.js','chat-reliability.js','experience-jungle.css','experience-themes.css']){
   if(manifest.assets?.includes(legacy))fail.push(`legacy/superseded artifact unexpectedly ships in production: ${legacy}`);
 }
-const insights=fs.readFileSync(path.join(DIST,'insights-engine.js'),'utf8');\nfor(const token of ['window.MilkFlowInsights','cdc-breastfeeding-frequency','who-growth-standards','aap-safe-sleep','General educational guidance only'])if(!insights.includes(token))fail.push(`interpretation engine contract missing: ${token}`);\nif(!manifest.assets?.includes('insights-engine.js'))fail.push('interpretation engine missing from build manifest');\nif(!fs.readFileSync(path.join(DIST,'app.js'),'utf8').includes('milkflow-family-v4-state'))fail.push('canonical state key missing from production app.js');
+const insights=fs.readFileSync(path.join(DIST,'insights-engine.js'),'utf8');
+for(const token of ['window.MilkFlowInsights','cdc-breastfeeding-frequency','who-growth-standards','aap-safe-sleep','General educational guidance only'])if(!insights.includes(token))fail.push(`interpretation engine contract missing: ${token}`);
+if(!manifest.assets?.includes('insights-engine.js'))fail.push('interpretation engine missing from build manifest');
+if(!fs.readFileSync(path.join(DIST,'app.js'),'utf8').includes('milkflow-family-v4-state'))fail.push('canonical state key missing from production app.js');
 if(!fs.readFileSync(path.join(DIST,'cross-device-alerts.js'),'utf8').includes('milkflow-device-id-v1'))fail.push('cross-device notification identity missing from production');
 for(const ref of [...index.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(m=>m[1])){
   if(/^https?:/.test(ref))continue;
