@@ -83,6 +83,16 @@ function relativeAgo(date,time){
   if(h<24)return`${h} hr${h===1?'':'s'}${m?` ${m} min${m===1?'':'s'}`:''} ago`;
   const d=Math.floor(h/24);return`${d} day${d===1?'':'s'} ago`;
 }
+function compactRelativeAgo(date,time){
+  if(!date||!time)return'';
+  const at=new Date(`${date}T${time}:00`),diff=Math.max(0,Math.floor((Date.now()-at.getTime())/60000));
+  if(!Number.isFinite(diff))return'';
+  if(diff<1)return'just now';
+  if(diff<60)return`${diff}m ago`;
+  const h=Math.floor(diff/60),m=diff%60;
+  if(h<24)return`${h}h${m?` ${m}m`:''} ago`;
+  return`${Math.floor(h/24)}d ago`;
+}
 
 function bucket(m){if(m<540)return'early';if(m<810)return'lateMorning';if(m<1050)return'afternoon';if(m<1290)return'evening';return'late';}
 function transitions(s){const by={};for(const e of livePumps(s)){if(e.date===today())continue;(by[e.date]??=[]).push(e);}const out=[];for(const d of Object.keys(by).sort().slice(-10)){const a=by[d].sort((x,y)=>String(x.time).localeCompare(String(y.time)));for(let i=1;i<a.length;i++){const pm=mins(a[i-1].time),nm=mins(a[i].time),gap=nm-pm;if(Number.isFinite(pm)&&gap>=120&&gap<=390)out.push({bucket:bucket(pm),gap});}}return out;}
@@ -631,6 +641,7 @@ function renderBaby(s){
   const st=babyCareStats(s),snap=babySnapshot(s,st),nextFeed=predictNextFeed(s),g=positiveGreeting(),gl=greetingLine(s.profile?.momName),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate),lf=lastFeedText(lastFeed(s));
   let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}
   const feedCount=st.milkCount+st.nursingCount+st.formulaCount;
+  const last=lastFeed(s),lastAge=last?compactRelativeAgo(last.date,last.time):'Nothing yet';
   const babyMeta=age;
   const todayBits=[
     feedCount?`${feedCount} feed${feedCount===1?'':'s'}`:'No feeds yet',
@@ -648,7 +659,7 @@ function renderBaby(s){
           <p class="mf-baby-wish">${esc(wish)}</p>
           <p class="mf-baby-todayline">${todayBits.map(esc).join(' · ')}</p>
           <div class="mf-baby-timing" aria-label="Baby feeding timing">
-            <span><small>Last feed</small><strong>${esc(lf.age==='—'?'Nothing yet':lf.age)}</strong></span>
+            <span><small>Last feed</small><strong>${esc(lastAge)}</strong></span>
             <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'Learning'}</strong></span>
           </div>
         </div>
