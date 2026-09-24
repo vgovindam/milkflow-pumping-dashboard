@@ -103,7 +103,7 @@ for(const theme of imageThemes){
   if(!experience.includes(`id:'${theme}',status:'ready'`))throw new Error(`${theme} is not promoted to a ready theme.`);
 }
 const buildSource=fs.readFileSync(path.join(ROOT,'scripts/build.mjs'),'utf8');
-for(const id of ['60087','37023333','9870287','25754105','26971554','18444260'])
+for(const id of ['17560357','10752022','9870287','25754105','26971554','18444260'])
   if(!buildSource.includes(`/photos/${id}/`))throw new Error(`Full-scene build source missing: ${id}`);
 for(const theme of imageThemes)
   if(!experience.includes(`./assets/generated-themes/${theme}.jpg`))throw new Error(`${theme} runtime does not use the local production image artifact`);
