@@ -399,14 +399,14 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none}
 /* Feed actions: organic shapes, with a protected text-safe area at the bottom. */
 .mf-feed-zone{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .mf-feed-card{box-sizing:border-box;position:relative;min-height:116px;border:0;padding:58px 10px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;overflow:hidden;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--ink);box-shadow:0 7px 18px rgba(29,42,70,.08)}
-.mf-feed-card svg{position:absolute;right:11px;top:10px;width:31px;height:31px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
+.mf-feed-card>svg{position:absolute;right:11px;top:10px;width:31px;height:31px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
 .mf-feed-card>.mf-animal-sticker{position:absolute;right:8px;top:7px;width:58px;height:58px;padding:5px;border-radius:50%;background:rgba(255,255,255,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);opacity:1}.mf-feed-card>.mf-animal-sticker svg{position:static;width:100%;height:100%;fill:initial;stroke:initial;opacity:1}
 /* A care action is recognised by its symbol, so the symbol is the one thing a theme may not
    replace. The disc is a neutral carrier and the mark inherits the card's own accent, which
    gives each action its own color instead of one flat ink across all six. */
 .mf-care-mark{position:absolute;display:grid;place-items:center;border-radius:50%;color:inherit;
   background:rgba(255,255,255,.92);box-shadow:inset 0 0 0 1px rgba(255,255,255,.72),0 6px 15px rgba(30,44,66,.13)}
-.mf-care-mark svg{width:62%;height:62%;fill:none;stroke:currentColor;stroke-width:2.9;stroke-linecap:round;stroke-linejoin:round}
+.mf-care-mark>svg{position:static;inset:auto;left:auto;right:auto;top:auto;bottom:auto;transform:none;width:58%;height:58%;fill:none;stroke:currentColor;stroke-width:2.9;stroke-linecap:round;stroke-linejoin:round;opacity:1}
 /* is-art: the illustrated mark brings its own shape, so the neutral carrier steps aside.
    The icon used to draw a filled disc too, which meant a rounded tile, then this plate, then
    that disc, then the character - three containers around one drawing. The disc is gone from
@@ -418,8 +418,8 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none}
 
 /* The mark is a span, and the rule .mf-diaper-blob span{position:relative} outranks a lone
    .mf-care-mark, so these carry the element type to win the specificity contest. */
-.mf-feed-card>span.mf-care-mark{position:absolute;left:50%;right:auto;top:7px;transform:translateX(-50%);width:62px;height:62px}
-.mf-diaper-blob>span.mf-care-mark{position:absolute;left:50%;top:7px;transform:translateX(-50%);width:62px;height:62px}
+.mf-feed-card>span.mf-care-mark{position:absolute;left:50%;right:auto;top:9px;transform:translateX(-50%);width:52px;height:52px}
+.mf-diaper-blob>span.mf-care-mark{position:absolute;left:11px;right:auto;top:9px;transform:none;width:48px;height:48px}
 .mf-animal-checkin>span.mf-care-mark{position:relative;left:auto;top:auto;transform:none;width:44px;height:44px}
 :root[data-theme="dark"] .mf-animal-checkin>span.mf-care-mark:not(.is-art){background:rgba(255,255,255,.15);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
 /* Two tones per card: the title carries the accent, the caption steps back a measured
@@ -440,10 +440,10 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none}
 /* Diaper blobs stay playful, while count badges stay safely inset. */
 .mf-diaper-cluster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
 .mf-diaper-blob{position:relative;min-height:116px;padding:58px 9px 13px;text-align:center;display:grid;grid-template-rows:auto auto;align-content:end;justify-items:center;border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 7px 18px rgba(29,42,70,.07);overflow:hidden}
-.mf-diaper-blob svg{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.94}
+.mf-diaper-blob>svg{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;opacity:.94}
 .mf-diaper-blob>.mf-animal-sticker{position:absolute;top:5px;left:50%;transform:translateX(-50%);width:58px;height:58px;padding:5px;border-radius:50%;background:rgba(255,255,255,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.62)}.mf-diaper-blob>.mf-animal-sticker svg{position:static;width:100%;height:100%;transform:none;fill:initial;stroke:initial;opacity:1}
 .mf-diaper-blob strong{position:relative;z-index:2;font-size:16px;font-weight:900;line-height:1.1}.mf-diaper-blob span{position:relative;z-index:2;font-size:11.5px;line-height:1.15;margin-top:4px;opacity:.86}
-.mf-diaper-blob b{position:absolute;right:11px;top:10px;min-width:30px;height:30px;padding:0 8px;border-radius:999px;background:rgba(255,255,255,.86);display:grid;place-items:center;font-size:12.5px;font-weight:900;line-height:1;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.mf-diaper-blob b{position:absolute;right:10px;top:10px;min-width:27px;height:27px;padding:0 7px;border-radius:999px;background:rgba(255,255,255,.86);display:grid;place-items:center;font-size:12px;font-weight:900;line-height:1;box-shadow:0 1px 0 rgba(0,0,0,.04)}
 .mf-diaper-blob.wet{border-radius:42px 28px 34px 32px / 32px 40px 30px 38px;background:linear-gradient(145deg,#bfe7ff,#9fd7f4);color:#145b86}.mf-diaper-blob.poop{border-radius:30px 40px 28px 38px / 40px 30px 36px 28px;background:linear-gradient(145deg,#ffe1a8,#f4ca76);color:#68420d}.mf-diaper-blob.both{border-radius:34px 36px 42px 26px / 26px 42px 32px 36px;background:linear-gradient(145deg,#d6c2ff,#bca5f4);color:#46307f}
 
 .mf-care-ribbon{display:flex;gap:8px;overflow:auto;scrollbar-width:none;padding:1px 1px 2px}.mf-care-ribbon::-webkit-scrollbar{display:none}
@@ -641,7 +641,7 @@ function renderBaby(s){
   const st=babyCareStats(s),snap=babySnapshot(s,st),nextFeed=predictNextFeed(s),g=positiveGreeting(),gl=greetingLine(s.profile?.momName),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate),lf=lastFeedText(lastFeed(s));
   let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}
   const feedCount=st.milkCount+st.nursingCount+st.formulaCount;
-  const last=lastFeed(s),lastAge=last?compactRelativeAgo(last.date,last.time):'Nothing yet';
+  const last=lastFeed(s),lastAge=last?compactRelativeAgo(last.date,last.time).replace(/ ago$/,''):'Nothing yet';
   const sleepStart=s.baby?.activeSleep?.date&&s.baby?.activeSleep?.time?new Date(`${s.baby.activeSleep.date}T${s.baby.activeSleep.time}:00`):null;
   const sleepElapsed=sleepStart&&Number.isFinite(sleepStart.getTime())?Math.max(0,Math.round((Date.now()-sleepStart.getTime())/60000)):null;
   const sleepLabel=sleepElapsed==null?'Sleep':sleepElapsed<60?`Sleep ${sleepElapsed}m`:`Sleep ${Math.floor(sleepElapsed/60)}h ${sleepElapsed%60}m`;
@@ -662,7 +662,7 @@ function renderBaby(s){
           ${wish?`<p class="mf-baby-wish">${esc(wish)}</p>`:''}
           <p class="mf-baby-todayline">${todayBits.map(esc).join(' · ')}</p>
           <div class="mf-baby-timing" aria-label="Baby feeding timing">
-            <span><small>Last feed</small><strong class="mf-last-feed-value"><b>${esc(lastAge)}</b>${last?`<em>${esc(lf.clock)}</em>`:''}</strong></span>
+            <span class="mf-last-feed-slot"><small>Last feed</small><strong class="mf-last-feed-value"><b>${esc(lastAge)}</b>${last?`<i aria-hidden="true">·</i><em>${esc(lf.clock)}</em>`:''}</strong></span>
             <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'Learning'}</strong></span>
           </div>
         </div>
