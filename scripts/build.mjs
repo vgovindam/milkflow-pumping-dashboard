@@ -49,8 +49,8 @@ function copyTree(srcDir,destDir){
    Materialize reviewed full-resolution image sources into dist at build time so Pages/PWA
    serves local assets and theme selection never depends on a third-party request at runtime. */
 const GENERATED_WORLD_SOURCES={
-  ocean:'https://images.pexels.com/photos/60087/pexels-photo-60087.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  celestial:'https://images.pexels.com/photos/37023333/pexels-photo-37023333.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  ocean:'https://images.pexels.com/photos/17560357/pexels-photo-17560357.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  celestial:'https://images.pexels.com/photos/10752022/pexels-photo-10752022.jpeg?auto=compress&cs=tinysrgb&w=1200',
   woodland:'https://images.pexels.com/photos/9870287/pexels-photo-9870287.jpeg?auto=compress&cs=tinysrgb&w=1200',
   'safari-sunset':'https://images.pexels.com/photos/25754105/pexels-photo-25754105.jpeg?auto=compress&cs=tinysrgb&w=1200',
   'floral-meadow':'https://images.pexels.com/photos/26971554/pexels-photo-26971554.jpeg?auto=compress&cs=tinysrgb&w=1200',
