@@ -9,6 +9,8 @@ requireText('mobile viewport',files.css,'min-height:100dvh');
 requireText('mobile safe area',files.css,'env(safe-area-inset-bottom)');
 requireText('saved parent name',files.ui,"name=s.profile?.momName||'Mom'");
 requireText('smart Baby wish',files.ui,'function babyWishLine(');
+if(files.ui.includes('Keeping tonight calm and simple'))failures.push('Baby hero must not restore the wordy late-night wish line');
+requireText('last feed includes clock time',files.ui,'mf-last-feed-value');
 requireText('compact Baby timing',files.ui,'mf-baby-timing');
 requireText('compact Baby today line',files.ui,'mf-baby-todayline');
 /* Development kept the component layer's pale card in dark mode and printed light ink on it -
@@ -97,13 +99,20 @@ requireText('day view is newest first',read('app.js'),"sort((a,b) => (b.time||''
 /* The scene must be chosen by the same attribute as every other colour, or light mode keeps
    showing the dark plate until something happens to re-run the theme controller. */
 requireText('scene resolves in CSS',read('experience-system.css'),':root[data-theme="dark"]{\n  --mf-theme-baby-scene:var(--mf-theme-baby-scene-dark,none);');
-/* The next theme generation is registered now, but an incomplete world never appears in the
-   selector. Promoting status to ready is the only intended activation path. */
+requireText('Baby world paints safe area',read('experience-system.css'),'body[data-realm="baby"]{background-image:var(--mf-theme-baby-scene)!important}');
+requireText('Mom world paints safe area',read('experience-system.css'),'body[data-realm="mom"]{background-image:var(--mf-theme-mom-scene)!important}');
+requireText('Mom tab has explicit contrast',read('experience-system.css'),'#personaTabs button:first-child.active{background:#76538c!important;color:#fff!important}');
+requireText('Baby tab has explicit contrast',read('experience-system.css'),'#personaTabs button:last-child.active{background:#176d78!important;color:#fff!important}');
+/* Six requested worlds are complete/selectable; Unicorn remains intentionally gated until
+   it receives its own art package. */
 {
   const exp=read('experience-theme.js');
-  for(const id of ['unicorn-dream','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'])
-    requireText(`future theme ${id}`,exp,`id:'${id}'`);
-  requireText('future themes are gated by readiness',exp,"filter(([,t])=>t.status==='ready')");
+  for(const id of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
+    requireText(`ready theme ${id}`,exp,`id:'${id}',status:'ready'`);
+    requireText(`vector asset package ${id}`,exp,`vectorAssetSet('${id}')`);
+  }
+  requireText('Unicorn remains gated',exp,"id:'unicorn-dream',status:'artwork-needed'");
+  requireText('themes are gated by readiness',exp,"filter(([,t])=>t.status==='ready')");
   requireText('theme library is public to the app',exp,'library:THEME_LIBRARY');
 }
 /* The Sounds switch shipped wired to nothing: it stored a preference that no code ever read.
@@ -124,6 +133,7 @@ requireText('scene resolves in CSS',read('experience-system.css'),':root[data-th
   requireText('feed notification names the baby',app,'notify(`${S.baby.name} is due for a feed`');
   requireText('notifications look like this app',app,"icon:'./milkflow-family-icon-192.png'");
   if(/notify\('(Pump|Feed) reminder'/.test(app))failures.push('a notification title should say what happened, not that it is a reminder');
+  for(const token of ['function sleepPrediction(','function sleepStart(','async function sleepEnd(','function sleepReminderTick(','data-sleep-start','data-sleep-end']) requireText(`sleep workflow ${token}`,app,token);
 }
 /* One drawing, one container. The icon used to supply a disc AND sit on a plate AND sit in a
    tile. */
@@ -183,6 +193,8 @@ requireText('component css is a layer',files.ui,'@layer milkflow-components {');
 requireText('doctor report model',read('app.js'),'window.MilkFlowReports={doctorSummary:doctorReport}');
 requireText('doctor screen reads the model',read('app.js'),'const r=doctorReport();');
 requireText('print document reads the model',read('doctor-summary.js'),'window.MilkFlowReports?.doctorSummary?.()');
+requireText('print waits for document paint',read('doctor-summary.js'),'await nextPaint();');
+requireText('app delegates print flow',read('app.js'),'printer?.print');
 if(read('doctor-summary.js').includes('.qa-grid > div'))failures.push('doctor-summary.js: the print document must not scrape the rendered screen');
 
 if(!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(files.version.version||''))failures.push('version.json: invalid semantic version');
