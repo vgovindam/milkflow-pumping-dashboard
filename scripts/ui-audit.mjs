@@ -111,7 +111,7 @@ requireText('Baby tab has explicit contrast',read('experience-system.css'),'#per
   const exp=read('experience-theme.js');
   for(const id of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
     requireText(`ready theme ${id}`,exp,`id:'${id}',status:'ready'`);
-    requireText(`vector asset package ${id}`,exp,`vectorAssetSet('${id}')`);
+    requireText(`image world package ${id}`,exp,`imageWorldAssetSet('${id}')`);
   }
   requireText('Unicorn remains gated',exp,"id:'unicorn-dream',status:'artwork-needed'");
   requireText('themes are gated by readiness',exp,"filter(([,t])=>t.status==='ready')");
@@ -153,8 +153,8 @@ requireText('Baby tab has explicit contrast',read('experience-system.css'),'#per
 /* The next feed stays in the hero, but it is now a compact timing fact beside Last feed rather
    than one of three full-width dashboard boxes. */
 requireText('next feed stays in compact Baby timing',read('core-ui.js'),'aria-label="Baby feeding timing"');
-requireText('Last feed receives more width',read('component-theme-core.css'),'grid-template-columns:minmax(0,1.5fr) minmax(72px,.78fr)');
-requireText('Last feed stays on one line',read('component-theme-core.css'),'flex-wrap:nowrap;min-width:0;white-space:nowrap');
+requireText('Last feed receives more width',read('component-theme-core.css'),'grid-template-columns:minmax(142px,1.7fr) minmax(74px,.7fr)');
+requireText('Last feed has intrinsic separator',read('core-ui.js'),'&nbsp;·&nbsp;');\nrequireText('Last feed stays on one line',read('component-theme-core.css'),'display:block;min-width:0;white-space:nowrap;overflow:visible');
 if(/mf-hero-facts three/.test(read('core-ui.js')))failures.push('Baby Home must not restore the three full-width hero fact boxes');
 /* A surface the dark layer forgets is a white card with white text on it. */
 requireText('stash hero has a dark surface',read('core-ui.js'),':root[data-theme="dark"] body[data-realm] .stash-hero');
