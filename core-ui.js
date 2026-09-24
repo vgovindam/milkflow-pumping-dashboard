@@ -61,6 +61,17 @@ function greetingLine(savedName){
   const n=String(savedName||'').trim();
   return {mark:g.mark,text:n&&n!=='Mom'?`${g.text}, ${n}`:g.text};
 }
+/* Baby Home should feel alive without pretending to know how the baby feels. These wishes
+   use only time-of-day and the app's own conservative next-feed estimate. */
+function babyWishLine(name,nextFeed,feedCount){
+  const h=new Date().getHours(),baby=String(name||'Baby');
+  if(nextFeed?.overdue&&nextFeed.minsAway>-90)return `${baby}'s usual feed window is here`;
+  if(!feedCount&&h<12)return `A gentle start for you and ${baby}`;
+  if(h>=5&&h<12)return 'Wishing you both a smooth morning';
+  if(h>=12&&h<17)return `Hope your afternoon with ${baby} feels easy`;
+  if(h>=17&&h<21)return 'Wishing you both a cozy evening';
+  return 'Keeping tonight calm and simple';
+}
 function ageLabel(birthDate){if(!birthDate)return'';const b=new Date(`${birthDate}T12:00:00`),n=new Date(`${today()}T12:00:00`),days=Math.floor((n-b)/86400000);if(!Number.isFinite(days)||days<0)return'';if(days<14)return`${days} day${days===1?'':'s'} old`;if(days<70)return`${Math.floor(days/7)} weeks old`;let m=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());if(n.getDate()<b.getDate())m--;return m<24?`${m} months old`:`${Math.floor(m/12)}y ${m%12}m`;}
 function relativeAgo(date,time){
   if(!date||!time)return'';
@@ -619,20 +630,31 @@ function renderBaby(s){
   const view=document.getElementById('view');if(!view)return;
   const st=babyCareStats(s),snap=babySnapshot(s,st),nextFeed=predictNextFeed(s),g=positiveGreeting(),gl=greetingLine(s.profile?.momName),babyName=s.baby?.name||'Baby',photo=s.baby?.photo||'',age=ageLabel(s.baby?.birthDate),lf=lastFeedText(lastFeed(s));
   let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}
-  const babyMeta=[age,!photo?'Add a photo':''].filter(Boolean).join(' · ');
+  const feedCount=st.milkCount+st.nursingCount+st.formulaCount;
+  const babyMeta=age;
+  const todayBits=[
+    feedCount?`${feedCount} feed${feedCount===1?'':'s'}`:'No feeds yet',
+    snap.todayOz>0?`${snap.todayOz.toFixed(1)} oz bottles`:'',
+    `${snap.diapers} diaper${snap.diapers===1?'':'s'}`
+  ].filter(Boolean);
+  const wish=babyWishLine(babyName,nextFeed,feedCount);
   box.innerHTML=`
     <div class="mf-animal-hero">
       <span class="mf-animal-star one" aria-hidden="true">✦</span><span class="mf-animal-star two" aria-hidden="true">✧</span>
       <div class="mf-animal-profile">
-        <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}</button>
-        <div class="mf-animal-copy"><div class="welcome">${g.mark} ${esc(gl.text)}${(s.profile?.momName||'').trim()?'':'<button type="button" class="mf-name-cta" data-view="set-baby">Add your name</button>'}</div><h2>${esc(babyName)}${babyMeta?`<i>${esc(babyMeta)}</i>`:''}</h2></div>
+        <div class="mf-animal-copy">
+          <div class="welcome">${g.mark} ${esc(gl.text)}${(s.profile?.momName||'').trim()?'':'<button type="button" class="mf-name-cta" data-view="set-baby">Add your name</button>'}</div>
+          <h2>${esc(babyName)}${babyMeta?`<i>${esc(babyMeta)}</i>`:''}</h2>
+          <p class="mf-baby-wish">${esc(wish)}</p>
+          <p class="mf-baby-todayline">${todayBits.map(esc).join(' · ')}</p>
+          <div class="mf-baby-timing" aria-label="Baby feeding timing">
+            <span><small>Last feed</small><strong>${esc(lf.age==='—'?'Nothing yet':lf.age)}</strong></span>
+            <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'Learning'}</strong></span>
+          </div>
+        </div>
+        <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}${photo?'':'<span class="mf-photo-add">+ Photo</span>'}</button>
       </div>
-      <div class="mf-hero-facts three" aria-label="Baby today summary">
-        <span class="mf-hero-fact"><small>Last feed</small><strong>${esc(lf.age==='—'?'Nothing yet':lf.age)}</strong><em>${esc(lf.main)}${lf.clock&&lf.clock!=='Tap a feed option below'?` · ${esc(lf.clock)}`:''}</em></span>
-        <span class="mf-hero-fact"><small>Today</small><strong>${snap.todayOz.toFixed(1)} oz</strong><em>${snap.diapers} diaper${snap.diapers===1?'':'s'}</em></span>
-        <span class="mf-hero-fact ${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed due':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'—'}</strong><em>${nextFeed?(nextFeed.overdue?'Expected':'Around'):'Needs a few feeds'}</em></span>
-      </div>
-    </div>
+    </div>`;
 
     ${nudgeCard('baby')}
 
