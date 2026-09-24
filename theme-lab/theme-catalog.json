@@ -1,6 +1,6 @@
 {
-  "version": "next-1",
-  "runtimeStatus": "registered-gated; planned themes remain non-selectable until asset-complete",
+  "version": "2.17",
+  "runtimeStatus": "nine selectable worlds; Unicorn Dream remains gated until its dedicated artwork package is complete",
   "themeIds": [
     "animal-kingdom",
     "unicorn-dream",
@@ -13,74 +13,218 @@
     "cozy-clouds"
   ],
   "requiredSlots": {
-    "perRealmPerMode": ["background", "hero"],
-    "shared": ["preview", "motif"],
-    "tiles": ["feeding", "diapers", "sleep", "growth", "pumping", "nursing", "stash", "trends", "wellness"]
+    "perRealmPerMode": [
+      "background",
+      "hero"
+    ],
+    "shared": [
+      "preview",
+      "motif"
+    ],
+    "tiles": [
+      "feeding",
+      "diapers",
+      "sleep",
+      "growth",
+      "pumping",
+      "nursing",
+      "stash",
+      "trends",
+      "wellness"
+    ]
   },
   "themes": {
     "animal-kingdom": {
       "title": "Animal Kingdom",
       "mood": "lush, cinematic, playful, premium",
-      "babyPalette": ["leaf green", "sunlit jade", "warm gold", "sky blue"],
-      "momPalette": ["deep botanical green", "sage", "cream", "terracotta"],
-      "tileMotifs": {"feeding":"giraffe","diapers":"elephant","sleep":"lion cub","growth":"tiger cub","wellness":"parrot"},
-      "reuseCandidates": ["assets/themes/jungle-canopy.svg","assets/themes/safari-world.svg","assets/animals/"]
+      "babyPalette": [
+        "leaf green",
+        "sunlit jade",
+        "warm gold",
+        "sky blue"
+      ],
+      "momPalette": [
+        "deep botanical green",
+        "sage",
+        "cream",
+        "terracotta"
+      ],
+      "tileMotifs": {
+        "feeding": "giraffe",
+        "diapers": "elephant",
+        "sleep": "lion cub",
+        "growth": "tiger cub",
+        "wellness": "parrot"
+      },
+      "reuseCandidates": [
+        "assets/themes/jungle-canopy.svg",
+        "assets/themes/safari-world.svg",
+        "assets/animals/"
+      ],
+      "runtime": "selectable"
     },
     "unicorn-dream": {
       "title": "Unicorn Dream",
       "mood": "elegant magical sky, soft luminous fantasy",
-      "babyPalette": ["cloud blue", "lavender", "pearl", "soft rainbow"],
-      "momPalette": ["dusty lavender", "plum", "cream", "midnight violet"],
-      "reuseCandidates": ["assets/themes/unicorn-dreams.svg","assets/theme-details/unicorn.svg"]
+      "babyPalette": [
+        "cloud blue",
+        "lavender",
+        "pearl",
+        "soft rainbow"
+      ],
+      "momPalette": [
+        "dusty lavender",
+        "plum",
+        "cream",
+        "midnight violet"
+      ],
+      "reuseCandidates": [
+        "assets/themes/unicorn-dreams.svg",
+        "assets/theme-details/unicorn.svg"
+      ],
+      "runtime": "planned-artwork-needed"
     },
     "butterfly-garden": {
       "title": "Butterfly Garden",
       "mood": "botanical, elegant, airy, naturally colorful",
-      "babyPalette": ["meadow green", "peach", "sky", "lavender"],
-      "momPalette": ["sage", "cream", "muted mauve", "deep leaf"],
-      "reuseCandidates": ["assets/themes/butterfly-garden.svg","assets/theme-details/butterfly.svg"]
+      "babyPalette": [
+        "meadow green",
+        "peach",
+        "sky",
+        "lavender"
+      ],
+      "momPalette": [
+        "sage",
+        "cream",
+        "muted mauve",
+        "deep leaf"
+      ],
+      "reuseCandidates": [
+        "assets/themes/butterfly-garden.svg",
+        "assets/theme-details/butterfly.svg"
+      ],
+      "runtime": "selectable"
     },
     "ocean": {
       "title": "Ocean",
       "mood": "clear water, whales, turtles, coral, calm depth",
-      "babyPalette": ["aqua", "turquoise", "seafoam", "coral"],
-      "momPalette": ["deep teal", "slate blue", "pearl", "muted coral"],
-      "reuseCandidates": []
+      "babyPalette": [
+        "aqua",
+        "turquoise",
+        "seafoam",
+        "coral"
+      ],
+      "momPalette": [
+        "deep teal",
+        "slate blue",
+        "pearl",
+        "muted coral"
+      ],
+      "reuseCandidates": [],
+      "runtime": "selectable"
     },
     "celestial": {
       "title": "Moon & Stars",
       "mood": "quiet celestial, moonlit clouds, constellations",
-      "babyPalette": ["powder blue", "silver", "lavender", "moon cream"],
-      "momPalette": ["indigo", "slate", "violet", "warm silver"],
-      "reuseCandidates": ["assets/themes/cloud-island.svg"]
+      "babyPalette": [
+        "powder blue",
+        "silver",
+        "lavender",
+        "moon cream"
+      ],
+      "momPalette": [
+        "indigo",
+        "slate",
+        "violet",
+        "warm silver"
+      ],
+      "reuseCandidates": [
+        "assets/themes/cloud-island.svg"
+      ],
+      "runtime": "selectable"
     },
     "woodland": {
       "title": "Woodland Forest",
       "mood": "storybook forest, fox, deer, rabbit, bear, moss",
-      "babyPalette": ["moss", "fern", "mushroom", "warm cream"],
-      "momPalette": ["pine", "olive", "stone", "rust"],
-      "reuseCandidates": ["assets/themes/forest-clearing.svg","assets/animals/bear.svg","assets/animals/fox.svg","assets/animals/rabbit.svg"]
+      "babyPalette": [
+        "moss",
+        "fern",
+        "mushroom",
+        "warm cream"
+      ],
+      "momPalette": [
+        "pine",
+        "olive",
+        "stone",
+        "rust"
+      ],
+      "reuseCandidates": [
+        "assets/themes/forest-clearing.svg",
+        "assets/animals/bear.svg",
+        "assets/animals/fox.svg",
+        "assets/animals/rabbit.svg"
+      ],
+      "runtime": "selectable"
     },
     "safari-sunset": {
       "title": "Safari Sunset",
       "mood": "golden-hour savanna, elegant wildlife silhouettes and portraits",
-      "babyPalette": ["sand", "sun gold", "sage", "sky"],
-      "momPalette": ["terracotta", "camel", "olive", "charcoal"],
-      "reuseCandidates": ["assets/themes/safari-adventure.svg","assets/theme-details/safari.svg","assets/animals/elephant.svg"]
+      "babyPalette": [
+        "sand",
+        "sun gold",
+        "sage",
+        "sky"
+      ],
+      "momPalette": [
+        "terracotta",
+        "camel",
+        "olive",
+        "charcoal"
+      ],
+      "reuseCandidates": [
+        "assets/themes/safari-adventure.svg",
+        "assets/theme-details/safari.svg",
+        "assets/animals/elephant.svg"
+      ],
+      "runtime": "selectable"
     },
     "floral-meadow": {
       "title": "Floral Meadow",
       "mood": "refined meadow, florals, bees, soft sunlight",
-      "babyPalette": ["butter yellow", "soft green", "blush", "sky"],
-      "momPalette": ["sage", "cream", "dusty rose", "forest"],
-      "reuseCandidates": []
+      "babyPalette": [
+        "butter yellow",
+        "soft green",
+        "blush",
+        "sky"
+      ],
+      "momPalette": [
+        "sage",
+        "cream",
+        "dusty rose",
+        "forest"
+      ],
+      "reuseCandidates": [],
+      "runtime": "selectable"
     },
     "cozy-clouds": {
       "title": "Cozy Clouds",
       "mood": "minimal dreamy sky, soft clouds, quiet comfort",
-      "babyPalette": ["powder blue", "cream", "soft peach", "lilac"],
-      "momPalette": ["mist", "slate blue", "warm cream", "muted lavender"],
-      "reuseCandidates": ["assets/themes/cloud-island.svg"]
+      "babyPalette": [
+        "powder blue",
+        "cream",
+        "soft peach",
+        "lilac"
+      ],
+      "momPalette": [
+        "mist",
+        "slate blue",
+        "warm cream",
+        "muted lavender"
+      ],
+      "reuseCandidates": [
+        "assets/themes/cloud-island.svg"
+      ],
+      "runtime": "selectable"
     }
   }
 }
