@@ -44,6 +44,31 @@ function copyTree(srcDir,destDir){
     else{ensureDir(dest);fs.copyFileSync(src,dest);}
   }
 }
+
+/* v2.18 full-scene worlds. The former six selectable themes were placeholder SVG sketches.
+   Materialize reviewed full-resolution image sources into dist at build time so Pages/PWA
+   serves local assets and theme selection never depends on a third-party request at runtime. */
+const GENERATED_WORLD_SOURCES={
+  ocean:'https://images.pexels.com/photos/60087/pexels-photo-60087.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  celestial:'https://images.pexels.com/photos/37023333/pexels-photo-37023333.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  woodland:'https://images.pexels.com/photos/9870287/pexels-photo-9870287.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  'safari-sunset':'https://images.pexels.com/photos/25754105/pexels-photo-25754105.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  'floral-meadow':'https://images.pexels.com/photos/26971554/pexels-photo-26971554.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  'cozy-clouds':'https://images.pexels.com/photos/18444260/pexels-photo-18444260.jpeg?auto=compress&cs=tinysrgb&w=1200'
+};
+async function materializeGeneratedWorlds(){
+  const dir=path.join(DIST,'assets/generated-themes');fs.mkdirSync(dir,{recursive:true});
+  for(const [theme,url] of Object.entries(GENERATED_WORLD_SOURCES)){
+    const res=await fetch(url,{signal:AbortSignal.timeout(30000),headers:{'User-Agent':'MilkFlow-PWA-build/2.18'}});
+    if(!res.ok)throw new Error(`Could not fetch ${theme} image world: HTTP ${res.status}`);
+    const type=res.headers.get('content-type')||'';
+    if(!type.startsWith('image/'))throw new Error(`${theme} world source returned ${type||'non-image content'}`);
+    const bytes=Buffer.from(await res.arrayBuffer());
+    if(bytes.length<25000)throw new Error(`${theme} world image is unexpectedly small (${bytes.length} bytes)`);
+    fs.writeFileSync(path.join(dir,`${theme}.jpg`),bytes);
+  }
+  fs.writeFileSync(path.join(dir,'sources.json'),JSON.stringify(GENERATED_WORLD_SOURCES,null,2)+'\n');
+}
 function listFiles(dir,base=dir){
   if(!fs.existsSync(dir))return[];
   const out=[];
@@ -76,6 +101,7 @@ function verifyIndexRefs(){
 fs.rmSync(DIST,{recursive:true,force:true});fs.mkdirSync(DIST,{recursive:true});
 TEXT_FILES.forEach(copyText);BINARY_FILES.forEach(copyBinary);
 copyTree(path.join(ROOT,'assets'),path.join(DIST,'assets'));
+await materializeGeneratedWorlds();
 for(const theme of ['safari','butterfly','princess']){
   for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
     const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${role}.svg`);
