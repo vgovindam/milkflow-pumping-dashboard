@@ -235,9 +235,22 @@ async function onUser(user){
   if(preference()&&messagingSupported()&&Notification.permission==='granted')await registerPush({ask:false});
   renderSettingsPanel();
 }
+let initTries=0;
 function init(){
   const cfg=window.MILKFLOW_CONFIG||{};
-  if(!window.firebase||!cfg.firebaseConfig)return setTimeout(init,120);
+  if(!cfg.firebaseConfig)return;
+  /* window.firebase existing is NOT the same as firebase.auth existing. The base SDK defines
+     the namespace, and so does the messaging SDK this module loads for itself; neither brings
+     auth or firestore with it. Since those two are loaded on demand, the old guard let this
+     run in the window where the namespace was there and the methods were not, and it threw
+     "firebase.auth is not a function" on every single launch.
+
+     The retry is bounded because a family with cloud sync switched off never loads them at
+     all, and an unbounded timer would poll for the life of the session. */
+  if(!window.firebase?.auth||!window.firebase?.firestore){
+    if(initTries++ < 250) setTimeout(init,120);
+    return;
+  }
   try{if(!firebase.apps.length)firebase.initializeApp(cfg.firebaseConfig);}catch{}
   auth=firebase.auth();db=firebase.firestore();auth.onAuthStateChanged(onUser);
   window.addEventListener('milkflow:base-rendered',renderSettingsPanel);

@@ -40,10 +40,31 @@ try{
   const target=await targetRes.json();if(!target.webSocketDebuggerUrl)throw new Error('App target has no DevTools websocket');
   ws=new WebSocket(target.webSocketDebuggerUrl);await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject;});
   let seq=0;const pending=new Map();
-  ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const x=pending.get(m.id);pending.delete(m.id);m.error?x.reject(new Error(m.error.message)):x.resolve(m.result);}};
+  /* The harness measured layout on 190 views and never once looked at the console, so a page
+     could throw on every render and still pass. Runtime.enable and Log.enable are already on;
+     these two collectors are all that was missing. Log.entryAdded is where a failed image or
+     stylesheet request surfaces, which is the only automatic check for a broken asset. */
+  const consoleErrors=[],failedRequests=[];
+  let where='boot';
+  ws.onmessage=e=>{
+    const m=JSON.parse(e.data);
+    if(m.method==='Runtime.exceptionThrown'){
+      const d=m.params?.exceptionDetails||{};
+      consoleErrors.push(`${where}: uncaught ${d.exception?.description||d.text||'exception'}`.slice(0,300));
+    }
+    if(m.method==='Runtime.consoleAPICalled'&&m.params?.type==='error'){
+      const text=(m.params.args||[]).map(a=>a.description||a.value||'').join(' ').trim();
+      if(text) consoleErrors.push(`${where}: console.error ${text}`.slice(0,300));
+    }
+    if(m.method==='Log.entryAdded'){
+      const en=m.params?.entry||{};
+      if(en.level==='error'&&en.source==='network'&&en.url) failedRequests.push(`${where}: ${en.url.split('/').slice(3).join('/')}`);
+    }
+    if(m.id&&pending.has(m.id)){const x=pending.get(m.id);pending.delete(m.id);m.error?x.reject(new Error(m.error.message)):x.resolve(m.result);}
+  };
   const cdp=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}));});
   const evalJs=async expression=>{const r=await cdp('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw new Error(r.exceptionDetails.text||'evaluation error');return r.result?.value;};
-  await cdp('Page.enable');await cdp('Runtime.enable');await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true,screenWidth:390,screenHeight:844});
+  await cdp('Page.enable');await cdp('Runtime.enable');await cdp('Log.enable');await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true,screenWidth:390,screenHeight:844});
   await sleep(2800);await evalJs("document.documentElement.classList.remove('mf-booting')");
 
   const routes=['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','more','settings','set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about'];
@@ -61,6 +82,7 @@ try{
     for(const route of routes){
       if(!await reach(route)){failures.push(`${theme}/${route}: route did not render`);continue;}
       for(const mode of ['light','dark']){
+        where=`${theme}/${mode}/${route}`;
         await evalJs(`document.documentElement.dataset.theme=${JSON.stringify(mode)};document.querySelector('.main')?.scrollTo(0,0)`);await sleep(170);
         const m=await evalJs(`(()=>{const v=document.getElementById('view'),n=document.getElementById('bottomNav'),main=document.querySelector('.main'),heroBaby=document.querySelector('.mf-animal-hero'),heroMom=document.querySelector('.mf-dream-hero'),head=document.querySelector('.page-head'),feed=document.querySelector('.mf-feed-card.milk'),pump=document.querySelector('.mf-dream-actions .quick-tile[data-mom="pump"] .tile-art');const vr=v?.getBoundingClientRect(),nr=n?.getBoundingClientRect();const icons=[...document.querySelectorAll('#bottomNav .ico,#bottomNav .gly')].filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return r.width>8&&r.height>8&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0}).length;const previewImages=[...document.querySelectorAll('#mfExperiencePanel .mf-experience-preview img')];const momCritical=[...document.querySelectorAll('.mf-dream-stats strong,.mf-dream-next strong,.mf-dream-metrics .metric strong,.mf-dream-journey .mf-journey-stop strong,.mf-dream-actions .quick-tile strong')];const darkReadable=momCritical.every(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x),c=s.color;return r.width>1&&r.height>1&&s.visibility!=='hidden'&&s.display!=='none'&&Number(s.opacity||1)>=.9&&c!=='rgba(0, 0, 0, 0)'&&c!=='transparent'});return{darkReadable,darkCriticalCount:momCritical.length,children:v?.children.length||0,height:vr?.height||0,mainWidth:main?.clientWidth||0,scrollWidth:main?.scrollWidth||0,navVisible:!!nr&&nr.width>250&&nr.bottom<=innerHeight+3&&nr.top<innerHeight,icons,padding:v?parseFloat(getComputedStyle(v).paddingBottom)||0:0,navHeight:nr?.height||0,realm:document.body.dataset.realm||'',mainBg:main?getComputedStyle(main).backgroundImage:'',babyHeroBg:heroBaby?getComputedStyle(heroBaby).backgroundImage:'',momHeroBg:heroMom?getComputedStyle(heroMom).backgroundImage:'',momHeroBefore:heroMom?getComputedStyle(heroMom,'::before').content:'',momHeroAfter:heroMom?getComputedStyle(heroMom,'::after').content:'',babyHeroBefore:heroBaby?getComputedStyle(heroBaby,'::before').content:'',babyHeroAfter:heroBaby?getComputedStyle(heroBaby,'::after').content:'',pageHeadArt:head?getComputedStyle(head,'::after').backgroundImage:'',feedArt:feed?getComputedStyle(feed,'::after').backgroundImage:'',pumpArt:pump?getComputedStyle(pump,'::after').backgroundImage:'',feedIcon:document.querySelector('.mf-feed-card.milk .mf-care-art')?.getAttribute('src')||'',diaperIcon:document.querySelector('.mf-diaper-blob.wet .mf-care-art')?.getAttribute('src')||'',pumpIcon:document.querySelector('.mf-dream-actions .quick-tile[data-mom="pump"] .mf-care-art')?.getAttribute('src')||'',themeCards:document.querySelectorAll('#mfExperiencePanel .mf-experience-option').length,selected:document.querySelectorAll('#mfExperiencePanel [aria-pressed="true"]').length,previewImages:previewImages.length,loadedPreviews:previewImages.filter(x=>x.complete&&x.naturalWidth>0).length,settingsShortcuts:document.querySelectorAll('#mfSettingsShortcuts .mf-settings-row').length,settingsMotto:!!document.getElementById('mfSettingsMotto'),doctorTables:document.querySelectorAll('.qa-grid,.daily-table,.mf-print-table').length}})()`);
         if(m.children<1||m.height<40)failures.push(`${theme}/${mode}/${route}: blank view`);
@@ -96,5 +118,9 @@ try{
   }
   fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify({failures,report},null,2));
   console.log(`Browser QA rendered ${report.length} route/theme/mode views.`);
+  /* De-duplicated: one broken asset referenced by every theme is one defect, not 190. */
+  const uniq=a=>[...new Set(a)];
+  for(const err of uniq(consoleErrors.map(x=>x.replace(/^[^:]+: /,'')))) failures.push(`runtime error: ${err}`);
+  for(const req of uniq(failedRequests.map(x=>x.replace(/^[^:]+: /,'')))) failures.push(`failed request: ${req}`);
   if(failures.length){console.error(`Browser QA failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log('Browser QA passed 190 views: self-contained theme scenes on Mom/Baby/Settings, loaded previews, no hero theme labels, independent component art, navigation and light/dark surfaces are rendered from production build.');
 }finally{try{ws?.close();}catch{}proc?.kill();server.close();}
