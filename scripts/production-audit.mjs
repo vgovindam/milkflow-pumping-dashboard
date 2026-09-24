@@ -36,7 +36,12 @@ for(const theme of themes){
     const rel=`assets/themes-v2/${theme}/${mode}/${role}.svg`,full=path.join(DIST,rel);
     const svg=fs.readFileSync(full,'utf8');
     if(svg.includes('<image ')||svg.includes('href="../'))fail.push(`${theme} scene still uses nested image/SVG dependencies`);
-    if(svg.length<4500)fail.push(`${rel} is not detailed production artwork`);
+    /* Structure, not byte count - the same check the test suite makes. A world is a colour
+       field now, so its quality lives in the ramp, the light and the grain, and a size
+       threshold only measures how much drawing is in it. */
+    for(const part of ['id="base"','id="vig"','url(#grain)','radialGradient id="L0"','radialGradient id="L1"'])
+      if(!svg.includes(part))fail.push(`${rel} is missing ${part}: not a finished background`);
+    if(((svg.match(/<stop /g)||[]).length)<12)fail.push(`${rel} is a flat wash, not a background`);
   }
 }
 if(experience.includes('theme-details/'))fail.push('deployed controller still stacks a separate detail SVG instead of using one self-contained scene');
