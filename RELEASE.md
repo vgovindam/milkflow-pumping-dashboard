@@ -1,5 +1,22 @@
 # MilkFlow releases
 
+## v2.16.0 — Smart Baby Home and expandable theme library
+
+This release makes Baby Home more useful per pixel while preserving a generous identity/photo area.
+
+- Replaces the three full-width Baby hero summary boxes with a compact identity-first layout.
+- Keeps a 128px mobile Baby portrait while reducing the themed hero to roughly 196–198px at the 390px QA viewport.
+- Adds time-aware, non-medical parent wishes plus a compact today line for feeds, logged bottle volume, and diapers.
+- Keeps only the two time-sensitive hero facts: Last feed and the conservatively learned Next feed window.
+- Uses compact relative timing with real history so logged data does not make the hero expand unexpectedly.
+- Moves hero height ownership back to the screen component instead of the theme layer.
+- Registers Unicorn Dream, Ocean, Moon & Stars, Woodland Forest, Safari Sunset, Floral Meadow, and Cozy Clouds in the central theme library.
+- Keeps incomplete future themes out of the selector until Baby/Mom, light/dark, preview, motif, and care artwork are complete.
+- Brings the high-end theme catalog, integration contract, art direction, and existing-asset inventory into the active repository.
+- Adds regression gates for Baby hero height, portrait size, timing structure, and atomic theme readiness.
+
+No MilkFlow care record, state-key, Firestore collection, or record-ID migration is introduced.
+
 ## v2.15.0 — Product foundation
 
 This release strengthens the product underneath the visual redesign rather than adding another isolated screen patch.
