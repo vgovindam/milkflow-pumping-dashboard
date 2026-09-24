@@ -338,8 +338,15 @@ body[data-screen="baby-home"] .mf-baby-timing small{
   display:block;color:#5d777a;font:850 8px/1.1 var(--font);letter-spacing:.09em;text-transform:uppercase
 }
 body[data-screen="baby-home"] .mf-baby-timing strong{
-  display:block;margin-top:3px;color:#214f53;font:850 12.5px/1.12 var(--display);
+  display:block;margin-top:3px;color:#214f53;font:850 13.5px/1.12 var(--display);
   white-space:normal;overflow-wrap:anywhere
+}
+body[data-screen="baby-home"] .mf-last-feed-value{
+  display:flex;align-items:baseline;gap:6px;flex-wrap:wrap
+}
+body[data-screen="baby-home"] .mf-last-feed-value b{font:inherit;color:inherit}
+body[data-screen="baby-home"] .mf-last-feed-value em{
+  font:800 12px/1.1 var(--font);font-style:normal;color:#557277;white-space:nowrap
 }
 body[data-screen="baby-home"] .mf-baby-timing .due strong{color:var(--mf-world-accent,#7a4d37)}
 body[data-screen="baby-home"] .mf-animal-hero>.bear,
@@ -359,7 +366,8 @@ body[data-screen="baby-home"] .mf-animal-star{display:none}
   body[data-screen="baby-home"] .mf-animal-copy h2{font-size:27px}
   body[data-screen="baby-home"] .mf-baby-wish{font-size:10.8px}
   body[data-screen="baby-home"] .mf-baby-todayline{font-size:9px}
-  body[data-screen="baby-home"] .mf-baby-timing strong{font-size:11.5px}
+  body[data-screen="baby-home"] .mf-baby-timing strong{font-size:12.5px}
+  body[data-screen="baby-home"] .mf-last-feed-value em{font-size:11.5px}
 }
 @media(max-width:350px){
   body[data-screen="baby-home"] .mf-animal-profile{grid-template-columns:minmax(0,1fr) 116px;gap:10px}
@@ -375,5 +383,6 @@ body[data-screen="baby-home"] .mf-animal-star{display:none}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-timing>span+span{border-color:rgba(211,235,238,.18)}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-timing small{color:#b6d1d6}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-timing strong{color:#f0fbfc}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-last-feed-value em{color:#c8dce0}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-photo-add{background:rgba(18,34,31,.8);color:#e9faf5}
 }
