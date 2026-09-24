@@ -140,9 +140,9 @@ try{
   await evalJs("localStorage.setItem('milkflow-experience-theme-v1','safari')");
   await reach('baby-home'); await sleep(120);
   await evalJs("document.querySelector('[data-sleep]')?.click()"); await sleep(80);
-  const sleepStartUi=await evalJs("!!document.querySelector('.sleep-start-main[data-sleep-start="0"]')");
+  const sleepStartUi=await evalJs(`!!document.querySelector('.sleep-start-main[data-sleep-start="0"]')`);
   if(!sleepStartUi)failures.push('sleep workflow: Sleep did not open the Start/Completed choice');
-  await evalJs("document.querySelector('.sleep-start-main[data-sleep-start="0"]')?.click()"); await sleep(140);
+  await evalJs(`document.querySelector('.sleep-start-main[data-sleep-start="0"]')?.click()`); await sleep(140);
   const active=await evalJs(`(()=>{const s=JSON.parse(localStorage.getItem('milkflow-family-v4-state')||'{}');return{active:!!s.baby?.activeSleep,live:!!document.querySelector('.mf-care-ribbon button.sleep-live')}})()`);
   if(!active?.active||!active?.live)failures.push(`sleep workflow: starting did not persist/live-render active=${active?.active} live=${active?.live}`);
   await evalJs("document.querySelector('[data-sleep]')?.click()"); await sleep(80);
