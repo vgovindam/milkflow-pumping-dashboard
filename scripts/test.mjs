@@ -116,7 +116,7 @@ for(const theme of vectorThemes){
     if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be self-contained.`);
     if(svg.length<1600||!svg.includes('<linearGradient')||(!svg.includes('<path')&&!svg.includes('<ellipse')))throw new Error(`${scene} does not contain enough authored scene structure.`);
   }
-  if(!experience.includes(`vectorAssetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} vector asset matrix.`);
+  if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} painted asset matrix.`);
   if(!experience.includes(`id:'${theme}',status:'ready'`))throw new Error(`${theme} is not promoted to a ready theme.`);
 }
 for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);

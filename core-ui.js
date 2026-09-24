@@ -146,7 +146,9 @@ const CARE_GLYPH={milk:'bottle',nurse:'nursing',formula:'formula',wet:'wet',poop
 /* Resolved at render time from the theme registry, in the same pass that builds the card.
    No second module rewrites these afterwards, so there is no ordering to get wrong. */
 function careMark(action){
-  const src=window.MilkFlowExperience?.careIcon?.(action)||null;
+  const src=['milk','nurse','formula','wet','poop','mixed'].includes(action)
+    ? `./assets/care-illustrations/${action}.webp`
+    : window.MilkFlowExperience?.careIcon?.(action)||null;
   const inner=src
     ? `<img class="mf-care-art" src="${esc(src)}" alt="" decoding="async">`
     : icon(CARE_GLYPH[action]||action);
@@ -559,6 +561,27 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
   body[data-realm] .page-head h2{font-family:var(--display);font-weight:750;line-height:1.05}body[data-realm] .panel-head h3{font-family:var(--display);font-weight:750;font-size:20px;line-height:1.15}.page-head .eyebrow{font-size:11px;letter-spacing:.07em}.row-main strong{font-size:15px}.row-main span{font-size:11.5px;color:var(--ink-2);line-height:1.35}.pills button{font-size:13px;font-weight:750}.bottom-nav button{font-size:10.5px;color:var(--ink-2)}.schedule-card strong{font-size:14px}.schedule-card small{font-size:11px}.schedule-card em{font-size:10px}.metric span{font-size:11px;text-transform:none;letter-spacing:.01em}.metric small{font-size:11px}.daily-cell span,.daily-cell b small{font-size:10.5px}.qa-grid span{font-size:10.5px;text-transform:none;letter-spacing:.01em}.qa-grid small{font-size:11px}.stat-ring span,.stat-ring small{font-size:10px}.tl-ticks span,.cbar small,.chart-rail.dim,.donut-center span,.hbar small,.journey-legend span,.band em{font-size:10px;color:var(--ink-2)}.sheet-actions button span{font-size:10.5px;color:var(--ink-2)}
 }
 }
+/* Stable shape before the first app render; avoid a square-to-rounded flash. */
+.mf-animal-hero,.mf-dream-hero{border-radius:31px;overflow:hidden}
+.mf-last-feed-value{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 9px;white-space:normal;line-height:1.3}
+.mf-last-feed-value b,.mf-last-feed-value em{display:inline-block;white-space:nowrap;font-style:normal}
+.mf-baby-timing{min-width:0;gap:10px}
+.mf-last-feed-slot{min-width:0}
+/* The whole quick-log tile is the action; its illustrated mark deserves the same hierarchy as its label. */
+.mf-feed-card,.mf-diaper-blob{min-height:154px;padding:92px 7px 15px;justify-content:end}
+.mf-feed-card>span.mf-care-mark,.mf-diaper-blob>span.mf-care-mark{left:50%;top:13px;right:auto;transform:translateX(-50%);width:72px;height:72px}
+.mf-feed-card strong,.mf-diaper-blob strong{font-size:clamp(16px,4.4vw,21px);line-height:1.16}
+.mf-feed-card small,.mf-diaper-blob span:not(.mf-care-mark){font-size:13px;line-height:1.2}
+.mf-diaper-blob b{z-index:3}
+/* The history rows carry their own activity color across the surface. */
+body[data-screen="history"] .act-row,body[data-screen="baby-history"] .act-row{
+  background:color-mix(in srgb,var(--c) 24%,var(--surface));
+  border-color:color-mix(in srgb,var(--c) 43%,var(--line));
+}
+body[data-screen="history"] .act-row .act-main,body[data-screen="baby-history"] .act-row .act-main{background:transparent}
+body[data-screen="history"] .act-row .act-icon,body[data-screen="baby-history"] .act-row .act-icon{background:color-mix(in srgb,var(--c) 24%,var(--surface))}
+:root[data-theme="dark"] body:is([data-screen="history"],[data-screen="baby-history"]) .act-row{background:color-mix(in srgb,var(--c) 32%,#1b2030)}
+@media(max-width:430px){.mf-feed-card,.mf-diaper-blob{min-height:145px;padding:86px 5px 12px}.mf-feed-card>span.mf-care-mark,.mf-diaper-blob>span.mf-care-mark{width:66px;height:66px}.mf-last-feed-value{font-size:13px}}
 `;
   document.head.appendChild(s);
 }
@@ -662,7 +685,7 @@ function renderBaby(s){
           ${wish?`<p class="mf-baby-wish">${esc(wish)}</p>`:''}
           <p class="mf-baby-todayline">${todayBits.map(esc).join(' · ')}</p>
           <div class="mf-baby-timing" aria-label="Baby feeding timing">
-            <span class="mf-last-feed-slot"><small>Last feed</small><strong class="mf-last-feed-value"><b>${esc(lastAge)}</b>${last?`<i aria-hidden="true">·</i><em>${esc(lf.clock)}</em>`:''}</strong></span>
+            <span class="mf-last-feed-slot"><small>Last feed</small><strong class="mf-last-feed-value"><b>${esc(lastAge)}</b>${last?`<em>${esc(lf.clock)}</em>`:''}</strong></span>
             <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'Learning'}</strong></span>
           </div>
         </div>
@@ -674,9 +697,9 @@ function renderBaby(s){
 
     <div class="mf-care-label"><span>Feed</span><small>Quick log</small></div>
     <div class="mf-feed-zone">
-      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${careMark('milk')}<strong>Breast milk</strong><small>Log bottle</small></button>
+      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${careMark('milk')}<strong>Breast milk</strong></button>
       <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${careMark('nurse')}<strong>Nurse</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button>
-      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${careMark('formula')}<strong>Formula</strong><small>${st.formulaCount?`${st.formulaCount} today`:'Log bottle'}</small></button>
+      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${careMark('formula')}<strong>Formula</strong>${st.formulaCount?`<small>${st.formulaCount} today</small>`:''}</button>
     </div>
 
     <div class="mf-care-label"><span>Diapers</span><small>${st.diaperCount?`${st.diaperCount} today`:'Quick log'}</small></div>

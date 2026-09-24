@@ -12,7 +12,7 @@ requireText('smart Baby wish',files.ui,'function babyWishLine(');
 if(files.ui.includes('Keeping tonight calm and simple'))failures.push('Baby hero must not restore the wordy late-night wish line');
 requireText('last feed includes clock time',files.ui,'mf-last-feed-value');
 requireText('last feed uses compact elapsed value',files.ui,"replace(/ ago$/,'')");
-requireText('last feed has explicit separator',files.ui,'aria-hidden="true">·</i>');
+requireText('last feed has spaced time',files.ui,'mf-last-feed-value{display:flex');
 requireText('compact Baby timing',files.ui,'mf-baby-timing');
 requireText('compact Baby today line',files.ui,'mf-baby-todayline');
 /* Development kept the component layer's pale card in dark mode and printed light ink on it -
@@ -111,7 +111,7 @@ requireText('Baby tab has explicit contrast',read('experience-system.css'),'#per
   const exp=read('experience-theme.js');
   for(const id of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
     requireText(`ready theme ${id}`,exp,`id:'${id}',status:'ready'`);
-    requireText(`vector asset package ${id}`,exp,`vectorAssetSet('${id}')`);
+    requireText(`painted asset package ${id}`,exp,`assets:assetSet('${id}')`);
   }
   requireText('Unicorn remains gated',exp,"id:'unicorn-dream',status:'artwork-needed'");
   requireText('themes are gated by readiness',exp,"filter(([,t])=>t.status==='ready')");

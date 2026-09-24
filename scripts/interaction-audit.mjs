@@ -38,7 +38,7 @@ for(const theme of ['safari','butterfly','princess']){
   need('painted theme icon manifest',experienceJs,`theme-icons/${theme}.svg`);
 }
 for(const theme of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'])
-  need('vector theme asset matrix manifest',experienceJs,`vectorAssetSet('${theme}')`);
+  need('painted theme asset matrix manifest',experienceJs,`assetSet('${theme}')`);
 for(const text of ['--mf-theme-baby-scene','--mf-theme-mom-scene','--mf-theme-baby-hero','--mf-theme-mom-hero','body[data-screen="settings"] .main','body[data-screen="mom-home"] .mf-dream-hero','body[data-screen="baby-home"] .mf-animal-hero','.mf-dream-hero::before','.mf-dream-hero::after','content:none!important'])need('realm-wide experience surface',experienceJs+experienceCss,text);
 if(experienceCss.includes('content:var(--mf-theme-name)'))failures.push('realm-wide experience surface: hero theme-name badges must not render');
 if(experienceJs.includes('theme-details/'))failures.push('experience controller must use one self-contained scene, not stacked detail SVGs');

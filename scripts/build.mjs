@@ -89,6 +89,10 @@ for(const theme of ['ocean','celestial','woodland','safari-sunset','floral-meado
     const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${realm}-background.svg`);
     if(!fs.existsSync(scene))throw new Error(`Missing selectable ${theme}/${mode}/${realm} scene`);
   }
+  for(const mode of ['light','dark'])for(const role of ['baby-background@941','mom-background@941','baby-hero@941','mom-hero@941','settings-preview']){
+    const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${role}.webp`);
+    if(!fs.existsSync(scene)||fs.statSync(scene).size<1000)throw new Error(`Missing painted ${theme}/${mode}/${role} scene`);
+  }
 }
 verifyIndexRefs();
 

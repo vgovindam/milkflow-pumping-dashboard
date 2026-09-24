@@ -78,7 +78,7 @@ for(const theme of paintedThemes){
   }
 }
 for(const theme of vectorThemes){
-  if(!experience.includes(`vectorAssetSet('${theme}')`))fail.push(`${theme} vector asset matrix missing from deployed theme runtime`);
+  if(!experience.includes(`assetSet('${theme}')`))fail.push(`${theme} painted asset matrix missing from deployed theme runtime`);
   if(!experience.includes(`title:'${themeTitles[theme]}'`))fail.push(`${theme} canonical title missing from deployed theme runtime`);
   if(!experience.includes(`id:'${theme}',status:'ready'`))fail.push(`${theme} is not selectable in deployed theme runtime`);
 }

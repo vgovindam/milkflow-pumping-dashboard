@@ -6,6 +6,9 @@
 @import url("./experience-system.css?v=__MILKFLOW_VERSION__") layer(milkflow-experience);
 @import url("./experience-components.css?v=__MILKFLOW_VERSION__") layer(milkflow-experience);
 
+/* Reserve the finished hero silhouette in the first stylesheet paint. */
+.mf-animal-hero,.mf-dream-hero{border-radius:31px;overflow:hidden}
+
 /* Single-owner visual contract.
    The Baby hero background is the only scene layer. Legacy decorative pseudos are not
    allowed to retain geometry underneath a themed hero. Care actions likewise expose one
