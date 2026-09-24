@@ -17,6 +17,7 @@ for(const selector of selectors)if(!clickBlock.includes(selector))failures.push(
 
 for(const [dialog,form] of [['momDialog','momForm'],['diaperDialog','diaperForm'],['feedDialog','feedForm'],['growthDialog','growthForm'],['sleepDialog','sleepForm']]){need('dialog markup',html,`<dialog id="${dialog}"`);need('form submit',app,`$('${form}').addEventListener('submit'`);}
 for(const text of ['data-mom="pump"','data-mom="nursing"','data-feed-type="nursing"','data-feed-type="expressed_milk"','data-feed-type="formula"','data-diaper="wet"','data-diaper="poop"','data-diaper="both"','data-sleep','data-growth'])need('home quick action',core+app,text);
+for(const text of ['data-sleep-start','data-sleep-end','data-sleep-complete','function sleepPrediction(','function sleepReminderTick('])need('two-way sleep capture',app,text);
 need('mixed diaper normalization',app,"if(s === 'mixed') return 'both'");
 need('mixed diaper direct action',core,'data-diaper="both"');
 need('diaper selected value',app,"setWhen('diaperTime',0); pickChoice('diaperKind',k)");
@@ -25,17 +26,19 @@ need('canonical theme composition',themeEntry,'experience-system.css');
 need('canonical component theme composition',themeEntry,'experience-components.css');
 need('canonical experience layer',themeEntry,'layer(milkflow-experience)');
 
-for(const text of ["const KEY='milkflow-experience-theme-v1'","new Set(['safari','butterfly','princess','clean'])","const RETIRED={jungle:'safari'","const THEME_LIBRARY={","filter(([,t])=>t.status==='ready')",'data-experience-theme-pick="clean"'])need('experience theme controller',experienceJs,text);
-for(const [key,title] of [['safari','Animal Kingdom'],['butterfly','Butterfly Garden'],['princess','Princess Palace']]){
-  need('ready theme registry',experienceJs,`${key}:{id:`);
+for(const text of ["const KEY='milkflow-experience-theme-v1'","new Set(['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds','clean'])","const RETIRED={jungle:'safari'","const THEME_LIBRARY={","filter(([,t])=>t.status==='ready')",'data-experience-theme-pick="clean"'])need('experience theme controller',experienceJs,text);
+for(const [id,title] of [['animal-kingdom','Animal Kingdom'],['butterfly-garden','Butterfly Garden'],['princess-palace','Princess Palace'],['ocean','Ocean'],['celestial','Moon & Stars'],['woodland','Woodland Forest'],['safari-sunset','Safari Sunset'],['floral-meadow','Floral Meadow'],['cozy-clouds','Cozy Clouds']]){
+  need('ready theme registry',experienceJs,`id:'${id}'`);
   need('ready theme title',experienceJs,`title:'${title}'`);
 }
 if(experienceJs.includes('MutationObserver'))failures.push('experience theme controller: observer loop is not allowed');
 need('both modes published',experienceJs,'const SCENE_ROLES=');
 for(const theme of ['safari','butterfly','princess']){
-  need('theme asset matrix manifest',experienceJs,`assetSet('${theme}')`);
-  need('theme icon manifest',experienceJs,`theme-icons/${theme}.svg`);
+  need('painted theme asset matrix manifest',experienceJs,`assetSet('${theme}')`);
+  need('painted theme icon manifest',experienceJs,`theme-icons/${theme}.svg`);
 }
+for(const theme of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'])
+  need('vector theme asset matrix manifest',experienceJs,`vectorAssetSet('${theme}')`);
 for(const text of ['--mf-theme-baby-scene','--mf-theme-mom-scene','--mf-theme-baby-hero','--mf-theme-mom-hero','body[data-screen="settings"] .main','body[data-screen="mom-home"] .mf-dream-hero','body[data-screen="baby-home"] .mf-animal-hero','.mf-dream-hero::before','.mf-dream-hero::after','content:none!important'])need('realm-wide experience surface',experienceJs+experienceCss,text);
 if(experienceCss.includes('content:var(--mf-theme-name)'))failures.push('realm-wide experience surface: hero theme-name badges must not render');
 if(experienceJs.includes('theme-details/'))failures.push('experience controller must use one self-contained scene, not stacked detail SVGs');
@@ -51,6 +54,8 @@ for(const bad of ['component-theme-v3.css','experience-theme-v2.js','experience-
    the day-by-day log with a period total, and the footnote that says how the averages were
    worked out. It is built from the report model - never from the rendered screen. */
 for(const text of ['mf-doctor-print','mf-print-table','mf-print-facts','At a glance','Day by day','mf-print-total','buildPrintDocument','mf-printing-report'])need('clinician doctor report',doctorJs+doctorCss,text);
+for(const text of ['async function printReport()','await nextPaint();','print: printReport'])need('responsive clinician print flow',doctorJs,text);
+need('app delegates clinician print',app,'printer?.print');
 need('doctor component loaded',html,'doctor-summary.js?v=__MILKFLOW_VERSION__');
 need('doctor stylesheet loaded',html,'doctor-summary.css?v=__MILKFLOW_VERSION__');
 for(const text of ['function resetRouteScroll','function exactRouteControl','mf-render-recovery'])need('navigation recovery',lifecycle,text);
@@ -59,4 +64,4 @@ for(const text of ['milkflow-device-id-v1','sourceDeviceId',"collection('devices
 for(const text of ["PENDING_KEY='milkflow-family-chat-pending-v1'",'recoverCloudRequest','recoverLegacyHistory','resumePending','retryRequest',"mode:'status'"])need('family chat recovery',familyChat,text);
 for(const text of ["collection('familyChatRequests')","mode==='status'","status:'processing'","status:'completed'","${requestId}-user","${requestId}-assistant"])need('family chat server recovery',familyChatServer,text);
 if(failures.length){console.error(`Interaction audit failed:\n- ${failures.join('\n- ')}`);process.exit(1);}
-console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, three self-contained detailed theme scenes, independent themed components, five entry forms, navigation recovery, notification identity, app branding, and data-preservation contracts.`);
+console.log(`Interaction audit passed: ${routes.length} routes, ${selectors.length} delegated action families, nine selectable theme worlds, independent themed components, five entry forms, navigation recovery, notification identity, app branding, and data-preservation contracts.`);

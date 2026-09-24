@@ -84,7 +84,8 @@ function totalsRow(t){
     </tr>`;
 }
 
-function buildPrintDocument(){
+function buildPrintDocument(force=false){
+  if(!force && document.getElementById(PRINT_ID)) return true;
   const r = report();
   if(!r) return false;
 
@@ -139,17 +140,33 @@ function teardown(){
   document.body.classList.remove(PRINTING_CLASS);
 }
 
-/* The app owns the Print button. Capture its click first so the document exists before
-   app.js calls window.print(). beforeprint covers Cmd-P and the browser's own print menu. */
-document.addEventListener('click', e => {
-  if(document.body.dataset.screen !== 'doctor') return;
-  if(!e.target.closest('[data-print]')) return;
-  buildPrintDocument();
-}, true);
-window.addEventListener('beforeprint', () => { if(document.body.dataset.screen === 'doctor') buildPrintDocument(); });
+function nextPaint(){
+  return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+}
+let printing=false;
+async function printReport(){
+  if(printing)return false;
+  printing=true;
+  const button=document.querySelector('[data-print]');
+  button?.setAttribute('aria-busy','true');
+  try{
+    if(!buildPrintDocument(true))return false;
+    await nextPaint();
+    window.print();
+    return true;
+  }finally{
+    button?.removeAttribute('aria-busy');
+    printing=false;
+  }
+}
+/* Browser menu / Cmd-P still gets a document, but the normal app button uses printReport()
+   so document construction and the native print dialog cannot race each other. */
+window.addEventListener('beforeprint', () => {
+  if(document.body.dataset.screen === 'doctor' && !document.getElementById(PRINT_ID)) buildPrintDocument();
+});
 window.addEventListener('afterprint', teardown);
 
-/* Exposed so the build's checks (and a developer) can render the document without a printer. */
-window.MilkFlowDoctorPrint = {build: buildPrintDocument, teardown};
+/* Exposed for app.js and QA. */
+window.MilkFlowDoctorPrint = {build: buildPrintDocument, print: printReport, teardown};
 
 })();

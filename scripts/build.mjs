@@ -82,6 +82,14 @@ for(const theme of ['safari','butterfly','princess']){
     if(!fs.existsSync(scene))throw new Error(`Missing canonical self-contained ${theme}/${mode}/${role} scene`);
   }
 }
+for(const theme of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
+  const motif=path.join(ROOT,`assets/theme-icons/${theme}-motif.svg`);
+  if(!fs.existsSync(motif))throw new Error(`Missing ${theme} theme motif`);
+  for(const mode of ['light','dark'])for(const realm of ['baby','mom']){
+    const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${realm}-background.svg`);
+    if(!fs.existsSync(scene))throw new Error(`Missing selectable ${theme}/${mode}/${realm} scene`);
+  }
+}
 verifyIndexRefs();
 
 /* Theme worlds are fetched and runtime-cached on demand. Shipping all 40 variants in the

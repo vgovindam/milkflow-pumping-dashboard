@@ -42,6 +42,48 @@
   --mf-world-line:rgba(111,78,135,.17);--mf-world-shadow:rgba(70,48,94,.15);--mf-world-text:#3d284c;--mf-world-muted:#74627e;
   --mf-page-focus:center 16%;--mf-baby-focus:center 7%;--mf-mom-focus:center 11%
 }
+:root[data-experience-theme="ocean"]{
+  --mf-theme-name:"Ocean";--mf-theme-tagline:"Calm tides, curious little explorers";
+  --mf-world-base:#e5f6f5;--mf-world-deep:#164f59;--mf-world-accent:#2b8992;--mf-world-accent-2:#d48364;
+  --mf-world-surface:#f8fdfc;--mf-world-surface-strong:#ffffff;--mf-world-line:rgba(28,103,111,.18);
+  --mf-world-shadow:rgba(20,86,94,.14);--mf-world-text:#173f47;--mf-world-muted:#5b7478;
+  --mf-page-focus:center 15%;--mf-baby-focus:center 8%;--mf-mom-focus:center 12%
+}
+:root[data-experience-theme="celestial"]{
+  --mf-theme-name:"Moon & Stars";--mf-theme-tagline:"Soft nights, bright little moments";
+  --mf-world-base:#efeffa;--mf-world-deep:#42446f;--mf-world-accent:#696fa7;--mf-world-accent-2:#c79d57;
+  --mf-world-surface:#fbfbff;--mf-world-surface-strong:#ffffff;--mf-world-line:rgba(80,82,126,.17);
+  --mf-world-shadow:rgba(60,62,103,.14);--mf-world-text:#323550;--mf-world-muted:#676a84;
+  --mf-page-focus:center 17%;--mf-baby-focus:center 8%;--mf-mom-focus:center 12%
+}
+:root[data-experience-theme="woodland"]{
+  --mf-theme-name:"Woodland Forest";--mf-theme-tagline:"Cozy trails and tiny adventures";
+  --mf-world-base:#edf2e8;--mf-world-deep:#3f5b3e;--mf-world-accent:#6f8b61;--mf-world-accent-2:#bd744d;
+  --mf-world-surface:#fbfcf7;--mf-world-surface-strong:#fffef9;--mf-world-line:rgba(69,92,61,.18);
+  --mf-world-shadow:rgba(53,74,49,.15);--mf-world-text:#334332;--mf-world-muted:#667363;
+  --mf-page-focus:center 18%;--mf-baby-focus:center 9%;--mf-mom-focus:center 12%
+}
+:root[data-experience-theme="safari-sunset"]{
+  --mf-theme-name:"Safari Sunset";--mf-theme-tagline:"Golden light and wild little days";
+  --mf-world-base:#f7eadb;--mf-world-deep:#684638;--mf-world-accent:#a76b4d;--mf-world-accent-2:#788563;
+  --mf-world-surface:#fffaf4;--mf-world-surface-strong:#fffdf9;--mf-world-line:rgba(114,76,55,.18);
+  --mf-world-shadow:rgba(100,67,48,.15);--mf-world-text:#4b352c;--mf-world-muted:#756157;
+  --mf-page-focus:center 15%;--mf-baby-focus:center 8%;--mf-mom-focus:center 11%
+}
+:root[data-experience-theme="floral-meadow"]{
+  --mf-theme-name:"Floral Meadow";--mf-theme-tagline:"Soft blooms and sunny moments";
+  --mf-world-base:#f0f4e8;--mf-world-deep:#536c52;--mf-world-accent:#7f9a72;--mf-world-accent-2:#cc8293;
+  --mf-world-surface:#fdfcf8;--mf-world-surface-strong:#ffffff;--mf-world-line:rgba(88,111,78,.17);
+  --mf-world-shadow:rgba(71,91,65,.14);--mf-world-text:#3f4f3f;--mf-world-muted:#6c776a;
+  --mf-page-focus:center 17%;--mf-baby-focus:center 9%;--mf-mom-focus:center 12%
+}
+:root[data-experience-theme="cozy-clouds"]{
+  --mf-theme-name:"Cozy Clouds";--mf-theme-tagline:"A quieter little sky";
+  --mf-world-base:#f3f7fa;--mf-world-deep:#506575;--mf-world-accent:#8199aa;--mf-world-accent-2:#c69f92;
+  --mf-world-surface:#fbfdff;--mf-world-surface-strong:#ffffff;--mf-world-line:rgba(82,103,119,.16);
+  --mf-world-shadow:rgba(68,89,105,.12);--mf-world-text:#3a4a56;--mf-world-muted:#6e7d87;
+  --mf-page-focus:center 16%;--mf-baby-focus:center 8%;--mf-mom-focus:center 12%
+}
 
 /* One scene per realm. No veil, duplicate wallpaper or decorative pseudo-layer.
 
@@ -81,7 +123,7 @@
   border-bottom-color:transparent!important;
   padding-top:calc(8px + env(safe-area-inset-top))!important;
   padding-bottom:5px!important;
-  backdrop-filter:blur(6px) saturate(1.04);-webkit-backdrop-filter:blur(6px) saturate(1.04)
+  backdrop-filter:none;-webkit-backdrop-filter:none
 }
 /* The bar already spends the notch inset plus a 44px tab row before any content. Reclaim the
    gap under it so the hero starts higher on a tall phone. */
@@ -297,6 +339,36 @@
   --mf-world-base:#120d18;--mf-world-deep:#eadcf3;--mf-world-accent:#b58bd0;--mf-world-accent-2:#d79abb;
   --mf-world-surface:#18101f;--mf-world-surface-strong:#100b15;--mf-world-line:rgba(210,180,228,.17);
   --mf-world-shadow:rgba(0,0,0,.45);--mf-world-text:#fbf4ff;--mf-world-muted:#cbbbd4
+}
+:root[data-theme="dark"][data-experience-theme="ocean"]{
+  --mf-world-base:#071923;--mf-world-deep:#d2f4f2;--mf-world-accent:#72c2c2;--mf-world-accent-2:#e3a07e;
+  --mf-world-surface:#0c222b;--mf-world-surface-strong:#071820;--mf-world-line:rgba(132,211,209,.17);
+  --mf-world-shadow:rgba(0,0,0,.46);--mf-world-text:#eefcfb;--mf-world-muted:#b4d1d1
+}
+:root[data-theme="dark"][data-experience-theme="celestial"]{
+  --mf-world-base:#090b1c;--mf-world-deep:#e3e2ff;--mf-world-accent:#aaa8e0;--mf-world-accent-2:#e0c47d;
+  --mf-world-surface:#11142a;--mf-world-surface-strong:#090b18;--mf-world-line:rgba(190,187,235,.17);
+  --mf-world-shadow:rgba(0,0,0,.48);--mf-world-text:#f7f6ff;--mf-world-muted:#c3c2dd
+}
+:root[data-theme="dark"][data-experience-theme="woodland"]{
+  --mf-world-base:#0d1510;--mf-world-deep:#dcead6;--mf-world-accent:#96b18a;--mf-world-accent-2:#d99670;
+  --mf-world-surface:#142018;--mf-world-surface-strong:#0c160f;--mf-world-line:rgba(170,199,159,.16);
+  --mf-world-shadow:rgba(0,0,0,.45);--mf-world-text:#f1f8ee;--mf-world-muted:#bdcdb8
+}
+:root[data-theme="dark"][data-experience-theme="safari-sunset"]{
+  --mf-world-base:#1b100d;--mf-world-deep:#f1dfd0;--mf-world-accent:#d29068;--mf-world-accent-2:#a6ae7c;
+  --mf-world-surface:#251712;--mf-world-surface-strong:#180e0b;--mf-world-line:rgba(221,170,136,.17);
+  --mf-world-shadow:rgba(0,0,0,.46);--mf-world-text:#fff4ec;--mf-world-muted:#d5c0b4
+}
+:root[data-theme="dark"][data-experience-theme="floral-meadow"]{
+  --mf-world-base:#0f1711;--mf-world-deep:#e2ebdd;--mf-world-accent:#a0b993;--mf-world-accent-2:#e19aaa;
+  --mf-world-surface:#182019;--mf-world-surface-strong:#0d140e;--mf-world-line:rgba(180,204,169,.16);
+  --mf-world-shadow:rgba(0,0,0,.45);--mf-world-text:#f5faf2;--mf-world-muted:#c6d1c1
+}
+:root[data-theme="dark"][data-experience-theme="cozy-clouds"]{
+  --mf-world-base:#101722;--mf-world-deep:#e1edf5;--mf-world-accent:#9ab3c6;--mf-world-accent-2:#d8afa1;
+  --mf-world-surface:#182330;--mf-world-surface-strong:#0d151e;--mf-world-line:rgba(172,196,213,.16);
+  --mf-world-shadow:rgba(0,0,0,.44);--mf-world-text:#f3f9fc;--mf-world-muted:#c2d0da
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.panel,.grp,.metric,.row,.stash-hero,.data-status){color:var(--mf-world-text)!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head :is(h2,.eyebrow){color:#fff!important;text-shadow:0 2px 12px rgba(0,0,0,.30)!important}
@@ -555,11 +627,21 @@
   color:var(--mf-world-text)!important;
 }
 :root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs{
-  background:var(--mf-world-surface-strong)!important;
-  border:1px solid var(--mf-world-line)!important;
+  background:var(--mf-world-surface-strong);border:1px solid color-mix(in srgb,var(--mf-world-deep) 24%,transparent);
+  box-shadow:0 5px 14px color-mix(in srgb,var(--mf-world-shadow) 72%,transparent);
+  backdrop-filter:none;-webkit-backdrop-filter:none;overflow:hidden
 }
-:root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button{color:var(--mf-world-muted)!important}
-:root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button.active{color:var(--mf-world-text)!important}
+:root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button{
+  background:transparent;box-shadow:none;text-shadow:none;font-weight:850
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button:first-child{color:#76538c}
+:root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button:last-child{color:#176d78}
+:root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button:first-child.active{background:#76538c;color:#fff}
+:root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button:last-child.active{background:#176d78;color:#fff}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button:first-child{color:#d9bee8}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button:last-child{color:#9bdde2}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button:first-child.active{background:#8d63a5;color:#fff}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] #personaTabs button:last-child.active{background:#237d88;color:#fff}
 
 /* A selected range pill puts white on the accent. Several accents are mid-tone, so white
    lands between 3.0 and 4.4:1 - use the deep variant of the same hue instead of inventing a
@@ -593,8 +675,15 @@
    did not own, and a band below the dock. The scene is fixed to the viewport, so painting
    the world color on the root and letting the shell fill the dynamic viewport closes both
    without the content itself moving. */
-:root:not([data-experience-theme="clean"]) body[data-realm]{background:var(--mf-world-base)!important}
-:root:not([data-experience-theme="clean"]) body[data-realm] .shell{min-height:100dvh}
+:root:not([data-experience-theme="clean"]) body[data-realm]{
+  min-height:100dvh;background-color:var(--mf-world-base);background-repeat:no-repeat;
+  background-size:cover;background-position:var(--mf-page-focus);background-attachment:fixed
+}
+:root:not([data-experience-theme="clean"]) body[data-realm="baby"]{background-image:var(--mf-theme-baby-scene)}
+:root:not([data-experience-theme="clean"]) body[data-realm="mom"]{background-image:var(--mf-theme-mom-scene)}
+:root:not([data-experience-theme="clean"]) body[data-realm] .shell,
+:root:not([data-experience-theme="clean"]) body[data-realm] .main{min-height:100dvh}
+:root:not([data-experience-theme="clean"]) body[data-realm] .main{background-position-y:0}
 
 /* A small card centres its content; a wide row keeps it on the left where the eye starts.
    The metric tiles are two-up and narrow, so they read as cards, not rows. */

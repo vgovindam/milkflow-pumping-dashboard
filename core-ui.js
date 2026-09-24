@@ -70,7 +70,7 @@ function babyWishLine(name,nextFeed,feedCount){
   if(h>=5&&h<12)return 'Wishing you both a smooth morning';
   if(h>=12&&h<17)return `Hope your afternoon with ${baby} feels easy`;
   if(h>=17&&h<21)return 'Wishing you both a cozy evening';
-  return 'Keeping tonight calm and simple';
+  return '';
 }
 function ageLabel(birthDate){if(!birthDate)return'';const b=new Date(`${birthDate}T12:00:00`),n=new Date(`${today()}T12:00:00`),days=Math.floor((n-b)/86400000);if(!Number.isFinite(days)||days<0)return'';if(days<14)return`${days} day${days===1?'':'s'} old`;if(days<70)return`${Math.floor(days/7)} weeks old`;let m=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());if(n.getDate()<b.getDate())m--;return m<24?`${m} months old`:`${Math.floor(m/12)}y ${m%12}m`;}
 function relativeAgo(date,time){
@@ -642,6 +642,9 @@ function renderBaby(s){
   let box=document.getElementById('mfCoreBaby');if(!box){box=document.createElement('section');box.id='mfCoreBaby';box.className='mf-core-baby';view.prepend(box);}
   const feedCount=st.milkCount+st.nursingCount+st.formulaCount;
   const last=lastFeed(s),lastAge=last?compactRelativeAgo(last.date,last.time):'Nothing yet';
+  const sleepStart=s.baby?.activeSleep?.date&&s.baby?.activeSleep?.time?new Date(`${s.baby.activeSleep.date}T${s.baby.activeSleep.time}:00`):null;
+  const sleepElapsed=sleepStart&&Number.isFinite(sleepStart.getTime())?Math.max(0,Math.round((Date.now()-sleepStart.getTime())/60000)):null;
+  const sleepLabel=sleepElapsed==null?'Sleep':sleepElapsed<60?`Sleep ${sleepElapsed}m`:`Sleep ${Math.floor(sleepElapsed/60)}h ${sleepElapsed%60}m`;
   const babyMeta=age;
   const todayBits=[
     feedCount?`${feedCount} feed${feedCount===1?'':'s'}`:'No feeds yet',
@@ -656,10 +659,10 @@ function renderBaby(s){
         <div class="mf-animal-copy">
           <div class="welcome">${g.mark} ${esc(gl.text)}${(s.profile?.momName||'').trim()?'':'<button type="button" class="mf-name-cta" data-view="set-baby">Add your name</button>'}</div>
           <h2>${esc(babyName)}${babyMeta?`<i>${esc(babyMeta)}</i>`:''}</h2>
-          <p class="mf-baby-wish">${esc(wish)}</p>
+          ${wish?`<p class="mf-baby-wish">${esc(wish)}</p>`:''}
           <p class="mf-baby-todayline">${todayBits.map(esc).join(' · ')}</p>
           <div class="mf-baby-timing" aria-label="Baby feeding timing">
-            <span><small>Last feed</small><strong>${esc(lastAge)}</strong></span>
+            <span><small>Last feed</small><strong class="mf-last-feed-value"><b>${esc(lastAge)}</b>${last?`<em>${esc(lf.clock)}</em>`:''}</strong></span>
             <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'Learning'}</strong></span>
           </div>
         </div>
@@ -684,7 +687,7 @@ function renderBaby(s){
     </div>
 
     <div class="mf-care-ribbon" aria-label="More baby care">
-      <button type="button" data-sleep>${icon('moon')} Sleep</button>
+      <button type="button" data-sleep class="${sleepElapsed!=null?'sleep-live':''}">${icon('moon')} <span>${esc(sleepLabel)}</span></button>
       <button type="button" data-growth>${icon('growth')} Growth</button>
       <button type="button" data-view="baby-history">History</button>
       <button type="button" data-view="baby-trends">Trends</button>

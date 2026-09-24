@@ -1,5 +1,23 @@
 # MilkFlow releases
 
+## v2.17.0 — Expanded themes, smarter sleep, and responsive print
+
+This release broadens MilkFlow’s visual system and improves several everyday interactions.
+
+- Promotes six additional complete selectable worlds: Ocean, Moon & Stars, Woodland Forest, Safari Sunset, Floral Meadow, and Cozy Clouds.
+- Gives each new world separate Baby/Mom and light/dark scene treatment, with centralized theme runtime registration and independent motif art.
+- Extends themed artwork behind the iPhone safe-area/Dynamic Island region instead of visually cutting the scene below the top chrome.
+- Replaces glassy Mom/Baby navigation styling with stronger, opaque high-contrast active states.
+- Removes the extra late-night Baby hero sentence and keeps the hero compact without reducing the Baby photo.
+- Shows Last feed as elapsed time plus the actual clock time on one readable line.
+- Adds two-way Sleep capture: Start sleep now, start 15/30/60 minutes ago, live elapsed timer, End sleep, discard timer, or log a completed sleep directly.
+- Persists active sleep state and learns a personal typical duration from completed logs; reminders are based on that history when enough data exists and are explicitly non-medical.
+- Shows the running Sleep timer directly on Baby Home.
+- Makes Doctor Print deterministic by preparing the print document first, yielding for layout, then opening the native print dialog.
+- Expands browser QA across all nine selectable themes, light/dark modes, device-safe-area artwork, Doctor Print responsiveness, and a real start-to-end Sleep interaction.
+
+No care-record schema migration, Firestore collection change, state-key change, or record-ID migration is introduced.
+
 ## v2.16.0 — Smart Baby Home and expandable theme library
 
 This release makes Baby Home more useful per pixel while preserving a generous identity/photo area.
