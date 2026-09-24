@@ -51,16 +51,16 @@ const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
   preview:`./assets/themes-v2/${theme}/${mode}/settings-preview.webp`
 }]));
 /* v2.18 replaces the placeholder vector sketches with full-scene image worlds.
-   Each source is a stable, free-to-use Pexels image URL; MilkFlow owns the crop, palette,
-   surface treatment and UI composition around it. The old local SVGs remain only as historical
+   The build materializes each reviewed full-scene image into the production artifact, so the
+   installed PWA never depends on a third-party image URL at runtime. The old local SVGs remain only as historical
    source assets and are no longer selected by the runtime. */
 const GENERATED_WORLD_IMAGES={
-  ocean:'https://images.pexels.com/photos/60087/pexels-photo-60087.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  celestial:'https://images.pexels.com/photos/37023333/pexels-photo-37023333.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  woodland:'https://images.pexels.com/photos/9870287/pexels-photo-9870287.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  'safari-sunset':'https://images.pexels.com/photos/25754105/pexels-photo-25754105.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  'floral-meadow':'https://images.pexels.com/photos/26971554/pexels-photo-26971554.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  'cozy-clouds':'https://images.pexels.com/photos/18444260/pexels-photo-18444260.jpeg?auto=compress&cs=tinysrgb&w=1200'
+  ocean:'./assets/generated-themes/ocean.jpg',
+  celestial:'./assets/generated-themes/celestial.jpg',
+  woodland:'./assets/generated-themes/woodland.jpg',
+  'safari-sunset':'./assets/generated-themes/safari-sunset.jpg',
+  'floral-meadow':'./assets/generated-themes/floral-meadow.jpg',
+  'cozy-clouds':'./assets/generated-themes/cozy-clouds.jpg'
 };
 const imageWorldAssetSet=theme=>{
   const src=GENERATED_WORLD_IMAGES[theme];
