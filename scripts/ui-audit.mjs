@@ -99,10 +99,10 @@ requireText('day view is newest first',read('app.js'),"sort((a,b) => (b.time||''
 /* The scene must be chosen by the same attribute as every other colour, or light mode keeps
    showing the dark plate until something happens to re-run the theme controller. */
 requireText('scene resolves in CSS',read('experience-system.css'),':root[data-theme="dark"]{\n  --mf-theme-baby-scene:var(--mf-theme-baby-scene-dark,none);');
-requireText('Baby world paints safe area',read('experience-system.css'),'body[data-realm="baby"]{background-image:var(--mf-theme-baby-scene)!important}');
-requireText('Mom world paints safe area',read('experience-system.css'),'body[data-realm="mom"]{background-image:var(--mf-theme-mom-scene)!important}');
-requireText('Mom tab has explicit contrast',read('experience-system.css'),'#personaTabs button:first-child.active{background:#76538c!important;color:#fff!important}');
-requireText('Baby tab has explicit contrast',read('experience-system.css'),'#personaTabs button:last-child.active{background:#176d78!important;color:#fff!important}');
+requireText('Baby world paints safe area',read('experience-system.css'),'body[data-realm="baby"]{background-image:var(--mf-theme-baby-scene)}');
+requireText('Mom world paints safe area',read('experience-system.css'),'body[data-realm="mom"]{background-image:var(--mf-theme-mom-scene)}');
+requireText('Mom tab has explicit contrast',read('experience-system.css'),'#personaTabs button:first-child.active{background:#76538c;color:#fff}');
+requireText('Baby tab has explicit contrast',read('experience-system.css'),'#personaTabs button:last-child.active{background:#176d78;color:#fff}');
 /* Six requested worlds are complete/selectable; Unicorn remains intentionally gated until
    it receives its own art package. */
 {
