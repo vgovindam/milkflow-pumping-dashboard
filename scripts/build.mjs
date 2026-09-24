@@ -12,7 +12,7 @@ let COMMIT=process.env.GITHUB_SHA||'';
 if(!COMMIT){try{COMMIT=execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim();}catch{COMMIT='local';}}
 
 const TEXT_FILES=[
-  'index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-themes.css','experience-system.css','experience-components.css','doctor-summary.css',
+  'index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-system.css','experience-components.css','doctor-summary.css',
   'config.js','app.js','cross-device-alerts.js','app-reliability.js','core-ui.js','experience-theme.js','render-lifecycle.js','plan-reliability.js','network-reliability.js','ai-coach-client.js','app-update-notice.js','family-chat.js','doctor-summary.js','release-info.js','manifest.webmanifest','icon.svg'
 ];
 const BINARY_FILES=['milkflow-family-v3-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','favicon.ico'];
