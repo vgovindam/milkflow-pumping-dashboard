@@ -8,7 +8,9 @@ const requireText=(name,source,expected)=>{if(!source.includes(expected))failure
 requireText('mobile viewport',files.css,'min-height:100dvh');
 requireText('mobile safe area',files.css,'env(safe-area-inset-bottom)');
 requireText('saved parent name',files.ui,"name=s.profile?.momName||'Mom'");
-requireText('hero fact boxes',files.ui,'mf-hero-facts');
+requireText('smart Baby wish',files.ui,'function babyWishLine(');
+requireText('compact Baby timing',files.ui,'mf-baby-timing');
+requireText('compact Baby today line',files.ui,'mf-baby-todayline');
 /* Development kept the component layer's pale card in dark mode and printed light ink on it -
    96 failures at 1.01-1.31:1 - because .journey/.stage-card/.ms-group were never added to the
    surface contract. Any screen-level surface has to be in that list. */
@@ -95,6 +97,15 @@ requireText('day view is newest first',read('app.js'),"sort((a,b) => (b.time||''
 /* The scene must be chosen by the same attribute as every other colour, or light mode keeps
    showing the dark plate until something happens to re-run the theme controller. */
 requireText('scene resolves in CSS',read('experience-system.css'),':root[data-theme="dark"]{\n  --mf-theme-baby-scene:var(--mf-theme-baby-scene-dark,none);');
+/* The next theme generation is registered now, but an incomplete world never appears in the
+   selector. Promoting status to ready is the only intended activation path. */
+{
+  const exp=read('experience-theme.js');
+  for(const id of ['unicorn-dream','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'])
+    requireText(`future theme ${id}`,exp,`id:'${id}'`);
+  requireText('future themes are gated by readiness',exp,"filter(([,t])=>t.status==='ready')");
+  requireText('theme library is public to the app',exp,'library:THEME_LIBRARY');
+}
 /* The Sounds switch shipped wired to nothing: it stored a preference that no code ever read.
    A control that does not control anything is worse than no control. */
 {
@@ -121,24 +132,27 @@ requireText('scene resolves in CSS',read('experience-system.css'),':root[data-th
   if(/<circle cx="32" cy="32" r="31"/.test(icons))failures.push('care icons must not draw their own disc: the tile is the container');
   requireText('illustrated marks have no plate',ui,'.mf-care-mark.is-art{background:none;box-shadow:none}');
 }
-/* The next feed lives in the hero, not in a card of its own under it. */
-requireText('next feed is a hero fact',read('core-ui.js'),'mf-hero-facts three');
+/* The next feed stays in the hero, but it is now a compact timing fact beside Last feed rather
+   than one of three full-width dashboard boxes. */
+requireText('next feed stays in compact Baby timing',read('core-ui.js'),'aria-label="Baby feeding timing"');
+if(/mf-hero-facts three/.test(read('core-ui.js')))failures.push('Baby Home must not restore the three full-width hero fact boxes');
 /* A surface the dark layer forgets is a white card with white text on it. */
 requireText('stash hero has a dark surface',read('core-ui.js'),':root[data-theme="dark"] body[data-realm] .stash-hero');
-/* Both heroes answer the same two questions in the same place. The hero is reviewed at phone
-   width, so the composition has a 393pt step and a 375pt step - a Pro-sized photo beside a
-   column that still fits a greeting with a name in it. */
+/* Mom and Baby now optimize for different jobs: Mom emphasizes the pump plan, while Baby
+   emphasizes identity, a generous photo and time-sensitive feeding context. Both remain compact. */
 requireText('mom hero composition',files.ui,'grid-template-areas:"greeting photo" "title photo" "facts facts" "next next"');
 requireText('narrow phone step',files.ui,'.mf-dream-photo{width:108px;height:108px}');
 requireText('relative time, not a clock',files.ui,'relativeAgo(x.last.date||today(),x.last.time)');
 if(files.ui.includes('Your day, beautifully paced'))failures.push('mom hero: the headline must summarize the day, not repeat a slogan');
-requireText('both heroes share the fact component',files.ui,'.mf-hero-fact strong');
+requireText('Mom keeps its fact component',files.ui,'.mf-hero-fact strong');
+requireText('Baby has a generous photo',read('component-theme-core.css'),'width:136px;height:136px');
 requireText('modern title face',files.ui,'.mf-journey-head strong,.mf-dream-actions .quick-tile strong{font-family:var(--display)');
 requireText('editorial accent face',files.ui,'.mf-dream-hero .mf-dream-main h2,.mf-animal-copy h2{font-family:var(--editorial)');
 requireText('mobile hero title scale',files.ui,'.mf-dream-main h2{grid-area:title;max-width:none;font-size:26px');
 requireText('readable row copy',files.css,'.row-main strong{font-size:15px');
 requireText('dark baby name',files.ui,':root[data-theme="dark"] .mf-animal-copy h2{color:#f7f3ff}');
-requireText('dark baby details',files.ui,':root[data-theme="dark"] .mf-animal-copy small{color:#d7e7ef}');
+requireText('dark baby wish',read('component-theme-core.css'),'.mf-baby-wish,');
+requireText('dark baby timing',read('component-theme-core.css'),'.mf-baby-timing strong{color:#f0fbfc}');
 requireText('dark journey details',files.ui,'.mf-dream-journey>p,:root[data-theme="dark"] .mf-journey-stop small{color:#c0c7d8}');
 
 /* ------------------------------------------------------------------ cascade contract --
