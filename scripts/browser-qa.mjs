@@ -77,8 +77,8 @@ try{
   const themes=[...WORLDS,'clean'];
   const expected={
     safari:'themes-v2/safari/',butterfly:'themes-v2/butterfly/',princess:'themes-v2/princess/',
-    ocean:'/photos/60087/',celestial:'/photos/37023333/',woodland:'/photos/9870287/',
-    'safari-sunset':'/photos/25754105/','floral-meadow':'/photos/26971554/','cozy-clouds':'/photos/18444260/'
+    ocean:'generated-themes/ocean.jpg',celestial:'generated-themes/celestial.jpg',woodland:'generated-themes/woodland.jpg',
+    'safari-sunset':'generated-themes/safari-sunset.jpg','floral-meadow':'generated-themes/floral-meadow.jpg','cozy-clouds':'generated-themes/cozy-clouds.jpg'
   };
   /* The original three have illustrated per-action icon casts. New worlds use the stable
      semantic glyph fallback until their care-art cast is authored; scenery and motif still
