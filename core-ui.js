@@ -570,6 +570,8 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 /* The whole quick-log tile is the action; its illustrated mark deserves the same hierarchy as its label. */
 .mf-feed-card,.mf-diaper-blob{min-height:154px;padding:92px 7px 15px;justify-content:end}
 .mf-feed-card>span.mf-care-mark,.mf-diaper-blob>span.mf-care-mark{left:50%;top:13px;right:auto;transform:translateX(-50%);width:72px;height:72px}
+.mf-diaper-blob{min-height:164px;padding-top:106px}
+.mf-diaper-blob>span.mf-care-mark{top:42px;width:55px;height:55px}
 .mf-feed-card strong,.mf-diaper-blob strong{font-size:clamp(16px,4.4vw,21px);line-height:1.16}
 .mf-feed-card small,.mf-diaper-blob span:not(.mf-care-mark){font-size:13px;line-height:1.2}
 .mf-diaper-blob b{z-index:3}
@@ -581,7 +583,7 @@ body[data-screen="history"] .act-row,body[data-screen="baby-history"] .act-row{
 body[data-screen="history"] .act-row .act-main,body[data-screen="baby-history"] .act-row .act-main{background:transparent}
 body[data-screen="history"] .act-row .act-icon,body[data-screen="baby-history"] .act-row .act-icon{background:color-mix(in srgb,var(--c) 24%,var(--surface))}
 :root[data-theme="dark"] body:is([data-screen="history"],[data-screen="baby-history"]) .act-row{background:color-mix(in srgb,var(--c) 32%,#1b2030)}
-@media(max-width:430px){.mf-feed-card,.mf-diaper-blob{min-height:145px;padding:86px 5px 12px}.mf-feed-card>span.mf-care-mark,.mf-diaper-blob>span.mf-care-mark{width:66px;height:66px}.mf-last-feed-value{font-size:13px}}
+@media(max-width:430px){.mf-feed-card,.mf-diaper-blob{min-height:145px;padding:86px 5px 12px}.mf-feed-card>span.mf-care-mark{width:66px;height:66px}.mf-diaper-blob{min-height:157px;padding-top:100px}.mf-diaper-blob>span.mf-care-mark{top:40px;width:53px;height:53px}.mf-last-feed-value{font-size:13px}}
 `;
   document.head.appendChild(s);
 }
