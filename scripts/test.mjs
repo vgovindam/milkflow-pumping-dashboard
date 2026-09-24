@@ -54,6 +54,18 @@ const swTemplate=fs.readFileSync(path.join(ROOT,'sw.template.js'),'utf8');
     if(model.education?.some(x=>!x.source?.reviewed||!/^https:\/\//.test(x.source?.url||'')))throw new Error('Education source is missing URL/review metadata.');
   }
 }
+/* Sleep capture is two-way: start/end timer plus completed-entry fallback. Predictions are
+   computed from this family's completed logs and active timers never enter historical totals. */
+for(const token of ['activeSleep: null','function sleepPrediction(','function activeSleep(','function sleepStart(','async function sleepEnd(','function sleepReminderTick(','data-sleep-start','data-sleep-end','data-sleep-complete'])
+  if(!app.includes(token))throw new Error(`Sleep workflow contract missing: ${token}`);
+if(!app.includes("eventType==='sleep' && (+e.durationMinutes||0)>0"))throw new Error('Active/incomplete sleep must not be counted as a completed historical sleep.');
+if(!core.includes('sleep-live'))throw new Error('Baby Home does not expose a running sleep timer.');
+/* Print construction must finish before the native dialog is invoked. */
+const doctorPrint=fs.readFileSync(path.join(ROOT,'doctor-summary.js'),'utf8');
+for(const token of ['async function printReport()','await nextPaint();','window.print();','print: printReport'])
+  if(!doctorPrint.includes(token))throw new Error(`Doctor print responsiveness contract missing: ${token}`);
+if(!app.includes('printer?.print'))throw new Error('Doctor Print button is not delegated to the prepared report flow.');
+
 if(!app.includes("STATE_KEY = 'milkflow-family-v4-state'")&&!app.includes("STATE_KEY='milkflow-family-v4-state'"))throw new Error('Data-contract check failed: canonical localStorage state key changed.');
 if(!app.includes('function unionById'))throw new Error('Data-contract check failed: merge-by-id logic missing.');
 if(!core.includes("const STATE_KEY='milkflow-family-v4-state'"))throw new Error('Core UI is not bound to the canonical state key.');
@@ -63,8 +75,12 @@ const familyChatServer=fs.readFileSync(path.join(ROOT,'functions/family-chat.js'
 for(const token of ["PENDING_KEY='milkflow-family-chat-pending-v1'",'recoverCloudRequest','recoverLegacyHistory','resumePending','retryRequest',"mode:'status'",'requestId'])if(!familyChat.includes(token))throw new Error(`Family chat recovery contract missing: ${token}`);
 for(const token of ["collection('familyChatRequests')", "mode==='status'", "status:'processing'", "status:'completed'", "${requestId}-user", "${requestId}-assistant"] )if(!familyChatServer.includes(token))throw new Error(`Family chat server recovery contract missing: ${token}`);
 
-const themes=['safari','butterfly','princess'];
-for(const theme of themes){
+/* Three original themes use painted responsive plates; the six new worlds use authored,
+   self-contained SVG scenes until a later art pass adds raster plates. Both are real runtime
+   packages and both must provide separate Baby/Mom and light/dark scenes. */
+const paintedThemes=['safari','butterfly','princess'];
+const vectorThemes=['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'];
+for(const theme of paintedThemes){
   const icons=`assets/theme-icons/${theme}.svg`;
   if(!fs.existsSync(path.join(ROOT,icons)))throw new Error(`Theme asset contract missing: ${icons}`);
   for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
@@ -72,15 +88,8 @@ for(const theme of themes){
     if(!fs.existsSync(path.join(ROOT,scene)))throw new Error(`Theme asset contract missing: ${scene}`);
     const svg=fs.readFileSync(path.join(ROOT,scene),'utf8');
     if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be fully self-contained.`);
-    /* Structure, not byte count. The old contract asked for 4500 bytes as a stand-in for "not
-       a placeholder", which was reasonable when a scene was a drawing with a subject in it and
-       is meaningless now: a colour field is a handful of elements and the quality is in the
-       ramp, the light and the grain. So check that those are actually present. */
     if(svg.length<4500)throw new Error(`${scene} fallback is too sparse to stand in for the plate.`);
   }
-  /* The SVG above is only a fallback. The artwork that actually ships is the painted plate,
-     and its dark version must be a separately graded file - not the light one reused, which
-     is the failure that made three worlds look identical. */
   for(const [role,widths] of [['baby-background',[480,720,941]],['baby-hero',[640,941]],['mom-background',[480,720,941]],['mom-hero',[640,941]]])
     for(const mode of ['light','dark'])for(const w of widths){
       const plate=`assets/themes-v2/${theme}/${mode}/${role}@${w}.webp`;
@@ -93,8 +102,22 @@ for(const theme of themes){
     const dark=fs.readFileSync(path.join(ROOT,`assets/themes-v2/${theme}/dark/${role}@${w}.webp`));
     if(light.equals(dark))throw new Error(`${theme}/${role} ships the same file for light and dark`);
   }
-  if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} asset matrix.`);
+  if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} painted asset matrix.`);
   if(!experience.includes(`theme-icons/${theme}.svg`))throw new Error(`Theme manifest is not using independent ${theme} icon sprite.`);
+}
+for(const theme of vectorThemes){
+  const motif=`assets/theme-icons/${theme}-motif.svg`;
+  if(!fs.existsSync(path.join(ROOT,motif)))throw new Error(`Vector theme motif missing: ${motif}`);
+  for(const mode of ['light','dark'])for(const realm of ['baby','mom']){
+    const scene=`assets/themes-v2/${theme}/${mode}/${realm}-background.svg`;
+    const full=path.join(ROOT,scene);
+    if(!fs.existsSync(full))throw new Error(`Vector theme scene missing: ${scene}`);
+    const svg=fs.readFileSync(full,'utf8');
+    if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be self-contained.`);
+    if(svg.length<1600||!svg.includes('<linearGradient')||(!svg.includes('<path')&&!svg.includes('<ellipse')))throw new Error(`${scene} does not contain enough authored scene structure.`);
+  }
+  if(!experience.includes(`vectorAssetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} vector asset matrix.`);
+  if(!experience.includes(`id:'${theme}',status:'ready'`))throw new Error(`${theme} is not promoted to a ready theme.`);
 }
 for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
 /* Appearance is ONE screen: the world picker, light/dark and sounds together. Settings keeps
@@ -155,4 +178,4 @@ if(!indexHtml.includes('milkflow-family-v3-192.png?v=__MILKFLOW_VERSION__'))thro
 if(!manifestPwa.icons?.some(i=>i.src==='milkflow-family-v3-192.png'))throw new Error('Canonical v3 MilkFlow icon is missing from manifest.');
 if(!swTemplate.includes("icon:'./milkflow-family-v3-192.png'"))throw new Error('Push notification icon is not the canonical v3 MilkFlow artwork.');
 
-console.log('MilkFlow test suite passed: syntax, data and notification contracts, three detailed theme worlds, canonical v3 app icon wiring, dark-mode number/button readability, Settings experience, and single-layer ownership.');
+console.log('MilkFlow test suite passed: syntax, data and notification contracts, nine selectable theme worlds, canonical v3 app icon wiring, dark-mode number/button readability, Settings experience, and single-layer ownership.');
