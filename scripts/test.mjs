@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import vm from 'node:vm';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 function run(cmd,args,{cwd=ROOT}={}){
@@ -9,12 +10,13 @@ function run(cmd,args,{cwd=ROOT}={}){
   if(r.status!==0)throw new Error(`${cmd} ${args.join(' ')} failed with ${r.status}`);
 }
 const js=[
-  'app.js','app-reliability.js','cross-device-alerts.js','core-ui.js','experience-theme.js','render-lifecycle.js','plan-reliability.js','network-reliability.js','ai-coach-client.js','app-update-notice.js','family-chat.js','doctor-summary.js','release-info.js','sw.template.js',
+  'insights-engine.js','app.js','app-reliability.js','cross-device-alerts.js','core-ui.js','experience-theme.js','render-lifecycle.js','plan-reliability.js','network-reliability.js','ai-coach-client.js','app-update-notice.js','family-chat.js','doctor-summary.js','release-info.js','sw.template.js',
   'functions/index.js','functions/index-entry.js','functions/family-chat.js','functions/pump-context.js','functions/cross-device-alerts.js'
 ];
 for(const file of js){if(!fs.existsSync(path.join(ROOT,file)))throw new Error(`Missing required JavaScript: ${file}`);run(process.execPath,['--check',file]);}
 run(process.execPath,['scripts/ui-audit.mjs']);
 run(process.execPath,['scripts/interaction-audit.mjs']);
+const insights=fs.readFileSync(path.join(ROOT,'insights-engine.js'),'utf8');
 const app=fs.readFileSync(path.join(ROOT,'app.js'),'utf8');
 const core=fs.readFileSync(path.join(ROOT,'core-ui.js'),'utf8');
 const alerts=fs.readFileSync(path.join(ROOT,'cross-device-alerts.js'),'utf8');
@@ -26,6 +28,32 @@ const componentTheme=fs.readFileSync(path.join(ROOT,'component-theme.css'),'utf8
 const indexHtml=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
 const manifestPwa=JSON.parse(fs.readFileSync(path.join(ROOT,'manifest.webmanifest'),'utf8'));
 const swTemplate=fs.readFileSync(path.join(ROOT,'sw.template.js'),'utf8');
+{
+  const sandbox={window:{}}; vm.createContext(sandbox); vm.runInContext(insights,sandbox,{filename:'insights-engine.js'});
+  const engine=sandbox.window.MilkFlowInsights;
+  if(!engine?.mom||!engine?.baby)throw new Error('Interpretation engine did not expose Mom and Baby models.');
+  const mom=engine.mom({
+    days:[500,510,520,530,610,620,630,640].map((totalMl,i)=>({date:'2026-09-'+String(i+1).padStart(2,'0'),totalMl})),
+    sessions:[
+      {date:'2026-09-05',time:'06:00',amountMl:190},{date:'2026-09-05',time:'10:30',amountMl:150},
+      {date:'2026-09-06',time:'06:05',amountMl:195},{date:'2026-09-06',time:'10:35',amountMl:155}
+    ],
+    bands:[{label:'Morning',value:500},{label:'Afternoon',value:240}]
+  });
+  if(!mom.observations?.length||!mom.education?.[0]?.source?.url)throw new Error('Mom interpretation lacks observations or source provenance.');
+  if(mom.observations[0].value!=='Higher')throw new Error('Mom interpretation failed to identify a clearly higher recent pattern.');
+  const sparse=engine.baby({rows:[{feeds:1,bottleOz:3,wetTotal:1,diapers:1,sleepMin:40,logged:true}],ageDays:70,feedingPreference:'mostly_breastfed'});
+  if(sparse.observations?.[1]?.value!=='Learning')throw new Error('Baby interpretation must not overstate sparse data.');
+  const baby=engine.baby({
+    rows:Array.from({length:8},(_,i)=>({feeds:i<4?6:7,bottleOz:i<4?16:18,wetTotal:i<4?5:6,diapers:i<4?6:7,sleepMin:600,logged:true})),
+    ageDays:70,feedingPreference:'mostly_breastfed'
+  });
+  if(!baby.education?.some(x=>x.source?.id==='aap-safe-sleep'))throw new Error('Infant education should include safe-sleep provenance.');
+  for(const model of [mom,baby]){
+    if(!/educational guidance only/i.test(model.disclaimer||''))throw new Error('Interpretation model is missing the clinician disclaimer.');
+    if(model.education?.some(x=>!x.source?.reviewed||!/^https:\/\//.test(x.source?.url||'')))throw new Error('Education source is missing URL/review metadata.');
+  }
+}
 if(!app.includes("STATE_KEY = 'milkflow-family-v4-state'")&&!app.includes("STATE_KEY='milkflow-family-v4-state'"))throw new Error('Data-contract check failed: canonical localStorage state key changed.');
 if(!app.includes('function unionById'))throw new Error('Data-contract check failed: merge-by-id logic missing.');
 if(!core.includes("const STATE_KEY='milkflow-family-v4-state'"))throw new Error('Core UI is not bound to the canonical state key.');
@@ -127,4 +155,4 @@ if(!indexHtml.includes('milkflow-family-v3-192.png?v=__MILKFLOW_VERSION__'))thro
 if(!manifestPwa.icons?.some(i=>i.src==='milkflow-family-v3-192.png'))throw new Error('Canonical v3 MilkFlow icon is missing from manifest.');
 if(!swTemplate.includes("icon:'./milkflow-family-v3-192.png'"))throw new Error('Push notification icon is not the canonical v3 MilkFlow artwork.');
 
-console.log('MilkFlow test suite passed: syntax, data and notification contracts, four detailed theme worlds, canonical v3 app icon wiring, dark-mode number/button readability, Settings experience, and single-layer ownership.');
+console.log('MilkFlow test suite passed: syntax, data and notification contracts, three detailed theme worlds, canonical v3 app icon wiring, dark-mode number/button readability, Settings experience, and single-layer ownership.');
