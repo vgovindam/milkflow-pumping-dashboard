@@ -1,6 +1,6 @@
 {
   "version": "next-1",
-  "runtimeStatus": "non-runtime",
+  "runtimeStatus": "registered-gated; planned themes remain non-selectable until asset-complete",
   "themeIds": [
     "animal-kingdom",
     "unicorn-dream",
