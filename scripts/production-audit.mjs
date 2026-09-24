@@ -10,10 +10,12 @@ const fail=[];
 const must=['index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-system.css','experience-components.css','doctor-summary.css','insights-engine.js','app.js','cross-device-alerts.js','experience-theme.js','sw.js','manifest.webmanifest','build-manifest.json','icon.svg','milkflow-family-v3-192.png'];
 for(const f of must)if(!fs.existsSync(path.join(DIST,f)))fail.push(`missing dist/${f}`);
 if(fs.existsSync(path.join(DIST,'experience-themes.css')))fail.push('dead experience-themes.css still ships in dist');
-const themes=['safari','butterfly','princess'];
-const themeTitles={safari:'Animal Kingdom',butterfly:'Butterfly Garden',princess:'Princess Palace'};
+const paintedThemes=['safari','butterfly','princess'];
+const vectorThemes=['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'];
+const themes=[...paintedThemes,...vectorThemes];
+const themeTitles={safari:'Animal Kingdom',butterfly:'Butterfly Garden',princess:'Princess Palace',ocean:'Ocean',celestial:'Moon & Stars',woodland:'Woodland Forest','safari-sunset':'Safari Sunset','floral-meadow':'Floral Meadow','cozy-clouds':'Cozy Clouds'};
 const hash=file=>createHash('sha256').update(fs.readFileSync(file)).digest('hex');
-for(const theme of themes){
+for(const theme of paintedThemes){
   if(!fs.existsSync(path.join(DIST,`assets/theme-icons/${theme}.svg`)))fail.push(`missing dist/assets/theme-icons/${theme}.svg`);
   for(const mode of ['light','dark']){
     for(const [role,widths] of [['baby-background',[480,720,941]],['mom-background',[480,720,941]],['baby-hero',[640,941]],['mom-hero',[640,941]]]){
@@ -35,6 +37,21 @@ for(const theme of themes){
     if(fs.existsSync(light)&&fs.existsSync(dark)&&hash(light)===hash(dark))fail.push(`${theme} ${role} light/dark plates are byte-identical; dark mode must be separately authored/graded`);
   }
 }
+for(const theme of vectorThemes){
+  const motif=`assets/theme-icons/${theme}-motif.svg`;
+  if(!fs.existsSync(path.join(DIST,motif)))fail.push(`missing dist/${motif}`);
+  for(const mode of ['light','dark'])for(const realm of ['baby','mom']){
+    const rel=`assets/themes-v2/${theme}/${mode}/${realm}-background.svg`,full=path.join(DIST,rel);
+    if(!fs.existsSync(full)){fail.push(`missing dist/${rel}`);continue;}
+    const svg=fs.readFileSync(full,'utf8');
+    if(svg.includes('<image ')||svg.includes('href="../'))fail.push(`${theme} scene uses nested asset dependencies: ${rel}`);
+  }
+  for(const realm of ['baby','mom']){
+    const light=path.join(DIST,`assets/themes-v2/${theme}/light/${realm}-background.svg`);
+    const dark=path.join(DIST,`assets/themes-v2/${theme}/dark/${realm}-background.svg`);
+    if(fs.existsSync(light)&&fs.existsSync(dark)&&hash(light)===hash(dark))fail.push(`${theme} ${realm} light/dark scenes are byte-identical`);
+  }
+}
 const textFiles=[];
 function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())walk(p);else if(/\.(?:html|css|js|json|webmanifest|svg)$/.test(e.name))textFiles.push(p);}}
 if(fs.existsSync(DIST))walk(DIST);
@@ -49,8 +66,8 @@ const themeEntry=fs.readFileSync(path.join(DIST,'theme.css'),'utf8');
 if(!themeEntry.includes(`experience-components.css?v=${version}`))fail.push('canonical themed component stylesheet missing from deployed theme entry');
 const experience=fs.readFileSync(path.join(DIST,'experience-theme.js'),'utf8');
 const experienceCss=fs.readFileSync(path.join(DIST,'experience-system.css'),'utf8');
-for(const theme of themes){
-  if(!experience.includes(`assetSet('${theme}')`))fail.push(`${theme} asset matrix missing from deployed theme runtime`);
+for(const theme of paintedThemes){
+  if(!experience.includes(`assetSet('${theme}')`))fail.push(`${theme} painted asset matrix missing from deployed theme runtime`);
   if(!experience.includes(`title:'${themeTitles[theme]}'`))fail.push(`${theme} canonical title missing from deployed theme runtime`);
   if(!experience.includes(`theme-icons/${theme}.svg`))fail.push(`${theme} icon sprite missing from deployed theme runtime`);
   for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
@@ -59,6 +76,11 @@ for(const theme of themes){
     if(svg.includes('<image ')||svg.includes('href="../'))fail.push(`${theme} scene still uses nested image/SVG dependencies`);
     if(svg.length<4500)fail.push(`${rel} fallback is too sparse`);
   }
+}
+for(const theme of vectorThemes){
+  if(!experience.includes(`vectorAssetSet('${theme}')`))fail.push(`${theme} vector asset matrix missing from deployed theme runtime`);
+  if(!experience.includes(`title:'${themeTitles[theme]}'`))fail.push(`${theme} canonical title missing from deployed theme runtime`);
+  if(!experience.includes(`id:'${theme}',status:'ready'`))fail.push(`${theme} is not selectable in deployed theme runtime`);
 }
 if(experience.includes('theme-details/'))fail.push('deployed controller still stacks a separate detail SVG instead of using one self-contained scene');
 if(experienceCss.includes('--mf-theme-detail'))fail.push('deployed theme CSS still depends on a separate detail layer');
@@ -96,4 +118,4 @@ for(const ref of [...index.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(m=>m[
   if(rel&&!fs.existsSync(path.join(DIST,rel)))fail.push(`broken index reference: ${ref}`);
 }
 if(fail.length){console.error(fail.map(x=>`- ${x}`).join('\n'));process.exit(1);}
-console.log(`Production audit passed for MilkFlow ${version}: detailed theme worlds, canonical v3 PWA artwork, dark-mode readability, service worker, data key, and notification contract are aligned.`);
+console.log(`Production audit passed for MilkFlow ${version}: nine selectable theme worlds, canonical v3 PWA artwork, dark-mode readability, service worker, data key, and notification contract are aligned.`);
