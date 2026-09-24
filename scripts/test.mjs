@@ -119,11 +119,11 @@ for(const theme of vectorThemes){
   if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} painted asset matrix.`);
   if(!experience.includes(`id:'${theme}',status:'ready'`))throw new Error(`${theme} is not promoted to a ready theme.`);
 }
-for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts','.mf-settings-motto'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
+for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
 /* Appearance is ONE screen: the world picker, light/dark and sounds together. Settings keeps
    a single row that leads there. The picker used to be injected into both, with a separate
    Dark Mode row beside it - three places to change how the app looks. */
-for(const token of ['Choose your family world','Make this little adventure yours','Different themes.','mf-preview-scene'])if(!experience.includes(token))throw new Error(`Appearance contract missing: ${token}`);
+for(const token of ['Choose your family world','Make this little adventure yours','mf-preview-scene'])if(!experience.includes(token))throw new Error(`Appearance contract missing: ${token}`);
 if(!experience.includes("if(screen!=='set-appearance')return;"))throw new Error('The world picker must live on Appearance only');
 if(experience.includes("data-view=\"set-reminders\""))throw new Error('Appearance must not duplicate rows the Settings list already has');
 /* The Baby single-layer contract: legacy decorative pseudo-elements stay suppressed. The
@@ -154,16 +154,16 @@ for(const [file,text] of [['app.js',app],['core-ui.js',core],['doctor-summary.js
   /* The care icons are an illustrated cast, one character per action per theme, composed from
      shared parts so the set stays consistent. A theme is a cast file plus a palette entry. */
   const iconDir=path.join(ROOT,'scripts/care-icons');
-  for(const f of ['index.mjs','palette.mjs','props.mjs','parts.mjs','cast/safari.mjs','cast/butterfly.mjs','cast/princess.mjs','cast/princess.mjs'])
+  for(const f of ['index.mjs','palette.mjs','props.mjs','parts.mjs','cast/safari.mjs','cast/butterfly.mjs','cast/princess.mjs','cast/worlds.mjs'])
     if(!fs.existsSync(path.join(iconDir,f)))throw new Error(`Care icon design system is missing: scripts/care-icons/${f}`);
   const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'assets/care-icons/manifest.json'),'utf8'));
-  for(const theme of ['safari','butterfly','princess'])
+  for(const theme of ['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'])
     if(!manifest.themes?.[theme]?.label)throw new Error(`Care icon manifest has no cast label for ${theme} - run node scripts/generate-care-icons.mjs`);
 }
 {
   const iconRoot=path.join(ROOT,'assets/care-icons');
   const actions=['milk','nurse','formula','wet','poop','mixed','pump'];
-  for(const theme of ['safari','butterfly','princess']){
+  for(const theme of ['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
     for(const action of [...actions,'motif'])
       if(!fs.existsSync(path.join(iconRoot,theme,`${action}.svg`)))
         throw new Error(`Generated care icon missing: ${theme}/${action}.svg - run node scripts/generate-care-icons.mjs`);

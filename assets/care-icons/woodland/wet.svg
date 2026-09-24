@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="hedgehog — wet">
+  <defs><linearGradient id="d-woodland-wet" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#F4F3E5"/><stop offset="1" stop-color="#D9E8C5"/></linearGradient></defs>
+  <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M10 33L8 26L15 25L13 18L21 20L25 12L31 18L39 14L39 22L47 22L44 31Q51 42 35 44H24Q9 44 10 33Z" fill="#B68C6B"/><path d="M16 32Q25 23 42 29Q47 43 32 44Q17 45 16 32Z" fill="#A78C6F"/><circle cx="36" cy="33" r="1.25" fill="#24313d" stroke="none"/><circle cx="46" cy="37" r="2" fill="#534A34" stroke="none"/></g>
+  <circle cx="46" cy="46" r="11.299999999999999" fill="#D9E8C5" fill-opacity=".85"/><circle cx="46" cy="46" r="10.2" fill="#FFFCF4"/><g transform="translate(38.32 38.32) scale(0.48)"><path d="M16 2.4c6.2 8 11.2 13.4 11.2 18.5a11.2 11.2 0 0 1-22.4 0C4.8 15.8 9.8 10.4 16 2.4Z" fill="#534A34"/>
+    <path d="M10.5 21.6c0 3.3 1.8 5.8 4.6 6.7" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+</svg>

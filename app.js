@@ -766,7 +766,7 @@ function momRow(e){ return `<button type="button" class="row" data-record="mom:$
 function momHistory(){
   const range=S.ui.momRange ?? 30, all=+range>=9999, cutoff=all?'':dateList(rangeDays(range,'mom'))[0];
   const a=momEntries().filter(e=>all||e.date>=cutoff).sort(byWhenDesc);
-  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>History</h2></div><button class="round-action" data-mom="pump">${icon('plus')}<span>Pump</span></button></div>${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-mom-range')}${panel('',a.length?`<div class="rows">${a.map(momRow).join('')}</div>`:empty('history','No Mom records here','Try a wider date range.'))}`;
+  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>History</h2></div></div>${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-mom-range')}${panel('',a.length?`<div class="rows">${a.map(momRow).join('')}</div>`:empty('history','No Mom records here','Try a wider date range.'))}`;
 }
 const TIME_BANDS = [
   {key:'morning', label:'Morning', sub:'5am – 11am', from:5*60, to:11*60, color:'var(--mom)', icon:'sun'},
@@ -1121,7 +1121,7 @@ function babyHistory(){
     <button data-history-mode="day" class="${mode==='day'?'on':''}" role="tab" aria-selected="${mode==='day'}">By day</button>
     <button data-history-mode="all" class="${mode==='all'?'on':''}" role="tab" aria-selected="${mode==='all'}">All entries</button>
   </div>`;
-  const head = `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>History</h2></div><button class="round-action baby" data-add>${icon('plus')}<span>Add</span></button></div>${seg}`;
+  const head = `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>History</h2></div></div>${seg}`;
   return head + (mode === 'day' ? historyByDay() : historyAll());
 }
 function historyByDay(){

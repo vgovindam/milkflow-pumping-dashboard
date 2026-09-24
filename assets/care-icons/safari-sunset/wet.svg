@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="sunset flamingo — wet">
+  <defs><linearGradient id="d-safari-sunset-wet" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#FFF1D4"/><stop offset="1" stop-color="#F3CE9D"/></linearGradient></defs>
+  <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M26 43V30Q14 27 18 18Q23 11 32 16Q37 20 31 23Q25 24 26 30Q40 23 43 33Q43 43 26 43Z" fill="#EEA4A5"/><path d="M26 42L24 50M35 41L37 50" fill="none" stroke="#EDAD69" stroke-width="2"/><path d="M31 19L37 21L31 23Z" fill="#FFE6A1"/><circle cx="25" cy="18" r="1.25" fill="#24313d" stroke="none"/></g>
+  <circle cx="46" cy="46" r="11.299999999999999" fill="#F3CE9D" fill-opacity=".85"/><circle cx="46" cy="46" r="10.2" fill="#FFFAF0"/><g transform="translate(38.32 38.32) scale(0.48)"><path d="M16 2.4c6.2 8 11.2 13.4 11.2 18.5a11.2 11.2 0 0 1-22.4 0C4.8 15.8 9.8 10.4 16 2.4Z" fill="#644A34"/>
+    <path d="M10.5 21.6c0 3.3 1.8 5.8 4.6 6.7" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+</svg>

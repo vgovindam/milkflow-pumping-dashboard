@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Ocean friends mascot">
+  <defs><linearGradient id="m-ocean" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#E5FBF8"/><stop offset="1" stop-color="#B9E7EB"/></linearGradient></defs>
+  <g transform="translate(2.4 3.4) scale(1.08)" transform-origin="32 32"><g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M9 28Q24 9 44 25L51 17V39L43 32Q23 47 9 28Z" fill="#EF9C62"/><path d="M21 18Q26 27 22 37M34 19Q37 28 34 37" fill="none" stroke="#FFF3CC" stroke-width="4"/><circle cx="17" cy="26" r="1.25" fill="#24313d" stroke="none"/></g></g>
+</svg>

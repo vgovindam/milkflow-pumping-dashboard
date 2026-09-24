@@ -76,7 +76,7 @@ const THEME_MANIFEST={
    null when a combination does not exist, so the caller keeps ownership of its own fallback
    instead of this module reaching into the DOM to patch icons in after render. */
 const CARE_ICON_ACTIONS=new Set(['milk','nurse','formula','wet','poop','mixed','pump']);
-const CARE_ICON_THEMES=new Set(['safari','butterfly','princess']);
+const CARE_ICON_THEMES=new Set(['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']);
 function careIcon(action,themeName){
   const theme=normalize(themeName===undefined?read():themeName);
   if(!CARE_ICON_ACTIONS.has(action)||!CARE_ICON_THEMES.has(theme))return null;
@@ -84,11 +84,9 @@ function careIcon(action,themeName){
 }
 /* The world's own signature, for section headers that want theme flavour without implying
    a care action. */
-const VECTOR_MOTIF_THEMES=new Set(['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']);
 function themeMotif(themeName){
   const theme=normalize(themeName===undefined?read():themeName);
   if(CARE_ICON_THEMES.has(theme))return `./assets/care-icons/${theme}/motif.svg`;
-  if(VECTOR_MOTIF_THEMES.has(theme))return `./assets/theme-icons/${theme}-motif.svg`;
   return null;
 }
 
@@ -166,10 +164,6 @@ function settingsExtras(){
     const anchor=document.getElementById('mfExperiencePanel');
     if(anchor)anchor.insertAdjacentElement('afterend',section);
     else view.querySelector('.page-head')?.insertAdjacentElement('afterend',section);
-  }
-  if(screen==='set-appearance'&&!document.getElementById('mfSettingsMotto')){
-    const note=document.createElement('div');note.id='mfSettingsMotto';note.className='mf-settings-motto';note.innerHTML='<span aria-hidden="true">⌁</span><strong>Different themes.<br>The same brighter tomorrows.</strong><i aria-hidden="true">♡</i>';
-    document.getElementById('mfSettingsShortcuts')?.insertAdjacentElement('afterend',note);
   }
 }
 function syncThemeUi(){apply();experiencePanel();settingsExtras();}

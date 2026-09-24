@@ -85,6 +85,8 @@ for(const theme of ['safari','butterfly','princess']){
 for(const theme of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
   const motif=path.join(ROOT,`assets/theme-icons/${theme}-motif.svg`);
   if(!fs.existsSync(motif))throw new Error(`Missing ${theme} theme motif`);
+  for(const action of ['milk','nurse','formula','wet','poop','mixed','pump','motif'])
+    if(!fs.existsSync(path.join(ROOT,`assets/care-icons/${theme}/${action}.svg`)))throw new Error(`Missing ${theme}/${action} care SVG`);
   for(const mode of ['light','dark'])for(const realm of ['baby','mom']){
     const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${realm}-background.svg`);
     if(!fs.existsSync(scene))throw new Error(`Missing selectable ${theme}/${mode}/${realm} scene`);

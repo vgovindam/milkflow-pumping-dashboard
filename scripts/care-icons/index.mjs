@@ -19,10 +19,11 @@ import {BADGE} from './parts.mjs';
 import safari from './cast/safari.mjs';
 import butterfly from './cast/butterfly.mjs';
 import princess from './cast/princess.mjs';
+import worlds from './cast/worlds.mjs';
 
 export {ACTIONS};
 
-const CASTS = {safari, butterfly, princess};
+const CASTS = {safari, butterfly, princess, ...worlds};
 export const THEME_IDS = Object.keys(CASTS);
 
 function colors(themeId, character) {

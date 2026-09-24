@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="crescent moon — milk">
+  <defs><linearGradient id="d-celestial-milk" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#F1F0FF"/><stop offset="1" stop-color="#DBDEFA"/></linearGradient></defs>
+  <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M36 9A20 20 0 1 0 49 38Q31 43 36 9Z" fill="#F8D990"/><path d="M15 10L15.81 12.19L18 13L15.81 13.81L15 16L14.19 13.81L12 13L14.19 12.19Z" fill="#FFF2C9"/><path d="M48 11L48.81 13.19L51 14L48.81 14.81L48 17L47.19 14.81L45 14L47.19 13.19Z" fill="#FFF2C9"/></g>
+  <circle cx="46" cy="46" r="11.299999999999999" fill="#DBDEFA" fill-opacity=".85"/><circle cx="46" cy="46" r="10.2" fill="#FBFAFF"/><g transform="translate(38.32 38.32) scale(0.48)"><path d="M13.4 2.2h5.2a2 2 0 0 1 2 2v1.1a2 2 0 0 1-2 2h-5.2a2 2 0 0 1-2-2V4.2a2 2 0 0 1 2-2Z" fill="#454679"/>
+    <path d="M13.9 8.1h4.2v2.1h-4.2z" fill="#454679"/>
+    <path d="M12.6 11.3q3.4-1.6 6.8 0a3.6 3.6 0 0 1 1.9 3.2v11.1a4.3 4.3 0 0 1-4.3 4.3h-2a4.3 4.3 0 0 1-4.3-4.3V14.5a3.6 3.6 0 0 1 1.9-3.2Z" fill="#454679"/>
+    <path d="M11 17.4h10v1.9H11zM13.2 21.6h5.6v1.6h-5.6z" fill="#fff" fill-opacity=".58"/></g>
+</svg>

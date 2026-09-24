@@ -146,9 +146,7 @@ const CARE_GLYPH={milk:'bottle',nurse:'nursing',formula:'formula',wet:'wet',poop
 /* Resolved at render time from the theme registry, in the same pass that builds the card.
    No second module rewrites these afterwards, so there is no ordering to get wrong. */
 function careMark(action){
-  const src=['milk','nurse','formula','wet','poop','mixed'].includes(action)
-    ? `./assets/care-illustrations/${action}.webp`
-    : window.MilkFlowExperience?.careIcon?.(action)||null;
+  const src=window.MilkFlowExperience?.careIcon?.(action)||null;
   const inner=src
     ? `<img class="mf-care-art" src="${esc(src)}" alt="" decoding="async">`
     : icon(CARE_GLYPH[action]||action);
@@ -568,12 +566,13 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 .mf-baby-timing{min-width:0;gap:10px}
 .mf-last-feed-slot{min-width:0}
 /* The whole quick-log tile is the action; its illustrated mark deserves the same hierarchy as its label. */
-.mf-feed-card,.mf-diaper-blob{min-height:154px;padding:92px 7px 15px;justify-content:end}
-.mf-feed-card>span.mf-care-mark,.mf-diaper-blob>span.mf-care-mark{left:50%;top:13px;right:auto;transform:translateX(-50%);width:72px;height:72px}
-.mf-diaper-blob{min-height:164px;padding-top:106px}
-.mf-diaper-blob>span.mf-care-mark{top:42px;width:55px;height:55px}
-.mf-feed-card strong,.mf-diaper-blob strong{font-size:clamp(16px,4.4vw,21px);line-height:1.16}
-.mf-feed-card small,.mf-diaper-blob span:not(.mf-care-mark){font-size:13px;line-height:1.2}
+.mf-feed-card,.mf-diaper-blob{height:128px;min-height:128px;box-sizing:border-box;justify-content:flex-end}
+.mf-feed-card{padding:72px 5px 14px}
+.mf-feed-card>span.mf-care-mark{left:50%;top:10px;right:auto;transform:translateX(-50%);width:62px;height:62px}
+.mf-diaper-blob{display:flex;flex-direction:column;align-items:center;padding:80px 5px 10px}
+.mf-diaper-blob>span.mf-care-mark{left:50%;top:36px;right:auto;transform:translateX(-50%);width:46px;height:46px}
+.mf-feed-card strong,.mf-diaper-blob strong{font-size:clamp(14px,4vw,19px);line-height:1.16;white-space:nowrap}
+.mf-diaper-blob span:not(.mf-care-mark){font-size:12px;line-height:1.2;margin-top:3px}
 .mf-diaper-blob b{z-index:3}
 /* The history rows carry their own activity color across the surface. */
 body[data-screen="history"] .act-row,body[data-screen="baby-history"] .act-row{
@@ -583,7 +582,7 @@ body[data-screen="history"] .act-row,body[data-screen="baby-history"] .act-row{
 body[data-screen="history"] .act-row .act-main,body[data-screen="baby-history"] .act-row .act-main{background:transparent}
 body[data-screen="history"] .act-row .act-icon,body[data-screen="baby-history"] .act-row .act-icon{background:color-mix(in srgb,var(--c) 24%,var(--surface))}
 :root[data-theme="dark"] body:is([data-screen="history"],[data-screen="baby-history"]) .act-row{background:color-mix(in srgb,var(--c) 32%,#1b2030)}
-@media(max-width:430px){.mf-feed-card,.mf-diaper-blob{min-height:145px;padding:86px 5px 12px}.mf-feed-card>span.mf-care-mark{width:66px;height:66px}.mf-diaper-blob{min-height:157px;padding-top:100px}.mf-diaper-blob>span.mf-care-mark{top:40px;width:53px;height:53px}.mf-last-feed-value{font-size:13px}}
+@media(max-width:430px){.mf-last-feed-value{font-size:13px}}
 `;
   document.head.appendChild(s);
 }
@@ -700,8 +699,8 @@ function renderBaby(s){
     <div class="mf-care-label"><span>Feed</span><small>Quick log</small></div>
     <div class="mf-feed-zone">
       <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${careMark('milk')}<strong>Breast milk</strong></button>
-      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${careMark('nurse')}<strong>Nurse</strong><small>${st.nursingCount?`${st.nursingCount} today`:'Breastfeed'}</small></button>
-      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${careMark('formula')}<strong>Formula</strong>${st.formulaCount?`<small>${st.formulaCount} today</small>`:''}</button>
+      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${careMark('nurse')}<strong>Nurse</strong></button>
+      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${careMark('formula')}<strong>Formula</strong></button>
     </div>
 
     <div class="mf-care-label"><span>Diapers</span><small>${st.diaperCount?`${st.diaperCount} today`:'Quick log'}</small></div>
@@ -729,9 +728,9 @@ function decorateApp(){
   const head=document.querySelector('#view .page-head');if(!head||head.querySelector('.mf-section-animal,.mf-head-dream,.mf-section-motif'))return;
   /* Section headers used to show an unrelated stock animal - a whale on Trends, a fox on
      Doctor - that belonged to no theme. They now carry the selected world's own motif. */
-  if(baby){const motif=window.MilkFlowExperience?.themeMotif?.();
+  if(baby&&screen!=='baby-trends'){const motif=window.MilkFlowExperience?.themeMotif?.();
     if(motif)head.insertAdjacentHTML('beforeend',`<img class="mf-section-motif" src="${esc(motif)}" alt="" decoding="async">`);}
-  else if(mom)head.insertAdjacentHTML('beforeend','<span class="mf-head-dream" aria-hidden="true">✦ · ✧</span>');
+  else if(mom&&screen!=='mom-trends')head.insertAdjacentHTML('beforeend','<span class="mf-head-dream" aria-hidden="true">✦ · ✧</span>');
 }
 function apply(){if(applying)return;applying=true;try{addStyles();const s=read();cleanup();decorateApp();if(document.body.dataset.screen==='mom-home')renderMom(s);if(document.body.dataset.screen==='baby-home')renderBaby(s);}finally{applying=false;}}
 function afterApp(){queueMicrotask(apply);}

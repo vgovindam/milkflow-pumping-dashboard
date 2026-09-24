@@ -9,7 +9,13 @@
 export const PALETTES = {
   safari:    {disc: ['#FDF3E2', '#F3DCB4'], ink: '#5E3410', blush: '#EE9E86', badge: '#FFFBF2'},
   butterfly: {disc: ['#FBF1F8', '#E9DAF3'], ink: '#542E66', blush: '#E98FB6', badge: '#FEF9FD'},
-  princess:  {disc: ['#FDF1F3', '#F6D9E3'], ink: '#7A2B48', blush: '#F09AB0', badge: '#FFF8FA'}
+  princess:  {disc: ['#FDF1F3', '#F6D9E3'], ink: '#7A2B48', blush: '#F09AB0', badge: '#FFF8FA'},
+  ocean: {disc: ['#E5FBF8','#B9E7EB'],ink:'#315978',blush:'#F4BFA8',badge:'#F7FEFC'},
+  celestial: {disc:['#F1F0FF','#DBDEFA'],ink:'#454679',blush:'#E6B6D2',badge:'#FBFAFF'},
+  woodland: {disc:['#F4F3E5','#D9E8C5'],ink:'#534A34',blush:'#DEA998',badge:'#FFFCF4'},
+  'safari-sunset': {disc:['#FFF1D4','#F3CE9D'],ink:'#644A34',blush:'#F3B299',badge:'#FFFAF0'},
+  'floral-meadow': {disc:['#F7FBE8','#DCEFCB'],ink:'#475B47',blush:'#E8A4B1',badge:'#FFFCF4'},
+  'cozy-clouds': {disc:['#EDF8FF','#DDE8FC'],ink:'#5A6886',blush:'#E8B5B9',badge:'#FFFDFC'}
 };
 
 export function palette(themeId) {
