@@ -2404,7 +2404,7 @@ function handleClick(e){
   if(e.target.closest('[data-feed-reminders]')){ toggleFeedReminders(); return; }
   if(e.target.closest('[data-auth]')){ $('authDialog').showModal(); return; }
   if(e.target.closest('[data-signout]')){ cloud?.auth.signOut(); return; }
-  if(e.target.closest('[data-print]')){ window.print(); return; }
+  if(e.target.closest('[data-print]')){ const printer=window.MilkFlowDoctorPrint; if(printer?.print) printer.print().catch(()=>toast('Could not open the print dialog.')); else window.print(); return; }
   const mr=e.target.closest('[data-mom-range]'); if(mr){ S.ui.momRange=+mr.dataset.momRange; save(); render(); return; }
   const br=e.target.closest('[data-baby-range]'); if(br){ S.ui.babyRange=+br.dataset.babyRange; save(); render(); return; }
   const bf=e.target.closest('[data-baby-filter]'); if(bf){ S.ui.babyFilter=bf.dataset.babyFilter; save(); render(); return; }
