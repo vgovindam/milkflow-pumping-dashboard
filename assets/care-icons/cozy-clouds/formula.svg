@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="rainbow — formula">
   <defs><linearGradient id="d-cozy-clouds-formula" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#EDF8FF"/><stop offset="1" stop-color="#DDE8FC"/></linearGradient></defs>
-  <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M8 41A21 21 0 0 1 50 41" fill="none" stroke="#F8B8A2" stroke-width="5"/><path d="M14 41A15 15 0 0 1 44 41" fill="none" stroke="#B4C9EA" stroke-width="5"/><path d="M20 41A9 9 0 0 1 38 41" fill="none" stroke="#FFF8E5" stroke-width="5"/></g>
+  <g transform="translate(29.6 27.4) scale(1.22) translate(-29.6 -27.4)"><g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M8 41A21 21 0 0 1 50 41" fill="none" stroke="#F8B8A2" stroke-width="5"/><path d="M14 41A15 15 0 0 1 44 41" fill="none" stroke="#B4C9EA" stroke-width="5"/><path d="M20 41A9 9 0 0 1 38 41" fill="none" stroke="#FFF8E5" stroke-width="5"/></g></g>
   <circle cx="46" cy="46" r="14.1" fill="#DDE8FC" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#FFFDFC"/><g transform="translate(34.8 34.8) scale(0.7)"><rect x="5.6" y="4.4" width="20.8" height="5.2" rx="1.8" fill="#5A6886"/>
     <path d="M7.4 11h17.2v13.8a4.8 4.8 0 0 1-4.8 4.8h-7.6a4.8 4.8 0 0 1-4.8-4.8Z" fill="#5A6886"/>
     <path d="M10 15.6h12v4.6H10z" fill="#fff" fill-opacity=".58"/>

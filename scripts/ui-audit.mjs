@@ -12,7 +12,7 @@ requireText('smart Baby wish',files.ui,'function babyWishLine(');
 if(files.ui.includes('Keeping tonight calm and simple'))failures.push('Baby hero must not restore the wordy late-night wish line');
 requireText('last feed includes clock time',files.ui,'mf-last-feed-value');
 requireText('last feed uses compact elapsed value',files.ui,"replace(/ ago$/,'')");
-requireText('last feed has spaced time',files.ui,'mf-last-feed-value{display:flex');
+requireText('last feed separates elapsed time and clock',files.ui,'mf-last-feed-value{display:grid;grid-template-columns:minmax(0,1fr) max-content');
 requireText('compact Baby timing',files.ui,'mf-baby-timing');
 requireText('compact Baby today line',files.ui,'mf-baby-todayline');
 /* Development kept the component layer's pale card in dark mode and printed light ink on it -
@@ -154,7 +154,7 @@ requireText('Baby tab has explicit contrast',read('experience-system.css'),'#per
    than one of three full-width dashboard boxes. */
 requireText('next feed stays in compact Baby timing',read('core-ui.js'),'aria-label="Baby feeding timing"');
 requireText('Last feed receives more width',read('component-theme-core.css'),'grid-template-columns:minmax(0,1.5fr) minmax(72px,.78fr)');
-requireText('Last feed stays on one line',read('component-theme-core.css'),'flex-wrap:nowrap;min-width:0;white-space:nowrap');
+requireText('Last feed clock is right aligned',read('component-theme-core.css'),'grid-template-columns:minmax(0,1fr) max-content;align-items:baseline');
 if(/mf-hero-facts three/.test(read('core-ui.js')))failures.push('Baby Home must not restore the three full-width hero fact boxes');
 /* A surface the dark layer forgets is a white card with white text on it. */
 requireText('stash hero has a dark surface',read('core-ui.js'),':root[data-theme="dark"] body[data-realm] .stash-hero');

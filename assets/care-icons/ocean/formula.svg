@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="seahorse — formula">
   <defs><linearGradient id="d-ocean-formula" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#E5FBF8"/><stop offset="1" stop-color="#B9E7EB"/></linearGradient></defs>
-  <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M29 9Q43 7 43 20L49 24L42 29Q43 40 32 39Q25 39 28 46Q32 50 36 44" fill="#F4C978"/><path d="M27 15L21 13L25 23M28 30L18 35L28 36" fill="#85C8AD"/><circle cx="37" cy="19" r="1.25" fill="#24313d" stroke="none"/></g>
+  <g transform="translate(29.6 27.4) scale(1.22) translate(-29.6 -27.4)"><g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M29 9Q43 7 43 20L49 24L42 29Q43 40 32 39Q25 39 28 46Q32 50 36 44" fill="#F4C978"/><path d="M27 15L21 13L25 23M28 30L18 35L28 36" fill="#85C8AD"/><circle cx="37" cy="19" r="1.25" fill="#24313d" stroke="none"/></g></g>
   <circle cx="46" cy="46" r="14.1" fill="#B9E7EB" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#F7FEFC"/><g transform="translate(34.8 34.8) scale(0.7)"><rect x="5.6" y="4.4" width="20.8" height="5.2" rx="1.8" fill="#315978"/>
     <path d="M7.4 11h17.2v13.8a4.8 4.8 0 0 1-4.8 4.8h-7.6a4.8 4.8 0 0 1-4.8-4.8Z" fill="#315978"/>
     <path d="M10 15.6h12v4.6H10z" fill="#fff" fill-opacity=".58"/>

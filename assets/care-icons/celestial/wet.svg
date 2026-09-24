@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="comet — wet">
   <defs><linearGradient id="d-celestial-wet" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#F1F0FF"/><stop offset="1" stop-color="#DBDEFA"/></linearGradient></defs>
-  <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M9 39Q26 35 35 18M12 46Q25 38 35 26" fill="none" stroke="#96C7DC" stroke-width="3"/><path d="M39 11L42.24 19.759999999999998L51 23L42.24 26.240000000000002L39 35L35.76 26.240000000000002L27 23L35.76 19.759999999999998Z" fill="#E9A5CB"/></g>
+  <g transform="translate(29.6 27.4) scale(1.22) translate(-29.6 -27.4)"><g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M9 39Q26 35 35 18M12 46Q25 38 35 26" fill="none" stroke="#96C7DC" stroke-width="3"/><path d="M39 11L42.24 19.759999999999998L51 23L42.24 26.240000000000002L39 35L35.76 26.240000000000002L27 23L35.76 19.759999999999998Z" fill="#E9A5CB"/></g></g>
   <circle cx="46" cy="46" r="14.1" fill="#DBDEFA" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#FBFAFF"/><g transform="translate(34.8 34.8) scale(0.7)"><path d="M16 2.4c6.2 8 11.2 13.4 11.2 18.5a11.2 11.2 0 0 1-22.4 0C4.8 15.8 9.8 10.4 16 2.4Z" fill="#454679"/>
     <path d="M10.5 21.6c0 3.3 1.8 5.8 4.6 6.7" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
 </svg>

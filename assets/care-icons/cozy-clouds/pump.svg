@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="hot air balloon — pump">
   <defs><linearGradient id="d-cozy-clouds-pump" x1="0" y1="0" x2="0.62" y2="1"><stop offset="0" stop-color="#EDF8FF"/><stop offset="1" stop-color="#DDE8FC"/></linearGradient></defs>
-  <g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M29 8Q45 8 45 23Q45 33 34 39H24Q13 33 13 23Q13 8 29 8Z" fill="#F5B69D"/><path d="M24 39L26 44H32L34 39M24 44H34V49H24Z" fill="#DAEBF4"/><path d="M29 8Q18 24 27 38M29 8Q40 24 31 38" fill="none" stroke="#FFF8E5"/></g>
+  <g transform="translate(29.6 27.4) scale(1.22) translate(-29.6 -27.4)"><g stroke="#354456" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M29 8Q45 8 45 23Q45 33 34 39H24Q13 33 13 23Q13 8 29 8Z" fill="#F5B69D"/><path d="M24 39L26 44H32L34 39M24 44H34V49H24Z" fill="#DAEBF4"/><path d="M29 8Q18 24 27 38M29 8Q40 24 31 38" fill="none" stroke="#FFF8E5"/></g></g>
   <circle cx="46" cy="46" r="14.1" fill="#DDE8FC" fill-opacity=".85"/><circle cx="46" cy="46" r="13" fill="#FFFDFC"/><g transform="translate(34.8 34.8) scale(0.7)"><path d="M3.4 7.6h25.2a2.2 2.2 0 0 1 2 3l-4.6 11a2.8 2.8 0 0 0-.2 1.1v.9H6.2v-.9a2.8 2.8 0 0 0-.2-1.1l-4.6-11a2.2 2.2 0 0 1 2-3Z" fill="#5A6886"/>
     <path d="M12.2 24.2h7.6a4.4 4.4 0 0 1 4.4 4.4v1.4H7.8v-1.4a4.4 4.4 0 0 1 4.4-4.4Z" fill="#5A6886"/>
     <path d="M16 11.8c1.8 2.3 3.2 4 3.2 5.5a3.2 3.2 0 0 1-6.4 0c0-1.5 1.4-3.2 3.2-5.5Z" fill="#fff" fill-opacity=".7"/></g>

@@ -747,8 +747,8 @@ function momHome(){
     </div>
   </section>
   <div class="quick-grid mom-grid two">
-    <button class="quick-tile mom" data-mom="pump"><span class="tile-art">${themedCareArt('pump','pump')}</span><strong>Pump</strong><small>Log milk</small></button>
-    <button class="quick-tile nurse" data-mom="nursing"><span class="tile-art">${themedCareArt('nurse','nursing')}</span><strong>Nursing</strong><small>Log session</small></button>
+    <button class="quick-tile mom" data-mom="pump"><span class="tile-art">${themedCareArt('pump','pump')}</span><strong>Pump</strong></button>
+    <button class="quick-tile nurse" data-mom="nursing"><span class="tile-art">${themedCareArt('nurse','nursing')}</span><strong>Nursing</strong></button>
   </div>
   <div class="metric-grid mom-summary">${metric('7-day avg',`${avg} mL`,'per pumping day','chart')}${metric('Today vs avg',count&&avg?`${pace}%`:'—',count&&avg?'of your average':'after your first pump','spark')}${metric('Freezer stash',`${(+S.profile.stashMl||0).toLocaleString()} mL`,'saved milk','snow')}</div>
   ${panel('Pump plan',scheduleStrip(),'<button data-view="set-pumping">Edit</button>')}

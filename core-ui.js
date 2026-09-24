@@ -561,19 +561,25 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 }
 /* Stable shape before the first app render; avoid a square-to-rounded flash. */
 .mf-animal-hero,.mf-dream-hero{border-radius:31px;overflow:hidden}
-.mf-last-feed-value{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 9px;white-space:normal;line-height:1.3}
+.mf-last-feed-value{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:baseline;column-gap:8px;width:100%;white-space:normal;line-height:1.15}
 .mf-last-feed-value b,.mf-last-feed-value em{display:inline-block;white-space:nowrap;font-style:normal}
+.mf-last-feed-value em{text-align:right}
 .mf-baby-timing{min-width:0;gap:10px}
 .mf-last-feed-slot{min-width:0}
 /* The whole quick-log tile is the action; its illustrated mark deserves the same hierarchy as its label. */
 .mf-feed-card,.mf-diaper-blob{box-sizing:border-box;justify-content:flex-end}
 .mf-feed-card{height:108px;min-height:108px;padding:79px 4px 7px}
-.mf-feed-card>span.mf-care-mark{left:50%;top:1px;right:auto;transform:translateX(-50%);width:86px;height:86px}
+.mf-feed-card>span.mf-care-mark{left:50%;top:-3px;right:auto;transform:translateX(-50%);width:90px;height:90px}
 .mf-diaper-blob{height:112px;min-height:112px;display:flex;flex-direction:column;align-items:center;padding:71px 4px 7px}
-.mf-diaper-blob>span.mf-care-mark{left:1px;top:4px;right:auto;transform:none;width:70px;height:70px}
+.mf-diaper-blob>span.mf-care-mark{left:0;top:-2px;right:auto;transform:none;width:76px;height:76px}
 .mf-feed-card strong,.mf-diaper-blob strong{font-size:clamp(14px,4vw,19px);line-height:1.16;white-space:nowrap}
 .mf-diaper-blob span:not(.mf-care-mark){font-size:12px;line-height:1.2;margin-top:3px}
-.mf-diaper-blob b{z-index:3}
+.mf-diaper-blob b{z-index:3;right:4px}
+/* Mom's two primary actions are app-style image tiles: the illustration fills the picture
+   area and the one useful label sits below it. No floating corner icon or duplicate hint. */
+.mf-dream-actions .quick-tile{box-sizing:border-box;height:132px;min-height:132px;padding:99px 10px 8px;justify-content:flex-end;align-items:center;text-align:center}
+.mf-dream-actions .quick-tile .tile-art{left:50%;right:auto;top:2px;transform:translateX(-50%);width:98px;height:98px;border-radius:50%}
+.mf-dream-actions .quick-tile strong{font-size:20px;line-height:1.15}
 /* The history rows carry their own activity color across the surface. */
 body[data-screen="history"] .act-row,body[data-screen="baby-history"] .act-row{
   background:color-mix(in srgb,var(--c) 24%,var(--surface));
@@ -583,6 +589,7 @@ body[data-screen="history"] .act-row .act-main,body[data-screen="baby-history"] 
 body[data-screen="history"] .act-row .act-icon,body[data-screen="baby-history"] .act-row .act-icon{background:color-mix(in srgb,var(--c) 24%,var(--surface))}
 :root[data-theme="dark"] body:is([data-screen="history"],[data-screen="baby-history"]) .act-row{background:color-mix(in srgb,var(--c) 32%,#1b2030)}
 @media(max-width:430px){.mf-last-feed-value{font-size:13px}}
+@media(max-width:360px){.mf-feed-card>span.mf-care-mark{width:calc(100% - 2px);height:auto;aspect-ratio:1}.mf-diaper-blob>span.mf-care-mark{width:calc(100% - 38px);height:auto;aspect-ratio:1}}
 `;
   document.head.appendChild(s);
 }

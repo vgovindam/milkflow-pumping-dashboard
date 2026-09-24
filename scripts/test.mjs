@@ -141,7 +141,7 @@ for(const [name,css] of [['theme.css',themeEntry],['experience-system.css',exper
 if(/\.mf-feed-card\{[^}]*!important/.test(core))throw new Error('Quick-log card geometry must not need !important inside its own component stylesheet');
 if(!core.includes('.mf-feed-card{height:108px;min-height:108px')||!core.includes('.mf-diaper-blob{height:112px;min-height:112px'))
   throw new Error('Feed and diaper quick-log tiles must remain compact rather than long, empty columns.');
-if(!core.includes('width:86px;height:86px')||!core.includes('width:70px;height:70px'))
+if(!core.includes('width:90px;height:90px')||!core.includes('width:76px;height:76px'))
   throw new Error('Theme art must be prominent on feed and diaper tiles.');
 if(!fs.readFileSync(path.join(ROOT,'scripts/care-icons/parts.mjs'),'utf8').includes('r: 13, scale: 0.70'))
   throw new Error('The semantic care-action badges must remain large enough to recognize.');

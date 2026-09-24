@@ -343,14 +343,14 @@ body[data-screen="baby-home"] .mf-baby-timing strong{
 }
 body[data-screen="baby-home"] .mf-last-feed-slot{min-width:0}
 body[data-screen="baby-home"] .mf-last-feed-value{
-  display:flex;align-items:baseline;gap:5px;flex-wrap:nowrap;min-width:0;white-space:nowrap
+  display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:baseline;column-gap:8px;width:100%;min-width:0;white-space:nowrap
 }
-body[data-screen="baby-home"] .mf-last-feed-value b{font:900 14.5px/1.08 var(--display);color:inherit;white-space:nowrap}
+body[data-screen="baby-home"] .mf-last-feed-value b{font:900 15px/1.08 var(--display);color:inherit;white-space:nowrap}
 body[data-screen="baby-home"] .mf-last-feed-value i{
   flex:0 0 auto;font:900 11px/1 var(--font);font-style:normal;color:#789095
 }
 body[data-screen="baby-home"] .mf-last-feed-value em{
-  min-width:0;font:850 12.5px/1.08 var(--font);font-style:normal;color:#557277;white-space:nowrap
+  min-width:0;font:850 14.5px/1.08 var(--display);font-style:normal;text-align:right;color:#496d75;white-space:nowrap
 }
 body[data-screen="baby-home"] .mf-baby-timing .due strong{color:var(--mf-world-accent,#7a4d37)}
 body[data-screen="baby-home"] .mf-animal-hero>.bear,
@@ -372,13 +372,15 @@ body[data-screen="baby-home"] .mf-animal-star{display:none}
   body[data-screen="baby-home"] .mf-baby-todayline{font-size:9px}
   body[data-screen="baby-home"] .mf-baby-timing{grid-template-columns:minmax(0,1.58fr) minmax(68px,.72fr)}
   body[data-screen="baby-home"] .mf-baby-timing strong{font-size:12.5px}
-  body[data-screen="baby-home"] .mf-last-feed-value b{font-size:13.5px}
-  body[data-screen="baby-home"] .mf-last-feed-value em{font-size:12px}
+  body[data-screen="baby-home"] .mf-last-feed-value b{font-size:14px}
+  body[data-screen="baby-home"] .mf-last-feed-value em{font-size:14px}
 }
 @media(max-width:350px){
   body[data-screen="baby-home"] .mf-animal-profile{grid-template-columns:minmax(0,1fr) 116px;gap:10px}
   body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:116px;height:116px}
   body[data-screen="baby-home"] .mf-animal-copy h2{font-size:24px}
+  body[data-screen="baby-home"] .mf-last-feed-value{grid-template-columns:1fr;row-gap:2px}
+  body[data-screen="baby-home"] .mf-last-feed-value em{justify-self:end}
 }
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy .welcome{color:#d8f5f7}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#f5fbff}

@@ -70,7 +70,10 @@ export function renderIcon(themeId, action) {
   if (!character) throw new Error(`Theme ${themeId} has no character for action: ${action}`);
   const gid = `d-${themeId}-${action}`;
   const label = `${character.name} — ${action}`;
-  return svg(label, [character.render(colors(themeId, character)), propBadge(themeId, action)].join('\n  '), discGradient(themeId, gid));
+  /* The character should use the picture area, while the semantic badge remains anchored
+     bottom-right. Scaling them together made the badge collide with the tile caption. */
+  const subject=`<g transform="translate(29.6 27.4) scale(1.22) translate(-29.6 -27.4)">${character.render(colors(themeId, character))}</g>`;
+  return svg(label, [subject, propBadge(themeId, action)].join('\n  '), discGradient(themeId, gid));
 }
 
 /** The theme's mascot with no prop: used for section headers and theme pickers. */

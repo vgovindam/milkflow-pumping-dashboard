@@ -113,7 +113,17 @@ try{
           if(!m.fallbackFeedGlyphContained)failures.push(`${theme}/${mode}/${route}: fallback feed glyph escapes its icon carrier`);
           if(m.diaperIconBadgeOverlap)failures.push(`${theme}/${mode}/${route}: diaper care icon overlaps its count badge`);
           if(m.lastFeedHasClock&&(m.lastFeedOverflow||m.lastFeedWidth<100||m.lastFeedClockFont<11.5))failures.push(`${theme}/${mode}/${route}: Last feed elapsed + clock does not fit width=${m.lastFeedWidth.toFixed(1)} font=${m.lastFeedClockFont.toFixed(1)} overflow=${m.lastFeedOverflow}`);
+          if(m.lastFeedHasClock){
+            const timing=await evalJs(`(()=>{const slot=document.querySelector('.mf-last-feed-value'),age=slot?.querySelector('b'),clock=slot?.querySelector('em');if(!slot||!age||!clock)return null;const a=age.getBoundingClientRect(),b=clock.getBoundingClientRect(),s=slot.getBoundingClientRect();return{gap:b.left-a.right,right:s.right-b.right,font:parseFloat(getComputedStyle(clock).fontSize),sameLine:Math.abs(a.top-b.top)<5}})()`);
+            if(!timing||timing.gap<7||timing.right>4||timing.font<13.5||!timing.sameLine)
+              failures.push(`${theme}/${mode}/${route}: Last feed clock is not enlarged and right-aligned ${JSON.stringify(timing)}`);
+          }
           if(theme!=='clean'&&m.careImageCount<6)failures.push(`${theme}/${mode}/${route}: care illustrations are incomplete (${m.careImageCount}/6)`);
+        }
+        if(route==='mom-home'){
+          const actionTile=await evalJs(`(()=>{const tile=document.querySelector('.mf-dream-actions .quick-tile[data-mom="pump"]');return{height:tile?.getBoundingClientRect().height||0,art:tile?.querySelector('.tile-art')?.getBoundingClientRect().width||0,hints:tile?.querySelectorAll('small').length||0}})()`);
+          if(actionTile.height<128||actionTile.art<94||actionTile.hints!==0)
+            failures.push(`${theme}/${mode}/${route}: Mom actions are not image-first tiles ${JSON.stringify(actionTile)}`);
         }
         if(route==='mom-home'&&mode==='dark'&&(m.darkCriticalCount<4||!m.darkReadable))failures.push(`${theme}/${mode}/${route}: critical Mom numbers/buttons are not visibly readable`);
         const art=expected[theme],iconArt=expectedIcons[theme],themedRealm=momRoutes.has(route)||babyRoutes.has(route);
