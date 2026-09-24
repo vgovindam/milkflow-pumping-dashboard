@@ -12,7 +12,7 @@ requireText('smart Baby wish',files.ui,'function babyWishLine(');
 if(files.ui.includes('Keeping tonight calm and simple'))failures.push('Baby hero must not restore the wordy late-night wish line');
 requireText('last feed includes clock time',files.ui,'mf-last-feed-value');
 requireText('last feed uses compact elapsed value',files.ui,"replace(/ ago$/,'')");
-requireText('last feed has explicit separator',files.ui,'aria-hidden="true">·</i>');
+requireText('last feed has explicit separator',files.ui,'&nbsp;·&nbsp;');
 requireText('compact Baby timing',files.ui,'mf-baby-timing');
 requireText('compact Baby today line',files.ui,'mf-baby-todayline');
 /* Development kept the component layer's pale card in dark mode and printed light ink on it -
