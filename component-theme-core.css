@@ -352,7 +352,7 @@ body[data-screen="baby-home"] .mf-animal-star{display:none}
   body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:136px;height:136px;border-width:5px}
 }
 @media(max-width:390px){
-  body[data-screen="baby-home"] .mf-animal-hero{padding:11px 14px}
+  body[data-screen="baby-home"] .mf-animal-hero{padding:10px 14px}
   body[data-screen="baby-home"] .mf-animal-profile{grid-template-columns:minmax(0,1fr) 128px;gap:12px}
   body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:128px;height:128px}
   body[data-screen="baby-home"] .mf-animal-copy .welcome{font-size:13px}
