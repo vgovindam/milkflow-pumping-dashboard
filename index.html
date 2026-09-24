@@ -28,11 +28,11 @@
         const dark=pref==='dark'||(pref==='auto'&&(root.dataset.daypart==='night'||matchMedia('(prefers-color-scheme: dark)').matches));
         root.dataset.theme=dark?'dark':'light';
         const rawExperience=localStorage.getItem('milkflow-experience-theme-v1');
-        const retired={jungle:'nocturne',storybook:'nocturne',safari:'nocturne',butterfly:'tide',princess:'ember',unicorn:'meadow',deepspace:'nocturne',aurora:'tide',neonreef:'ember',crystalcity:'meadow'};
+        const retired={jungle:'safari',storybook:'safari',safari:'safari',butterfly:'butterfly',princess:'princess',unicorn:'princess',deepspace:'safari',aurora:'butterfly',neonreef:'princess',crystalcity:'princess'};
         const experience=retired[rawExperience]||rawExperience;
-        root.dataset.experienceTheme=['nocturne','tide','ember','meadow','clean'].includes(experience)?experience:'nocturne';
+        root.dataset.experienceTheme=['safari','butterfly','princess','clean'].includes(experience)?experience:'safari';
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content',dark?'#0e1016':'#f4f4f9');
-      }catch{root.dataset.experienceTheme='nocturne';}
+      }catch{root.dataset.experienceTheme='safari';}
       const reveal=()=>requestAnimationFrame(()=>root.classList.remove('mf-booting'));
       window.addEventListener('DOMContentLoaded',()=>{
         const timeout=new Promise(resolve=>setTimeout(resolve,650));

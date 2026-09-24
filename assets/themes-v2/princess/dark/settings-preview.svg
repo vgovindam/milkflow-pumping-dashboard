@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 820" preserveAspectRatio="xMidYMid slice" role="img" aria-label="princess dark settings preview illustration">
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#17233d"/><stop offset=".28" stop-color="#302642"/><stop offset=".56" stop-color="#4a273b"/><stop offset="1" stop-color="#51432b"/></linearGradient>
+ <linearGradient id="castle" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff4e7"/><stop offset="1" stop-color="#d9c7eb"/></linearGradient>
+ <linearGradient id="roof" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a78adb"/><stop offset="1" stop-color="#6e5cb4"/></linearGradient>
+ <linearGradient id="rose" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff9bb9"/><stop offset="1" stop-color="#d94e80"/></linearGradient>
+ <linearGradient id="dress" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f6b5d0"/><stop offset="1" stop-color="#b783d8"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#e0cf99" stop-opacity=".94"/><stop offset="1" stop-color="#e0cf99" stop-opacity="0"/></radialGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="15" flood-color="#675171" flood-opacity=".17"/></filter>
+</defs>
+<rect width="1000" height="2200" fill="url(#sky)"/><rect width="1000" height="2200" fill="#070b13" opacity=".18"/>
+<circle cx="785" cy="185" r="250" fill="url(#glow)"/>
+<path d="M0 650c160-120 334-124 521-14 177 104 337 90 479-39v329H0Z" fill="#a9b99e" opacity=".28"/>
+<!-- distant palace -->
+<g transform="translate(190 250)" filter="url(#shadow)">
+ <rect x="140" y="280" width="340" height="370" rx="28" fill="url(#castle)"/>
+ <rect x="60" y="350" width="140" height="300" rx="22" fill="#f7eadf"/><rect x="420" y="340" width="150" height="310" rx="22" fill="#f7eadf"/>
+ <rect x="230" y="160" width="165" height="490" rx="24" fill="#f8efe8"/>
+ <path d="M54 352 130 215l76 137Zm367-12 75-142 81 142ZM222 162 313 4l92 158Z" fill="url(#roof)"/>
+ <circle cx="313" cy="230" r="34" fill="#dca7c7"/><path d="M292 230h42M313 209v42" stroke="#fff5ef" stroke-width="7" stroke-linecap="round"/>
+ <g fill="#8d6eb8"><rect x="174" y="370" width="40" height="78" rx="20"/><rect x="404" y="370" width="40" height="78" rx="20"/><rect x="97" y="427" width="37" height="72" rx="18"/><rect x="500" y="420" width="37" height="72" rx="18"/><rect x="274" y="365" width="78" height="132" rx="39"/></g>
+ <path d="M270 650v-95q0-88 86-88t86 88v95Z" fill="#7d5eaa"/><path d="M300 650v-76q0-56 56-56t56 56v76Z" fill="#fff1cf"/>
+ <g fill="#f7c85c"><circle cx="82" cy="342" r="9"/><circle cx="556" cy="330" r="9"/><circle cx="313" cy="145" r="11"/></g>
+</g>
+<!-- arched bridge / water -->
+<path d="M160 925c128-119 551-129 684-1l-41 64c-128-83-474-86-603 2Z" fill="#e9d6ce" opacity=".95"/>
+<path d="M224 948c98-59 446-62 552 0-57 64-138 98-245 103-127 7-230-27-307-103Z" fill="#cbe7ed" opacity=".68"/>
+<path d="M0 1070c190-60 345-48 465 37 145 102 318 96 535-18v363H0Z" fill="#a7bd92" opacity=".29"/>
+<!-- fountain -->
+<g transform="translate(680 1060) scale(.82)" filter="url(#shadow)"><ellipse cx="130" cy="230" rx="118" ry="39" fill="#d4c7dc"/><path d="M50 180h160l-29 66H78Z" fill="#eee4ef"/><path d="M99 176h61l-10-92h-40Z" fill="#e3d7eb"/><path d="M128 80c-34-42 15-72 36-33 22-40 72-10 36 33-21 25-42 37-36 70-5-32-15-45-36-70Z" fill="#d8b0ce"/><path d="M128 70q-55-45-76 10m113-11q55-44 77 12" fill="none" stroke="#d6ecf0" stroke-width="12" stroke-linecap="round"/></g>
+<!-- princess -->
+<g transform="translate(65 1170)" filter="url(#shadow)"><circle cx="180" cy="115" r="76" fill="#f3c7a0"/><path d="M110 110q-9-100 71-110 87 16 81 116-17-48-77-52-51-4-75 46Z" fill="#6f4438"/><path d="M123 151q20 44 56 49 36-4 61-48v100H123Z" fill="#f3c7a0"/><path d="M77 258q105-70 208 0l63 255H12Z" fill="url(#dress)"/><path d="M134 20 158-20l23 30 25-31 26 41" fill="none" stroke="#d9a93f" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><circle cx="153" cy="117" r="6"/><circle cx="208" cy="117" r="6"/><path d="M162 150q18 15 37 0" fill="none" stroke="#b46e69" stroke-width="5" stroke-linecap="round"/><path d="M92 286q-70 95-79 182m286-182q62 95 72 179" fill="none" stroke="#f3c7a0" stroke-width="28" stroke-linecap="round"/></g>
+<!-- roses / garden -->
+<g fill="#5e9568"><path d="M0 1510c108-24 199 6 271 90-96 6-166 42-211 108 79-6 149 18 210 73-99 31-190 43-270 36Z"/><path d="M1000 1490c-111-20-207 14-287 101 101 1 181 38 237 111-91-7-169 19-235 81 104 29 201 36 285 25Z"/></g>
+<g filter="url(#shadow)"><g transform="translate(80 1460)"><g fill="url(#rose)"><circle cx="50" cy="50" r="36"/><circle cx="78" cy="42" r="31"/><circle cx="62" cy="77" r="30"/><circle cx="28" cy="77" r="29"/></g><circle cx="53" cy="56" r="18" fill="#f7c067"/></g><g transform="translate(180 1545) scale(.8)"><g fill="#f4a7d3"><circle cx="50" cy="50" r="36"/><circle cx="78" cy="42" r="31"/><circle cx="62" cy="77" r="30"/><circle cx="28" cy="77" r="29"/></g><circle cx="53" cy="56" r="18" fill="#f5c96a"/></g><g transform="translate(795 1490) scale(1.05)"><g fill="#d7a1ea"><circle cx="50" cy="50" r="36"/><circle cx="78" cy="42" r="31"/><circle cx="62" cy="77" r="30"/><circle cx="28" cy="77" r="29"/></g><circle cx="53" cy="56" r="18" fill="#f5cc6a"/></g><g transform="translate(700 1585) scale(.85)"><g fill="#ff98b2"><circle cx="50" cy="50" r="36"/><circle cx="78" cy="42" r="31"/><circle cx="62" cy="77" r="30"/><circle cx="28" cy="77" r="29"/></g><circle cx="53" cy="56" r="18" fill="#f5ca64"/></g></g>
+<!-- doves -->
+<g fill="#fff" opacity=".92"><path d="M115 480q36-56 72 0 36-56 72 0-34-12-72 32-37-44-72-32Z"/><path d="M720 430q27-42 54 0 28-42 56 0-27-9-56 25-28-34-54-25Z"/></g>
+<!-- sparkles -->
+<g fill="#fff7cf" opacity=".9"><circle cx="110" cy="300" r="7"/><circle cx="690" cy="235" r="6"/><circle cx="845" cy="520" r="5"/><circle cx="500" cy="1030" r="6"/><circle cx="611" cy="1190" r="5"/></g>
+<!-- foreground floral border -->
+<g fill="#446f53"><path d="M0 0h166c-12 90-61 157-142 199L0 210Z"/><path d="M1000 0H834c12 90 61 157 142 199l24 11Z"/><path d="M0 1870c116-26 217 8 300 102-108 3-191 43-249 120 99-10 183 17 249 82-115 32-214 40-300 29Z"/><path d="M1000 1845c-118-22-216 13-295 105 108 0 192 39 252 117-101-6-184 22-249 85 111 31 211 39 292 28Z"/></g>
+</svg>

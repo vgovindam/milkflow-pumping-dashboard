@@ -1567,7 +1567,7 @@ function setAppearance(){
 /* The Settings row says which world is on, because the picker itself now lives one screen in. */
 function themeLabelForSettings(){
   const id=window.MilkFlowExperience?.current?.()||'clean';
-  return ({nocturne:'Nocturne',tide:'Tide',ember:'Ember',meadow:'Meadow',clean:'Simple'})[id]||'Simple';
+  return ({safari:'Nocturne',butterfly:'Tide',princess:'Ember',princess:'Meadow',clean:'Simple'})[id]||'Simple';
 }
 
 /* ------------------------------------------------------------------------ nudges --

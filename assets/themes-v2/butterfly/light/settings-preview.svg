@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 820" preserveAspectRatio="xMidYMid slice" role="img" aria-label="butterfly light settings preview illustration">
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#cfeeff"/><stop offset=".32" stop-color="#ece6ff"/><stop offset=".62" stop-color="#ffe7f2"/><stop offset="1" stop-color="#f7efcf"/></linearGradient>
+ <linearGradient id="hill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#bed9b6"/><stop offset="1" stop-color="#789c84"/></linearGradient>
+ <linearGradient id="flower1" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff9fc6"/><stop offset="1" stop-color="#e45f95"/></linearGradient>
+ <linearGradient id="flower2" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8aff7"/><stop offset="1" stop-color="#9476dd"/></linearGradient>
+ <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffb04e"/><stop offset="1" stop-color="#ef6a3b"/></linearGradient>
+ <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#83d9ff"/><stop offset="1" stop-color="#6a79e7"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#fff9d9" stop-opacity=".92"/><stop offset="1" stop-color="#fff9d9" stop-opacity="0"/></radialGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#694f7e" flood-opacity=".16"/></filter>
+</defs>
+<rect width="1000" height="2200" fill="url(#sky)"/>
+<circle cx="780" cy="190" r="245" fill="url(#glow)"/>
+<g opacity=".45"><path d="M0 590 150 430l140 110 160-245 175 257 152-130 223 190v292H0Z" fill="#a4bba9"/><path d="M0 820c160-105 309-104 449 3 137 105 313 88 551-62v382H0Z" fill="url(#hill)"/></g>
+<path d="M0 1430c152-102 326-102 522 0 157 82 316 76 478-18v495H0Z" fill="#89aa89" opacity=".23"/>
+<!-- large butterflies -->
+<g transform="translate(120 250) scale(1.55)" filter="url(#shadow)"><path d="M52 50C12 2-6 28 12 52-5 75 21 104 52 63c31 41 58 12 40-11 18-24 0-50-40-2Z" fill="url(#orange)" stroke="#553831" stroke-width="4"/><path d="M52 63c-26 42-10 77 25 58 24-13 27-36 19-56-15 3-29 2-44-2Zm0 0c-29 39-65 51-74 17-6-24 15-43 38-45 8 11 20 21 36 28Z" fill="#ffd370" stroke="#553831" stroke-width="4"/><circle cx="52" cy="56" r="5" fill="#49353a"/></g>
+<g transform="translate(640 280) scale(1.35)" filter="url(#shadow)"><path d="M52 50C14 4-4 30 13 51-2 73 21 99 52 62c30 37 54 11 38-11 16-21-1-47-38-1Z" fill="url(#blue)" stroke="#4b4f79" stroke-width="4"/><path d="M52 61c-23 38-7 69 24 51 21-12 24-32 17-50-14 3-27 2-41-1Zm0 0c-27 35-59 46-68 15-6-21 14-39 35-41 7 10 18 18 33 26Z" fill="#b9e8ff" stroke="#4b4f79" stroke-width="4"/><circle cx="52" cy="55" r="5" fill="#4b4f79"/></g>
+<g transform="translate(745 820) scale(1.1)" filter="url(#shadow)"><path d="M52 50C14 4-4 30 13 51-2 73 21 99 52 62c30 37 54 11 38-11 16-21-1-47-38-1Z" fill="url(#flower2)" stroke="#5c4774" stroke-width="4"/><circle cx="52" cy="55" r="5" fill="#5c4774"/></g>
+<g transform="translate(280 1030) scale(.9)"><path d="M52 50C14 4-4 30 13 51-2 73 21 99 52 62c30 37 54 11 38-11 16-21-1-47-38-1Z" fill="#f4d04e" stroke="#6e5530" stroke-width="4"/><circle cx="52" cy="55" r="5" fill="#6e5530"/></g>
+<!-- hummingbirds -->
+<g transform="translate(730 560)" filter="url(#shadow)"><path d="M25 82q26-68 89-46 48 17 37 67-10 45-75 48l-50-25Z" fill="#58b3c7"/><path d="M66 85q35-59 83-54-17 52-63 77Z" fill="#7dd8a6"/><ellipse cx="104" cy="88" rx="23" ry="19" fill="#f6d6a0"/><circle cx="119" cy="82" r="4"/><path d="m127 87 63 5-61 19" fill="#54463f"/></g>
+<g transform="translate(120 700) scale(.8)"><path d="M25 82q26-68 89-46 48 17 37 67-10 45-75 48l-50-25Z" fill="#a56cd8"/><path d="M66 85q35-59 83-54-17 52-63 77Z" fill="#e7a5ec"/><ellipse cx="104" cy="88" rx="23" ry="19" fill="#f5cf9a"/><circle cx="119" cy="82" r="4"/><path d="m127 87 63 5-61 19" fill="#54463f"/></g>
+<!-- garden stems and flowers -->
+<g stroke="#5f9567" stroke-width="14" stroke-linecap="round"><path d="M120 1310v430"/><path d="M205 1390v390"/><path d="M315 1320v470"/><path d="M705 1340v450"/><path d="M810 1290v490"/><path d="M895 1390v390"/></g>
+<g fill="#6ca676"><ellipse cx="98" cy="1500" rx="34" ry="90" transform="rotate(-36 98 1500)"/><ellipse cx="229" cy="1510" rx="32" ry="88" transform="rotate(32 229 1510)"/><ellipse cx="291" cy="1470" rx="33" ry="92" transform="rotate(-29 291 1470)"/><ellipse cx="730" cy="1510" rx="33" ry="92" transform="rotate(31 730 1510)"/><ellipse cx="785" cy="1450" rx="34" ry="93" transform="rotate(-30 785 1450)"/><ellipse cx="916" cy="1520" rx="31" ry="86" transform="rotate(31 916 1520)"/></g>
+<g filter="url(#shadow)"><g transform="translate(77 1280)"><circle cx="45" cy="45" r="23" fill="#ffcf5f"/><g fill="url(#flower1)"><circle cx="45" cy="5" r="35"/><circle cx="84" cy="30" r="35"/><circle cx="70" cy="75" r="35"/><circle cx="20" cy="78" r="35"/><circle cx="4" cy="31" r="35"/></g><circle cx="45" cy="45" r="22" fill="#f6c44e"/></g><g transform="translate(270 1210) scale(1.1)"><g fill="url(#flower2)"><circle cx="45" cy="5" r="35"/><circle cx="84" cy="30" r="35"/><circle cx="70" cy="75" r="35"/><circle cx="20" cy="78" r="35"/><circle cx="4" cy="31" r="35"/></g><circle cx="45" cy="45" r="22" fill="#ffe084"/></g><g transform="translate(690 1245) scale(1.05)"><g fill="#ff9da9"><circle cx="45" cy="5" r="35"/><circle cx="84" cy="30" r="35"/><circle cx="70" cy="75" r="35"/><circle cx="20" cy="78" r="35"/><circle cx="4" cy="31" r="35"/></g><circle cx="45" cy="45" r="22" fill="#f8ca5b"/></g><g transform="translate(825 1310) scale(.9)"><g fill="#92cfff"><circle cx="45" cy="5" r="35"/><circle cx="84" cy="30" r="35"/><circle cx="70" cy="75" r="35"/><circle cx="20" cy="78" r="35"/><circle cx="4" cy="31" r="35"/></g><circle cx="45" cy="45" r="22" fill="#f4cf5f"/></g></g>
+<!-- tiny color accents -->
+<g fill="#ff7da6"><circle cx="420" cy="1530" r="13"/><circle cx="458" cy="1600" r="10"/><circle cx="531" cy="1490" r="12"/></g><g fill="#7f8fe8"><circle cx="590" cy="1580" r="11"/><circle cx="640" cy="1660" r="10"/></g><g fill="#ffca5f"><circle cx="385" cy="1680" r="11"/><circle cx="540" cy="1740" r="10"/></g>
+<!-- foreground foliage -->
+<g fill="#4f7f5b"><path d="M0 0h175c-12 90-63 160-151 205L0 215Z"/><path d="M1000 0H825c12 93 61 160 151 204l24 10Z"/><path d="M0 1840c107-20 199 15 276 104-98 2-173 40-226 115 89-7 165 22 228 87-101 33-193 46-278 42Z"/><path d="M1000 1820c-110-18-203 18-279 107 99 1 176 40 232 118-91-8-169 21-231 87 101 34 194 46 278 41Z"/></g>
+</svg>

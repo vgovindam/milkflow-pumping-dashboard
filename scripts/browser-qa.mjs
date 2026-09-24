@@ -70,10 +70,13 @@ try{
   const routes=['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','more','settings','set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about'];
   const momRoutes=new Set(['mom-home','mom-history','mom-trends','mom-stash']);
   const babyRoutes=new Set(['baby-home','baby-history','baby-trends','baby-growth','development','doctor']);
-  const themes=['nocturne','tide','ember','meadow','clean'];
-  const expected=Object.fromEntries(['nocturne','tide','ember','meadow'].map(t=>[t,`themes-v2/${t}/`]));
+  /* One list, so the count the Appearance screen is checked against cannot drift from the
+     worlds that actually exist. */
+  const WORLDS=['safari','butterfly','princess'];
+  const themes=[...WORLDS,'clean'];
+  const expected=Object.fromEntries(WORLDS.map(t=>[t,`themes-v2/${t}/`]));
   /* Care icons come from the generated per-action design system, not a shared sprite sheet. */
-  const expectedIcons=Object.fromEntries(['nocturne','tide','ember','meadow'].map(t=>[t,`care-icons/${t}/`]));
+  const expectedIcons=Object.fromEntries(WORLDS.map(t=>[t,`care-icons/${t}/`]));
   const failures=[],report=[];
   async function reach(route){await evalJs(`location.hash=${JSON.stringify('#'+route)}`);for(let i=0;i<20;i++){await sleep(100);if(await evalJs('document.body.dataset.screen||""')===route)return true;}return false;}
 
@@ -108,7 +111,7 @@ try{
         if(route==='mom-home'&&iconArt&&!m.pumpIcon.includes(`${iconArt}pump.svg`))failures.push(`${theme}/${mode}/${route}: Mom pump tile icon is not ${iconArt}pump.svg (got ${m.pumpIcon||'none'})`);
         /* Appearance is the one screen that owns how the app looks: the four worlds with their
            previews, plus the light/dark and sound controls that used to sit on Settings. */
-        if(route==='set-appearance'&&(m.themeCards!==4||m.selected!==1||m.previewImages!==4||m.loadedPreviews!==4||m.settingsShortcuts!==2))failures.push(`${theme}/${mode}/${route}: Appearance invalid cards=${m.themeCards} selected=${m.selected} previews=${m.loadedPreviews}/${m.previewImages} shortcuts=${m.settingsShortcuts}`);
+        if(route==='set-appearance'&&(m.themeCards!==WORLDS.length||m.selected!==1||m.previewImages!==WORLDS.length||m.loadedPreviews!==WORLDS.length||m.settingsShortcuts!==2))failures.push(`${theme}/${mode}/${route}: Appearance invalid cards=${m.themeCards} selected=${m.selected} previews=${m.loadedPreviews}/${m.previewImages} shortcuts=${m.settingsShortcuts}`);
         /* Settings keeps the scene and its own list. The picker moved to Appearance, so asserting
            the cards here was asserting the duplication that was removed. */
         if(route==='settings'&&theme!=='clean'&&(!m.mainBg.includes(art)||m.themeCards!==0||m.settingsShortcuts!==0))failures.push(`${theme}/${mode}/${route}: Settings must not duplicate Appearance (cards=${m.themeCards} shortcuts=${m.settingsShortcuts})`);
@@ -122,5 +125,5 @@ try{
   const uniq=a=>[...new Set(a)];
   for(const err of uniq(consoleErrors.map(x=>x.replace(/^[^:]+: /,'')))) failures.push(`runtime error: ${err}`);
   for(const req of uniq(failedRequests.map(x=>x.replace(/^[^:]+: /,'')))) failures.push(`failed request: ${req}`);
-  if(failures.length){console.error(`Browser QA failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log('Browser QA passed 190 views: self-contained theme scenes on Mom/Baby/Settings, loaded previews, no hero theme labels, independent component art, navigation and light/dark surfaces are rendered from production build.');
+  if(failures.length){console.error(`Browser QA failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log(`Browser QA passed ${report.length} views: self-contained theme scenes on Mom/Baby/Settings, loaded previews, no hero theme labels, independent component art, navigation and light/dark surfaces are rendered from production build.`);
 }finally{try{ws?.close();}catch{}proc?.kill();server.close();}

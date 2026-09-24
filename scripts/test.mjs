@@ -35,7 +35,7 @@ const familyChatServer=fs.readFileSync(path.join(ROOT,'functions/family-chat.js'
 for(const token of ["PENDING_KEY='milkflow-family-chat-pending-v1'",'recoverCloudRequest','recoverLegacyHistory','resumePending','retryRequest',"mode:'status'",'requestId'])if(!familyChat.includes(token))throw new Error(`Family chat recovery contract missing: ${token}`);
 for(const token of ["collection('familyChatRequests')", "mode==='status'", "status:'processing'", "status:'completed'", "${requestId}-user", "${requestId}-assistant"] )if(!familyChatServer.includes(token))throw new Error(`Family chat server recovery contract missing: ${token}`);
 
-const themes=['nocturne','tide','ember','meadow'];
+const themes=['safari','butterfly','princess'];
 for(const theme of themes){
   const icons=`assets/theme-icons/${theme}.svg`;
   if(!fs.existsSync(path.join(ROOT,icons)))throw new Error(`Theme asset contract missing: ${icons}`);
@@ -48,10 +48,22 @@ for(const theme of themes){
        a placeholder", which was reasonable when a scene was a drawing with a subject in it and
        is meaningless now: a colour field is a handful of elements and the quality is in the
        ramp, the light and the grain. So check that those are actually present. */
-    for(const part of ['id="base"','id="vig"','url(#grain)','radialGradient id="L0"','radialGradient id="L1"'])
-      if(!svg.includes(part))throw new Error(`${scene} is missing ${part}: not a finished background.`);
-    const stops=(svg.match(/<stop /g)||[]).length;
-    if(stops<12)throw new Error(`${scene} has only ${stops} gradient stops; a flat wash is not a background.`);
+    if(svg.length<4500)throw new Error(`${scene} fallback is too sparse to stand in for the plate.`);
+  }
+  /* The SVG above is only a fallback. The artwork that actually ships is the painted plate,
+     and its dark version must be a separately graded file - not the light one reused, which
+     is the failure that made three worlds look identical. */
+  for(const [role,widths] of [['baby-background',[480,720,941]],['baby-hero',[640,941]],['mom-background',[480,720,941]],['mom-hero',[640,941]]])
+    for(const mode of ['light','dark'])for(const w of widths){
+      const plate=`assets/themes-v2/${theme}/${mode}/${role}@${w}.webp`;
+      const full=path.join(ROOT,plate);
+      if(!fs.existsSync(full))throw new Error(`Painted plate missing: ${plate}`);
+      if(fs.statSync(full).size<4000)throw new Error(`${plate} is too small to be a painted plate`);
+    }
+  for(const [role,w] of [['baby-background',941],['mom-background',941]]){
+    const light=fs.readFileSync(path.join(ROOT,`assets/themes-v2/${theme}/light/${role}@${w}.webp`));
+    const dark=fs.readFileSync(path.join(ROOT,`assets/themes-v2/${theme}/dark/${role}@${w}.webp`));
+    if(light.equals(dark))throw new Error(`${theme}/${role} ships the same file for light and dark`);
   }
   if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} asset matrix.`);
   if(!experience.includes(`theme-icons/${theme}.svg`))throw new Error(`Theme manifest is not using independent ${theme} icon sprite.`);
@@ -91,16 +103,16 @@ for(const [file,text] of [['app.js',app],['core-ui.js',core],['doctor-summary.js
   /* The care icons are an illustrated cast, one character per action per theme, composed from
      shared parts so the set stays consistent. A theme is a cast file plus a palette entry. */
   const iconDir=path.join(ROOT,'scripts/care-icons');
-  for(const f of ['index.mjs','palette.mjs','props.mjs','parts.mjs','cast/nocturne.mjs','cast/tide.mjs','cast/ember.mjs','cast/meadow.mjs'])
+  for(const f of ['index.mjs','palette.mjs','props.mjs','parts.mjs','cast/safari.mjs','cast/butterfly.mjs','cast/princess.mjs','cast/princess.mjs'])
     if(!fs.existsSync(path.join(iconDir,f)))throw new Error(`Care icon design system is missing: scripts/care-icons/${f}`);
   const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'assets/care-icons/manifest.json'),'utf8'));
-  for(const theme of ['nocturne','tide','ember','meadow'])
+  for(const theme of ['safari','butterfly','princess'])
     if(!manifest.themes?.[theme]?.label)throw new Error(`Care icon manifest has no cast label for ${theme} - run node scripts/generate-care-icons.mjs`);
 }
 {
   const iconRoot=path.join(ROOT,'assets/care-icons');
   const actions=['milk','nurse','formula','wet','poop','mixed','pump'];
-  for(const theme of ['nocturne','tide','ember','meadow']){
+  for(const theme of ['safari','butterfly','princess']){
     for(const action of [...actions,'motif'])
       if(!fs.existsSync(path.join(iconRoot,theme,`${action}.svg`)))
         throw new Error(`Generated care icon missing: ${theme}/${action}.svg - run node scripts/generate-care-icons.mjs`);

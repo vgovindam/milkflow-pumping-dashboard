@@ -11,7 +11,7 @@ import {palette} from './care-icons/palette.mjs';
  * leave the strip showing last season's animals.
  */
 const root = process.cwd();
-const themes = ['nocturne', 'tide', 'ember', 'meadow'];
+const themes = ['safari', 'butterfly', 'princess'];
 const CELLS = ['milk', 'nurse', 'formula', 'wet', 'poop', 'mixed', 'pump', 'nurse'];
 
 for(const theme of themes){

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-24T01:06:53.464Z",
+  "generated": "2026-09-24T02:02:11.522Z",
   "actions": [
     "milk",
     "nurse",
@@ -10,8 +10,8 @@
     "pump"
   ],
   "themes": {
-    "nocturne": {
-      "label": "Nocturne crew",
+    "safari": {
+      "label": "Safari friends",
       "actions": [
         "milk",
         "nurse",
@@ -22,8 +22,8 @@
         "pump"
       ]
     },
-    "tide": {
-      "label": "Tide friends",
+    "butterfly": {
+      "label": "Butterfly garden",
       "actions": [
         "milk",
         "nurse",
@@ -34,20 +34,8 @@
         "pump"
       ]
     },
-    "ember": {
-      "label": "Ember friends",
-      "actions": [
-        "milk",
-        "nurse",
-        "formula",
-        "wet",
-        "poop",
-        "mixed",
-        "pump"
-      ]
-    },
-    "meadow": {
-      "label": "Meadow friends",
+    "princess": {
+      "label": "Princess palace",
       "actions": [
         "milk",
         "nurse",

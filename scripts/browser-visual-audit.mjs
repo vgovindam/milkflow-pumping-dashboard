@@ -44,13 +44,13 @@ await evalJs("document.documentElement.classList.remove('mf-booting')");
 
 const allRoutes=['mom-home','mom-history','mom-trends','mom-stash','baby-home','baby-history','baby-trends','baby-growth','development','doctor','more','settings','set-account','set-baby','set-pumping','set-reminders','set-data','set-appearance','set-about'];
 const passes=[
-  {theme:'nocturne',routes:allRoutes},
+  {theme:'safari',routes:allRoutes},
   {theme:'clean',routes:allRoutes},
-  {theme:'tide',routes:['baby-home','set-appearance']},
-  {theme:'ember',routes:['baby-home','set-appearance']},
-  {theme:'meadow',routes:['baby-home','set-appearance']},
+  {theme:'butterfly',routes:['baby-home','set-appearance']},
+  {theme:'princess',routes:['baby-home','set-appearance']},
+  {theme:'princess',routes:['baby-home','set-appearance']},
 ];
-const themeAsset=Object.fromEntries(['nocturne','tide','ember','meadow'].map(t=>[t,`themes-v2/${t}/`]));
+const themeAsset=Object.fromEntries(['safari','butterfly','princess'].map(t=>[t,`themes-v2/${t}/`]));
 const failures=[];const report=[];
 const initial=await evalJs(`(()=>({href:location.href,screen:document.body.dataset.screen||'',realm:document.body.dataset.realm||'',hash:location.hash,views:document.querySelectorAll('[data-view]').length,viewChildren:document.getElementById('view')?.children.length||0,text:(document.body.innerText||'').slice(0,160)}))()`);
 console.log('Browser audit initial state:',JSON.stringify(initial));
@@ -99,7 +99,7 @@ for(const pass of passes){
       if(metrics.paddingBottom<metrics.navHeight+20)failures.push(`${theme}/${mode}/${route}: view bottom padding ${metrics.paddingBottom}px does not safely clear ${metrics.navHeight}px nav`);
       if(route==='doctor'&&metrics.doctorTables<2)failures.push(`${theme}/${mode}/${route}: Doctor summary blocks not rendered`);
       if(route==='baby-home'&&themeAsset[theme]&&!metrics.backgroundImage.includes(themeAsset[theme])) failures.push(`${theme}/${mode}/${route}: expected ${themeAsset[theme]} is not the active page background`);
-      if(route==='baby-home'&&theme==='nocturne'){
+      if(route==='baby-home'&&theme==='safari'){
         for(const d of metrics.diaper){if(d.w>20&&d.gap<7)failures.push(`${theme}/${mode}/${route}: ${d.kind} diaper badge crowds semantic icon (${d.gap.toFixed(1)}px gap)`);}
         for(const f of metrics.feed){if(f.w>20&&f.gap<5)failures.push(`${theme}/${mode}/${route}: ${f.kind} feed icon crowds its title (${f.gap.toFixed(1)}px gap)`);}
       }

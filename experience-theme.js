@@ -5,30 +5,40 @@
    One manifest owns visual assets/tokens only. Care data, routing, Firestore,
    notifications and semantic care behavior stay with the canonical app. */
 const KEY='milkflow-experience-theme-v1';
-const THEMES=new Set(['nocturne','tide','ember','meadow','clean']);
+const THEMES=new Set(['safari','butterfly','princess','clean']);
 const root=document.documentElement;
 
-/* One explicit asset owns each visual job. Light and dark are separately authored scenes,
-   not one scene with its colours swapped.
+/* One explicit asset owns each visual job.
 
-   Every world is a vector scene now. The previous four shipped painted WebP plates at three
-   widths, which is why they needed a width picker - and why dark mode was the light painting
-   pushed towards black until the animals disappeared into it. Stars, tide, bioluminescence
-   and lit glass are all things a gradient does better than a photograph anyway, and one SVG
-   is smaller than the smallest of the three WebPs it replaces. */
-const plate=(theme,mode,role)=>`./assets/themes-v2/${theme}/${mode}/${role}.svg`;
+   All three worlds ship painted WebP plates at three widths. Dark is a separately produced
+   plate, not the light one with its colours pushed around: scripts/generate-dark-plates.mjs
+   runs a real colour grade - exposure, a three-point night ramp in the world's own hue, a
+   chroma restore so a lion cub stays gold, and one moon. The previous dark plates were made
+   by replacing hex values in the light artwork, which is why Safari, Butterfly and Princess
+   all arrived as the same grey-brown murk with the animals barely visible.
+
+   WebP rather than AVIF on purpose: these are consumed as CSS background-image through custom
+   properties, and url() cannot negotiate formats the way <picture> can, so the format has to
+   be one every browser running this app already decodes. */
+const BG_WIDTHS=[480,720,941],HERO_WIDTHS=[640,941];
+/* Resolved once per load. The plates top out at their native 941px, so anything denser than
+   that is served the widest file rather than an upscale that adds bytes but no detail. */
+const pickWidth=widths=>{
+  const want=(window.innerWidth||360)*(window.devicePixelRatio||1);
+  return widths.find(w=>w>=want)||widths[widths.length-1];
+};
+const plate=(theme,mode,role,widths)=>`./assets/themes-v2/${theme}/${mode}/${role}@${pickWidth(widths)}.webp`;
 const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
-  babyPage:plate(theme,mode,'baby-background'),
-  babyHero:plate(theme,mode,'baby-hero'),
-  momPage:plate(theme,mode,'mom-background'),
-  momHero:plate(theme,mode,'mom-hero'),
-  preview:plate(theme,mode,'settings-preview')
+  babyPage:plate(theme,mode,'baby-background',BG_WIDTHS),
+  babyHero:plate(theme,mode,'baby-hero',HERO_WIDTHS),
+  momPage:plate(theme,mode,'mom-background',BG_WIDTHS),
+  momHero:plate(theme,mode,'mom-hero',HERO_WIDTHS),
+  preview:`./assets/themes-v2/${theme}/${mode}/settings-preview.webp`
 }]));
 const THEME_MANIFEST={
-  nocturne:{title:'Nocturne',subtitle:'Deep indigo, quiet hours',assets:assetSet('nocturne'),iconSprite:'./assets/theme-icons/nocturne.svg'},
-  tide:{title:'Tide',subtitle:'Cool slate, clear water',assets:assetSet('tide'),iconSprite:'./assets/theme-icons/tide.svg'},
-  ember:{title:'Ember',subtitle:'Warm charcoal, low light',assets:assetSet('ember'),iconSprite:'./assets/theme-icons/ember.svg'},
-  meadow:{title:'Meadow',subtitle:'Soft stone, green shade',assets:assetSet('meadow'),iconSprite:'./assets/theme-icons/meadow.svg'},
+  safari:{title:'Animal Kingdom',subtitle:'Wild days, bigger dreams',assets:assetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
+  butterfly:{title:'Butterfly Garden',subtitle:'Little moments, big magic',assets:assetSet('butterfly'),iconSprite:'./assets/theme-icons/butterfly.svg'},
+  princess:{title:'Princess Palace',subtitle:'Kind hearts change the world',assets:assetSet('princess'),iconSprite:'./assets/theme-icons/princess.svg'},
   clean:{title:'Clean',subtitle:'Quiet MilkFlow canvas',assets:{light:{},dark:{}},iconSprite:''}
 };
 
@@ -38,7 +48,7 @@ const THEME_MANIFEST={
    null when a combination does not exist, so the caller keeps ownership of its own fallback
    instead of this module reaching into the DOM to patch icons in after render. */
 const CARE_ICON_ACTIONS=new Set(['milk','nurse','formula','wet','poop','mixed','pump']);
-const CARE_ICON_THEMES=new Set(['nocturne','tide','ember','meadow']);
+const CARE_ICON_THEMES=new Set(['safari','butterfly','princess']);
 function careIcon(action,themeName){
   const theme=normalize(themeName===undefined?read():themeName);
   if(!CARE_ICON_ACTIONS.has(action)||!CARE_ICON_THEMES.has(theme))return null;
@@ -53,9 +63,9 @@ function themeMotif(themeName){
 
 /* Old worlds map to the new one closest in mood, so a family that had chosen something does
    not get silently reset to the default. jungle and storybook are two generations back. */
-const RETIRED={jungle:'nocturne',storybook:'nocturne',safari:'nocturne',butterfly:'tide',princess:'ember',unicorn:'meadow',deepspace:'nocturne',aurora:'tide',neonreef:'ember',crystalcity:'meadow'};
-function normalize(value){if(RETIRED[value])return RETIRED[value];return THEMES.has(value)?value:'nocturne';}
-function read(){try{return normalize(localStorage.getItem(KEY));}catch{return 'nocturne';}}
+const RETIRED={jungle:'safari',storybook:'safari',unicorn:'princess',deepspace:'safari',aurora:'butterfly',neonreef:'princess',crystalcity:'safari',nocturne:'safari',tide:'butterfly',ember:'princess',meadow:'safari'};
+function normalize(value){if(RETIRED[value])return RETIRED[value];return THEMES.has(value)?value:'safari';}
+function read(){try{return normalize(localStorage.getItem(KEY));}catch{return 'safari';}}
 function assetUrl(path){return path?`url("${path}")`:'none';}
 function mode(){return root.dataset.theme==='dark'?'dark':'light';}
 function preloadTheme(theme,assets){
@@ -87,7 +97,7 @@ function apply(name=read()){
 function save(name){const value=normalize(name);try{localStorage.setItem(KEY,value);}catch{}apply(value);window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{theme:value}}));}
 function previewFor(key){return THEME_MANIFEST[key].assets[mode()].preview;}
 function themeCard(key,title,subtitle){return `<button type="button" class="mf-experience-option" data-experience-theme-pick="${key}" data-theme-card="${key}" aria-pressed="false"><span class="mf-experience-preview" aria-hidden="true"><img class="mf-preview-scene" src="${previewFor(key)}" alt="" decoding="async" loading="lazy"></span><span class="mf-experience-copy"><strong>${title}</strong><small>${subtitle}</small></span></button>`;}
-function themeCards(){return `${themeCard('nocturne','Nocturne','Deep indigo, quiet hours')}${themeCard('tide','Tide','Cool slate, clear water')}${themeCard('ember','Ember','Warm charcoal, low light')}${themeCard('meadow','Meadow','Soft stone, green shade')}`;}
+function themeCards(){return `${themeCard('safari','Animal Kingdom','Wild days, bigger dreams')}${themeCard('butterfly','Butterfly Garden','Little moments, big magic')}${themeCard('princess','Princess Palace','Kind hearts change the world')}`;}
 /* The theme picker used to be injected into the Settings landing page AND into Appearance,
    with a separate Dark Mode row next to it - three places to change how the app looks, two of
    them saying the same thing. It lives on Appearance only now, beside the light/dark control,

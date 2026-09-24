@@ -7,10 +7,9 @@
  * `blush` - cheeks, and any soft accent a cast wants.
  */
 export const PALETTES = {
-  nocturne:   {disc: ['#EEF1FF', '#D8DDF6'], ink: '#1E2A57', blush: '#8FB6EE', badge: '#FBFCFF'},
-  tide:      {disc: ['#ECF7FF', '#D3E7F4'], ink: '#123C51', blush: '#7FC7DE', badge: '#FAFDFF'},
-  ember:    {disc: ['#E6FAFB', '#CBEFF1'], ink: '#0F4351', blush: '#F58FA8', badge: '#F7FEFF'},
-  meadow: {disc: ['#F1EEFF', '#DED8F8'], ink: '#2C2361', blush: '#C79AEA', badge: '#FBFAFF'}
+  safari:    {disc: ['#FDF3E2', '#F3DCB4'], ink: '#5E3410', blush: '#EE9E86', badge: '#FFFBF2'},
+  butterfly: {disc: ['#FBF1F8', '#E9DAF3'], ink: '#542E66', blush: '#E98FB6', badge: '#FEF9FD'},
+  princess:  {disc: ['#FDF1F3', '#F6D9E3'], ink: '#7A2B48', blush: '#F09AB0', badge: '#FFF8FA'}
 };
 
 export function palette(themeId) {
