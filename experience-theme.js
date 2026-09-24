@@ -6,6 +6,21 @@
    notifications and semantic care behavior stay with the canonical app. */
 const KEY='milkflow-experience-theme-v1';
 const THEMES=new Set(['safari','butterfly','princess','clean']);
+/* The theme library is larger than the live selector. A world becomes selectable only when
+   its complete Baby/Mom + light/dark + preview + care-art package exists. This lets future
+   themes plug into the same mechanism without exposing half-finished skins. */
+const THEME_LIBRARY={
+  safari:{id:'animal-kingdom',status:'ready',title:'Animal Kingdom',subtitle:'Wild days, bigger dreams',mood:'lush cinematic jungle'},
+  butterfly:{id:'butterfly-garden',status:'ready',title:'Butterfly Garden',subtitle:'Little moments, big magic',mood:'elegant botanical garden'},
+  princess:{id:'princess-palace',status:'ready',title:'Princess Palace',subtitle:'Kind hearts change the world',mood:'storybook palace garden'},
+  unicorn:{id:'unicorn-dream',status:'artwork-needed',title:'Unicorn Dream',subtitle:'Clouds, starlight, and gentle magic',mood:'luminous magical sky'},
+  ocean:{id:'ocean',status:'artwork-needed',title:'Ocean',subtitle:'Calm tides, curious little explorers',mood:'clear water, whales, turtles, coral'},
+  celestial:{id:'celestial',status:'artwork-needed',title:'Moon & Stars',subtitle:'Soft nights, bright little moments',mood:'moonlit clouds and constellations'},
+  woodland:{id:'woodland',status:'artwork-needed',title:'Woodland Forest',subtitle:'Cozy trails and tiny adventures',mood:'deer, fox, rabbit, bear, moss'},
+  'safari-sunset':{id:'safari-sunset',status:'artwork-needed',title:'Safari Sunset',subtitle:'Golden light and wild little days',mood:'golden-hour savanna'},
+  'floral-meadow':{id:'floral-meadow',status:'artwork-needed',title:'Floral Meadow',subtitle:'Soft blooms and sunny moments',mood:'refined meadow and wildflowers'},
+  'cozy-clouds':{id:'cozy-clouds',status:'artwork-needed',title:'Cozy Clouds',subtitle:'A quieter little sky',mood:'minimal dimensional cloud world'}
+};
 const root=document.documentElement;
 
 /* One explicit asset owns each visual job.
@@ -36,10 +51,10 @@ const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
   preview:`./assets/themes-v2/${theme}/${mode}/settings-preview.webp`
 }]));
 const THEME_MANIFEST={
-  safari:{title:'Animal Kingdom',subtitle:'Wild days, bigger dreams',assets:assetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
-  butterfly:{title:'Butterfly Garden',subtitle:'Little moments, big magic',assets:assetSet('butterfly'),iconSprite:'./assets/theme-icons/butterfly.svg'},
-  princess:{title:'Princess Palace',subtitle:'Kind hearts change the world',assets:assetSet('princess'),iconSprite:'./assets/theme-icons/princess.svg'},
-  clean:{title:'Clean',subtitle:'Quiet MilkFlow canvas',assets:{light:{},dark:{}},iconSprite:''}
+  safari:{...THEME_LIBRARY.safari,assets:assetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
+  butterfly:{...THEME_LIBRARY.butterfly,assets:assetSet('butterfly'),iconSprite:'./assets/theme-icons/butterfly.svg'},
+  princess:{...THEME_LIBRARY.princess,assets:assetSet('princess'),iconSprite:'./assets/theme-icons/princess.svg'},
+  clean:{id:'clean',status:'ready',title:'Clean',subtitle:'Quiet MilkFlow canvas',assets:{light:{},dark:{}},iconSprite:''}
 };
 
 /* Care icons are a generated design system: assets/care-icons/<theme>/<action>.svg, built by
@@ -97,7 +112,7 @@ function apply(name=read()){
 function save(name){const value=normalize(name);try{localStorage.setItem(KEY,value);}catch{}apply(value);window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{theme:value}}));}
 function previewFor(key){return THEME_MANIFEST[key].assets[mode()].preview;}
 function themeCard(key,title,subtitle){return `<button type="button" class="mf-experience-option" data-experience-theme-pick="${key}" data-theme-card="${key}" aria-pressed="false"><span class="mf-experience-preview" aria-hidden="true"><img class="mf-preview-scene" src="${previewFor(key)}" alt="" decoding="async" loading="lazy"></span><span class="mf-experience-copy"><strong>${title}</strong><small>${subtitle}</small></span></button>`;}
-function themeCards(){return `${themeCard('safari','Animal Kingdom','Wild days, bigger dreams')}${themeCard('butterfly','Butterfly Garden','Little moments, big magic')}${themeCard('princess','Princess Palace','Kind hearts change the world')}`;}
+function themeCards(){return Object.entries(THEME_LIBRARY).filter(([,t])=>t.status==='ready').map(([key,t])=>themeCard(key,t.title,t.subtitle)).join('');}
 /* The theme picker used to be injected into the Settings landing page AND into Appearance,
    with a separate Dark Mode row next to it - three places to change how the app looks, two of
    them saying the same thing. It lives on Appearance only now, beside the light/dark control,
@@ -145,7 +160,7 @@ function syncThemeUi(){apply();experiencePanel();settingsExtras();}
 let queued=false;
 function afterCanonicalRender(){if(queued)return;queued=true;queueMicrotask(()=>requestAnimationFrame(()=>{queued=false;syncThemeUi();}));}
 
-window.MilkFlowExperience={manifest:THEME_MANIFEST,current:read,apply,save,careIcon,themeMotif,careIconActions:[...CARE_ICON_ACTIONS]};
+window.MilkFlowExperience={manifest:THEME_MANIFEST,library:THEME_LIBRARY,current:read,apply,save,careIcon,themeMotif,careIconActions:[...CARE_ICON_ACTIONS]};
 apply();
 /* app.js renders its first screen at the end of its own execution, and this file loads after
    it - so that first paint asks for careIcon() before the registry exists and falls back to a
