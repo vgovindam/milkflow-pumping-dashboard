@@ -55,6 +55,11 @@ function measureRows(measures){
     </tr>`).join('');
 }
 
+function insightRows(model){
+  const rows=model?.observations||[];
+  if(!rows.length)return '';
+  return `<section class="mf-print-section"><h2>Recent logged pattern</h2><table class="mf-print-table mf-print-measures"><thead><tr><th scope="col">Pattern</th><th scope="col">Status</th><th scope="col">Context</th></tr></thead><tbody>${rows.map(o=>`<tr><th scope="row">${esc(o.label)}</th><td class="value">${esc(o.value)}</td><td class="note">${esc(o.detail)}</td></tr>`).join('')}</tbody></table></section>`;
+}
 function dailyRows(rows){
   if(!rows.length) return '<tr><td colspan="8">No daily records in this period.</td></tr>';
   return rows.map(r => r.logged ? `<tr>
@@ -107,6 +112,8 @@ function buildPrintDocument(){
       </table>
     </section>
 
+    ${insightRows(r.insights)}
+
     <section class="mf-print-section">
       <h2>Day by day</h2>
       <table class="mf-print-table mf-print-daily">
@@ -120,7 +127,7 @@ function buildPrintDocument(){
 
     <footer class="mf-print-note">
       <p><strong>How to read this.</strong> Daily averages are worked out across the ${r.period.daysWithRecords} day${r.period.daysWithRecords === 1 ? '' : 's'} that have records, not across all ${r.period.days} days, so a day nobody had a chance to log does not read as a day with no wet diapers. “Wet” and “Dirty” counts include mixed changes. Bottle volume is logged bottles only — nursing volume is not estimated. Sleep is logged sleep only.</p>
-      <p class="mf-print-source">${r.daily.length > DAILY_ROW_CAP ? `Day by day lists the most recent ${DAILY_ROW_CAP} days of the ${r.period.days}-day range; the period total covers all of it. ` : ''}Entered by the family in the MilkFlow app. This is a record of care at home, not a clinical assessment or a diagnosis.</p>
+      <p class="mf-print-source">${r.daily.length > DAILY_ROW_CAP ? `Day by day lists the most recent ${DAILY_ROW_CAP} days of the ${r.period.days}-day range; the period total covers all of it. ` : ''}Entered by the family in the MilkFlow app. This is a record of care at home, not a clinical assessment or a diagnosis. ${esc(r.insights?.disclaimer||'')}</p>
     </footer>`;
   document.body.appendChild(el);
   document.body.classList.add(PRINTING_CLASS);
