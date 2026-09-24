@@ -1,5 +1,17 @@
 # MilkFlow releases
 
+## v2.18.0 — Full image worlds and reliable Baby timing
+
+This release replaces the six placeholder-style theme scenes and fixes the Baby hero timing layout at the markup and geometry levels.
+
+- Replaces the selectable Ocean, Moon & Stars, Woodland Forest, Safari Sunset, Floral Meadow, and Cozy Clouds placeholder vector scenes with full image-backed worlds.
+- Materializes those reviewed image sources into the production `dist` bundle during build, so the live PWA serves local theme images rather than depending on third-party image requests at runtime.
+- Keeps Animal Kingdom, Butterfly Garden, and Princess Palace on their existing painted local artwork.
+- Makes Appearance previews use the same real scene that the selected Mom/Baby pages use.
+- Changes Last feed to render an intrinsic spaced separator in its text, not a CSS-only gap.
+- Gives Last feed a larger minimum lane and validates the physical pixel gap between elapsed time and clock time in browser QA.
+- Preserves the existing feed/diaper/sleep data model and the v4 state key.
+
 ## v2.17.1 — Care icon and Last feed layout correction
 
 This patch fixes two visible regressions from the expanded theme release.
