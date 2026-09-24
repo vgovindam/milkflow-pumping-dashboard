@@ -134,11 +134,28 @@ try{
       }
     }
   }
+  /* Exercise the real Sleep UI once after screenshots: opening Sleep must offer Start,
+     starting must persist active state and re-render a live timer, and ending must turn that
+     state into one completed historical record rather than leaving an incomplete row. */
+  await evalJs("localStorage.setItem('milkflow-experience-theme-v1','safari')");
+  await reach('baby-home'); await sleep(120);
+  await evalJs("document.querySelector('[data-sleep]')?.click()"); await sleep(80);
+  const sleepStartUi=await evalJs("!!document.querySelector('.sleep-start-main[data-sleep-start="0"]')");
+  if(!sleepStartUi)failures.push('sleep workflow: Sleep did not open the Start/Completed choice');
+  await evalJs("document.querySelector('.sleep-start-main[data-sleep-start="0"]')?.click()"); await sleep(140);
+  const active=await evalJs(`(()=>{const s=JSON.parse(localStorage.getItem('milkflow-family-v4-state')||'{}');return{active:!!s.baby?.activeSleep,live:!!document.querySelector('.mf-care-ribbon button.sleep-live')}})()`);
+  if(!active?.active||!active?.live)failures.push(`sleep workflow: starting did not persist/live-render active=${active?.active} live=${active?.live}`);
+  await evalJs("document.querySelector('[data-sleep]')?.click()"); await sleep(80);
+  if(!await evalJs("!!document.querySelector('[data-sleep-end]')"))failures.push('sleep workflow: running timer does not offer End sleep');
+  await evalJs("document.querySelector('[data-sleep-end]')?.click()"); await sleep(180);
+  const ended=await evalJs(`(()=>{const s=JSON.parse(localStorage.getItem('milkflow-family-v4-state')||'{}'),a=(s.babyEvents||[]).filter(e=>e.eventType==='sleep'&&e.captureMode==='timer');return{active:!!s.baby?.activeSleep,count:a.length,duration:a.at(-1)?.durationMinutes||0}})()`);
+  if(ended?.active||ended?.count<1||ended?.duration<1)failures.push(`sleep workflow: End sleep did not create a completed timer record active=${ended?.active} count=${ended?.count} duration=${ended?.duration}`);
+
   fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify({failures,report},null,2));
   console.log(`Browser QA rendered ${report.length} route/theme/mode views.`);
   /* De-duplicated: one broken asset referenced by every theme is one defect, not 190. */
   const uniq=a=>[...new Set(a)];
   for(const err of uniq(consoleErrors.map(x=>x.replace(/^[^:]+: /,'')))) failures.push(`runtime error: ${err}`);
   for(const req of uniq(failedRequests.map(x=>x.replace(/^[^:]+: /,'')))) failures.push(`failed request: ${req}`);
-  if(failures.length){console.error(`Browser QA failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log(`Browser QA passed ${report.length} views: self-contained theme scenes on Mom/Baby/Settings, loaded previews, no hero theme labels, independent component art, navigation and light/dark surfaces are rendered from production build.`);
+  if(failures.length){console.error(`Browser QA failed:\n- ${failures.join('\n- ')}`);process.exitCode=1;}else console.log(`Browser QA passed ${report.length} views: nine selectable theme scenes on Mom/Baby/Settings, loaded previews, no hero theme labels, independent component art, navigation and light/dark surfaces are rendered from production build.`);
 }finally{try{ws?.close();}catch{}proc?.kill();server.close();}
