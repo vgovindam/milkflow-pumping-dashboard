@@ -50,23 +50,34 @@ const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
   momHero:plate(theme,mode,'mom-hero',HERO_WIDTHS),
   preview:`./assets/themes-v2/${theme}/${mode}/settings-preview.webp`
 }]));
-const vectorAssetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
-  babyPage:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`,
-  babyHero:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`,
-  momPage:`./assets/themes-v2/${theme}/${mode}/mom-background.svg`,
-  momHero:`./assets/themes-v2/${theme}/${mode}/mom-background.svg`,
-  preview:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`
-}]));
+/* v2.18 replaces the placeholder vector sketches with full-scene image worlds.
+   Each source is a stable, free-to-use Pexels image URL; MilkFlow owns the crop, palette,
+   surface treatment and UI composition around it. The old local SVGs remain only as historical
+   source assets and are no longer selected by the runtime. */
+const GENERATED_WORLD_IMAGES={
+  ocean:'https://images.pexels.com/photos/60087/pexels-photo-60087.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  celestial:'https://images.pexels.com/photos/37023333/pexels-photo-37023333.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  woodland:'https://images.pexels.com/photos/9870287/pexels-photo-9870287.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  'safari-sunset':'https://images.pexels.com/photos/25754105/pexels-photo-25754105.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  'floral-meadow':'https://images.pexels.com/photos/26971554/pexels-photo-26971554.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  'cozy-clouds':'https://images.pexels.com/photos/18444260/pexels-photo-18444260.jpeg?auto=compress&cs=tinysrgb&w=1200'
+};
+const imageWorldAssetSet=theme=>{
+  const src=GENERATED_WORLD_IMAGES[theme];
+  return Object.fromEntries(['light','dark'].map(mode=>[mode,{
+    babyPage:src,babyHero:src,momPage:src,momHero:src,preview:src
+  }]));
+};
 const THEME_MANIFEST={
   safari:{...THEME_LIBRARY.safari,assets:assetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
   butterfly:{...THEME_LIBRARY.butterfly,assets:assetSet('butterfly'),iconSprite:'./assets/theme-icons/butterfly.svg'},
   princess:{...THEME_LIBRARY.princess,assets:assetSet('princess'),iconSprite:'./assets/theme-icons/princess.svg'},
-  ocean:{...THEME_LIBRARY.ocean,assets:vectorAssetSet('ocean'),iconSprite:''},
-  celestial:{...THEME_LIBRARY.celestial,assets:vectorAssetSet('celestial'),iconSprite:''},
-  woodland:{...THEME_LIBRARY.woodland,assets:vectorAssetSet('woodland'),iconSprite:''},
-  'safari-sunset':{...THEME_LIBRARY['safari-sunset'],assets:vectorAssetSet('safari-sunset'),iconSprite:''},
-  'floral-meadow':{...THEME_LIBRARY['floral-meadow'],assets:vectorAssetSet('floral-meadow'),iconSprite:''},
-  'cozy-clouds':{...THEME_LIBRARY['cozy-clouds'],assets:vectorAssetSet('cozy-clouds'),iconSprite:''},
+  ocean:{...THEME_LIBRARY.ocean,assets:imageWorldAssetSet('ocean'),iconSprite:''},
+  celestial:{...THEME_LIBRARY.celestial,assets:imageWorldAssetSet('celestial'),iconSprite:''},
+  woodland:{...THEME_LIBRARY.woodland,assets:imageWorldAssetSet('woodland'),iconSprite:''},
+  'safari-sunset':{...THEME_LIBRARY['safari-sunset'],assets:imageWorldAssetSet('safari-sunset'),iconSprite:''},
+  'floral-meadow':{...THEME_LIBRARY['floral-meadow'],assets:imageWorldAssetSet('floral-meadow'),iconSprite:''},
+  'cozy-clouds':{...THEME_LIBRARY['cozy-clouds'],assets:imageWorldAssetSet('cozy-clouds'),iconSprite:''},
   clean:{id:'clean',status:'ready',title:'Clean',subtitle:'Quiet MilkFlow canvas',assets:{light:{},dark:{}},iconSprite:''}
 };
 
