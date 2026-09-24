@@ -30,7 +30,7 @@
         const rawExperience=localStorage.getItem('milkflow-experience-theme-v1');
         const retired={jungle:'safari',storybook:'safari',safari:'safari',butterfly:'butterfly',princess:'princess',unicorn:'princess',deepspace:'safari',aurora:'butterfly',neonreef:'princess',crystalcity:'princess'};
         const experience=retired[rawExperience]||rawExperience;
-        root.dataset.experienceTheme=['safari','butterfly','princess','clean'].includes(experience)?experience:'safari';
+        root.dataset.experienceTheme=['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds','clean'].includes(experience)?experience:'safari';
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content',dark?'#0e1016':'#f4f4f9');
       }catch{root.dataset.experienceTheme='safari';}
       const reveal=()=>requestAnimationFrame(()=>root.classList.remove('mf-booting'));
