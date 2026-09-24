@@ -182,7 +182,7 @@
    a theme widening the gutter pushed the stats column past the card's right edge on a phone.
    A theme owns the picture, the tint and the corner - not the box model. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero{
-  position:relative;min-height:220px;border-radius:31px!important;overflow:hidden;
+  position:relative;border-radius:31px!important;overflow:hidden;
   background-image:var(--mf-theme-baby-hero)!important;
   background-size:cover!important;background-position:var(--mf-baby-focus)!important;background-repeat:no-repeat!important;
   border:1px solid rgba(255,255,255,.52)!important;box-shadow:0 20px 44px var(--mf-world-shadow)!important;color:#fff!important
@@ -366,7 +366,7 @@
   :root:not([data-experience-theme="clean"]) body[data-screen="settings"] .main,
   :root:not([data-experience-theme="clean"]) body[data-screen="set-appearance"] .main{background-size:cover!important;background-position:var(--mf-page-focus)!important}
   :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{min-height:244px;background-size:cover!important;background-position:var(--mf-mom-focus)!important}
-  :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero{min-height:220px;background-size:cover!important;background-position:var(--mf-baby-focus)!important}
+  :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero{background-size:cover!important;background-position:var(--mf-baby-focus)!important}
   :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]):not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head{min-height:122px!important}
   .mf-experience-panel .mf-experience-options{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.mf-experience-panel .mf-experience-preview{height:140px!important;min-height:140px!important;flex-basis:140px!important}
 }

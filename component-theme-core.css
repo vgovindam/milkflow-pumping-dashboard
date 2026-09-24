@@ -293,58 +293,87 @@ body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"]
 
 @layer milkflow-screens {
 /* ---------------------------------------------------------------- Baby home
-   The hero composition, and the twin of the Mom hero in core-ui.js: a greeting line with the
-   parent's name, the title, and a photo filling the top-right - then one full-width row of
-   fact boxes. Both heroes answer the same two questions in the same place: what happened
-   last, and where today stands.
+   The hero is an identity + now card, not a mini dashboard. The portrait remains generous
+   while the left column carries greeting, name, a short wish, today's compact status and the
+   two time-sensitive facts. Lower-priority detail stays in Feed / Diapers / Trends below. */
+body[data-screen="baby-home"] .mf-animal-profile{
+  display:grid;grid-template-columns:minmax(0,1fr) 142px;align-items:center;gap:18px;min-width:0
+}
+body[data-screen="baby-home"] .mf-animal-copy{min-width:0}
+body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{
+  position:relative;width:142px;height:142px;border-width:6px;justify-self:end;align-self:center
+}
+body[data-screen="baby-home"] .mf-photo-add{
+  position:absolute;left:50%;bottom:9px;transform:translateX(-50%);padding:4px 8px;
+  border-radius:999px;background:rgba(255,255,255,.88);color:#355e54;
+  font:850 9px/1 var(--font);white-space:nowrap;box-shadow:0 3px 10px rgba(34,61,58,.12)
+}
+body[data-screen="baby-home"] .mf-animal-copy .welcome{
+  display:flex;align-items:center;gap:5px;margin:0;color:#285e67;
+  font:750 14px/1.15 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+body[data-screen="baby-home"] .mf-animal-copy h2{
+  margin:5px 0 0;font-family:var(--display);font-size:31px;font-weight:800;line-height:1;
+  letter-spacing:-.035em;color:#163f52;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px;
+  white-space:normal;overflow-wrap:anywhere
+}
+body[data-screen="baby-home"] .mf-animal-copy h2>i{
+  font:750 11px/1.15 var(--font);font-style:normal;color:#456b71;letter-spacing:0;white-space:nowrap
+}
+body[data-screen="baby-home"] .mf-baby-wish{
+  margin:7px 0 0;color:#355f63;font:750 11.5px/1.28 var(--font)
+}
+body[data-screen="baby-home"] .mf-baby-todayline{
+  margin:5px 0 0;color:#527075;font:800 9.5px/1.3 var(--font);letter-spacing:.005em
+}
+body[data-screen="baby-home"] .mf-baby-timing{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin-top:9px;
+  border-top:1px solid rgba(44,92,83,.16);padding-top:7px
+}
+body[data-screen="baby-home"] .mf-baby-timing>span{min-width:0;padding-right:8px}
+body[data-screen="baby-home"] .mf-baby-timing>span+span{
+  padding-left:9px;padding-right:0;border-left:1px solid rgba(44,92,83,.16)
+}
+body[data-screen="baby-home"] .mf-baby-timing small{
+  display:block;color:#5d777a;font:850 8px/1.1 var(--font);letter-spacing:.09em;text-transform:uppercase
+}
+body[data-screen="baby-home"] .mf-baby-timing strong{
+  display:block;margin-top:3px;color:#214f53;font:850 12.5px/1.12 var(--display);
+  white-space:normal;overflow-wrap:anywhere
+}
+body[data-screen="baby-home"] .mf-baby-timing .due strong{color:var(--mf-world-accent,#7a4d37)}
+body[data-screen="baby-home"] .mf-animal-hero>.bear,
+body[data-screen="baby-home"] .mf-animal-hero>.bunny,
+body[data-screen="baby-home"] .mf-animal-star{display:none}
 
-   It is in the milkflow-screens layer rather than milkflow-core because it supersedes the
-   older hero in the component layer above core - one screen, one owner, decided by position
-   instead of by ~20 !important declarations. Everything else in this file stays in
-   milkflow-core, below the components. */
-body[data-screen="baby-home"] .mf-animal-copy h2{font-family:var(--display);font-weight:800;letter-spacing:-.035em}
 @media(max-width:760px){
-  body[data-screen="baby-home"] .mf-animal-hero{
-    min-height:0;padding:14px 15px 15px;display:grid;
-    grid-template-columns:minmax(0,1fr) 118px;
-    grid-template-areas:"greeting photo" "title photo" "meta photo" "facts facts";
-    column-gap:14px;row-gap:0;align-items:start
-  }
-  body[data-screen="baby-home"] .mf-animal-profile,body[data-screen="baby-home"] .mf-animal-copy{display:contents}
-  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{
-    grid-area:photo;width:118px;height:118px;border-width:5px;align-self:center;justify-self:end
-  }
-  body[data-screen="baby-home"] .mf-animal-copy .welcome{
-    grid-area:greeting;box-sizing:border-box;width:auto;max-width:none;min-height:0;
-    margin:0;padding:0;border-radius:0;background:none;align-self:center;
-    border:0;font-family:var(--display);font-size:15px;line-height:1.15;
-    font-weight:750;color:#285e67;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
-  }
-  /* The age rides on the title line instead of taking a row of its own: "Saahas" left a wide
-     empty gutter beside it, and the meta row underneath made the card taller for one short
-     phrase. Baseline-aligned so it reads as one line, and it wraps under on a long name. */
-  body[data-screen="baby-home"] .mf-animal-copy h2{
-    grid-area:title;position:static;width:auto;margin:6px 0 0;font-size:31px;line-height:1;
-    align-self:start;white-space:normal;overflow-wrap:anywhere;color:#163f52;
-    display:flex;flex-wrap:wrap;align-items:baseline;gap:0 9px
-  }
-  body[data-screen="baby-home"] .mf-animal-copy h2>i{
-    font:750 11.5px/1.15 var(--font);font-style:normal;color:#456b71;opacity:.95;
-    letter-spacing:0;white-space:nowrap
-  }
-  body[data-screen="baby-home"] .mf-animal-copy>small{
-    grid-area:meta;position:static;margin:4px 0 0;font-size:11px;line-height:1.15;
-    align-self:start;color:#456b71;opacity:.92
-  }
-  body[data-screen="baby-home"] .mf-hero-facts{grid-area:facts;margin-top:11px;gap:8px}
-  body[data-screen="baby-home"] .mf-animal-hero>.bear,body[data-screen="baby-home"] .mf-animal-hero>.bunny,body[data-screen="baby-home"] .mf-animal-star{display:none}
+  body[data-screen="baby-home"] .mf-animal-hero{min-height:0;padding:14px 15px}
+  body[data-screen="baby-home"] .mf-animal-profile{grid-template-columns:minmax(0,1fr) 136px;gap:14px}
+  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:136px;height:136px;border-width:5px}
 }
 @media(max-width:390px){
-  body[data-screen="baby-home"] .mf-animal-hero{grid-template-columns:minmax(0,1fr) 108px;column-gap:12px;padding:14px}
-  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:108px;height:108px}
-  body[data-screen="baby-home"] .mf-animal-copy h2{font-size:25px}
+  body[data-screen="baby-home"] .mf-animal-hero{padding:10px 14px}
+  body[data-screen="baby-home"] .mf-animal-profile{grid-template-columns:minmax(0,1fr) 128px;gap:12px}
+  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:128px;height:128px}
+  body[data-screen="baby-home"] .mf-animal-copy .welcome{font-size:13px}
+  body[data-screen="baby-home"] .mf-animal-copy h2{font-size:27px}
+  body[data-screen="baby-home"] .mf-baby-wish{font-size:10.8px}
+  body[data-screen="baby-home"] .mf-baby-todayline{font-size:9px}
+  body[data-screen="baby-home"] .mf-baby-timing strong{font-size:11.5px}
 }
-:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy .welcome{background:none;border-color:transparent;color:#d8f5f7}
+@media(max-width:350px){
+  body[data-screen="baby-home"] .mf-animal-profile{grid-template-columns:minmax(0,1fr) 116px;gap:10px}
+  body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:116px;height:116px}
+  body[data-screen="baby-home"] .mf-animal-copy h2{font-size:24px}
+}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy .welcome{color:#d8f5f7}
 :root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy h2{color:#f5fbff}
-:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy>small{color:#c5dce3}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-animal-copy h2>i,
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-wish,
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-todayline{color:#c5dce3}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-timing{border-color:rgba(211,235,238,.18)}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-timing>span+span{border-color:rgba(211,235,238,.18)}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-timing small{color:#b6d1d6}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-baby-timing strong{color:#f0fbfc}
+:root[data-theme="dark"] body[data-screen="baby-home"] .mf-photo-add{background:rgba(18,34,31,.8);color:#e9faf5}
 }

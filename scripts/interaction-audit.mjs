@@ -25,7 +25,11 @@ need('canonical theme composition',themeEntry,'experience-system.css');
 need('canonical component theme composition',themeEntry,'experience-components.css');
 need('canonical experience layer',themeEntry,'layer(milkflow-experience)');
 
-for(const text of ["const KEY='milkflow-experience-theme-v1'","new Set(['safari','butterfly','princess','clean'])","const RETIRED={jungle:'safari'","themeCard('safari','Animal Kingdom'","themeCard('butterfly','Butterfly Garden'","themeCard('princess','Princess Palace'",'data-experience-theme-pick="clean"'])need('experience theme controller',experienceJs,text);
+for(const text of ["const KEY='milkflow-experience-theme-v1'","new Set(['safari','butterfly','princess','clean'])","const RETIRED={jungle:'safari'","const THEME_LIBRARY={","filter(([,t])=>t.status==='ready')",'data-experience-theme-pick="clean"'])need('experience theme controller',experienceJs,text);
+for(const [key,title] of [['safari','Animal Kingdom'],['butterfly','Butterfly Garden'],['princess','Princess Palace']]){
+  need('ready theme registry',experienceJs,`${key}:{id:`);
+  need('ready theme title',experienceJs,`title:'${title}'`);
+}
 if(experienceJs.includes('MutationObserver'))failures.push('experience theme controller: observer loop is not allowed');
 need('both modes published',experienceJs,'const SCENE_ROLES=');
 for(const theme of ['safari','butterfly','princess']){
