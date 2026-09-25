@@ -574,11 +574,12 @@ body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){--tile:var(--ca
 .mf-diaper-blob.wet{--tile:var(--care-wet)}.mf-diaper-blob.poop{--tile:var(--care-poop)}.mf-diaper-blob.both{--tile:var(--care-mixed)}
 .mf-feed-card .mf-tile-picture,.mf-diaper-blob .mf-tile-picture{box-sizing:border-box;position:relative;z-index:1;flex:0 0 88px;min-height:88px;width:100%;margin:0;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--tile) 48%,var(--surface));border-radius:23px;background:color-mix(in srgb,var(--tile) 35%,var(--surface));box-shadow:0 7px 17px rgba(30,44,66,.08);opacity:1}
 .mf-feed-card .mf-tile-picture>span.mf-care-mark,.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{position:relative;inset:auto;left:auto;top:auto;right:auto;transform:none;width:72px;height:72px;max-width:100%;max-height:100%;aspect-ratio:1;margin:0}
-.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:62px;height:62px;opacity:1}
+.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:60px;height:60px;opacity:1;transform:translateX(-12px)}
 .mf-feed-card .mf-tile-copy,.mf-diaper-blob .mf-tile-copy{position:relative;z-index:2;display:grid;place-items:center;flex:0 0 24px;width:100%;margin:0;padding:0;color:var(--ink);opacity:1}
 .mf-feed-card .mf-tile-copy strong,.mf-diaper-blob .mf-tile-copy strong{display:block;font:800 var(--mf-type-action)/1.18 var(--display);white-space:nowrap;letter-spacing:-.015em}
-.mf-diaper-blob .mf-tile-title{display:flex;align-items:center;justify-content:center;gap:5px;margin:0}
-.mf-diaper-blob .mf-tile-title>b{position:static;z-index:auto;display:grid;place-items:center;min-width:21px;width:21px;height:21px;padding:0;margin:0;border-radius:50%;font-size:12px;line-height:1}
+.mf-diaper-blob .mf-tile-picture>b.mf-tile-count{position:absolute;z-index:3;top:6px;right:6px;left:auto;display:grid;place-items:center;min-width:24px;width:24px;height:24px;padding:0;margin:0;border-radius:50%;background:var(--surface);color:var(--ink);font:850 12px/1 var(--display);box-shadow:0 2px 7px rgba(30,44,66,.12)}
+:root[data-theme="dark"] .mf-diaper-blob .mf-tile-picture>b.mf-tile-count{background:#293044;color:#fff}
+@media(max-width:350px){.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:54px;height:54px;transform:translateX(-10px)}}
 /* Mom shares the same picture/caption proportions and action hit area. */
 .mf-dream-actions .quick-tile{box-sizing:border-box;height:117px;min-height:117px;padding:93px 4px 0;justify-content:flex-end;align-items:center;text-align:center;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
 :root[data-theme="dark"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile{background:transparent}
@@ -728,9 +729,9 @@ function renderBaby(s){
 
     <div class="mf-care-label"><span>Diapers</span><small>${st.diaperCount?`${st.diaperCount} today`:'Quick log'}</small></div>
     <div class="mf-diaper-cluster">
-      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper"><span class="mf-tile-picture">${careMark('wet')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Wet</strong><b>${st.wet}</b></span></span></button>
-      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper"><span class="mf-tile-picture">${careMark('poop')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Poopy</strong><b>${st.poop}</b></span></span></button>
-      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper"><span class="mf-tile-picture">${careMark('mixed')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Mixed</strong><b>${st.both}</b></span></span></button>
+      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper"><span class="mf-tile-picture">${careMark('wet')}<b class="mf-tile-count">${st.wet}</b></span><span class="mf-tile-copy"><strong>Wet</strong></span></button>
+      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper"><span class="mf-tile-picture">${careMark('poop')}<b class="mf-tile-count">${st.poop}</b></span><span class="mf-tile-copy"><strong>Poopy</strong></span></button>
+      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper"><span class="mf-tile-picture">${careMark('mixed')}<b class="mf-tile-count">${st.both}</b></span><span class="mf-tile-copy"><strong>Mixed</strong></span></button>
     </div>
 
     <div class="mf-care-ribbon" aria-label="More baby care">
