@@ -39,7 +39,7 @@
 
 /* Mom tiles keep their existing action contract but the visible art changes with the
    selected family world. */
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile .tile-art{overflow:visible;border-radius:50%}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile .tile-art{overflow:visible;border-radius:23px}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile .tile-art::after{
   /* Same as the Baby cards: retired rather than relocated. */
   content:"";display:none!important

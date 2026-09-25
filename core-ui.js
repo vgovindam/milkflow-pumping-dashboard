@@ -572,10 +572,10 @@ body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){--tile:var(--ca
 :root[data-theme="dark"] body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){background:transparent}
 .mf-feed-card.milk{--tile:var(--care-milk)}.mf-feed-card.nurse{--tile:var(--care-nursing)}.mf-feed-card.formula{--tile:var(--care-formula)}
 .mf-diaper-blob.wet{--tile:var(--care-wet)}.mf-diaper-blob.poop{--tile:var(--care-poop)}.mf-diaper-blob.both{--tile:var(--care-mixed)}
-.mf-feed-card .mf-tile-picture,.mf-diaper-blob .mf-tile-picture{box-sizing:border-box;position:relative;z-index:1;flex:0 0 88px;min-height:88px;width:100%;margin:0;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--tile) 48%,var(--surface));border-radius:23px;background:color-mix(in srgb,var(--tile) 35%,var(--surface));box-shadow:0 7px 17px rgba(30,44,66,.08)}
+.mf-feed-card .mf-tile-picture,.mf-diaper-blob .mf-tile-picture{box-sizing:border-box;position:relative;z-index:1;flex:0 0 88px;min-height:88px;width:100%;margin:0;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--tile) 48%,var(--surface));border-radius:23px;background:color-mix(in srgb,var(--tile) 35%,var(--surface));box-shadow:0 7px 17px rgba(30,44,66,.08);opacity:1}
 .mf-feed-card .mf-tile-picture>span.mf-care-mark,.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{position:relative;inset:auto;left:auto;top:auto;right:auto;transform:none;width:72px;height:72px;max-width:100%;max-height:100%;aspect-ratio:1;margin:0}
-.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:62px;height:62px}
-.mf-feed-card .mf-tile-copy,.mf-diaper-blob .mf-tile-copy{position:relative;z-index:2;display:grid;place-items:center;flex:0 0 24px;width:100%;margin:0;padding:0;color:var(--ink)}
+.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:62px;height:62px;opacity:1}
+.mf-feed-card .mf-tile-copy,.mf-diaper-blob .mf-tile-copy{position:relative;z-index:2;display:grid;place-items:center;flex:0 0 24px;width:100%;margin:0;padding:0;color:var(--ink);opacity:1}
 .mf-feed-card .mf-tile-copy strong,.mf-diaper-blob .mf-tile-copy strong{display:block;font:800 var(--mf-type-action)/1.18 var(--display);white-space:nowrap;letter-spacing:-.015em}
 .mf-diaper-blob .mf-tile-title{display:flex;align-items:center;justify-content:center;gap:5px;margin:0}
 .mf-diaper-blob .mf-tile-title>b{position:static;z-index:auto;display:grid;place-items:center;min-width:21px;width:21px;height:21px;padding:0;margin:0;border-radius:50%;font-size:12px;line-height:1}
@@ -606,7 +606,6 @@ body[data-screen="history"] .act-row,body[data-screen="baby-history"] .act-row{
 body[data-screen="history"] .act-row .act-main,body[data-screen="baby-history"] .act-row .act-main{background:transparent}
 body[data-screen="history"] .act-row .act-icon,body[data-screen="baby-history"] .act-row .act-icon{background:color-mix(in srgb,var(--c) 24%,var(--surface))}
 :root[data-theme="dark"] body:is([data-screen="history"],[data-screen="baby-history"]) .act-row{background:color-mix(in srgb,var(--c) 32%,#1b2030)}
-@media(max-width:430px){.mf-last-feed-value{font-size:13px}}
 `;
   document.head.appendChild(s);
 }
