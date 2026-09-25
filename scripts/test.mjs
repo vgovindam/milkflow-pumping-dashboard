@@ -139,10 +139,12 @@ for(const [name,css] of [['theme.css',themeEntry],['experience-system.css',exper
   if(/\.mf-(feed-card|diaper-blob)\{[^}]*(padding|min-height|border-radius)\s*:[^;}]*!important/.test(css))
     throw new Error(`Quick-log card geometry is re-pinned in ${name}; it belongs to the component in core-ui.js`);
 if(/\.mf-feed-card\{[^}]*!important/.test(core))throw new Error('Quick-log card geometry must not need !important inside its own component stylesheet');
-if(!core.includes('.mf-feed-card{height:108px;min-height:108px')||!core.includes('.mf-diaper-blob{height:112px;min-height:112px'))
-  throw new Error('Feed and diaper quick-log tiles must remain compact rather than long, empty columns.');
-if(!core.includes('width:90px;height:90px')||!core.includes('width:76px;height:76px'))
-  throw new Error('Theme art must be prominent on feed and diaper tiles.');
+if(!core.includes('.mf-feed-card,.mf-diaper-blob{box-sizing:border-box;height:132px;min-height:132px')||!core.includes('class="mf-tile-picture"')||!core.includes('class="mf-tile-copy"'))
+  throw new Error('Feed and diaper tiles must use a protected image area with captions below.');
+if(!core.includes('width:94px;height:94px')||!core.includes('width:80px;height:80px'))
+  throw new Error('Theme art must be prominent and contained on feed and diaper tiles.');
+if(!core.includes('.rows .row[data-care-kind]')||!core.includes('background-image:linear-gradient(130deg,color-mix(in srgb,var(--care-fill) 44%'))
+  throw new Error('Recent care entries need full-row activity palette fills.');
 if(!fs.readFileSync(path.join(ROOT,'scripts/care-icons/parts.mjs'),'utf8').includes('r: 13, scale: 0.70'))
   throw new Error('The semantic care-action badges must remain large enough to recognize.');
 if(!baseStyles.includes('.mobile-workspace{gap:3px;padding:3px;background:var(--line-soft);border-radius:999px')||!experienceSystem.includes('overflow:hidden;border-radius:999px'))

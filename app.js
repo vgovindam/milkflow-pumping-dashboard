@@ -762,7 +762,7 @@ function scheduleStrip(){
   }).join('')}</div>`;
 }
 function recentMom(n){ const a=momEntries().slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('history','No Mom history yet','Log a pump or import your private backup.','<button class="primary-link" data-import>Import backup</button>'); return `<div class="rows">${a.map(momRow).join('')}</div>`; }
-function momRow(e){ return `<button type="button" class="row" data-record="mom:${esc(e.id)}"><div class="row-icon mom">${bigIcon(e.type==='pump'?'pump':'nursing')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`; }
+function momRow(e){ return `<button type="button" class="row" data-care-kind="${e.type==='pump'?'pump':'nursing'}" data-record="mom:${esc(e.id)}"><div class="row-icon mom">${bigIcon(e.type==='pump'?'pump':'nursing')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`; }
 function momHistory(){
   const range=S.ui.momRange ?? 30, all=+range>=9999, cutoff=all?'':dateList(rangeDays(range,'mom'))[0];
   const a=momEntries().filter(e=>all||e.date>=cutoff).sort(byWhenDesc);
@@ -1112,7 +1112,8 @@ function babyLabel(e){
 }
 function babyRow(e){
   const ic=e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':e.eventType==='milestone'?'spark':'moon';
-  return `<button type="button" class="row" data-record="baby:${esc(e.id)}"><div class="row-icon baby ${e.eventType==='diaper'?`sub-${esc(e.subtype)}`:`kind-${esc(e.eventType)}`}">${bigIcon(ic)}</div><div class="row-main"><strong>${babyLabel(e)}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.note?` · ${esc(e.note)}`:''}${e.exactSourceDuplicate?' · source duplicate preserved':''}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
+  const kind=e.eventType==='feeding'?(e.feedingType==='formula'?'formula':'milk'):e.eventType==='diaper'?(e.subtype==='wet'?'wet':e.subtype==='poop'?'poop':'mixed'):['nursing','sleep','growth','milestone'].includes(e.eventType)?e.eventType:'milk';
+  return `<button type="button" class="row" data-care-kind="${kind}" data-record="baby:${esc(e.id)}"><div class="row-icon baby ${e.eventType==='diaper'?`sub-${esc(e.subtype)}`:`kind-${esc(e.eventType)}`}">${bigIcon(ic)}</div><div class="row-main"><strong>${babyLabel(e)}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.note?` · ${esc(e.note)}`:''}${e.exactSourceDuplicate?' · source duplicate preserved':''}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
 }
 function recentBaby(n){ const a=babyEvents().filter(e=>!e.exactSourceDuplicate).slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('baby','No Baby history yet','Use one of the four buttons above to start.'); return `<div class="rows">${a.map(babyRow).join('')}</div>`; }
 function babyHistory(){

@@ -94,17 +94,8 @@ body[data-realm="family"] .page-head .eyebrow{color:#5e5792;opacity:1}
 }
 
 /* ---------------------------------------------------------------- care history */
-/* Category is carried by the whole surface, never a colored edge. */
-body[data-realm="baby"] .rows .row{box-shadow:0 7px 18px rgba(38,64,83,.055)}
-body[data-realm="baby"] .rows .row:has(.row-icon.kind-feeding){background:linear-gradient(135deg,#eaf8f1,#dff2e9);border-color:#c9e7d9}
-body[data-realm="baby"] .rows .row:has(.row-icon.kind-nursing){background:linear-gradient(135deg,#fff0f6,#f9dfeb);border-color:#f2cada}
-body[data-realm="baby"] .rows .row:has(.row-icon.sub-wet){background:linear-gradient(135deg,#eaf6ff,#dceef9);border-color:#c7e2f2}
-body[data-realm="baby"] .rows .row:has(.row-icon.sub-poop){background:linear-gradient(135deg,#fff6e7,#f9e8c8);border-color:#efd7ae}
-body[data-realm="baby"] .rows .row:has(.row-icon.sub-both){background:linear-gradient(135deg,#f4efff,#e9dfff);border-color:#d9ccf3}
-body[data-realm="baby"] .rows .row:has(.row-icon.kind-sleep){background:linear-gradient(135deg,#eef0ff,#e1e4f8);border-color:#d0d5ef}
-body[data-realm="baby"] .rows .row:has(.row-icon.kind-growth){background:linear-gradient(135deg,#edf9f5,#dff1eb);border-color:#c9e4da}
-body[data-realm="baby"] .rows .row:has(.row-icon.kind-milestone){background:linear-gradient(135deg,#fbf0ff,#f0e1f5);border-color:#e1cbe8}
-body[data-realm="mom"] .rows .row{background:linear-gradient(135deg,#f4efff,#e9e5fb);border-color:#dad1f0;box-shadow:0 7px 18px rgba(73,57,113,.055)}
+/* Row palettes are owned by the semantic data-care-kind rules in core-ui.js. */
+body[data-realm] .rows .row{box-shadow:0 7px 18px rgba(38,64,83,.055)}
 body[data-realm] .rows .row:hover{filter:saturate(1.025) brightness(1.01)}
 
 
@@ -182,15 +173,6 @@ body[data-screen="baby-trends"] .daily-cell span,body[data-screen="baby-trends"]
 :root[data-theme="dark"] body[data-realm="family"] .page-head:before{background:linear-gradient(135deg,#242338,#2a2742 48%,#203341)}
 :root[data-theme="dark"] body[data-realm] .page-head h2{color:#f7f9fc;text-shadow:none}
 :root[data-theme="dark"] body[data-realm] .page-head .eyebrow{color:#c8d5e7;opacity:1}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-feeding){background:linear-gradient(135deg,#173128,#1c352f);border-color:#294c40}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-nursing){background:linear-gradient(135deg,#3a2030,#452638);border-color:#63364c}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-wet){background:linear-gradient(135deg,#173040,#1b3a4d);border-color:#28536a}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-poop){background:linear-gradient(135deg,#3b2c15,#46351b);border-color:#604b29}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.sub-both){background:linear-gradient(135deg,#302643,#3a2c51);border-color:#50406c}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-sleep){background:linear-gradient(135deg,#252941,#2c304c);border-color:#3f4663}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-growth){background:linear-gradient(135deg,#1b332d,#203d35);border-color:#315148}
-:root[data-theme="dark"] body[data-realm="baby"] .rows .row:has(.row-icon.kind-milestone){background:linear-gradient(135deg,#382641,#432d4d);border-color:#5c3f67}
-:root[data-theme="dark"] body[data-realm="mom"] .rows .row{background:linear-gradient(135deg,#29243b,#322943);border-color:#453a5c}
 :root[data-theme="dark"] body[data-screen="baby-trends"] .metric .metric-icon{background:rgba(255,255,255,.065)}
 :root[data-theme="dark"] body[data-screen="settings"] #view .page-head,
 :root[data-theme="dark"] body[data-screen^="set-"] #view .page-head{isolation:isolate;background:linear-gradient(135deg,#242338,#2a2742 48%,#203341);border-color:#3a4053;box-shadow:0 14px 34px rgba(0,0,0,.24)}

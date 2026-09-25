@@ -486,7 +486,7 @@ body[data-realm] .metric[data-metric="moon"] .metric-icon,body[data-realm] .metr
 body[data-realm] .metric[data-metric="spark"] .metric-icon{color:var(--mixed-ink)}
 body[data-realm] .metric{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.8);border-radius:25px;background:linear-gradient(145deg,rgba(255,255,255,.9),var(--realm-soft));box-shadow:0 13px 30px rgba(67,58,110,.08)}body[data-realm] .metric:after{content:"";position:absolute;right:-18px;bottom:-28px;width:82px;height:62px;border-radius:50%;background:rgba(255,255,255,.37)}body[data-realm] .metric-icon{position:relative;z-index:1;border-radius:50%;background:rgba(255,255,255,.7);color:var(--realm-ink);box-shadow:0 6px 15px rgba(68,61,110,.08)}body[data-realm] .metric>div:last-child{position:relative;z-index:1}
 body[data-realm="mom"] .metric:nth-child(2){--realm-soft:#ffe5f0;--realm-ink:#a64672}body[data-realm="mom"] .metric:nth-child(3){--realm-soft:#e5f5ff;--realm-ink:#357ba5}body[data-realm="mom"] .metric:nth-child(4){--realm-soft:#e3f6ee;--realm-ink:#327d65}body[data-realm="baby"] .metric:nth-child(2){--realm-soft:#fff0d7;--realm-ink:#98702b}body[data-realm="baby"] .metric:nth-child(3){--realm-soft:#eee5ff;--realm-ink:#684da9}body[data-realm="baby"] .metric:nth-child(4){--realm-soft:#e3f6ee;--realm-ink:#347e67}
-body[data-realm] .rows{display:grid;gap:8px}body[data-realm] .row{border:1px solid color-mix(in srgb,var(--realm) 9%,transparent);border-radius:18px;background:rgba(255,255,255,.58);padding:11px}body[data-realm] .row:hover{background:rgba(255,255,255,.86)}body[data-realm] .row-icon{border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
+body[data-realm] .rows{display:grid;gap:8px}body[data-realm] .row{border:1px solid color-mix(in srgb,var(--realm) 9%,transparent);border-radius:18px;background-color:rgba(255,255,255,.58);padding:11px}body[data-realm] .row:hover{filter:saturate(1.06) brightness(.99)}body[data-realm] .row-icon{border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
 body[data-realm="baby"] .review-stats,body[data-realm="baby"] .stat-ring,body[data-realm="baby"] .daily-row,body[data-realm="baby"] .journey,body[data-realm="baby"] .stage-card,body[data-realm="baby"] .ms-group,body[data-realm="baby"] .doctor-summary-card,body[data-realm="baby"] .qa-grid>div{border-color:rgba(255,255,255,.76);background:linear-gradient(145deg,rgba(255,255,255,.84),rgba(224,247,242,.56));box-shadow:0 13px 30px rgba(47,97,104,.08)}
 body[data-realm] .grp{border:1px solid rgba(255,255,255,.78);border-radius:26px;background:rgba(255,255,255,.76);box-shadow:0 14px 34px rgba(67,58,110,.08)}body[data-realm] .grp-row{min-height:68px}body[data-realm] .grp-icon{border-radius:15px}
 body[data-realm] .stash-hero,body[data-realm] .data-status{border-color:rgba(255,255,255,.78);border-radius:30px;background:linear-gradient(135deg,rgba(255,255,255,.9),var(--realm-soft));box-shadow:0 16px 38px rgba(67,58,110,.09)}
@@ -566,21 +566,35 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 .mf-last-feed-value em{text-align:right}
 .mf-baby-timing{min-width:0;gap:10px}
 .mf-last-feed-slot{min-width:0}
-/* The whole quick-log tile is the action; its illustrated mark deserves the same hierarchy as its label. */
-.mf-feed-card,.mf-diaper-blob{box-sizing:border-box;justify-content:flex-end}
-.mf-feed-card{height:108px;min-height:108px;padding:79px 4px 7px}
-.mf-feed-card>span.mf-care-mark{left:50%;top:-3px;right:auto;transform:translateX(-50%);width:90px;height:90px}
-.mf-diaper-blob{height:112px;min-height:112px;display:flex;flex-direction:column;align-items:center;padding:71px 4px 7px}
-.mf-diaper-blob>span.mf-care-mark{left:0;top:-2px;right:auto;transform:none;width:76px;height:76px}
-.mf-feed-card strong,.mf-diaper-blob strong{font-size:clamp(14px,4vw,19px);line-height:1.16;white-space:nowrap}
-.mf-diaper-blob span:not(.mf-care-mark){font-size:12px;line-height:1.2;margin-top:3px}
-.mf-diaper-blob b{z-index:3;right:4px}
+/* Image and caption have separate flow rows. Neither can overlap, even if an icon grows. */
+.mf-feed-card,.mf-diaper-blob{box-sizing:border-box;height:132px;min-height:132px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:3px 4px 8px;text-align:center}
+.mf-feed-card .mf-tile-picture,.mf-diaper-blob .mf-tile-picture{position:relative;z-index:1;flex:1 1 auto;min-height:0;width:100%;margin:0;display:grid;place-items:center}
+.mf-feed-card .mf-tile-picture>span.mf-care-mark,.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{position:relative;inset:auto;left:auto;top:auto;right:auto;transform:none;width:94px;height:94px;max-width:100%;max-height:100%;aspect-ratio:1;margin:0}
+.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:80px;height:80px}
+.mf-feed-card .mf-tile-copy,.mf-diaper-blob .mf-tile-copy{position:relative;z-index:2;display:block;flex:0 0 auto;width:100%;margin:0;padding:0}
+.mf-feed-card .mf-tile-copy strong,.mf-diaper-blob .mf-tile-copy strong{display:block;font-size:clamp(14px,4vw,19px);line-height:1.16;white-space:nowrap}
+.mf-diaper-blob .mf-tile-title{display:flex;align-items:center;justify-content:center;gap:5px;margin:0}
+.mf-diaper-blob .mf-tile-title>b{position:static;z-index:auto;display:grid;place-items:center;min-width:22px;width:22px;height:22px;padding:0;margin:0;border-radius:50%;font-size:12px;line-height:1}
+.mf-diaper-blob .mf-tile-detail{display:block;margin:1px 0 0;font-size:11px;line-height:1.15;font-weight:800}
 /* Mom's two primary actions are app-style image tiles: the illustration fills the picture
    area and the one useful label sits below it. No floating corner icon or duplicate hint. */
 .mf-dream-actions .quick-tile{box-sizing:border-box;height:132px;min-height:132px;padding:99px 10px 8px;justify-content:flex-end;align-items:center;text-align:center}
 .mf-dream-actions .quick-tile .tile-art{left:50%;right:auto;top:2px;transform:translateX(-50%);width:98px;height:98px;border-radius:50%}
 .mf-dream-actions .quick-tile strong{font-size:20px;line-height:1.15}
 /* The history rows carry their own activity color across the surface. */
+/* One semantic palette paints the complete activity row, not only its little icon. */
+body[data-realm] .rows .row[data-care-kind]{--care-fill:var(--care-milk);background-image:linear-gradient(130deg,color-mix(in srgb,var(--care-fill) 44%,var(--mf-world-surface,var(--surface))),color-mix(in srgb,var(--care-fill) 26%,var(--mf-world-surface,var(--surface))));border-color:color-mix(in srgb,var(--care-fill) 45%,var(--mf-world-surface,var(--surface)))}
+body[data-realm] .rows .row[data-care-kind="milk"]{--care-fill:var(--care-milk)}
+body[data-realm] .rows .row[data-care-kind="formula"]{--care-fill:var(--care-formula)}
+body[data-realm] .rows .row[data-care-kind="nursing"]{--care-fill:var(--care-nursing)}
+body[data-realm] .rows .row[data-care-kind="wet"]{--care-fill:var(--care-wet)}
+body[data-realm] .rows .row[data-care-kind="poop"]{--care-fill:var(--care-poop)}
+body[data-realm] .rows .row[data-care-kind="mixed"]{--care-fill:var(--care-mixed)}
+body[data-realm] .rows .row[data-care-kind="sleep"]{--care-fill:var(--care-sleep)}
+body[data-realm] .rows .row[data-care-kind="growth"]{--care-fill:var(--care-growth)}
+body[data-realm] .rows .row[data-care-kind="milestone"]{--care-fill:var(--care-milestone)}
+body[data-realm] .rows .row[data-care-kind="pump"]{--care-fill:var(--care-pump)}
+:root[data-theme="dark"] body[data-realm] .rows .row[data-care-kind]{background-image:linear-gradient(130deg,color-mix(in srgb,var(--care-fill) 30%,var(--mf-world-surface,var(--surface))),color-mix(in srgb,var(--care-fill) 18%,var(--mf-world-surface,var(--surface))))}
 body[data-screen="history"] .act-row,body[data-screen="baby-history"] .act-row{
   background:color-mix(in srgb,var(--c) 24%,var(--surface));
   border-color:color-mix(in srgb,var(--c) 43%,var(--line));
@@ -589,7 +603,6 @@ body[data-screen="history"] .act-row .act-main,body[data-screen="baby-history"] 
 body[data-screen="history"] .act-row .act-icon,body[data-screen="baby-history"] .act-row .act-icon{background:color-mix(in srgb,var(--c) 24%,var(--surface))}
 :root[data-theme="dark"] body:is([data-screen="history"],[data-screen="baby-history"]) .act-row{background:color-mix(in srgb,var(--c) 32%,#1b2030)}
 @media(max-width:430px){.mf-last-feed-value{font-size:13px}}
-@media(max-width:360px){.mf-feed-card>span.mf-care-mark{width:calc(100% - 2px);height:auto;aspect-ratio:1}.mf-diaper-blob>span.mf-care-mark{width:calc(100% - 38px);height:auto;aspect-ratio:1}}
 `;
   document.head.appendChild(s);
 }
@@ -705,16 +718,16 @@ function renderBaby(s){
 
     <div class="mf-care-label"><span>Feed</span><small>Quick log</small></div>
     <div class="mf-feed-zone">
-      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle">${careMark('milk')}<strong>Breast milk</strong></button>
-      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing">${careMark('nurse')}<strong>Nurse</strong></button>
-      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula">${careMark('formula')}<strong>Formula</strong></button>
+      <button type="button" class="mf-feed-card milk" data-feed-type="expressed_milk" aria-label="Log breast milk bottle"><span class="mf-tile-picture">${careMark('milk')}</span><span class="mf-tile-copy"><strong>Breast milk</strong></span></button>
+      <button type="button" class="mf-feed-card nurse" data-feed-type="nursing" aria-label="Log nursing"><span class="mf-tile-picture">${careMark('nurse')}</span><span class="mf-tile-copy"><strong>Nurse</strong></span></button>
+      <button type="button" class="mf-feed-card formula" data-feed-type="formula" aria-label="Log formula"><span class="mf-tile-picture">${careMark('formula')}</span><span class="mf-tile-copy"><strong>Formula</strong></span></button>
     </div>
 
     <div class="mf-care-label"><span>Diapers</span><small>${st.diaperCount?`${st.diaperCount} today`:'Quick log'}</small></div>
     <div class="mf-diaper-cluster">
-      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper">${careMark('wet')}<b>${st.wet}</b><strong>Wet</strong><span>diaper</span></button>
-      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper">${careMark('poop')}<b>${st.poop}</b><strong>Poopy</strong><span>diaper</span></button>
-      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper">${careMark('mixed')}<b>${st.both}</b><strong>Mixed</strong><span>wet + poopy</span></button>
+      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper"><span class="mf-tile-picture">${careMark('wet')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Wet</strong><b>${st.wet}</b></span><span class="mf-tile-detail">diaper</span></span></button>
+      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper"><span class="mf-tile-picture">${careMark('poop')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Poopy</strong><b>${st.poop}</b></span><span class="mf-tile-detail">diaper</span></span></button>
+      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper"><span class="mf-tile-picture">${careMark('mixed')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Mixed</strong><b>${st.both}</b></span><span class="mf-tile-detail">wet + poopy</span></span></button>
     </div>
 
     <div class="mf-care-ribbon" aria-label="More baby care">

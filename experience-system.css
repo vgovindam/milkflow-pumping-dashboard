@@ -263,27 +263,21 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{overflow:hidden;box-shadow:0 6px 16px var(--mf-world-shadow)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>.mf-animal-sticker,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>svg{display:none!important}
-/* Six tiles, one surface, six accents.
-   These used to be six filled pastels - mint, pink, peach, blue, yellow, lilac - and six
-   filled pastels side by side is a toy box, not a product. The accent still has to carry the
-   difference (Feed and Diapers once shared blue and violet and read as one block), so it now
-   does it the way a real surface system does: the card is the world's own surface with a
-   trace of the accent mixed in, a border of the same hue, and the accent at full strength
-   only where it is small - the icon plate and the sub-label. Legible at a glance, and no
-   sugar. */
+/* Six recognizable pastel surfaces, one per care action. Keep the scene visible around
+   the cards while letting color fill each complete tile rather than only the small icon. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){
-  background:color-mix(in srgb,var(--tile) 9%,var(--mf-world-surface))!important;
-  border:1px solid color-mix(in srgb,var(--tile) 26%,transparent)!important;
+  background:color-mix(in srgb,var(--tile) 34%,var(--mf-world-surface))!important;
+  border:1px solid color-mix(in srgb,var(--tile) 48%,var(--mf-world-surface))!important;
   color:var(--mf-world-text)!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){
-  background:color-mix(in srgb,var(--tile) 16%,var(--mf-world-surface))!important;
-  border-color:color-mix(in srgb,var(--tile) 34%,transparent)!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.milk{--tile:#14a085}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.nurse{--tile:#d6467e}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.formula{--tile:#e07a2f}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.wet{--tile:#2e8fd0}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.poop{--tile:#b8862b}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.both{--tile:#7a5bd4}
+  background:color-mix(in srgb,var(--tile) 27%,var(--mf-world-surface))!important;
+  border-color:color-mix(in srgb,var(--tile) 45%,var(--mf-world-surface))!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.milk{--tile:var(--care-milk)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.nurse{--tile:var(--care-nursing)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.formula{--tile:var(--care-formula)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.wet{--tile:var(--care-wet)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.poop{--tile:var(--care-poop)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.both{--tile:var(--care-mixed)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) strong{color:var(--mf-world-text)!important;opacity:1!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) :is(small,span){color:color-mix(in srgb,var(--tile) 76%,var(--mf-world-text))!important;opacity:1!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) :is(small,span){

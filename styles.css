@@ -60,6 +60,12 @@
   --sleep:#e7e9fb;      --sleep-ink:#4b52a8;
   --growth:#fde8ef;     --growth-ink:#a8446b;
 
+  /* Shared semantic fills for quick logs and matching activity rows. */
+  --care-milk:#61c5a3;--care-nursing:#dc83ae;--care-formula:#e9a06a;
+  --care-wet:#6bb8df;--care-poop:#dab05e;--care-mixed:#aa8cdb;
+  --care-sleep:#929de0;--care-growth:#87bf9c;--care-milestone:#c59ddb;
+  --care-pump:#9983dc;
+
   --good:#177053;
   --good-soft:#e6f7f0;
   --danger:#b23b51;
@@ -373,7 +379,7 @@ button{cursor:pointer;font-family:inherit}
 /* Preserve the final hero silhouette during the first render, before core-ui injects its
    detailed layout rules. A late radius used to flash as a square on cold starts. */
 .mf-animal-hero,.mf-dream-hero{border-radius:29px;overflow:hidden}
-.rev-row{display:grid;grid-template-columns:66px 38px minmax(0,1fr) 18px;align-items:center;gap:10px;background:color-mix(in srgb,var(--c) 22%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 38%,var(--line));border-left:4px solid var(--c);border-radius:16px;padding:11px 12px;text-align:left;box-shadow:var(--shadow-soft)}
+.rev-row{display:grid;grid-template-columns:66px 38px minmax(0,1fr) 18px;align-items:center;gap:10px;background:linear-gradient(130deg,color-mix(in srgb,var(--c) 38%,var(--surface)),color-mix(in srgb,var(--c) 25%,var(--surface)));border:1px solid color-mix(in srgb,var(--c) 45%,var(--line));border-left:4px solid var(--c);border-radius:16px;padding:11px 12px;text-align:left;box-shadow:var(--shadow-soft)}
 .rev-row:hover{background:color-mix(in srgb,var(--c) 30%,var(--surface))}
 :root[data-theme="dark"] .rev-row{background:color-mix(in srgb,var(--c) 28%,var(--surface));border-color:color-mix(in srgb,var(--c) 40%,var(--line))}
 .rev-time{font-size:11px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
