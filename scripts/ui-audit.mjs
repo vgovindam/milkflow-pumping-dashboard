@@ -168,7 +168,7 @@ requireText('Mom keeps its fact component',files.ui,'.mf-hero-fact strong');
 requireText('Baby has a generous photo',read('component-theme-core.css'),'width:136px;height:136px');
 requireText('modern title face',files.ui,'.mf-journey-head strong,.mf-dream-actions .quick-tile strong{font-family:var(--display)');
 requireText('editorial accent face',files.ui,'.mf-dream-hero .mf-dream-main h2,.mf-animal-copy h2{font-family:var(--editorial)');
-requireText('mobile hero title scale',files.ui,'.mf-dream-main h2{grid-area:title;max-width:none;font-size:26px');
+requireText('mobile hero title scale',files.ui,'.mf-dream-main h2{grid-area:title;max-width:none;font-size:28px');
 requireText('readable row copy',files.css,'.row-main strong{font-size:15px');
 requireText('dark baby name',files.ui,':root[data-theme="dark"] .mf-animal-copy h2{color:#f7f3ff}');
 requireText('dark baby wish',read('component-theme-core.css'),'.mf-baby-wish,');

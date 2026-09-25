@@ -528,7 +528,7 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
   .mf-dream-hero{min-height:0;padding:14px 15px 15px;border-radius:29px;grid-template-columns:minmax(0,1fr) 118px;grid-template-areas:"greeting photo" "title photo" "facts facts" "next next";align-items:start;column-gap:14px;row-gap:0}.mf-dream-main,.mf-dream-side{display:contents}.mf-dream-welcome{grid-area:greeting;min-height:0;padding:0;font-size:15px;align-self:center;min-width:0}.mf-dream-welcome>b{min-width:0;overflow:hidden;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.15}.mf-dream-welcome>span{width:25px;height:25px}.mf-dream-kicker{margin-top:0;font-size:9px}/* One owner for the headline on a phone. There were five rules for this element and the
    last one won by being last - including a max-width:74% from the days when the line ran
    the full width of the card rather than sitting beside a photo. */
-  .mf-dream-main h2{grid-area:title;max-width:none;font-size:26px;line-height:1.06;margin:6px 0 0;align-self:start;text-wrap:balance;letter-spacing:-.025em}.mf-dream-main>p{display:none}.mf-dream-next{grid-area:next;width:100%;margin-top:9px;padding:8px 11px 8px 13px;border-radius:18px;gap:9px}.mf-dream-next>div strong{font-size:16px}.mf-dream-next>div small{font-size:9px}.mf-dream-next button{min-height:48px;width:auto;min-width:91px;padding:0 12px;justify-content:center;border-radius:15px}.mf-dream-next button span{display:inline;font-size:10px}.mf-dream-photo{grid-area:photo;align-self:center;justify-self:end;width:118px;height:118px;border-width:5px}.mf-hero-facts{grid-area:facts;margin-top:11px;gap:8px}.mf-dream-photo .placeholder{font-size:32px}.mf-dream-journey{padding:17px 15px}.mf-journey-track{margin-top:14px;grid-auto-columns:82px}.mf-dream-actions .quick-tile{min-height:116px;padding:58px 13px 15px}.mf-dream-actions .quick-tile strong{font-size:19px}.mf-dream-actions .quick-tile .tile-art{width:54px;height:54px}
+  .mf-dream-main h2{grid-area:title;max-width:none;font-size:28px;line-height:1.06;margin:6px 0 0;align-self:start;text-wrap:balance;letter-spacing:-.025em}.mf-dream-main>p{display:none}.mf-dream-next{grid-area:next;width:100%;margin-top:9px;padding:8px 11px 8px 13px;border-radius:18px;gap:9px}.mf-dream-next>div strong{font-size:18px}.mf-dream-next>div small{font-size:11px}.mf-dream-next button{min-height:48px;width:auto;min-width:91px;padding:0 12px;justify-content:center;border-radius:15px}.mf-dream-next button span{display:inline;font-size:11px}.mf-dream-photo{grid-area:photo;align-self:center;justify-self:end;width:118px;height:118px;border-width:5px}.mf-hero-facts{grid-area:facts;margin-top:11px;gap:8px}.mf-dream-photo .placeholder{font-size:32px}.mf-dream-journey{padding:17px 15px}.mf-journey-track{margin-top:14px;grid-auto-columns:82px}.mf-dream-actions .quick-tile{min-height:116px;padding:58px 13px 15px}.mf-dream-actions .quick-tile strong{font-size:19px}.mf-dream-actions .quick-tile .tile-art{width:54px;height:54px}
   .mf-animal-hero{padding:15px;border-radius:29px 36px 28px 34px / 33px 28px 37px 30px}.mf-animal-profile .mf-profile-photo{width:138px;height:138px;border-width:7px;box-shadow:0 12px 28px rgba(38,99,102,.2)}.mf-animal-copy .welcome{display:inline-flex;flex-wrap:wrap;padding:5px 7px;border-radius:9px;background:rgba(255,255,255,.55);color:#29606b;font-size:9px;line-height:1.2;letter-spacing:.055em;opacity:1}.mf-animal-copy h2{margin-top:7px;font-size:25px;color:#163f52}.mf-animal-copy small{font-size:9.5px;color:#41636a;opacity:1}.mf-animal-hero>.bear{width:70px;height:70px;right:80px;bottom:-1px}.mf-animal-hero>.bunny{width:57px;height:57px;right:20px;bottom:2px}.mf-animal-star.one{left:48%;top:16px}.mf-animal-checkin{grid-template-columns:44px minmax(0,1fr) auto;padding:10px 11px}.mf-animal-checkin>.mf-animal-sticker{width:42px;height:42px}
   .mf-profile-photo{width:60px;height:60px}.mf-profile-copy h2{font-size:27px}
   .mf-top-orb-wrap{width:52px}.mf-top-orb{width:50px;height:50px}.mf-top-orb strong{font-size:14px}.mf-top-orb-wrap>span{font-size:9.5px}
@@ -566,21 +566,25 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 .mf-last-feed-value em{text-align:right}
 .mf-baby-timing{min-width:0;gap:10px}
 .mf-last-feed-slot{min-width:0}
-/* Image and caption have separate flow rows. Neither can overlap, even if an icon grows. */
-.mf-feed-card,.mf-diaper-blob{box-sizing:border-box;height:132px;min-height:132px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:3px 4px 8px;text-align:center}
-.mf-feed-card .mf-tile-picture,.mf-diaper-blob .mf-tile-picture{position:relative;z-index:1;flex:1 1 auto;min-height:0;width:100%;margin:0;display:grid;place-items:center}
-.mf-feed-card .mf-tile-picture>span.mf-care-mark,.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{position:relative;inset:auto;left:auto;top:auto;right:auto;transform:none;width:94px;height:94px;max-width:100%;max-height:100%;aspect-ratio:1;margin:0}
-.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:80px;height:80px}
-.mf-feed-card .mf-tile-copy,.mf-diaper-blob .mf-tile-copy{position:relative;z-index:2;display:block;flex:0 0 auto;width:100%;margin:0;padding:0}
-.mf-feed-card .mf-tile-copy strong,.mf-diaper-blob .mf-tile-copy strong{display:block;font-size:clamp(14px,4vw,19px);line-height:1.16;white-space:nowrap}
+/* A short illustrated box sits above each label. The entire picture and caption remain a
+   single touch target, but color, border and shadow belong only to the picture box. */
+body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){--tile:var(--care-milk);box-sizing:border-box;height:117px;min-height:117px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;padding:0;text-align:center;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
+:root[data-theme="dark"] body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){background:transparent}
+.mf-feed-card.milk{--tile:var(--care-milk)}.mf-feed-card.nurse{--tile:var(--care-nursing)}.mf-feed-card.formula{--tile:var(--care-formula)}
+.mf-diaper-blob.wet{--tile:var(--care-wet)}.mf-diaper-blob.poop{--tile:var(--care-poop)}.mf-diaper-blob.both{--tile:var(--care-mixed)}
+.mf-feed-card .mf-tile-picture,.mf-diaper-blob .mf-tile-picture{box-sizing:border-box;position:relative;z-index:1;flex:0 0 88px;min-height:88px;width:100%;margin:0;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--tile) 48%,var(--surface));border-radius:23px;background:color-mix(in srgb,var(--tile) 35%,var(--surface));box-shadow:0 7px 17px rgba(30,44,66,.08)}
+.mf-feed-card .mf-tile-picture>span.mf-care-mark,.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{position:relative;inset:auto;left:auto;top:auto;right:auto;transform:none;width:72px;height:72px;max-width:100%;max-height:100%;aspect-ratio:1;margin:0}
+.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:62px;height:62px}
+.mf-feed-card .mf-tile-copy,.mf-diaper-blob .mf-tile-copy{position:relative;z-index:2;display:grid;place-items:center;flex:0 0 24px;width:100%;margin:0;padding:0;color:var(--ink)}
+.mf-feed-card .mf-tile-copy strong,.mf-diaper-blob .mf-tile-copy strong{display:block;font:800 var(--mf-type-action)/1.18 var(--display);white-space:nowrap;letter-spacing:-.015em}
 .mf-diaper-blob .mf-tile-title{display:flex;align-items:center;justify-content:center;gap:5px;margin:0}
-.mf-diaper-blob .mf-tile-title>b{position:static;z-index:auto;display:grid;place-items:center;min-width:22px;width:22px;height:22px;padding:0;margin:0;border-radius:50%;font-size:12px;line-height:1}
-.mf-diaper-blob .mf-tile-detail{display:block;margin:1px 0 0;font-size:11px;line-height:1.15;font-weight:800}
-/* Mom's two primary actions are app-style image tiles: the illustration fills the picture
-   area and the one useful label sits below it. No floating corner icon or duplicate hint. */
-.mf-dream-actions .quick-tile{box-sizing:border-box;height:132px;min-height:132px;padding:99px 10px 8px;justify-content:flex-end;align-items:center;text-align:center}
-.mf-dream-actions .quick-tile .tile-art{left:50%;right:auto;top:2px;transform:translateX(-50%);width:98px;height:98px;border-radius:50%}
-.mf-dream-actions .quick-tile strong{font-size:20px;line-height:1.15}
+.mf-diaper-blob .mf-tile-title>b{position:static;z-index:auto;display:grid;place-items:center;min-width:21px;width:21px;height:21px;padding:0;margin:0;border-radius:50%;font-size:12px;line-height:1}
+/* Mom shares the same picture/caption proportions and action hit area. */
+.mf-dream-actions .quick-tile{box-sizing:border-box;height:117px;min-height:117px;padding:93px 4px 0;justify-content:flex-end;align-items:center;text-align:center;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
+:root[data-theme="dark"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile{background:transparent}
+.mf-dream-actions .quick-tile .tile-art{box-sizing:border-box;left:0;right:0;top:0;transform:none;width:100%;height:88px;border:1px solid color-mix(in srgb,var(--mom) 33%,var(--surface));border-radius:23px;background:color-mix(in srgb,var(--mom) 24%,var(--surface));box-shadow:0 7px 17px rgba(30,44,66,.08)}
+.mf-dream-actions .quick-tile .tile-art .mf-care-art{width:72px;height:72px}
+.mf-dream-actions .quick-tile strong{font-size:var(--mf-type-action);line-height:1.18}
 /* The history rows carry their own activity color across the surface. */
 /* One semantic palette paints the complete activity row, not only its little icon. */
 body[data-realm] .rows .row[data-care-kind]{--care-fill:var(--care-milk);background-image:linear-gradient(130deg,color-mix(in srgb,var(--care-fill) 44%,var(--mf-world-surface,var(--surface))),color-mix(in srgb,var(--care-fill) 26%,var(--mf-world-surface,var(--surface))));border-color:color-mix(in srgb,var(--care-fill) 45%,var(--mf-world-surface,var(--surface)))}
@@ -725,9 +729,9 @@ function renderBaby(s){
 
     <div class="mf-care-label"><span>Diapers</span><small>${st.diaperCount?`${st.diaperCount} today`:'Quick log'}</small></div>
     <div class="mf-diaper-cluster">
-      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper"><span class="mf-tile-picture">${careMark('wet')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Wet</strong><b>${st.wet}</b></span><span class="mf-tile-detail">diaper</span></span></button>
-      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper"><span class="mf-tile-picture">${careMark('poop')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Poopy</strong><b>${st.poop}</b></span><span class="mf-tile-detail">diaper</span></span></button>
-      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper"><span class="mf-tile-picture">${careMark('mixed')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Mixed</strong><b>${st.both}</b></span><span class="mf-tile-detail">wet + poopy</span></span></button>
+      <button type="button" class="mf-diaper-blob wet" data-diaper="wet" aria-label="Log wet diaper"><span class="mf-tile-picture">${careMark('wet')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Wet</strong><b>${st.wet}</b></span></span></button>
+      <button type="button" class="mf-diaper-blob poop" data-diaper="poop" aria-label="Log poopy diaper"><span class="mf-tile-picture">${careMark('poop')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Poopy</strong><b>${st.poop}</b></span></span></button>
+      <button type="button" class="mf-diaper-blob both" data-diaper="both" aria-label="Log mixed diaper"><span class="mf-tile-picture">${careMark('mixed')}</span><span class="mf-tile-copy"><span class="mf-tile-title"><strong>Mixed</strong><b>${st.both}</b></span></span></button>
     </div>
 
     <div class="mf-care-ribbon" aria-label="More baby care">

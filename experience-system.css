@@ -213,9 +213,11 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-journey,.mf-dream-metrics .metric){background:var(--mf-world-surface)!important;border-color:var(--mf-world-line)!important;box-shadow:0 12px 28px var(--mf-world-shadow)!important;color:var(--mf-world-text)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey :is(h2,h3,strong){color:var(--mf-world-text)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey :is(p,small,span){color:var(--mf-world-muted)!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile{position:relative;overflow:hidden;border-color:var(--mf-world-line)!important;box-shadow:0 10px 24px var(--mf-world-shadow)!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{background:linear-gradient(145deg,#dff0fb,#cfe4f4)!important;color:#174d67!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{background:linear-gradient(145deg,#ffe7f0,#f8d5e3)!important;color:#7a294c!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile{position:relative;overflow:visible;background:transparent!important;border:0!important;box-shadow:none!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{color:#174d67!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{color:#7a294c!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"] .tile-art{background:linear-gradient(145deg,#dff0fb,#cfe4f4)}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"] .tile-art{background:linear-gradient(145deg,#ffe7f0,#f8d5e3)}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile :is(strong,small,span){color:inherit!important;opacity:1!important}
 
 /* Baby hero is the most immersive front layer. */
@@ -241,7 +243,7 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy .welcome{
   color:var(--mf-world-deep);
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy h2{margin-top:7px;color:#fff!important;font-family:var(--display);font-size:31px;font-weight:850;line-height:1;letter-spacing:-.04em;text-shadow:0 2px 13px rgba(14,17,23,.42)!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy h2{margin-top:7px;color:#fff!important;font-family:var(--display);font-size:34px;font-weight:850;line-height:1;letter-spacing:-.04em;text-shadow:0 2px 13px rgba(14,17,23,.42)!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{margin-top:6px;color:rgba(255,255,255,.95)!important;font-size:10.5px;font-weight:750;opacity:1;text-shadow:0 2px 10px rgba(14,17,23,.36)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-facts{z-index:4}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact{min-width:96px;padding:9px 11px;border:1px solid rgba(255,255,255,.34)!important;border-radius:17px;background:rgba(18,23,30,.46)!important;color:#fff!important;text-align:left;backdrop-filter:blur(9px);box-shadow:0 5px 16px rgba(20,24,31,.12)}
@@ -260,18 +262,15 @@
   border:1px solid var(--mf-world-line);border-radius:28px;overflow:hidden;
   background:var(--mf-world-surface)!important;box-shadow:0 11px 26px var(--mf-world-shadow);backdrop-filter:none
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{overflow:hidden;box-shadow:0 6px 16px var(--mf-world-shadow)!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{overflow:visible;box-shadow:none!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>.mf-animal-sticker,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>svg{display:none!important}
-/* Six recognizable pastel surfaces, one per care action. Keep the scene visible around
-   the cards while letting color fill each complete tile rather than only the small icon. */
+/* Six colored picture surfaces, with labels on the scene beneath each picture. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){
-  background:color-mix(in srgb,var(--tile) 34%,var(--mf-world-surface))!important;
-  border:1px solid color-mix(in srgb,var(--tile) 48%,var(--mf-world-surface))!important;
+  background:transparent!important;border:0!important;
   color:var(--mf-world-text)!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){
-  background:color-mix(in srgb,var(--tile) 27%,var(--mf-world-surface))!important;
-  border-color:color-mix(in srgb,var(--tile) 45%,var(--mf-world-surface))!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) .mf-tile-picture{background:color-mix(in srgb,var(--tile) 34%,var(--mf-world-surface));border-color:color-mix(in srgb,var(--tile) 48%,var(--mf-world-surface));box-shadow:0 6px 16px var(--mf-world-shadow)}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) .mf-tile-picture{background:color-mix(in srgb,var(--tile) 27%,var(--mf-world-surface));border-color:color-mix(in srgb,var(--tile) 45%,var(--mf-world-surface))}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.milk{--tile:var(--care-milk)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.nurse{--tile:var(--care-nursing)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.formula{--tile:var(--care-formula)}
@@ -282,7 +281,7 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) :is(small,span){color:color-mix(in srgb,var(--tile) 76%,var(--mf-world-text))!important;opacity:1!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) :is(small,span){
   color:color-mix(in srgb,var(--tile) 52%,var(--mf-world-text))!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob{overflow:hidden;box-shadow:0 6px 16px var(--mf-world-shadow)!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob{overflow:visible;box-shadow:none!important}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>.mf-animal-sticker,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>svg{display:none!important}
 /* The count badge is the component layer's, in both light and dark. This rule used to restate
@@ -372,8 +371,10 @@
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-side-note,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next{background:#171d29!important;border-color:rgba(255,255,255,.16)!important;color:#fff!important}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next :is(strong,small,span,p){color:#fff!important;opacity:1!important;text-shadow:none!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{background:linear-gradient(145deg,#173849,#1d4355)!important;color:#bcecff!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{background:linear-gradient(145deg,#442238,#552843)!important;color:#ffc2d8!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{color:#bcecff!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{color:#ffc2d8!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"] .tile-art{background:linear-gradient(145deg,#173849,#1d4355)}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"] .tile-art{background:linear-gradient(145deg,#442238,#552843)}
 /* Mom dark-mode hierarchy: important totals, progress, schedule and actions stay bright
    without flattening the selected illustrated world. */
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress{

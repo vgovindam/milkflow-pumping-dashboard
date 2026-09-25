@@ -139,10 +139,12 @@ for(const [name,css] of [['theme.css',themeEntry],['experience-system.css',exper
   if(/\.mf-(feed-card|diaper-blob)\{[^}]*(padding|min-height|border-radius)\s*:[^;}]*!important/.test(css))
     throw new Error(`Quick-log card geometry is re-pinned in ${name}; it belongs to the component in core-ui.js`);
 if(/\.mf-feed-card\{[^}]*!important/.test(core))throw new Error('Quick-log card geometry must not need !important inside its own component stylesheet');
-if(!core.includes('.mf-feed-card,.mf-diaper-blob{box-sizing:border-box;height:132px;min-height:132px')||!core.includes('class="mf-tile-picture"')||!core.includes('class="mf-tile-copy"'))
-  throw new Error('Feed and diaper tiles must use a protected image area with captions below.');
-if(!core.includes('width:94px;height:94px')||!core.includes('width:80px;height:80px'))
-  throw new Error('Theme art must be prominent and contained on feed and diaper tiles.');
+if(!core.includes('height:117px;min-height:117px')||!core.includes('flex:0 0 88px;min-height:88px')||!core.includes('class="mf-tile-picture"')||!core.includes('class="mf-tile-copy"'))
+  throw new Error('Feed and diaper illustrations need distinct short picture boxes with labels below.');
+if(!core.includes('width:72px;height:72px')||!core.includes('width:62px;height:62px'))
+  throw new Error('Theme art must fit inside the picture box at the intended smaller scale.');
+if(core.includes('mf-tile-detail')||!core.includes('<strong>Mixed</strong><b>${st.both}</b></span></span></button>'))
+  throw new Error('Diaper tiles must have one label line only.');
 if(!core.includes('.rows .row[data-care-kind]')||!core.includes('background-image:linear-gradient(130deg,color-mix(in srgb,var(--care-fill) 44%'))
   throw new Error('Recent care entries need full-row activity palette fills.');
 if(!fs.readFileSync(path.join(ROOT,'scripts/care-icons/parts.mjs'),'utf8').includes('r: 13, scale: 0.70'))

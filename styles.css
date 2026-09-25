@@ -41,6 +41,12 @@
   --muted:#5f6679;
   --line:#e6e8f0;
   --line-soft:#eef0f6;
+  /* Screen hierarchy: page / section / action / supporting text. */
+  --mf-type-page:30px;
+  --mf-type-section:21px;
+  --mf-type-action:18px;
+  --mf-type-body:13px;
+  --mf-type-meta:11px;
 
   --mom:#7a56d6;
   --mom-2:#b06ad4;
@@ -467,7 +473,7 @@ button{cursor:pointer;font-family:inherit}
 /* --------------------------------------------------------------- panels -- */
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px;margin-bottom:16px;box-shadow:var(--shadow-soft)}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.panel-head h3{margin:0;font:800 16px var(--display)}
+.panel-head h3{margin:0;font:800 var(--mf-type-section) var(--display)}
 .panel-head h3:empty{display:none}
 .panel-head button{border:0;background:transparent;color:var(--mom);font-weight:900;font-size:12px;padding:6px 8px;border-radius:9px}
 .panel-head button:hover{background:var(--mom-soft)}
@@ -517,7 +523,7 @@ button{cursor:pointer;font-family:inherit}
 
 /* ------------------------------------------------------------ page head -- */
 .page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.page-head h2{margin:0;font:800 30px var(--display);letter-spacing:-.02em}
+.page-head h2{margin:0;font:800 var(--mf-type-page) var(--display);letter-spacing:-.02em}
 .round-action{border:0;border-radius:14px;background:linear-gradient(135deg,var(--btn-mom-a),var(--btn-mom-b));color:#fff;min-height:46px;padding:0 15px;display:flex;align-items:center;gap:7px;font-weight:900;font-size:13px;box-shadow:0 8px 18px rgba(122,86,214,.26)}
 .round-action.baby{background:linear-gradient(135deg,var(--btn-baby-a),var(--btn-baby-b));box-shadow:0 8px 18px rgba(47,151,201,.26)}
 .round-action .ico{width:19px;height:19px}
