@@ -110,6 +110,54 @@ function themeMotif(themeName){
 const RETIRED={jungle:'safari',storybook:'safari',unicorn:'princess',deepspace:'safari',aurora:'butterfly',neonreef:'princess',crystalcity:'safari',nocturne:'safari',tide:'butterfly',ember:'princess',meadow:'safari'};
 function normalize(value){if(RETIRED[value])return RETIRED[value];return THEMES.has(value)?value:'safari';}
 function read(){try{return normalize(localStorage.getItem(KEY));}catch{return 'safari';}}
+const ROTATION_KEY='milkflow-experience-rotation-v1';
+const ROTATING=Object.keys(THEME_LIBRARY).filter(key=>THEME_LIBRARY[key].status==='ready');
+const ROTATION_HOURS=[1,2,3,4,6,8,12,24,48];
+const rotationPeriod=hours=>Math.max(0.5,Math.min(72,Number(hours)||3))*3600000;
+function rotationState(){
+  let value;try{value=JSON.parse(localStorage.getItem(ROTATION_KEY)||'null');}catch{}
+  return {mode:['on','paused','off'].includes(value?.mode)?value.mode:'on',
+    hours:Math.max(0.5,Math.min(72,Number(value?.hours)||3)),
+    nextAt:Number.isFinite(value?.nextAt)?value.nextAt:Date.now()+rotationPeriod(value?.hours||3),
+    remainingMs:Number.isFinite(value?.remainingMs)?value.remainingMs:null};
+}
+function writeRotation(value){try{localStorage.setItem(ROTATION_KEY,JSON.stringify(value));}catch{}syncRotationUi();}
+function rotationTime(value){
+  if(value.mode==='off')return 'Themes stay where you leave them.';
+  if(value.mode==='paused')return 'Your current world stays until you resume.';
+  return `Next theme ${new Intl.DateTimeFormat('en-US',{weekday:'short',hour:'numeric',minute:'2-digit'}).format(new Date(value.nextAt))}.`;
+}
+function rotationControls(){
+  const state=rotationState();
+  return `<section class="mf-rotation" aria-label="Automatic theme rotation">
+    <div class="mf-rotation-heading"><div><strong>Explore every world</strong><p>Rotate through all nine illustrated themes, in order. Mom and Baby share the same world.</p></div><span class="mf-rotation-badge">${state.mode==='on'?'On':state.mode==='paused'?'Paused':'Off'}</span></div>
+    <label class="mf-rotation-frequency">Change theme every <select data-rotation-hours aria-label="Theme rotation frequency">${ROTATION_HOURS.map(n=>`<option value="${n}" ${state.hours===n?'selected':''}>${n} ${n===1?'hour':'hours'}</option>`).join('')}</select></label>
+    <div class="mf-rotation-actions">${state.mode==='on'?'<button type="button" data-rotation-mode="paused">Pause</button><button type="button" data-rotation-mode="off">Turn off</button>':state.mode==='paused'?'<button type="button" data-rotation-mode="on">Resume</button><button type="button" data-rotation-mode="off">Turn off</button>':'<button type="button" data-rotation-mode="on">Turn on</button>'}</div>
+    <p class="mf-rotation-next" role="status">${rotationTime(state)}</p>
+    <p class="mf-rotation-hint">Picking a theme below pauses rotation so you can enjoy it for as long as you like.</p>
+  </section>`;
+}
+function syncRotationUi(){const section=document.querySelector('#mfExperiencePanel .mf-rotation');if(section)section.outerHTML=rotationControls();}
+function setRotationMode(mode){
+  const state=rotationState(),now=Date.now();
+  if(mode==='paused'&&state.mode==='on')state.remainingMs=Math.max(0,state.nextAt-now);
+  if(mode==='on'&&state.mode!=='on')state.nextAt=now+(state.mode==='paused'&&state.remainingMs!=null?state.remainingMs:rotationPeriod(state.hours));
+  if(mode==='off')state.remainingMs=null;
+  state.mode=mode;writeRotation(state);
+}
+function tickRotation(){
+  const state=rotationState();
+  if(state.mode!=='on'||Date.now()<state.nextAt)return;
+  const period=rotationPeriod(state.hours);
+  const steps=Math.max(1,Math.floor((Date.now()-state.nextAt)/period)+1);
+  const current=ROTATING.indexOf(read());
+  const next=ROTATING[((current<0?-1:current)+steps)%ROTATING.length];
+  state.nextAt+=steps*period;writeRotation(state);
+  save(next,{manual:false});
+}
+// Rotation needs no background wake-up: check on opening and returning to the app.
+const initialRotation=rotationState();
+try{if(!localStorage.getItem(ROTATION_KEY))localStorage.setItem(ROTATION_KEY,JSON.stringify(initialRotation));}catch{}
 function assetUrl(path){return path?`url("${path}")`:'none';}
 function mode(){return root.dataset.theme==='dark'?'dark':'light';}
 function preloadTheme(theme,assets){
@@ -139,7 +187,7 @@ function apply(name=read()){
   preloadTheme(theme,assets);
   return value;
 }
-function save(name){const value=normalize(name);try{localStorage.setItem(KEY,value);}catch{}apply(value);window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{theme:value}}));}
+function save(name,{manual=true}={}){const value=normalize(name);if(manual&&rotationState().mode==='on')setRotationMode('paused');try{localStorage.setItem(KEY,value);}catch{}apply(value);window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{theme:value}}));}
 function previewFor(key){return THEME_MANIFEST[key].assets[mode()].preview;}
 function themeCard(key,title,subtitle){return `<button type="button" class="mf-experience-option" data-experience-theme-pick="${key}" data-theme-card="${key}" aria-pressed="false"><span class="mf-experience-preview" aria-hidden="true"><img class="mf-preview-scene" src="${previewFor(key)}" alt="" decoding="async" loading="lazy"></span><span class="mf-experience-copy"><strong>${title}</strong><small>${subtitle}</small></span></button>`;}
 function themeCards(){return Object.entries(THEME_LIBRARY).filter(([,t])=>t.status==='ready').map(([key,t])=>themeCard(key,t.title,t.subtitle)).join('');}
@@ -155,7 +203,7 @@ function experiencePanel(){
   if(!panel){
     panel=document.createElement('section');panel.id='mfExperiencePanel';panel.className=`panel mf-experience-panel ${screen==='settings'?'mf-settings-theme-panel':''}`;
     const isSettings=screen==='settings';
-    panel.innerHTML=`<div class="mf-experience-intro"><div><h3>${isSettings?'Choose a theme':'Choose your family world'}</h3><p>${isSettings?'Pick a look that feels like home for your little one.':'The selected world is used by the real Mom and Baby pages, not only the preview.'}</p></div>${isSettings?'':'<span class="mf-experience-scope">Mom + Baby</span>'}</div><div class="mf-experience-options" role="group" aria-label="Experience theme">${themeCards()}</div>${isSettings?'':`<button type="button" class="mf-experience-clean" data-experience-theme-pick="clean" aria-pressed="false"><span>Clean</span><small>Use the restrained MilkFlow canvas without illustrated scenery</small></button>`}`;
+    panel.innerHTML=`<div class="mf-experience-intro"><div><h3>${isSettings?'Choose a theme':'Choose your family world'}</h3><p>${isSettings?'Pick a look that feels like home for your little one.':'The selected world is used by the real Mom and Baby pages, not only the preview.'}</p></div>${isSettings?'':'<span class="mf-experience-scope">Mom + Baby</span>'}</div>${rotationControls()}<div class="mf-experience-options" role="group" aria-label="Experience theme">${themeCards()}</div>${isSettings?'':`<button type="button" class="mf-experience-clean" data-experience-theme-pick="clean" aria-pressed="false"><span>Clean</span><small>Use the restrained MilkFlow canvas without illustrated scenery</small></button>`}`;
     const head=view.querySelector('.page-head');if(head)head.insertAdjacentElement('afterend',panel);else view.prepend(panel);
   }
   apply();
@@ -186,8 +234,9 @@ function syncThemeUi(){apply();experiencePanel();settingsExtras();}
 let queued=false;
 function afterCanonicalRender(){if(queued)return;queued=true;queueMicrotask(()=>requestAnimationFrame(()=>{queued=false;syncThemeUi();}));}
 
-window.MilkFlowExperience={manifest:THEME_MANIFEST,library:THEME_LIBRARY,current:read,apply,save,careIcon,careAtlas,themeMotif,careIconActions:[...CARE_ICON_ACTIONS]};
+window.MilkFlowExperience={manifest:THEME_MANIFEST,library:THEME_LIBRARY,current:read,apply,save,careIcon,careAtlas,themeMotif,careIconActions:[...CARE_ICON_ACTIONS],rotation:rotationState};
 apply();
+tickRotation();
 /* app.js renders its first screen at the end of its own execution, and this file loads after
    it - so that first paint asks for careIcon() before the registry exists and falls back to a
    plain glyph. apply() alone does not fix that, because only save() announces a change, and
@@ -195,11 +244,14 @@ apply();
    illustrated icons instead of leaving the Mom tiles on fallback glyphs until the next
    interaction. Everything listening is idempotent, so this costs one extra render at boot. */
 window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{reason:'registry-ready'}}));
-document.addEventListener('click',e=>{const btn=e.target.closest('[data-experience-theme-pick]');if(btn)save(btn.dataset.experienceThemePick);if(e.target.closest('[data-theme-pick]'))setTimeout(afterCanonicalRender,0);const sound=e.target.closest('[data-sound-toggle]');if(sound){const enabled=sound.getAttribute('aria-pressed')!=='true';localStorage.setItem('milkflow-interface-sounds-v1',enabled?'on':'off');sound.setAttribute('aria-pressed',String(enabled));sound.querySelector('.mf-settings-switch')?.classList.toggle('on',enabled);}});
-window.addEventListener('storage',e=>{if(e.key===KEY)afterCanonicalRender();});
+document.addEventListener('change',e=>{if(e.target.matches('[data-rotation-hours]')){const state=rotationState();state.hours=Number(e.target.value);state.nextAt=Date.now()+rotationPeriod(state.hours);state.remainingMs=rotationPeriod(state.hours);writeRotation(state);}});
+document.addEventListener('click',e=>{const rotation=e.target.closest('[data-rotation-mode]');if(rotation){setRotationMode(rotation.dataset.rotationMode);return;}const btn=e.target.closest('[data-experience-theme-pick]');if(btn)save(btn.dataset.experienceThemePick);if(e.target.closest('[data-theme-pick]'))setTimeout(afterCanonicalRender,0);const sound=e.target.closest('[data-sound-toggle]');if(sound){const enabled=sound.getAttribute('aria-pressed')!=='true';localStorage.setItem('milkflow-interface-sounds-v1',enabled?'on':'off');sound.setAttribute('aria-pressed',String(enabled));sound.querySelector('.mf-settings-switch')?.classList.toggle('on',enabled);}});
+window.addEventListener('storage',e=>{if(e.key===KEY){apply();window.dispatchEvent(new CustomEvent('milkflow:experience-theme-change',{detail:{reason:'other-tab'}}));}if(e.key===ROTATION_KEY){syncRotationUi();tickRotation();}});
 window.addEventListener('milkflow:base-rendered',afterCanonicalRender);
 window.addEventListener('milkflow:experience-theme-change',afterCanonicalRender);
-window.addEventListener('pageshow',afterCanonicalRender);
+window.addEventListener('pageshow',()=>{tickRotation();afterCanonicalRender();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)tickRotation();});
+setInterval(tickRotation,60000);
 window.addEventListener('hashchange',afterCanonicalRender);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',afterCanonicalRender,{once:true});else afterCanonicalRender();
 })();

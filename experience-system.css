@@ -752,3 +752,17 @@
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .day-strip .day-chip.sel :is(b,span){
   color:var(--mf-world-base)!important;opacity:1!important;
 }
+
+/* Theme rotation stays beside the world picker and uses the same surface in every realm. */
+.mf-rotation{margin:6px 0 22px;padding:16px;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:22px;background:color-mix(in srgb,var(--surface) 90%,var(--mf-world-base,#cce8df) 10%);color:var(--ink)}
+.mf-rotation-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.mf-rotation-heading strong{font:800 20px/1.15 var(--display)}
+.mf-rotation-heading p{margin:5px 0 0;color:var(--ink-2);font-size:13px;line-height:1.45}
+.mf-rotation-badge{flex:none;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,var(--mf-world-deep,#617e75) 18%,var(--surface));color:var(--ink);font-size:12px;font-weight:800}
+.mf-rotation-frequency{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;font-size:14px;font-weight:800}
+.mf-rotation-frequency select{min-height:44px;min-width:116px;padding:7px 28px 7px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);font:700 14px var(--font)}
+.mf-rotation-actions{display:flex;gap:9px;margin:14px 0 8px}
+.mf-rotation-actions button{min-height:44px;flex:1;padding:8px 12px;border-radius:14px;border:1px solid color-mix(in srgb,var(--ink) 19%,transparent);background:var(--surface);color:var(--ink);font-weight:800;font-size:14px}
+.mf-rotation-actions button:first-child{background:var(--mf-world-deep,#396957);color:var(--mf-world-base,#fff);border-color:transparent}
+.mf-rotation-next{margin:8px 0 0;font-size:13px;font-weight:750;color:var(--ink)}
+.mf-rotation-hint{margin:7px 0 0;font-size:12px;line-height:1.45;color:var(--ink-2)}
