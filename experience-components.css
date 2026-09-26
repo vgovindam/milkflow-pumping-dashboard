@@ -14,6 +14,19 @@
   --mf-sprite-nursing:100% 50%;
 }
 
+/* A theme atlas contains eight isolated square illustrations, four across and two down.
+   Each care tile selects its cell while the browser downloads only one transparent image. */
+.mf-care-sprite{display:block;width:72px;height:72px;aspect-ratio:1;background-image:var(--mf-care-atlas);background-size:400% 200%;background-repeat:no-repeat;background-color:transparent;flex:none}
+.mf-care-sprite.milk{background-position:0% 0%}
+.mf-care-sprite.nurse{background-position:33.3333% 0%}
+.mf-care-sprite.formula{background-position:66.6667% 0%}
+.mf-care-sprite.wet{background-position:100% 0%}
+.mf-care-sprite.poop{background-position:0% 100%}
+.mf-care-sprite.mixed{background-position:33.3333% 100%}
+.mf-care-sprite.pump{background-position:66.6667% 100%}
+.mf-care-sprite.motif{background-position:100% 100%}
+.quick-tile .tile-art .mf-care-sprite{border-radius:0}
+
 /* Each care component gets its own themed illustration layer. The canonical semantic
    icon remains underneath as a safe fallback, so an art asset cannot break the action. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card::after,

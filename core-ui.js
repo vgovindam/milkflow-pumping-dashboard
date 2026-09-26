@@ -146,11 +146,14 @@ const CARE_GLYPH={milk:'bottle',nurse:'nursing',formula:'formula',wet:'wet',poop
 /* Resolved at render time from the theme registry, in the same pass that builds the card.
    No second module rewrites these afterwards, so there is no ordering to get wrong. */
 function careMark(action){
+  const atlas=window.MilkFlowExperience?.careAtlas?.();
   const src=window.MilkFlowExperience?.careIcon?.(action)||null;
-  const inner=src
+  const inner=atlas
+    ? `<span class="mf-care-art mf-care-sprite ${esc(action)}"></span>`
+    : src
     ? `<img class="mf-care-art" src="${esc(src)}" alt="" decoding="async">`
     : icon(CARE_GLYPH[action]||action);
-  return `<span class="mf-care-mark ${esc(action)}${src?' is-art':''}" aria-hidden="true">${inner}</span>`;
+  return `<span class="mf-care-mark ${esc(action)}${atlas||src?' is-art':''}" aria-hidden="true">${inner}</span>`;
 }
 
 function diaperKind(e){const x=String(e?.subtype||'').toLowerCase();return x==='poop'||x==='dirty'?'poop':x==='both'||x==='mixed'?'both':'wet';}
@@ -576,7 +579,7 @@ body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){--tile:var(--ca
 .mf-feed-card .mf-tile-picture>span.mf-care-mark,.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{position:relative;inset:auto;left:auto;top:auto;right:auto;transform:none;width:72px;height:72px;max-width:100%;max-height:100%;aspect-ratio:1;margin:0}
 .mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:60px;height:60px;opacity:1;transform:translateX(-12px)}
 .mf-feed-card .mf-tile-copy,.mf-diaper-blob .mf-tile-copy{position:relative;z-index:2;display:grid;place-items:center;flex:0 0 24px;width:100%;margin:0;padding:0;color:var(--ink);opacity:1}
-.mf-feed-card .mf-tile-copy strong,.mf-diaper-blob .mf-tile-copy strong{display:block;font:800 var(--mf-type-action)/1.18 var(--display);white-space:nowrap;letter-spacing:-.015em}
+.mf-feed-card .mf-tile-copy strong,.mf-diaper-blob .mf-tile-copy strong{display:block;font:720 15px/1.2 var(--display);white-space:nowrap;letter-spacing:-.01em}
 .mf-diaper-blob .mf-tile-picture>b.mf-tile-count{position:absolute;z-index:3;top:6px;right:6px;left:auto;display:grid;place-items:center;min-width:24px;width:24px;height:24px;padding:0;margin:0;border-radius:50%;background:var(--surface);color:var(--ink);font:850 12px/1 var(--display);box-shadow:0 2px 7px rgba(30,44,66,.12)}
 :root[data-theme="dark"] .mf-diaper-blob .mf-tile-picture>b.mf-tile-count{background:#293044;color:#fff}
 @media(max-width:350px){.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:54px;height:54px;transform:translateX(-10px)}}
@@ -585,7 +588,7 @@ body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){--tile:var(--ca
 :root[data-theme="dark"] body[data-screen="mom-home"] .mf-dream-actions .quick-tile{background:transparent}
 .mf-dream-actions .quick-tile .tile-art{box-sizing:border-box;left:0;right:0;top:0;transform:none;width:100%;height:88px;border:1px solid color-mix(in srgb,var(--mom) 33%,var(--surface));border-radius:23px;background:color-mix(in srgb,var(--mom) 24%,var(--surface));box-shadow:0 7px 17px rgba(30,44,66,.08)}
 .mf-dream-actions .quick-tile .tile-art .mf-care-art{width:72px;height:72px}
-.mf-dream-actions .quick-tile strong{font-size:var(--mf-type-action);line-height:1.18}
+.mf-dream-actions .quick-tile strong{font-size:15px;font-weight:720;line-height:1.2}
 /* The history rows carry their own activity color across the surface. */
 /* One semantic palette paints the complete activity row, not only its little icon. */
 body[data-realm] .rows .row[data-care-kind]{--care-fill:var(--care-milk);background-image:linear-gradient(130deg,color-mix(in srgb,var(--care-fill) 44%,var(--mf-world-surface,var(--surface))),color-mix(in srgb,var(--care-fill) 26%,var(--mf-world-surface,var(--surface))));border-color:color-mix(in srgb,var(--care-fill) 45%,var(--mf-world-surface,var(--surface)))}

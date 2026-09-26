@@ -417,8 +417,11 @@ function navIcon(name,on=false){
 // Mom's action tiles resolve the same generated theme icon the Baby cards use, falling back
 // to the built-in glyph when a theme has no art for that action. One registry, both sides.
 function themedCareArt(action,fallbackGlyph){
+  const atlas = window.MilkFlowExperience?.careAtlas?.() || null;
   const src = window.MilkFlowExperience?.careIcon?.(action) || null;
-  return src
+  return atlas
+    ? `<span class="mf-care-art mf-care-sprite ${esc(action)}" aria-hidden="true"></span>`
+    : src
     ? `<img class="mf-care-art" src="${esc(src)}" alt="" decoding="async">`
     : glyph(fallbackGlyph);
 }

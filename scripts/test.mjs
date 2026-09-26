@@ -169,6 +169,12 @@ if(!experience.includes('function careIcon('))throw new Error('Theme registry do
 if(!core.includes('MilkFlowExperience?.careIcon'))throw new Error('Baby care cards do not resolve icons from the theme registry');
 if(!app.includes('MilkFlowExperience?.careIcon'))throw new Error('Mom action tiles do not resolve icons from the theme registry');
 if(!core.includes('CARE_GLYPH'))throw new Error('Care icon fallback glyph map is missing');
+if(!experience.includes('function careAtlas(')||!core.includes('MilkFlowExperience?.careAtlas')||!app.includes('MilkFlowExperience?.careAtlas'))
+  throw new Error('Mom and Baby tiles must share the illustrated theme atlas registry.');
+if(!themedComponents.includes('background-size:400% 200%')||!themedComponents.includes('.mf-care-sprite.mixed{background-position:33.3333% 100%}'))
+  throw new Error('Care atlas must expose the correct eight separate actions and motif.');
+if(!core.includes('font:720 15px/1.2 var(--display)')||!core.includes('.mf-dream-actions .quick-tile strong{font-size:15px'))
+  throw new Error('Care captions must remain subordinate to the illustrated tile.');
 /* American English is the app's voice. "nappy" reached the printed doctor summary once. */
 for(const [file,text] of [['app.js',app],['core-ui.js',core],['doctor-summary.js',fs.readFileSync(path.join(ROOT,'doctor-summary.js'),'utf8')]])
   for(const word of ['nappies','nappy','colour','centred','behaviour'])
@@ -188,6 +194,8 @@ for(const [file,text] of [['app.js',app],['core-ui.js',core],['doctor-summary.js
   const iconRoot=path.join(ROOT,'assets/care-icons');
   const actions=['milk','nurse','formula','wet','poop','mixed','pump'];
   for(const theme of ['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
+    const atlas=path.join(ROOT,'assets/care-atlas',`${theme}.webp`);
+    if(!fs.existsSync(atlas)||fs.statSync(atlas).size<100000)throw new Error(`Missing generated ${theme} care atlas`);
     for(const action of [...actions,'motif'])
       if(!fs.existsSync(path.join(iconRoot,theme,`${action}.svg`)))
         throw new Error(`Generated care icon missing: ${theme}/${action}.svg - run node scripts/generate-care-icons.mjs`);

@@ -86,6 +86,12 @@ const THEME_MANIFEST={
    instead of this module reaching into the DOM to patch icons in after render. */
 const CARE_ICON_ACTIONS=new Set(['milk','nurse','formula','wet','poop','mixed','pump']);
 const CARE_ICON_THEMES=new Set(['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']);
+/* One transparent eight-cell atlas per world: seven care actions and its own motif.
+   CSS reveals one square cell without duplicating image downloads across the tiles. */
+function careAtlas(themeName){
+  const theme=normalize(themeName===undefined?read():themeName);
+  return CARE_ICON_THEMES.has(theme)?`./assets/care-atlas/${theme}.webp`:null;
+}
 function careIcon(action,themeName){
   const theme=normalize(themeName===undefined?read():themeName);
   if(!CARE_ICON_ACTIONS.has(action)||!CARE_ICON_THEMES.has(theme))return null;
@@ -108,7 +114,7 @@ function assetUrl(path){return path?`url("${path}")`:'none';}
 function mode(){return root.dataset.theme==='dark'?'dark':'light';}
 function preloadTheme(theme,assets){
   const realm=document.body?.dataset.realm==='baby'?'baby':'mom';
-  const sources=realm==='baby'?[assets.babyPage,assets.babyHero,theme.iconSprite]:[assets.momPage,assets.momHero,theme.iconSprite];
+  const sources=realm==='baby'?[assets.babyPage,assets.babyHero,theme.iconSprite,careAtlas()]:[assets.momPage,assets.momHero,theme.iconSprite,careAtlas()];
   for(const src of sources){if(!src)continue;const img=new Image();img.decoding='async';img.src=src;}
 }
 /* Both modes are published, and CSS picks - see the resolver at the top of
@@ -125,6 +131,7 @@ function apply(name=read()){
     for(const m of ['light','dark'])
       root.style.setProperty(`--mf-theme-${token}-${m}`,assetUrl(theme.assets[m]?.[role]));
   root.style.setProperty('--mf-icon-sprite',assetUrl(theme.iconSprite));
+  root.style.setProperty('--mf-care-atlas',assetUrl(careAtlas(value)));
   root.style.setProperty('--mf-theme-name',JSON.stringify(theme.title));
   root.style.setProperty('--mf-theme-tagline',JSON.stringify(theme.subtitle));
   document.querySelectorAll('[data-theme-card]').forEach(card=>{const img=card.querySelector('img');if(img)img.src=previewFor(card.dataset.themeCard);});
@@ -179,7 +186,7 @@ function syncThemeUi(){apply();experiencePanel();settingsExtras();}
 let queued=false;
 function afterCanonicalRender(){if(queued)return;queued=true;queueMicrotask(()=>requestAnimationFrame(()=>{queued=false;syncThemeUi();}));}
 
-window.MilkFlowExperience={manifest:THEME_MANIFEST,library:THEME_LIBRARY,current:read,apply,save,careIcon,themeMotif,careIconActions:[...CARE_ICON_ACTIONS]};
+window.MilkFlowExperience={manifest:THEME_MANIFEST,library:THEME_LIBRARY,current:read,apply,save,careIcon,careAtlas,themeMotif,careIconActions:[...CARE_ICON_ACTIONS]};
 apply();
 /* app.js renders its first screen at the end of its own execution, and this file loads after
    it - so that first paint asks for careIcon() before the registry exists and falls back to a

@@ -65,6 +65,11 @@ for(const legacyIcon of ['milkflow-family-apple-touch.png','milkflow-family-icon
 const themeEntry=fs.readFileSync(path.join(DIST,'theme.css'),'utf8');
 if(!themeEntry.includes(`experience-components.css?v=${version}`))fail.push('canonical themed component stylesheet missing from deployed theme entry');
 const experience=fs.readFileSync(path.join(DIST,'experience-theme.js'),'utf8');
+for(const theme of [...paintedThemes,...vectorThemes]){
+  const atlas=path.join(DIST,`assets/care-atlas/${theme}.webp`);
+  if(!fs.existsSync(atlas)||fs.statSync(atlas).size<100000)fail.push(`${theme} production care atlas is missing`);
+}
+if(!experience.includes('function careAtlas('))fail.push('theme-specific care atlas registry missing from production');
 const experienceCss=fs.readFileSync(path.join(DIST,'experience-system.css'),'utf8');
 for(const theme of paintedThemes){
   if(!experience.includes(`generatedAssetSet('${theme}')`))fail.push(`${theme} generated asset matrix missing from deployed theme runtime`);

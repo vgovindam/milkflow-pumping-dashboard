@@ -76,6 +76,10 @@ function verifyIndexRefs(){
 fs.rmSync(DIST,{recursive:true,force:true});fs.mkdirSync(DIST,{recursive:true});
 TEXT_FILES.forEach(copyText);BINARY_FILES.forEach(copyBinary);
 copyTree(path.join(ROOT,'assets'),path.join(DIST,'assets'));
+for(const theme of ['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
+  const atlas=path.join(DIST,`assets/care-atlas/${theme}.webp`);
+  if(!fs.existsSync(atlas)||fs.statSync(atlas).size<100000)throw new Error(`Missing generated ${theme} care atlas`);
+}
 for(const theme of ['safari','butterfly','princess']){
   for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
     const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${role}.svg`);
