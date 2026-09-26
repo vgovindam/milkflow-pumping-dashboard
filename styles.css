@@ -1189,3 +1189,17 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
   body{background:var(--surface);padding-bottom:0}
 }
 }
+
+@layer milkflow-screens {
+  .history-summary{grid-template-columns:repeat(2,minmax(0,1fr));margin:14px 0 22px}
+  .history-day{margin:0 0 22px}
+  .history-day-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 4px 10px;color:var(--ink)}
+  .history-day-head strong{font:750 20px/1.25 var(--display)}
+  .history-day-head span,.history-count{font-size:13px;font-weight:750;color:var(--ink-2)}
+  .history-count{margin:12px 4px 18px}
+  .history-day .rows{gap:9px}
+  .history-date-picker{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 2px 18px;font-size:14px;font-weight:750;color:var(--ink)}
+  .history-date-picker input{min-height:42px;max-width:180px;border:1px solid var(--line);border-radius:15px;background:var(--surface);color:var(--ink);padding:7px 10px;font:inherit}
+  .growth-intro{margin:0 2px 18px;color:var(--ink-2);font-size:15px;line-height:1.55}
+  @media(max-width:400px){.history-summary .metric strong{font-size:22px}}
+}

@@ -769,7 +769,15 @@ function momRow(e){ return `<button type="button" class="row" data-care-kind="${
 function momHistory(){
   const range=S.ui.momRange ?? 30, all=+range>=9999, cutoff=all?'':dateList(rangeDays(range,'mom'))[0];
   const a=momEntries().filter(e=>all||e.date>=cutoff).sort(byWhenDesc);
-  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>History</h2></div></div>${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-mom-range')}${panel('',a.length?`<div class="rows">${a.map(momRow).join('')}</div>`:empty('history','No Mom records here','Try a wider date range.'))}`;
+  const pumpsLogged=a.filter(e=>e.type==='pump'), nursingLogged=a.filter(e=>e.type==='nursing');
+  const pumpMl=sum(pumpsLogged.map(e=>+e.amountMl||0));
+  const nursingMin=sum(nursingLogged.map(e=>+e.durationMin||0));
+  const groups=new Map();for(const e of a){if(!groups.has(e.date))groups.set(e.date,[]);groups.get(e.date).push(e);}
+  const log=[...groups].map(([d,entries])=>`<section class="history-day"><div class="history-day-head"><strong>${fdl(d)}</strong><span>${entries.length} ${entries.length===1?'entry':'entries'}</span></div><div class="rows">${entries.map(momRow).join('')}</div></section>`).join('');
+  return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>History</h2></div></div>
+  ${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-mom-range')}
+  ${a.length?`<div class="metric-grid history-summary">${metric('Pumped',`${pumpMl.toLocaleString()} mL`,`${pumpsLogged.length} sessions`,'drop')}${metric('Nursing',`${nursingLogged.length}`,`${nursingMin} min logged`,'nursing')}</div>`:''}
+  ${a.length?log:panel('',empty('history','No Mom records here','Try a wider date range.'))}`;
 }
 const TIME_BANDS = [
   {key:'morning', label:'Morning', sub:'5am – 11am', from:5*60, to:11*60, color:'var(--mom)', icon:'sun'},
@@ -1035,12 +1043,16 @@ const BABY_FILTERS = [['all','All'],['feed','Feeds'],['diaper','Diapers'],['slee
 function reviewStats(d){
   const st = babyStats(d);
   const nursingMin = sum(babyOn(d,'nursing').filter(e => !e.exactSourceDuplicate).map(e => +(e.durationMinutes ?? e.totalMinutes) || 0));
+  const growthCount=babyOn(d,'growth').filter(e=>!e.exactSourceDuplicate).length;
+  const milestoneCount=babyOn(d,'milestone').filter(e=>!e.exactSourceDuplicate).length;
   const line = (cls,label,value) => `<div class="stat-line ${cls}"><span>${label}</span><b>${value}</b></div>`;
   return `<section class="review-stats">
     ${line('feed','Nursing', st.nursing ? `${nursingMin} min · ${st.nursing}×` : '—')}
     ${line('feed','Bottle', st.bottles ? `${st.bottleOz.toFixed(2)} oz (breast ${st.breastMilkOz.toFixed(2)}, formula ${st.formulaOz.toFixed(2)})` : '—')}
     ${line('diaper','Diapers', st.diapers ? `${st.diapers}× — wet ${st.wetOnly}, poopy ${st.poopOnly}, mixed ${st.mixed}` : '—')}
-    ${line('sleep','Sleep', st.sleepMin ? `${Math.floor(st.sleepMin/60)} hr ${st.sleepMin%60} min · ${babyOn(d,'sleep').length}×` : '—')}
+    ${line('sleep','Sleep', st.sleepMin ? `${Math.floor(st.sleepMin/60)} hr ${st.sleepMin%60} min · ${babyOn(d,'sleep').filter(e=>!e.exactSourceDuplicate).length}×` : '—')}
+    ${growthCount?line('growth','Growth',`${growthCount} ${growthCount===1?'measurement':'measurements'}`):''}
+    ${milestoneCount?line('growth','Milestones',`${milestoneCount} observed`):''}
   </section>`;
 }
 function babyHome(){
@@ -1129,7 +1141,7 @@ function babyHistory(){
   return head + (mode === 'day' ? historyByDay() : historyAll());
 }
 function historyByDay(){
-  const sel = S.ui.reviewDate && (babyByDate().has(S.ui.reviewDate) || S.ui.reviewDate === today()) ? S.ui.reviewDate : today();
+  const sel = /^\d{4}-\d{2}-\d{2}$/.test(S.ui.reviewDate||'') && S.ui.reviewDate <= today() ? S.ui.reviewDate : today();
   const strip = dateList(14).map(d => {
     const dt = new Date(`${d}T12:00:00`), isToday = d === today();
     return `<button type="button" class="day-chip ${d===sel?'sel':''} ${isToday?'today':''}" data-review-date="${d}">
@@ -1143,6 +1155,7 @@ function historyByDay(){
   const list = evs.length ? evs.map(revRow).join('')
     : empty('history','Nothing here',`No ${filter==='all'?'entries':BABY_FILTERS.find(f=>f[0]===filter)[1].toLowerCase()} logged on ${fd(sel)}.`);
   return `<div class="day-strip">${strip}</div>
+  <label class="history-date-picker">Jump to a date <input type="date" data-review-picker value="${sel}" min="${earliestDate('baby')}" max="${today()}" aria-label="Review baby history on a date"></label>
   <div class="review-head"><strong>${fdl(sel)}</strong><span>${evs.length} ${evs.length===1?'entry':'entries'}</span></div>
   ${reviewStats(sel)}
   ${pills(BABY_FILTERS,filter,'data-baby-filter')}
@@ -1152,10 +1165,13 @@ function historyAll(){
   const range = S.ui.babyRange ?? 30, all = +range >= 9999, filter = S.ui.babyFilter || 'all';
   const cutoff = all ? '' : dateList(rangeDays(range,'baby'))[0];
   const matches = e => filter==='all' || (filter==='feed' && (e.eventType==='feeding'||e.eventType==='nursing')) || e.eventType===filter;
-  const a = babyEvents().filter(e => (all||e.date>=cutoff) && matches(e)).sort(byWhenDesc);
+  const a = babyEvents().filter(e => !e.exactSourceDuplicate && (all||e.date>=cutoff) && matches(e)).sort(byWhenDesc);
+  const groups=new Map();for(const e of a){if(!groups.has(e.date))groups.set(e.date,[]);groups.get(e.date).push(e);}
+  const log=[...groups].map(([d,entries])=>`<section class="history-day"><div class="history-day-head"><strong>${fdl(d)}</strong><span>${entries.length} ${entries.length===1?'entry':'entries'}</span></div><div class="rows">${entries.map(babyRow).join('')}</div></section>`).join('');
   return `${pills([[7,'7 days'],[30,'30 days'],[90,'90 days'],[9999,'All']],range,'data-baby-range')}
   ${pills(BABY_FILTERS,filter,'data-baby-filter')}
-  ${panel('',a.length?`<div class="rows">${a.map(babyRow).join('')}</div>`:empty('history','No matching records','Try another filter or date range.'),`<span class="panel-note">${a.length} ${a.length===1?'entry':'entries'}</span>`)}`;
+  <div class="history-count">${a.length} ${a.length===1?'entry':'entries'} · ${groups.size} ${groups.size===1?'day':'days'}</div>
+  ${a.length?log:panel('',empty('history','No matching records','Try another filter or date range.'))}`;
 }
 function revRow(e){
   const t = toneOf(e);
@@ -1229,12 +1245,30 @@ function babyTrends(){
   ${panel('Daily log',babyDailyTable(rows.slice(-14)) + (rows.length>14?`<p class="chart-note">Showing the most recent 14 of ${rows.length} days. <strong>Doctor summary</strong> lists the full range, and History lists every entry.</p>`:''),`<span class="panel-note">${Math.min(rows.length,14)} days</span>`)}`;
 }
 function babyGrowth(){
-  const a=babyEvents().filter(e=>e.eventType==='growth').sort(byWhenDesc), g=a[0];
-  return `<div class="page-head"><div><span class="eyebrow">BABY</span><h2>Growth</h2></div><button class="round-action baby" data-growth>${icon('plus')}<span>Add</span></button></div><div class="metric-grid three">${metric('Weight',g?.weightLb!=null?`${g.weightLb} lb${g.weightOz?` ${g.weightOz} oz`:''}`:'—',g?fd(g.date):'No measurement','scale','baby')}${metric('Length',g?.lengthIn!=null?`${g.lengthIn} in`:'—','latest','growth','baby')}${metric('Head',g?.headIn!=null?`${g.headIn} in`:'—','latest','growth','baby')}</div>${panel('Measurements',a.length?`<div class="rows">${a.map(e=>{
-    const parts=[e.weightLb!=null?`${e.weightLb} lb${e.weightOz?` ${e.weightOz} oz`:''}`:null,e.lengthIn!=null?`${e.lengthIn} in long`:null].filter(Boolean);
-    const head=e.headIn!=null?` · head ${e.headIn} in`:'';
-    return `<button type="button" class="row" data-record="baby:${esc(e.id)}"><div class="row-icon baby kind-growth">${icon('scale')}</div><div class="row-main"><strong>${parts.length?parts.join(' · '):'Measurement'}</strong><span>${fd(e.date)}${head}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
-  }).join('')}</div>`:empty('growth','No measurements yet','Add measurements from pediatric visits.'))}<div class="clinical-note">For children under 2, clinicians generally follow weight, length, weight-for-length and head circumference over time using WHO growth standards.</div>`;
+  const a=babyEvents().filter(e=>e.eventType==='growth'&&!e.exactSourceDuplicate).sort(byWhenDesc);
+  // A visit may record only one measure; each card uses its most recent actual value.
+  const measure=(key,label,format,iconName)=>{
+    const readings=a.filter(e=>e[key]!=null),latest=readings[0],prior=readings[1];
+    const delta=latest&&prior?formatDelta(key,latest,prior):'';
+    return metric(label,latest?format(latest):'—',latest?`${fd(latest.date)}${delta?` · ${delta} since ${fd(prior.date)}`:''}`:'No measurement',iconName,'baby');
+  };
+  const weight=e=>`${e.weightLb??0} lb${e.weightOz!=null?` ${e.weightOz} oz`:''}`;
+  const formatDelta=(key,latest,prior)=>{
+    const current=key==='weightLb'?(+latest.weightLb||0)*16+(+latest.weightOz||0):+latest[key];
+    const previous=key==='weightLb'?(+prior.weightLb||0)*16+(+prior.weightOz||0):+prior[key];
+    const diff=current-previous;
+    if(Math.abs(diff)<.05)return 'no change';
+    return `${diff>0?'+':'−'}${Number(Math.abs(diff).toFixed(1))} ${key==='weightLb'?'oz':'in'}`;
+  };
+  const rows=a.map(e=>{
+    const parts=[e.weightLb!=null?weight(e):null,e.lengthIn!=null?`${e.lengthIn} in long`:null,e.headIn!=null?`head ${e.headIn} in`:null].filter(Boolean);
+    return `<button type="button" class="row" data-care-kind="growth" data-record="baby:${esc(e.id)}"><div class="row-icon baby kind-growth">${icon('scale')}</div><div class="row-main"><strong>${parts.length?parts.join(' · '):'Measurement'}</strong><span>${fdl(e.date)}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
+  }).join('');
+  return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Growth</h2></div><button class="round-action baby" data-growth>${icon('plus')}<span>Add</span></button></div>
+  <p class="growth-intro">${esc(S.baby.name)}'s measurements over time${ageLabel()?` · ${esc(ageLabel())}`:''}. Each number shows the latest recorded value for that measure.</p>
+  <div class="metric-grid three">${measure('weightLb','Weight',weight,'scale')}${measure('lengthIn','Length',e=>`${e.lengthIn} in`,'growth')}${measure('headIn','Head',e=>`${e.headIn} in`,'growth')}</div>
+  ${panel('Measurements',a.length?`<div class="rows">${rows}</div>`:empty('growth','No measurements yet','Add measurements from pediatric visits.'))}
+  <div class="clinical-note">Bring your logged measurements to pediatric visits. Your clinician can plot weight, length and head size against age on a growth chart; a change between two visits alone does not describe a growth pattern.</div>`;
 }
 function developmentView(){
   const born = birthDate();
@@ -1436,6 +1470,7 @@ function render(dir='none'){
   if(babyTab) babyTab.textContent=S.baby.name||'Baby';
   document.querySelectorAll('[data-workspace]').forEach(b=>b.classList.toggle('active',b.dataset.workspace===workspace));
   renderSideNav(); renderBottomNav(); syncBadge(); bindViewInputs();
+  if(!window.milkflowFirstRendered){window.milkflowFirstRendered=true;window.dispatchEvent(new Event('milkflow:first-render'));}
 }
 const IN_MORE=new Set(['more','settings','doctor','baby-growth','development','mom-stash']);
 const SIDE_NAV=[
@@ -2487,6 +2522,7 @@ function handleClick(e){
   const st=e.target.closest('[data-stash]'); if(st){ const el=$('stashExact'); if(el){ el.value=Math.max(0,Math.round((+el.value||0)+ +st.dataset.stash)); el.dispatchEvent(new Event('input',{bubbles:true})); } return; }
 }
 document.addEventListener('click',handleClick);
+document.addEventListener('change',e=>{if(e.target.matches('[data-review-picker]') && e.target.value){S.ui.reviewDate=e.target.value;save();render();}});
 
 $('momForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('momType').value, wasEdit=!!editing;
   if(type==='pump'){ S.last.pumpMl=+$('momAmount').value||null; S.last.pumpMin=+$('momDuration').value||null; } else { S.last.nursingMin=+$('momDuration').value||null; S.last.nursingSide=$('momSide')?.value||null; } const x=commitRecord(S.entries,{id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false}); save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved')); });

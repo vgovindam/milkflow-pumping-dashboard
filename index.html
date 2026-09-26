@@ -33,18 +33,24 @@
         root.dataset.experienceTheme=['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds','clean'].includes(experience)?experience:'safari';
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content',dark?'#0e1016':'#f4f4f9');
       }catch{root.dataset.experienceTheme='safari';}
-      const reveal=()=>requestAnimationFrame(()=>root.classList.remove('mf-booting'));
-      window.addEventListener('DOMContentLoaded',()=>{
-        const timeout=new Promise(resolve=>setTimeout(resolve,650));
-        const fonts=document.fonts?.ready||Promise.resolve();
-        Promise.race([fonts,timeout]).then(reveal,reveal);
-      },{once:true});
+      // The page shell is visible as soon as the local app renders. Fonts and optional
+      // deferred modules are allowed to settle after first paint.
+      const reveal=()=>root.classList.remove('mf-booting');
+      window.addEventListener('milkflow:first-render',reveal,{once:true});
+      window.addEventListener('DOMContentLoaded',reveal,{once:true});
     })();
   </script>
-  <style>html.mf-booting .topbar,html.mf-booting #view,html.mf-booting #bottomNav{visibility:hidden}</style>
+  <style>
+    html,body{margin:0;min-height:100%;background:#f6f0ee}
+    #mfBoot{position:fixed;inset:0;z-index:10000;display:grid;place-content:center;justify-items:center;gap:13px;background:linear-gradient(145deg,#eff8f5,#f7eff8 60%,#fff5e6);color:#344a49;font:700 16px/1.4 system-ui,-apple-system,sans-serif;text-align:center;transition:opacity .2s ease}
+    #mfBoot strong{font-size:28px;letter-spacing:-.035em}#mfBoot span{font-size:14px;font-weight:500}
+    html:not(.mf-booting) #mfBoot{opacity:0;pointer-events:none}
+    @media(prefers-color-scheme:dark){html.mf-booting #mfBoot{background:linear-gradient(145deg,#172b2b,#282135);color:#f4ebf5}}
+  </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="styles.css?v=__MILKFLOW_VERSION__">
   <link rel="stylesheet" href="theme.css?v=__MILKFLOW_VERSION__">
   <link rel="stylesheet" href="doctor-summary.css?v=__MILKFLOW_VERSION__">
@@ -71,6 +77,7 @@
   <script src="release-info.js?v=__MILKFLOW_VERSION__" defer></script>
 </head>
 <body>
+<div id="mfBoot" role="status" aria-live="polite"><strong>MilkFlow</strong><span>Opening your family care…</span></div>
 <div class="shell">
   <aside class="sidebar">
     <div class="brand"><div class="brand-logo"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></div><div><strong>MilkFlow</strong><span>Family care</span></div></div>
