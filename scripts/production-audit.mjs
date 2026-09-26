@@ -67,7 +67,7 @@ if(!themeEntry.includes(`experience-components.css?v=${version}`))fail.push('can
 const experience=fs.readFileSync(path.join(DIST,'experience-theme.js'),'utf8');
 const experienceCss=fs.readFileSync(path.join(DIST,'experience-system.css'),'utf8');
 for(const theme of paintedThemes){
-  if(!experience.includes(`assetSet('${theme}')`))fail.push(`${theme} painted asset matrix missing from deployed theme runtime`);
+  if(!experience.includes(`generatedAssetSet('${theme}')`))fail.push(`${theme} generated asset matrix missing from deployed theme runtime`);
   if(!experience.includes(`title:'${themeTitles[theme]}'`))fail.push(`${theme} canonical title missing from deployed theme runtime`);
   if(!experience.includes(`theme-icons/${theme}.svg`))fail.push(`${theme} icon sprite missing from deployed theme runtime`);
   for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
@@ -78,7 +78,7 @@ for(const theme of paintedThemes){
   }
 }
 for(const theme of vectorThemes){
-  if(!experience.includes(`assetSet('${theme}')`))fail.push(`${theme} painted asset matrix missing from deployed theme runtime`);
+  if(!experience.includes(`${['woodland','floral-meadow'].includes(theme)?'assetSet':'generatedAssetSet'}('${theme}')`))fail.push(`${theme} painted asset matrix missing from deployed theme runtime`);
   if(!experience.includes(`title:'${themeTitles[theme]}'`))fail.push(`${theme} canonical title missing from deployed theme runtime`);
   if(!experience.includes(`id:'${theme}',status:'ready'`))fail.push(`${theme} is not selectable in deployed theme runtime`);
 }

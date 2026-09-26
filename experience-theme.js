@@ -50,6 +50,15 @@ const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
   momHero:plate(theme,mode,'mom-hero',HERO_WIDTHS),
   preview:`./assets/themes-v2/${theme}/${mode}/settings-preview.webp`
 }]));
+/* The family's generated portraits are the source for each role and mode. The short
+   hero gets its own scene crop; the full portrait also powers its picker preview. */
+const generatedAssetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
+  babyPage:`./assets/themes-v2/${theme}/${mode}/baby-source-art.webp`,
+  babyHero:`./assets/themes-v2/${theme}/${mode}/baby-generated-hero@640.webp`,
+  momPage:`./assets/themes-v2/${theme}/${mode}/mom-source-art.webp`,
+  momHero:`./assets/themes-v2/${theme}/${mode}/mom-generated-hero@640.webp`,
+  preview:`./assets/themes-v2/${theme}/${mode}/baby-source-art.webp`
+}]));
 const vectorAssetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
   babyPage:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`,
   babyHero:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`,
@@ -58,15 +67,15 @@ const vectorAssetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,
   preview:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`
 }]));
 const THEME_MANIFEST={
-  safari:{...THEME_LIBRARY.safari,assets:assetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
-  butterfly:{...THEME_LIBRARY.butterfly,assets:assetSet('butterfly'),iconSprite:'./assets/theme-icons/butterfly.svg'},
-  princess:{...THEME_LIBRARY.princess,assets:assetSet('princess'),iconSprite:'./assets/theme-icons/princess.svg'},
-  ocean:{...THEME_LIBRARY.ocean,assets:assetSet('ocean'),iconSprite:''},
-  celestial:{...THEME_LIBRARY.celestial,assets:assetSet('celestial'),iconSprite:''},
+  safari:{...THEME_LIBRARY.safari,assets:generatedAssetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
+  butterfly:{...THEME_LIBRARY.butterfly,assets:generatedAssetSet('butterfly'),iconSprite:'./assets/theme-icons/butterfly.svg'},
+  princess:{...THEME_LIBRARY.princess,assets:generatedAssetSet('princess'),iconSprite:'./assets/theme-icons/princess.svg'},
+  ocean:{...THEME_LIBRARY.ocean,assets:generatedAssetSet('ocean'),iconSprite:''},
+  celestial:{...THEME_LIBRARY.celestial,assets:generatedAssetSet('celestial'),iconSprite:''},
   woodland:{...THEME_LIBRARY.woodland,assets:assetSet('woodland'),iconSprite:''},
-  'safari-sunset':{...THEME_LIBRARY['safari-sunset'],assets:assetSet('safari-sunset'),iconSprite:''},
+  'safari-sunset':{...THEME_LIBRARY['safari-sunset'],assets:generatedAssetSet('safari-sunset'),iconSprite:''},
   'floral-meadow':{...THEME_LIBRARY['floral-meadow'],assets:assetSet('floral-meadow'),iconSprite:''},
-  'cozy-clouds':{...THEME_LIBRARY['cozy-clouds'],assets:assetSet('cozy-clouds'),iconSprite:''},
+  'cozy-clouds':{...THEME_LIBRARY['cozy-clouds'],assets:generatedAssetSet('cozy-clouds'),iconSprite:''},
   clean:{id:'clean',status:'ready',title:'Clean',subtitle:'Quiet MilkFlow canvas',assets:{light:{},dark:{}},iconSprite:''}
 };
 

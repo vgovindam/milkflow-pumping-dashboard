@@ -103,7 +103,7 @@ for(const theme of paintedThemes){
     const dark=fs.readFileSync(path.join(ROOT,`assets/themes-v2/${theme}/dark/${role}@${w}.webp`));
     if(light.equals(dark))throw new Error(`${theme}/${role} ships the same file for light and dark`);
   }
-  if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} painted asset matrix.`);
+  if(!experience.includes(`generatedAssetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} generated art matrix.`);
   if(!experience.includes(`theme-icons/${theme}.svg`))throw new Error(`Theme manifest is not using independent ${theme} icon sprite.`);
 }
 for(const theme of vectorThemes){
@@ -117,8 +117,19 @@ for(const theme of vectorThemes){
     if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be self-contained.`);
     if(svg.length<1600||!svg.includes('<linearGradient')||(!svg.includes('<path')&&!svg.includes('<ellipse')))throw new Error(`${scene} does not contain enough authored scene structure.`);
   }
-  if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} painted asset matrix.`);
+  if(!experience.includes(`${['woodland','floral-meadow'].includes(theme)?'assetSet':'generatedAssetSet'}('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} asset matrix.`);
   if(!experience.includes(`id:'${theme}',status:'ready'`))throw new Error(`${theme} is not promoted to a ready theme.`);
+}
+/* Each newly illustrated world has separate generated art for both family roles and
+   both appearances, rather than reusing one generic background or a night filter. */
+for(const theme of ['safari','butterfly','princess','cozy-clouds','celestial','ocean','safari-sunset']){
+  const pictures=[];
+  for(const mode of ['light','dark'])for(const realm of ['baby','mom']){
+    const art=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${realm}-source-art.webp`);
+    if(!fs.existsSync(art)||fs.statSync(art).size<4000)throw new Error(`Generated theme art missing: ${art}`);
+    pictures.push(fs.readFileSync(art).toString('base64'));
+  }
+  if(new Set(pictures).size!==4)throw new Error(`${theme} repeats artwork across roles or appearances`);
 }
 for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
 /* Appearance is ONE screen: the world picker, light/dark and sounds together. Settings keeps
@@ -141,10 +152,10 @@ for(const [name,css] of [['theme.css',themeEntry],['experience-system.css',exper
 if(/\.mf-feed-card\{[^}]*!important/.test(core))throw new Error('Quick-log card geometry must not need !important inside its own component stylesheet');
 if(!core.includes('height:117px;min-height:117px')||!core.includes('flex:0 0 88px;min-height:88px')||!core.includes('class="mf-tile-picture"')||!core.includes('class="mf-tile-copy"'))
   throw new Error('Feed and diaper illustrations need distinct short picture boxes with labels below.');
-if(!core.includes('width:72px;height:72px')||!core.includes('width:62px;height:62px'))
+if(!core.includes('width:72px;height:72px')||!core.includes('width:60px;height:60px'))
   throw new Error('Theme art must fit inside the picture box at the intended smaller scale.');
-if(core.includes('mf-tile-detail')||!core.includes('<strong>Mixed</strong><b>${st.both}</b></span></span></button>'))
-  throw new Error('Diaper tiles must have one label line only.');
+if(core.includes('mf-tile-detail')||!core.includes('${careMark(\'mixed\')}<b class="mf-tile-count">${st.both}</b></span><span class="mf-tile-copy"><strong>Mixed</strong>'))
+  throw new Error('Diaper counts belong in the picture box and labels must have one line.');
 if(!core.includes('.rows .row[data-care-kind]')||!core.includes('background-image:linear-gradient(130deg,color-mix(in srgb,var(--care-fill) 44%'))
   throw new Error('Recent care entries need full-row activity palette fills.');
 if(!fs.readFileSync(path.join(ROOT,'scripts/care-icons/parts.mjs'),'utf8').includes('r: 13, scale: 0.70'))

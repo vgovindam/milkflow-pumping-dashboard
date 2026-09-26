@@ -111,7 +111,7 @@ requireText('Baby tab has explicit contrast',read('experience-system.css'),'#per
   const exp=read('experience-theme.js');
   for(const id of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
     requireText(`ready theme ${id}`,exp,`id:'${id}',status:'ready'`);
-    requireText(`painted asset package ${id}`,exp,`assets:assetSet('${id}')`);
+    requireText(`painted asset package ${id}`,exp,`assets:${['woodland','floral-meadow'].includes(id)?'assetSet':'generatedAssetSet'}('${id}')`);
   }
   requireText('Unicorn remains gated',exp,"id:'unicorn-dream',status:'artwork-needed'");
   requireText('themes are gated by readiness',exp,"filter(([,t])=>t.status==='ready')");
