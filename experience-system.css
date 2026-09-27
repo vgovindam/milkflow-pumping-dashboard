@@ -703,7 +703,32 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
    behind small text. Both are read at a glance, so they get a real surface rather than a
    slightly stronger tint each time a label lands somewhere awkward. */
 :root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav{
-  background:var(--mf-world-surface-strong)!important;
+  /* The home-indicator inset is part of the dock, not a blank white footer. */
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--mf-world-surface-strong) 75%,var(--mf-world-accent) 25%),
+    color-mix(in srgb,var(--mf-world-base) 68%,var(--mf-world-accent) 32%))!important;
+  border-color:var(--mf-world-line)!important;
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view]{
+  --nav-tint:var(--mf-world-accent);
+  color:var(--mf-world-deep)!important;
+  background:color-mix(in srgb,var(--mf-world-surface) 77%,var(--nav-tint) 23%)!important;
+  border:1px solid color-mix(in srgb,var(--mf-world-line) 62%,var(--nav-tint) 38%)!important;
+  border-radius:17px;
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view$="-history"]{
+  --nav-tint:var(--mf-world-accent-2);
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view$="-trends"]{
+  --nav-tint:color-mix(in srgb,var(--mf-world-accent) 60%,var(--mf-world-accent-2) 40%);
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view="more"]{
+  --nav-tint:color-mix(in srgb,var(--mf-world-accent-2) 64%,var(--mf-world-base) 36%);
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view].active{
+  background:color-mix(in srgb,var(--mf-world-surface) 54%,var(--nav-tint) 46%)!important;
+  border-color:color-mix(in srgb,var(--nav-tint) 67%,var(--mf-world-line) 33%)!important;
+  box-shadow:0 4px 10px var(--mf-world-shadow),inset 0 1px 0 color-mix(in srgb,var(--mf-world-surface-strong) 65%,transparent)!important;
 }
 /* :not(.sel) matters: the selected day chip is inverted ink-on-surface, and repainting its
    background left white text on a near-white plate. Selection state is owned elsewhere; a
