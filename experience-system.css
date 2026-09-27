@@ -476,7 +476,7 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 :root[data-theme="dark"] .mf-experience-clean{background:#202432;color:#f4f6fb;border-color:#3b4152}:root[data-theme="dark"] .mf-experience-clean small{color:#cbd1dd}
 
 @media(max-width:760px){
-  :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .view{padding-bottom:24px!important}
+  :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .view{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
   :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .main,
   :root:not([data-experience-theme="clean"]) body[data-screen="settings"] .main,
   :root:not([data-experience-theme="clean"]) body[data-screen="set-appearance"] .main{background-size:cover!important;background-position:var(--mf-page-focus)!important}

@@ -70,7 +70,7 @@ function babyWishLine(name,nextFeed,feedCount){
   if(h>=5&&h<12)return 'Wishing you both a smooth morning';
   if(h>=12&&h<17)return `Hope your afternoon with ${baby} feels easy`;
   if(h>=17&&h<21)return 'Wishing you both a cozy evening';
-  return '';
+  return 'Wishing you both a restful night';
 }
 function ageLabel(birthDate){if(!birthDate)return'';const b=new Date(`${birthDate}T12:00:00`),n=new Date(`${today()}T12:00:00`),days=Math.floor((n-b)/86400000);if(!Number.isFinite(days)||days<0)return'';if(days<14)return`${days} day${days===1?'':'s'} old`;if(days<70)return`${Math.floor(days/7)} weeks old`;let m=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());if(n.getDate()<b.getDate())m--;return m<24?`${m} months old`:`${Math.floor(m/12)}y ${m%12}m`;}
 function relativeAgo(date,time){
