@@ -43,3 +43,27 @@
   position:relative;
   z-index:4;
 }
+
+/* The themed dock uses four distinct category tints. These selectors live in the
+   unlayered theme entry so they can style the core navigation without overrides. */
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view]{
+  --nav-tint:var(--mf-world-accent);
+  color:var(--mf-world-deep);
+  background:color-mix(in srgb,var(--mf-world-surface) 77%,var(--nav-tint) 23%);
+  border:1px solid color-mix(in srgb,var(--mf-world-line) 62%,var(--nav-tint) 38%);
+  border-radius:17px;
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view$="-history"]{
+  --nav-tint:var(--mf-world-accent-2);
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view$="-trends"]{
+  --nav-tint:color-mix(in srgb,var(--mf-world-accent) 60%,var(--mf-world-accent-2) 40%);
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view="more"]{
+  --nav-tint:color-mix(in srgb,var(--mf-world-accent-2) 64%,var(--mf-world-base) 36%);
+}
+:root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view].active{
+  background:color-mix(in srgb,var(--mf-world-surface) 54%,var(--nav-tint) 46%);
+  border-color:color-mix(in srgb,var(--nav-tint) 67%,var(--mf-world-line) 33%);
+  box-shadow:0 4px 10px var(--mf-world-shadow),inset 0 1px 0 color-mix(in srgb,var(--mf-world-surface-strong) 65%,transparent);
+}
