@@ -933,14 +933,14 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
 @media(max-width:760px){
   html{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-y:none}
   body{width:100%;max-width:100%;padding-bottom:0;overflow-x:clip;-webkit-overflow-scrolling:touch}
-  .shell{display:block}
+  .shell{display:block;height:100dvh;min-height:100dvh;overflow:hidden}
   .sidebar{display:none}
-  .main{width:100%;max-width:100%;min-height:100dvh;overflow-x:clip}
+  .main{width:100%;max-width:100%;height:calc(100dvh - 148px - env(safe-area-inset-bottom));min-height:0;overflow-y:auto;overflow-x:clip}
   /* iOS large-title behavior: the nav bar carries Back + status, the page carries the
      title. Showing both meant every screen printed its name twice. */
   /* One 54px row. Mom/Baby sits inline and centered here rather than as the full-width
      block stacked under the bar, which used to cost a second row on every screen. */
-  .topbar{height:auto;min-height:54px;padding:8px 13px;display:flex;align-items:center;gap:8px}
+  .topbar{height:auto;min-height:54px;padding:8px 13px;display:flex;align-items:center;gap:8px;position:relative}
   body[data-depth="0"] .mobile-workspace{display:flex;margin:0 auto}
   /* A sub-page belongs to one side of the app, so the switch is hidden there. */
   body:not([data-depth="0"]) .mobile-workspace{display:none}

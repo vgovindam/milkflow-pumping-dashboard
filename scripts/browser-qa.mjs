@@ -94,7 +94,7 @@ try{
         if(m.children<1||m.height<40)failures.push(`${theme}/${mode}/${route}: blank view`);
         if(m.scrollWidth>m.mainWidth+2)failures.push(`${theme}/${mode}/${route}: horizontal overflow`);
         if(!m.navVisible||m.icons<4)failures.push(`${theme}/${mode}/${route}: bottom navigation/icons not visible`);
-        if(m.padding<m.navHeight+15 && m.mainBottom>m.navTop-6)failures.push(`${theme}/${mode}/${route}: content can sit behind bottom navigation`);
+        if(m.padding<m.navHeight+15 && m.mainBottom>m.navTop-6)failures.push(`${theme}/${mode}/${route}: content can sit behind bottom navigation (main bottom ${m.mainBottom.toFixed(0)}, dock top ${m.navTop.toFixed(0)}, padding ${m.padding.toFixed(0)})`);
         if(route==='doctor'&&m.doctorTables<2)failures.push(`${theme}/${mode}/${route}: doctor summary structure missing`);
         if(theme==='safari'&&mode==='light'&&route==='doctor'){
           const pr=await evalJs(`(async()=>{const old=window.print;let called=0;window.print=()=>{called=performance.now()};const start=performance.now();let ok=false;try{ok=await window.MilkFlowDoctorPrint?.print?.()}catch{}const ms=called?called-start:9999;const built=!!document.getElementById('mfDoctorPrint');window.print=old;window.MilkFlowDoctorPrint?.teardown?.();return{ok:!!ok,ms,built}})()`);

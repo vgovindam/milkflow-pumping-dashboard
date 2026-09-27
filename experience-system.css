@@ -727,6 +727,12 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 :root:not([data-experience-theme="clean"]) body[data-realm] .shell,
 :root:not([data-experience-theme="clean"]) body[data-realm] .main{min-height:100dvh}
 :root:not([data-experience-theme="clean"]) body[data-realm] .main{background-position-y:0}
+@media(max-width:760px){
+  :root:not([data-experience-theme="clean"]) body[data-realm] .main{
+    height:calc(100dvh - 148px - env(safe-area-inset-bottom));
+    min-height:0
+  }
+}
 
 /* A small card centres its content; a wide row keeps it on the left where the eye starts.
    The metric tiles are two-up and narrow, so they read as cards, not rows. */

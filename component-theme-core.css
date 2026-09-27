@@ -44,13 +44,13 @@ body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .main::after{d
   html,body{height:100%;min-height:100%;overflow:hidden}
   .shell{height:100dvh;min-height:100dvh;overflow:hidden}
   .main{
-    height:calc(100dvh - 100px - env(safe-area-inset-bottom));min-height:0;overflow-y:auto;overflow-x:hidden;
+    height:calc(100dvh - 148px - env(safe-area-inset-bottom));min-height:0;overflow-y:auto;overflow-x:hidden;
     overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scroll-behavior:auto
   }
   body.locked .main{overflow:hidden}
   .topbar{position:relative;z-index:45}
   .view{
-    min-height:calc(100dvh - 175px - env(safe-area-inset-bottom));overflow-anchor:none;
+    min-height:calc(100dvh - 223px - env(safe-area-inset-bottom));overflow-anchor:none;
     padding-bottom:24px
   }
 
@@ -340,7 +340,7 @@ body[data-screen="baby-home"] .mf-animal-hero>.bunny,
 body[data-screen="baby-home"] .mf-animal-star{display:none}
 
 @media(max-width:760px){
-  body[data-screen="baby-home"] .mf-animal-hero{min-height:0;padding:14px 15px}
+  body[data-screen="baby-home"] .mf-animal-hero{min-height:0;padding:12px 15px}
   body[data-screen="baby-home"] .mf-animal-profile{grid-template-columns:minmax(0,1fr) 136px;gap:14px}
   body[data-screen="baby-home"] .mf-animal-profile .mf-profile-photo{width:136px;height:136px;border-width:5px}
 }
