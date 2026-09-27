@@ -1833,7 +1833,10 @@ function setDialogEditTarget(dialogId,ref){
 function dialogEditTarget(){
   for(const id of ['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog']){
     const d=$(id);
-    if(d?.open && d.classList.contains('is-edit') && d.dataset.editKind && d.dataset.editId) return {kind:d.dataset.editKind,id:d.dataset.editId};
+    if(d?.open && d.classList.contains('is-edit')){
+      // A queued close event from the previous dialog must never turn Save changes into Add.
+      return d.dataset.editKind && d.dataset.editId ? {kind:d.dataset.editKind,id:d.dataset.editId} : {kind:'missing-edit-target',id:''};
+    }
   }
   return editing;
 }
@@ -2010,14 +2013,6 @@ function dialogHead(title,id){ return `<div class="dialog-head"><h2>${esc(title)
 function dialogActions(id,saveLabel='Save',tone=''){
   return `<div class="form-actions"><button type="button" data-dismiss="${id}">Cancel</button><button class="save ${tone}" data-save-label="${esc(saveLabel)}">${esc(saveLabel)}</button></div>`;
 }
-function showDialog(id,isEdit){
-  const d=$(id); if(!d) return;
-  if(d.open){ try{ d.close(); }catch{} }
-  d.classList.toggle('is-edit',!!isEdit);
-  d.querySelectorAll('[data-save-label]').forEach(b => b.textContent = isEdit ? 'Save changes' : b.dataset.saveLabel);
-  try{ d.showModal(); }catch{}
-}
-
 function openMomDialog(type,isEdit=false){
   closeOverlays(); if(!isEdit) editing=null;
   const pump = type === 'pump';
@@ -2120,7 +2115,12 @@ function pickChoice(id,value){
   document.querySelectorAll(`[data-pick^="${id}:"]`).forEach(b => b.classList.toggle('on', b.dataset.pick === `${id}:${value}`));
 }
 // Closing a dialog by any route (Cancel, ×, Esc) must drop the pending edit.
-['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].forEach(id => $(id)?.addEventListener('close',()=>{ editing=null; setDialogEditTarget(id,null); }));
+['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].forEach(id => $(id)?.addEventListener('close',()=>{
+  // close fires asynchronously; a newer edit may already have reopened the same dialog.
+  if($(id)?.open) return;
+  if(editing?.id===$(id)?.dataset.editId) editing=null;
+  setDialogEditTarget(id,null);
+}));
 
 function bindViewInputs(){
   // A 30-day chart overflows: the most recent days matter most, so open scrolled to them.
@@ -2547,11 +2547,11 @@ document.addEventListener('click',handleClick);
 document.addEventListener('change',e=>{if(e.target.matches('[data-review-picker]') && e.target.value){S.ui.reviewDate=e.target.value;save();render();}});
 
 $('momForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('momType').value, wasEdit=!!editing;
-  if(type==='pump'){ S.last.pumpMl=+$('momAmount').value||null; S.last.pumpMin=+$('momDuration').value||null; } else { S.last.nursingMin=+$('momDuration').value||null; S.last.nursingSide=$('momSide')?.value||null; } const x=commitRecord(S.entries,{id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false}); save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved')); });
-$('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'diaper',date:$('diaperDate').value,time:$('diaperTime').value,subtype:$('diaperKind').value,note:$('diaperNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('diaperDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Diaper logged'); });
+  if(type==='pump'){ S.last.pumpMl=+$('momAmount').value||null; S.last.pumpMin=+$('momDuration').value||null; } else { S.last.nursingMin=+$('momDuration').value||null; S.last.nursingSide=$('momSide')?.value||null; } const x=commitRecord(S.entries,{id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false}); if(!x)return; save(); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved')); });
+$('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'diaper',date:$('diaperDate').value,time:$('diaperTime').value,subtype:$('diaperKind').value,note:$('diaperNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); if(!x)return; save(); $('diaperDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Diaper logged'); });
 $('feedForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('feedType').value, wasEdit=!!editing, stamp=new Date().toISOString();
-  if(type==='nursing'){ S.last.nursingMin=+$('feedDuration').value||null; S.last.nursingSide=$('feedSide')?.value||null; } else { S.last.bottleOz=+$('feedAmount').value||null; } const built=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}); const x=commitRecord(S.babyEvents,built); save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Feed logged'); });
-$('growthForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'growth',date:$('growthDate').value,time:'12:00',weightLb:$('growthWeightLb').value===''?null:+$('growthWeightLb').value,weightOz:$('growthWeightOz').value===''?null:+$('growthWeightOz').value,lengthIn:$('growthLength').value===''?null:+$('growthLength').value,headIn:$('growthHead').value===''?null:+$('growthHead').value,note:$('growthNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); save(); $('growthDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} setView('baby-growth'); confirmed(); toast(wasEdit?'Measurement updated':'Measurement saved'); });
+  if(type==='nursing'){ S.last.nursingMin=+$('feedDuration').value||null; S.last.nursingSide=$('feedSide')?.value||null; } else { S.last.bottleOz=+$('feedAmount').value||null; } const built=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}); const x=commitRecord(S.babyEvents,built); if(!x)return; save(); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Feed logged'); });
+$('growthForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'growth',date:$('growthDate').value,time:'12:00',weightLb:$('growthWeightLb').value===''?null:+$('growthWeightLb').value,weightOz:$('growthWeightOz').value===''?null:+$('growthWeightOz').value,lengthIn:$('growthLength').value===''?null:+$('growthLength').value,headIn:$('growthHead').value===''?null:+$('growthHead').value,note:$('growthNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); if(!x)return; save(); $('growthDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} setView('baby-growth'); confirmed(); toast(wasEdit?'Measurement updated':'Measurement saved'); });
 $('sleepForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing,duration=Math.max(1,+$('sleepMinutes').value||0); S.last.sleepMin=duration; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'sleep',date:$('sleepDate').value,time:$('sleepTime').value,durationMinutes:duration,captureMode:wasEdit?'edited':'completed',sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); if(!x)return; save(); $('sleepDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Sleep logged'); });
 $('authForm').addEventListener('submit',async e=>{ e.preventDefault(); if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.signInWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });
 $('createAccount').addEventListener('click',async()=>{ if(!cloud)return toast('Cloud is not ready yet.'); try{ await cloud.auth.createUserWithEmailAndPassword($('authEmail').value.trim(),$('authPassword').value); $('authDialog').close(); }catch(err){toast(err.message,4500);} });

@@ -5,6 +5,33 @@ import {fileURLToPath} from 'node:url';
 import vm from 'node:vm';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+// Reopening an edit dialog can deliver the previous close event afterward. Saving must keep
+// the original record id, and a missing edit target must fail instead of appending a row.
+{
+  const source=fs.readFileSync(path.join(ROOT,'app.js'),'utf8');
+  const start=source.indexOf('function findRecord('),end=source.indexOf('// --------------------------------------------------------- number entry',start);
+  const listenerStart=source.indexOf("['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].forEach(id => $(id)?.addEventListener('close'",end);
+  const listenerEnd=source.indexOf('\n\nfunction bindViewInputs',listenerStart);
+  if(start<0||end<0||listenerStart<0||listenerEnd<0)throw new Error('Edit record contract moved; update its regression test.');
+  const record={id:'existing-pump',type:'pump',amountMl:90,createdAt:'2026-09-20T10:00:00Z'};
+  const dialogs=Object.fromEntries(['momDialog','diaperDialog','feedDialog','growthDialog','sleepDialog'].map(id=>[id,{
+    open:false,dataset:{},classList:{contains:()=>false},addEventListener(type,callback){this.onClose=callback;}
+  }]));
+  const ctx=vm.createContext({S:{entries:[record],babyEvents:[]},$:id=>dialogs[id],toast:()=>{}});
+  vm.runInContext(source.slice(start,end)+'\n'+source.slice(listenerStart,listenerEnd),ctx,{filename:'edit-regression.js'});
+  const d=dialogs.momDialog;d.open=true;d.classList.contains=cls=>cls==='is-edit';
+  vm.runInContext("editing={kind:'mom',id:'existing-pump'};setDialogEditTarget('momDialog',editing)",ctx);
+  d.onClose(); // stale close from the prior dialog arrives after this edit opens
+  const changed=vm.runInContext("commitRecord(S.entries,{id:'new-id',type:'pump',amountMl:120,createdAt:'new'})",ctx);
+  if(ctx.S.entries.length!==1||changed!==record||record.id!=='existing-pump'||record.amountMl!==120)
+    throw new Error('Editing a pump appended a duplicate instead of updating the existing record.');
+  delete d.dataset.editKind;delete d.dataset.editId;
+  const rejected=vm.runInContext("commitRecord(S.entries,{id:'other-id',type:'pump',amountMl:125})",ctx);
+  if(rejected!==null||ctx.S.entries.length!==1)throw new Error('An edit with a missing target created a duplicate.');
+  d.open=false;d.onClose();d.classList.contains=()=>false;
+  vm.runInContext("commitRecord(S.entries,{id:'actual-new-entry',type:'pump',amountMl:70})",ctx);
+  if(ctx.S.entries.length!==2)throw new Error('Creating a new entry stopped working after an edit.');
+}
 function run(cmd,args,{cwd=ROOT}={}){
   const r=spawnSync(cmd,args,{cwd,stdio:'inherit',encoding:'utf8'});
   if(r.status!==0)throw new Error(`${cmd} ${args.join(' ')} failed with ${r.status}`);
