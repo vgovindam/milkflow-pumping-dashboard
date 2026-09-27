@@ -1,21 +1,14 @@
 (() => {
 'use strict';
 
-/* "MilkFlow update ready" used to appear twice for every deploy, and could not be got rid of.
- *
- * Both faults came from the same place: the banner was driven by service-worker EVENTS rather
- * than by whether this page is actually out of date. The worker calls skipWaiting(), so it
- * activates under the running page and fires controllerchange - banner one. The reload that
- * follows loads the new build, and the pageshow/visibilitychange handlers fired the banner
- * again on a page that was already current - banner two. There was no dismiss control either,
- * so a wrong banner sat on top of the tab bar until you gave in and reloaded.
- *
- * The version is the question, so the version is what we ask. A worker's cache is named for
- * the build it holds; if a cache exists for a build that is not the one this page is running,
- * an update really is ready. After the reload the two agree and nothing is shown.
- */
+/* Compare the running page with the published worker script. Checking local cache names
+ * missed releases when the browser had not yet populated a new cache. sw.js is deliberately
+ * excluded from the worker's fetch handler, so this request reaches the published build.
+ * The banner is shown once per open page and is dismissible until the next launch. */
 
 const PAGE_VERSION = String(window.MILKFLOW_BUILD?.version || '');
+const SW_URL = new URL('./sw.js', document.baseURI).href;
+let publishedVersion = '';
 let dismissed = false;
 
 function injectStyle(){
@@ -29,15 +22,20 @@ function injectStyle(){
   `;document.head.appendChild(el);
 }
 
-/* The build this page is running, against the builds the worker has cached. */
+/* sw.js is excluded from the worker's fetch cache. A cache key describes what this
+ * device once held, not what is published now. Check the network source of truth. */
 async function updateIsReady(){
-  if(!PAGE_VERSION || !('caches' in window)) return false;
+  if(!PAGE_VERSION) return false;
   try{
-    const keys = await caches.keys();
-    return keys.some(k => {
-      const m = /^milkflow-v(.+)$/.exec(k);
-      return m && m[1] !== PAGE_VERSION;
-    });
+    const url = new URL(SW_URL);
+    url.searchParams.set('version-check', String(Date.now()));
+    const response = await fetch(url.href, {cache:'no-store'});
+    if(!response.ok) return false;
+    const source = await response.text();
+    const match = source.match(/^const VERSION=['"]milkflow-v([^'"]+)['"];/m);
+    if(!match) return false;
+    publishedVersion = match[1];
+    return publishedVersion !== PAGE_VERSION;
   }catch{ return false; }
 }
 
@@ -48,7 +46,17 @@ function show(){
   box.innerHTML='<div><strong>MilkFlow update ready</strong><span>Update when you are finished entering data.</span></div>'
     + '<button type="button" class="aun-now">Update now</button>'
     + '<button type="button" class="aun-later" aria-label="Not now">×</button>';
-  box.querySelector('.aun-now').addEventListener('click',()=>location.reload());
+  box.querySelector('.aun-now').addEventListener('click',async event=>{
+    const button=event.currentTarget;
+    button.disabled=true;
+    try{
+      const reg=await navigator.serviceWorker.getRegistration();
+      await Promise.race([reg?.update?.(),new Promise(resolve=>setTimeout(resolve,2500))]);
+    }catch{}
+    const url=new URL(location.href);
+    url.searchParams.set('milkflow-update',publishedVersion||String(Date.now()));
+    location.replace(url.href);
+  });
   /* Dismiss means dismiss. It comes back on the next launch, which is soon enough. */
   box.querySelector('.aun-later').addEventListener('click',()=>{dismissed=true;box.remove();});
   document.body.appendChild(box);
@@ -59,8 +67,9 @@ async function showIfStale(){
 }
 async function check(){
   if(!('serviceWorker' in navigator))return;
-  try{const reg=await navigator.serviceWorker.getRegistration();await reg?.update?.();}catch{}
-  showIfStale();
+  const inspection=showIfStale();
+  try{const reg=await navigator.serviceWorker.getRegistration();reg?.update?.().catch(()=>{});}catch{}
+  await inspection;
 }
 
 if('serviceWorker' in navigator){

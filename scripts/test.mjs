@@ -237,4 +237,37 @@ if(!indexHtml.includes('milkflow-family-v3-192.png?v=__MILKFLOW_VERSION__'))thro
 if(!manifestPwa.icons?.some(i=>i.src==='milkflow-family-v3-192.png'))throw new Error('Canonical v3 MilkFlow icon is missing from manifest.');
 if(!swTemplate.includes("icon:'./milkflow-family-v3-192.png'"))throw new Error('Push notification icon is not the canonical v3 MilkFlow artwork.');
 
+
+/* A restored home-screen app can be older than the published worker even when its local
+   caches contain only the old version. The update banner must compare against the network. */
+{
+  const source=fs.readFileSync(path.join(ROOT,'app-update-notice.js'),'utf8');
+  const events={},nodes=new Map(),buttons=new Map();
+  const element=()=>({id:'',querySelector(sel){
+    if(!buttons.has(sel))buttons.set(sel,{disabled:false,addEventListener(type,fn){this[type]=fn}});
+    return buttons.get(sel);
+  }});
+  const reg={update:async()=>{}};
+  let requested='',reloaded='';
+  const context={
+    URL,setTimeout,
+    window:{MILKFLOW_BUILD:{version:'2.21.4'},addEventListener(type,fn){events[type]=fn}},
+    navigator:{serviceWorker:{ready:Promise.resolve(reg),getRegistration:async()=>reg,addEventListener(type,fn){events[type]=fn}}},
+    document:{baseURI:'https://example.com/milkflow/',hidden:false,createElement:element,
+      getElementById:id=>nodes.get(id)||null,
+      head:{appendChild:el=>nodes.set(el.id,el)},body:{appendChild:el=>nodes.set(el.id,el)},
+      addEventListener(type,fn){events[type]=fn}},
+    location:{href:'https://example.com/milkflow/#baby-home',replace(url){reloaded=url}},
+    fetch:async(url,options)=>{requested=String(url);if(options?.cache!=='no-store')throw new Error('Version lookup used the cache');
+      return {ok:true,text:async()=>"const VERSION='milkflow-v2.21.5';"};}
+  };
+  vm.runInNewContext(source,context,{filename:'app-update-notice.js'});
+  await events.pageshow();
+  if(!requested.includes('/sw.js?version-check=')||!nodes.has('appUpdateNotice'))
+    throw new Error('A restored older app did not detect the published release.');
+  await buttons.get('.aun-now').click({currentTarget:buttons.get('.aun-now')});
+  if(!reloaded.includes('milkflow-update=2.21.5')||!reloaded.endsWith('#baby-home'))
+    throw new Error('Update action did not navigate to the new build while preserving the route.');
+}
+
 console.log('MilkFlow test suite passed: syntax, data and notification contracts, nine selectable theme worlds, canonical v3 app icon wiring, dark-mode number/button readability, Settings experience, and single-layer ownership.');
