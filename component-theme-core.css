@@ -44,7 +44,7 @@ body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .main::after{d
   html,body{height:100%;min-height:100%;overflow:hidden}
   .shell{height:100dvh;min-height:100dvh;overflow:hidden}
   .main{
-    height:calc(100dvh - 148px - env(safe-area-inset-bottom));min-height:0;overflow-y:auto;overflow-x:hidden;
+    height:100dvh;min-height:0;overflow-y:auto;overflow-x:hidden;
     overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scroll-behavior:auto
   }
   body.locked .main{overflow:hidden}
@@ -54,12 +54,10 @@ body:not([data-screen="mom-home"]):not([data-screen="baby-home"]) .main::after{d
     padding-bottom:24px
   }
 
-  /* The dock always has a real visual gutter. Some iOS standalone sessions report a
-     zero bottom inset; max() prevents the bar from looking glued to the device edge. */
+  /* The dock reaches the bottom; inner padding protects labels from the home indicator. */
   .bottom-nav{
-    left:14px;right:14px;
-    bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px));
-    padding:5px 6px;border-radius:24px
+    left:0;right:0;bottom:0;
+    padding:5px 8px calc(5px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0
   }
   .bottom-nav button{min-height:52px}
   .bottom-nav .add-tab{top:-16px}

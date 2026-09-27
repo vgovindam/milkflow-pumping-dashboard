@@ -714,10 +714,18 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 }
 
 /* ---------------------------------------------------------------- edge to edge */
-/* In standalone the page stopped short of both edges: a strip above the status bar the app
-   did not own, and a band below the dock. The scene is fixed to the viewport, so painting
-   the world color on the root and letting the shell fill the dynamic viewport closes both
-   without the content itself moving. */
+/* Match the root canvas behind the iOS status area to the active theme plate. */
+:root:not([data-experience-theme="clean"]):has(body[data-realm="baby"]),
+:root:not([data-experience-theme="clean"]):has(body:is([data-screen="settings"],[data-screen="set-appearance"],[data-screen="more"])){
+  background-color:var(--mf-world-base);
+  background-image:var(--mf-theme-baby-scene);
+  background-size:cover;background-position:var(--mf-page-focus);background-repeat:no-repeat;
+}
+:root:not([data-experience-theme="clean"]):has(body[data-realm="mom"]){
+  background-color:var(--mf-world-base);
+  background-image:var(--mf-theme-mom-scene);
+  background-size:cover;background-position:var(--mf-page-focus);background-repeat:no-repeat;
+}
 :root:not([data-experience-theme="clean"]) body[data-realm]{
   min-height:100dvh;background-color:var(--mf-world-base);background-repeat:no-repeat;
   background-size:cover;background-position:var(--mf-page-focus);background-attachment:fixed
@@ -729,7 +737,7 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 :root:not([data-experience-theme="clean"]) body[data-realm] .main{background-position-y:0}
 @media(max-width:760px){
   :root:not([data-experience-theme="clean"]) body[data-realm] .main{
-    height:calc(100dvh - 148px - env(safe-area-inset-bottom));
+    height:100dvh;
     min-height:0
   }
 }
