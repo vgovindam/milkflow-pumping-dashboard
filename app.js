@@ -1848,8 +1848,9 @@ function editRecord(kind,id){
     dialogId='momDialog';
     openMomDialog(e.type,true);
     $('momDate').value=e.date||today(); $('momTime').value=e.time||now();
-    $('momAmount').value=e.amountMl??''; $('momDuration').value=e.durationMin??'';
-    $('momNote').value=e.note||''; if(e.side) $('momSide').value=e.side;
+    if($('momAmount')) $('momAmount').value=e.amountMl??'';
+    if($('momDuration')) $('momDuration').value=e.durationMin??'';
+    $('momNote').value=e.note||''; if(e.side&&$('momSide')) pickChoice('momSide',e.side);
   } else if(e.eventType==='diaper'){
     dialogId='diaperDialog';
     openDiaperDialog(e.subtype,true);
@@ -1858,8 +1859,9 @@ function editRecord(kind,id){
     dialogId='feedDialog';
     openFeedDialog(e.eventType==='nursing'?'nursing':(e.feedingType||'expressed_milk'),true);
     $('feedDate').value=e.date; $('feedTime').value=e.time;
-    $('feedAmount').value=e.amountOz??''; $('feedDuration').value=e.durationMinutes??e.totalMinutes??'';
-    if(e.side) $('feedSide').value=e.side;
+    if($('feedAmount')) $('feedAmount').value=e.amountOz??'';
+    if($('feedDuration')) $('feedDuration').value=e.durationMinutes??e.totalMinutes??'';
+    if(e.side&&$('feedSide')) pickChoice('feedSide',e.side);
   } else if(e.eventType==='growth'){
     dialogId='growthDialog';
     openGrowthDialog(true);

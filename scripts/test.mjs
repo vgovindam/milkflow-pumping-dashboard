@@ -31,6 +31,39 @@ const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
   d.open=false;d.onClose();d.classList.contains=()=>false;
   vm.runInContext("commitRecord(S.entries,{id:'actual-new-entry',type:'pump',amountMl:70})",ctx);
   if(ctx.S.entries.length!==2)throw new Error('Creating a new entry stopped working after an edit.');
+
+  // Edit forms render only fields relevant to the entry type. Filling a missing field
+  // previously threw before the edit target was recorded, then Save rejected the entry.
+  let fields={};
+  ctx.$=id=>dialogs[id]||fields[id]||null;
+  ctx.closeOverlays=()=>{for(const dialog of Object.values(dialogs)){dialog.open=false;dialog.classList.contains=()=>false;}};
+  ctx.today=()=> '2026-09-27';
+  ctx.now=()=> '18:00';
+  ctx.openMomDialog=()=>{const dialog=dialogs.momDialog;dialog.open=true;dialog.classList.contains=cls=>cls==='is-edit';};
+  ctx.openFeedDialog=()=>{const dialog=dialogs.feedDialog;dialog.open=true;dialog.classList.contains=cls=>cls==='is-edit';};
+  ctx.pickChoice=(id,value)=>{fields[id].value=value;};
+  const nursingMom={id:'mom-nursing',type:'nursing',date:'2026-09-25',time:'11:30',durationMin:18,side:'left',note:'test'};
+  const milk={id:'baby-milk',eventType:'feeding',feedingType:'expressed_milk',date:'2026-09-25',time:'12:15',amountOz:3};
+  const formula={id:'baby-formula',eventType:'feeding',feedingType:'formula',date:'2026-09-25',time:'13:15',amountOz:2};
+  const nursingBaby={id:'baby-nursing',eventType:'nursing',date:'2026-09-25',time:'14:30',durationMinutes:17,side:'right'};
+  ctx.S.entries.push(nursingMom);
+  ctx.S.babyEvents.push(milk,formula,nursingBaby);
+  const scenarios=[
+    {kind:'mom',record:record,keys:['momDate','momTime','momAmount','momDuration','momNote'],check:'momAmount',expected:120,list:'entries',value:'amountMl'},
+    {kind:'mom',record:nursingMom,keys:['momDate','momTime','momDuration','momNote','momSide'],check:'momDuration',expected:18,list:'entries',value:'durationMin'},
+    {kind:'baby',record:milk,keys:['feedDate','feedTime','feedAmount'],check:'feedAmount',expected:3,list:'babyEvents',value:'amountOz'},
+    {kind:'baby',record:formula,keys:['feedDate','feedTime','feedAmount'],check:'feedAmount',expected:2,list:'babyEvents',value:'amountOz'},
+    {kind:'baby',record:nursingBaby,keys:['feedDate','feedTime','feedDuration','feedSide'],check:'feedDuration',expected:17,list:'babyEvents',value:'durationMinutes'}
+  ];
+  for(const {kind,record:original,keys,check,expected,list,value} of scenarios){
+    fields=Object.fromEntries(keys.map(key=>[key,{value:''}]));
+    const before=ctx.S[list].length;
+    vm.runInContext(`editRecord(${JSON.stringify(kind)},${JSON.stringify(original.id)})`,ctx);
+    if(+fields[check].value!==expected)throw new Error(`Editing ${original.id} failed to fill its visible field.`);
+    const changed=vm.runInContext(`commitRecord(S.${list},{id:'new-id',${value}:${expected+1},createdAt:'new'})`,ctx);
+    if(changed!==original||changed.id!==original.id||ctx.S[list].length!==before||changed[value]!==expected+1)
+      throw new Error(`Saving ${original.id} lost the original entry or created a duplicate.`);
+  }
 }
 function run(cmd,args,{cwd=ROOT}={}){
   const r=spawnSync(cmd,args,{cwd,stdio:'inherit',encoding:'utf8'});
