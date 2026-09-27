@@ -105,6 +105,13 @@
   background-image:var(--mf-theme-mom-scene)!important;background-size:cover!important;
   background-position:var(--mf-page-focus)!important;background-repeat:no-repeat!important;background-attachment:fixed!important
 }
+:root:not([data-experience-theme="clean"]) body[data-screen="more"] .main{
+  background-color:var(--mf-world-base)!important;background-image:var(--mf-theme-baby-scene)!important;
+  background-size:cover!important;background-position:var(--mf-page-focus)!important;background-attachment:fixed!important
+}
+:root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"],[data-screen="settings"],[data-screen="set-appearance"],[data-screen="more"]) .shell{
+  background:color-mix(in srgb,var(--mf-world-base) 83%,var(--mf-world-accent) 17%)
+}
 
 /* Chrome floats over the world rather than replacing it. */
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .topbar,
@@ -151,7 +158,7 @@
    meaning-color lives. This rule alone was repainting every summary tile on Trends, Growth
    and the Mom screens the same near-white. */
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.panel,.grp,.metric,.row,.stash-hero,.data-status){
-  background-color:var(--mf-world-surface)!important;border-color:var(--mf-world-line)!important;
+  background-color:color-mix(in srgb,var(--mf-world-surface) 85%,var(--mf-world-accent) 15%)!important;border-color:var(--mf-world-line)!important;
   box-shadow:0 12px 30px var(--mf-world-shadow)!important;color:var(--mf-world-text)!important;
   backdrop-filter:none;-webkit-backdrop-filter:none
 }
@@ -177,6 +184,47 @@
 :root:not([data-experience-theme="clean"]) body[data-realm="baby"]:not([data-screen="baby-home"]) .page-head :is(h2,.eyebrow){color:#fff!important;text-shadow:0 2px 14px rgba(20,22,34,.36)!important}
 :root:not([data-experience-theme="clean"]) body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head h2{color:var(--mf-world-text)!important;text-shadow:none!important}
 :root:not([data-experience-theme="clean"]) body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head .eyebrow{color:var(--mf-world-deep)!important;opacity:.94!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="more"] .page-head{
+  position:relative;isolation:isolate;overflow:hidden;min-height:116px;border-radius:27px;
+  border:1px solid var(--mf-world-line);background:color-mix(in srgb,var(--mf-world-surface) 75%,var(--mf-world-accent) 25%);
+  box-shadow:0 14px 32px var(--mf-world-shadow)
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="more"] .page-head::after{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--mf-world-surface) 94%,transparent),color-mix(in srgb,var(--mf-world-surface) 68%,transparent)),var(--mf-theme-baby-hero);
+  background-size:auto,cover;background-position:center,var(--mf-baby-focus)
+}
+:root:not([data-experience-theme="clean"]) body[data-screen="more"] .page-head>div{position:relative;z-index:1}
+:root:not([data-experience-theme="clean"]) body[data-screen="more"] .page-head :is(h2,.eyebrow){color:var(--mf-world-text);text-shadow:none}
+:root:not([data-experience-theme="clean"]) body[data-screen="more"] #view>.grp{
+  background-color:color-mix(in srgb,var(--mf-world-surface) 78%,var(--mf-world-accent) 22%)!important;
+  border:1px solid var(--mf-world-line);box-shadow:0 10px 26px var(--mf-world-shadow)
+}
+body[data-screen="baby-growth"] .growth-tracks,
+body[data-screen="baby-growth"] .growth-guidance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:15px 0}
+body[data-screen="baby-growth"] .growth-guidance{grid-template-columns:repeat(2,minmax(0,1fr))}
+body[data-screen="baby-growth"] :is(.growth-track,.growth-advice){
+  min-width:0;padding:16px;border-radius:22px;border:1px solid var(--mf-world-line,var(--line));
+  background:color-mix(in srgb,var(--mf-world-surface-strong,var(--surface)) 73%,var(--mf-world-accent,var(--baby)) 27%);
+  box-shadow:0 9px 22px var(--mf-world-shadow,rgba(0,0,0,.08));color:var(--mf-world-text,var(--ink))
+}
+body[data-screen="baby-growth"] .growth-track:nth-child(2){background:color-mix(in srgb,var(--mf-world-surface-strong,var(--surface)) 72%,var(--care-growth,#d9a6c7) 28%)}
+body[data-screen="baby-growth"] .growth-track:nth-child(3){background:color-mix(in srgb,var(--mf-world-surface-strong,var(--surface)) 72%,var(--care-wet,#8ac4de) 28%)}
+body[data-screen="baby-growth"] .growth-advice.seasonal{background:color-mix(in srgb,var(--mf-world-surface-strong,var(--surface)) 70%,var(--mf-world-accent-2,var(--baby)) 30%)}
+body[data-screen="baby-growth"] .growth-track h3,
+body[data-screen="baby-growth"] .growth-advice h3{margin:0 0 10px;font:800 18px/1.2 var(--display);color:inherit}
+body[data-screen="baby-growth"] .growth-track p,
+body[data-screen="baby-growth"] .growth-advice p{margin:0;color:var(--mf-world-text,var(--ink));font-size:13px;line-height:1.45}
+body[data-screen="baby-growth"] .growth-track svg{display:block;width:100%;height:auto;max-height:100px;color:var(--mf-world-deep,var(--baby))}
+body[data-screen="baby-growth"] .growth-track-dates{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px;color:var(--mf-world-muted,var(--muted));font-size:11px}
+body[data-screen="baby-growth"] .growth-track-dates strong{color:var(--mf-world-text,var(--ink));font-size:13px}
+body[data-screen="baby-growth"] .growth-advice .eyebrow{display:block;margin-bottom:7px;color:var(--mf-world-deep,var(--baby));font-size:10px;font-weight:850;letter-spacing:.09em}
+body[data-screen="baby-growth"] .growth-advice :is(button,a){display:inline-flex;align-items:center;gap:6px;margin-top:13px;padding:0;border:0;background:none;color:var(--mf-world-deep,var(--baby));font:800 12px/1.4 var(--font);text-align:left;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8px;color:var(--mf-world-muted,var(--muted));line-height:1.4}
+@media(max-width:760px){
+  body[data-screen="baby-growth"] .growth-tracks{grid-template-columns:1fr}
+  body[data-screen="baby-growth"] .growth-guidance{grid-template-columns:1fr}
+}
 
 /* Mom hero: same world, calmer editorial treatment. No theme-name badge or legacy pseudo art. */
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{
@@ -269,8 +317,8 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){
   background:transparent!important;border:0!important;
   color:var(--mf-world-text)!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) .mf-tile-picture{background:color-mix(in srgb,var(--tile) 34%,var(--mf-world-surface));border-color:color-mix(in srgb,var(--tile) 48%,var(--mf-world-surface));box-shadow:0 6px 16px var(--mf-world-shadow)}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) .mf-tile-picture{background:color-mix(in srgb,var(--tile) 27%,var(--mf-world-surface));border-color:color-mix(in srgb,var(--tile) 45%,var(--mf-world-surface))}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) .mf-tile-picture{background:color-mix(in srgb,var(--tile) 61%,var(--mf-world-surface));border-color:color-mix(in srgb,var(--tile) 73%,var(--mf-world-surface));box-shadow:0 6px 16px var(--mf-world-shadow)}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) .mf-tile-picture{background:color-mix(in srgb,var(--tile) 38%,var(--mf-world-surface));border-color:color-mix(in srgb,var(--tile) 58%,var(--mf-world-surface))}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.milk{--tile:var(--care-milk)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.nurse{--tile:var(--care-nursing)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.formula{--tile:var(--care-formula)}
@@ -428,7 +476,7 @@
 :root[data-theme="dark"] .mf-experience-clean{background:#202432;color:#f4f6fb;border-color:#3b4152}:root[data-theme="dark"] .mf-experience-clean small{color:#cbd1dd}
 
 @media(max-width:760px){
-  :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .view{padding-bottom:calc(164px + env(safe-area-inset-bottom))!important}
+  :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .view{padding-bottom:24px!important}
   :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .main,
   :root:not([data-experience-theme="clean"]) body[data-screen="settings"] .main,
   :root:not([data-experience-theme="clean"]) body[data-screen="set-appearance"] .main{background-size:cover!important;background-position:var(--mf-page-focus)!important}
@@ -596,7 +644,7 @@
      same near-white, which is the "no color anywhere but the landing page" problem. Setting
      only the color gives the opaque floor the contrast needs and lets the component's own
      tint sit on top of it. */
-  background-color:var(--mf-world-surface-strong)!important;
+  background-color:color-mix(in srgb,var(--mf-world-surface-strong) 86%,var(--mf-world-accent) 14%)!important;
   border:1px solid var(--mf-world-line)!important;
   box-shadow:0 10px 26px var(--mf-world-shadow)!important;
 }

@@ -19,7 +19,7 @@
       grid-template-columns:repeat(5,minmax(0,1fr))!important;
       visibility:visible!important;opacity:1!important
     }
-    .view{padding-bottom:calc(132px + env(safe-area-inset-bottom))!important}
+    .view{padding-bottom:24px!important}
   }
   .bottom-nav .ico,.bottom-nav .gly,
   .topbar .ico,.back-btn .ico,.round-action .ico,

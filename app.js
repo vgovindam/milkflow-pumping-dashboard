@@ -1262,13 +1262,35 @@ function babyGrowth(){
   };
   const rows=a.map(e=>{
     const parts=[e.weightLb!=null?weight(e):null,e.lengthIn!=null?`${e.lengthIn} in long`:null,e.headIn!=null?`head ${e.headIn} in`:null].filter(Boolean);
-    return `<button type="button" class="row" data-care-kind="growth" data-record="baby:${esc(e.id)}"><div class="row-icon baby kind-growth">${icon('scale')}</div><div class="row-main"><strong>${parts.length?parts.join(' · '):'Measurement'}</strong><span>${fdl(e.date)}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
+    const atVisit=birthDate()&&e.date>=birthDate()?daysBetween(birthDate(),e.date):null;
+    return `<button type="button" class="row" data-care-kind="growth" data-record="baby:${esc(e.id)}"><div class="row-icon baby kind-growth">${icon('scale')}</div><div class="row-main"><strong>${parts.length?parts.join(' · '):'Measurement'}</strong><span>${fdl(e.date)}${atVisit!==null?` · ${Math.floor(atVisit/7)} weeks at visit`:''}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`;
   }).join('');
   return `<div class="page-head"><div><span class="eyebrow">${esc(S.baby.name).toUpperCase()}</span><h2>Growth</h2></div><button class="round-action baby" data-growth>${icon('plus')}<span>Add</span></button></div>
   <p class="growth-intro">${esc(S.baby.name)}'s measurements over time${ageLabel()?` · ${esc(ageLabel())}`:''}. Each number shows the latest recorded value for that measure.</p>
   <div class="metric-grid three">${measure('weightLb','Weight',weight,'scale')}${measure('lengthIn','Length',e=>`${e.lengthIn} in`,'growth')}${measure('headIn','Head',e=>`${e.headIn} in`,'growth')}</div>
+  <div class="growth-tracks" aria-label="Measurements over time">${growthTrace(a,'weightLb','Weight',e=>(+e.weightLb||0)*16+(+e.weightOz||0),'oz')}${growthTrace(a,'lengthIn','Length',e=>+e.lengthIn,'in')}${growthTrace(a,'headIn','Head size',e=>+e.headIn,'in')}</div>
   ${panel('Measurements',a.length?`<div class="rows">${rows}</div>`:empty('growth','No measurements yet','Add measurements from pediatric visits.'))}
+  ${growthGuidance()}
   <div class="clinical-note">Bring your logged measurements to pediatric visits. Your clinician can plot weight, length and head size against age on a growth chart; a change between two visits alone does not describe a growth pattern.</div>`;
+}
+function growthTrace(records,key,title,value,unit){
+  const points=records.filter(e=>e[key]!=null&&Number.isFinite(value(e))).slice(0,8).reverse();
+  if(points.length<2)return `<section class="growth-track"><h3>${title}</h3><p>${points.length?'Add another reading to see a trend.':'No readings logged yet.'}</p></section>`;
+  const values=points.map(value),low=Math.min(...values),high=Math.max(...values),span=Math.max(high-low,1);
+  const line=values.map((v,i)=>`${i?'L':'M'}${(14+i*292/(values.length-1)).toFixed(1)},${(82-(v-low)/span*62).toFixed(1)}`).join(' ');
+  const latest=values.at(-1),first=values[0];
+  return `<section class="growth-track"><h3>${title}</h3><svg viewBox="0 0 320 100" role="img" aria-label="${title}: ${first.toFixed(1)} ${unit} on ${fd(points[0].date)}, ${latest.toFixed(1)} ${unit} on ${fd(points.at(-1).date)}"><path d="${line}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><circle cx="306" cy="${(82-(latest-low)/span*62).toFixed(1)}" r="5" fill="currentColor"/></svg><div class="growth-track-dates"><span>${fd(points[0].date)}</span><strong>${Number(latest.toFixed(1))} ${unit}</strong><span>${fd(points.at(-1).date)}</span></div></section>`;
+}
+function growthGuidance(){
+  const stage=currentStage(),months=ageMonths(),month=new Date().getMonth();
+  const stageText=stage?`<div class="growth-advice age"><span class="eyebrow">AT THIS AGE</span><h3>${months<stage.m?`Looking ahead to ${stage.label}`:`Around ${stage.label}`}</h3><p>The CDC checklist includes ${esc(stage.groups.social?.[0]?.toLowerCase()||'social connection')} and ${esc(stage.groups.movement?.[0]?.toLowerCase()||'new ways to move')}. These are conversation starters, not a score for your baby.</p><button type="button" data-view="development">Explore the age checklist ${icon('chevron')}</button></div>`:
+    `<div class="growth-advice age"><span class="eyebrow">AT THIS AGE</span><h3>Add a birth date</h3><p>Then the age checklist can follow your baby's stage.</p><button type="button" data-view="set-baby">Add birth date ${icon('chevron')}</button></div>`;
+  const warm=month>=4&&month<=8, cold=month===11||month<=1;
+  const title=warm?'For warmer outings':cold?'For colder outings':'For changing weather';
+  const tip=warm?(months!==null&&months<6?'When it is sunny, keep babies under 6 months out of direct sunlight and look for shade.':'When it is sunny, plan for shade and comfortable lightweight clothing.'):
+    cold?'When it is cold outside, use comfortable layers that you can adjust as you move indoors.':'For outings with changing temperatures, choose layers you can adjust as the day changes.';
+  const source=warm?'https://www.healthychildren.org/English/safety-prevention/at-play/Pages/Sun-Safety-and-Protection-Tips.aspx':'https://www.healthychildren.org/English/safety-prevention/at-play/Pages/Cold-Weather-Safety.aspx';
+  return `<section class="growth-guidance" aria-label="Growth and everyday care">${stageText}<div class="growth-advice seasonal"><span class="eyebrow">SEASONAL THOUGHT</span><h3>${title}</h3><p>${tip}</p><small>Calendar-based suggestion; check your actual weather before going out.</small><a href="${source}" target="_blank" rel="noopener noreferrer">American Academy of Pediatrics guidance ↗</a></div></section>`;
 }
 function developmentView(){
   const born = birthDate();

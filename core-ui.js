@@ -571,11 +571,11 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 .mf-last-feed-slot{min-width:0}
 /* A short illustrated box sits above each label. The entire picture and caption remain a
    single touch target, but color, border and shadow belong only to the picture box. */
-body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){--tile:var(--care-milk);box-sizing:border-box;height:117px;min-height:117px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;padding:0;text-align:center;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
+body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){box-sizing:border-box;height:117px;min-height:117px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;padding:0;text-align:center;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
 :root[data-theme="dark"] body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){background:transparent}
 .mf-feed-card.milk{--tile:var(--care-milk)}.mf-feed-card.nurse{--tile:var(--care-nursing)}.mf-feed-card.formula{--tile:var(--care-formula)}
 .mf-diaper-blob.wet{--tile:var(--care-wet)}.mf-diaper-blob.poop{--tile:var(--care-poop)}.mf-diaper-blob.both{--tile:var(--care-mixed)}
-.mf-feed-card .mf-tile-picture,.mf-diaper-blob .mf-tile-picture{box-sizing:border-box;position:relative;z-index:1;flex:0 0 88px;min-height:88px;width:100%;margin:0;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--tile) 48%,var(--surface));border-radius:23px;background:color-mix(in srgb,var(--tile) 35%,var(--surface));box-shadow:0 7px 17px rgba(30,44,66,.08);opacity:1}
+.mf-feed-card .mf-tile-picture,.mf-diaper-blob .mf-tile-picture{box-sizing:border-box;position:relative;z-index:1;flex:0 0 88px;min-height:88px;width:100%;margin:0;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--tile) 62%,var(--surface));border-radius:23px;background:color-mix(in srgb,var(--tile) 58%,var(--surface));box-shadow:0 7px 17px rgba(30,44,66,.08);opacity:1}
 .mf-feed-card .mf-tile-picture>span.mf-care-mark,.mf-diaper-blob .mf-tile-picture>span.mf-care-mark{position:relative;inset:auto;left:auto;top:auto;right:auto;transform:none;width:72px;height:72px;max-width:100%;max-height:100%;aspect-ratio:1;margin:0}
 .mf-diaper-blob .mf-tile-picture>span.mf-care-mark{width:60px;height:60px;opacity:1;transform:translateX(-12px)}
 .mf-feed-card .mf-tile-copy,.mf-diaper-blob .mf-tile-copy{position:relative;z-index:2;display:grid;place-items:center;flex:0 0 24px;width:100%;margin:0;padding:0;color:var(--ink);opacity:1}
@@ -699,7 +699,7 @@ function renderBaby(s){
   const babyMeta=age;
   const todayBits=[
     feedCount?`${feedCount} feed${feedCount===1?'':'s'}`:'No feeds yet',
-    snap.todayOz>0?`${snap.todayOz.toFixed(1)} oz bottles`:'',
+    snap.todayOz>0?`${snap.todayOz.toFixed(1)} oz logged`:'',
     `${snap.diapers} diaper${snap.diapers===1?'':'s'}`
   ].filter(Boolean);
   const wish=babyWishLine(babyName,nextFeed,feedCount);
