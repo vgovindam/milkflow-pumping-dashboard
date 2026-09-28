@@ -110,6 +110,16 @@ const swTemplate=fs.readFileSync(path.join(ROOT,'sw.template.js'),'utf8');
     ageDays:70,feedingPreference:'mostly_breastfed'
   });
   if(!baby.education?.some(x=>x.source?.id==='aap-safe-sleep'))throw new Error('Infant education should include safe-sleep provenance.');
+  const partialDay=engine.baby({
+    rows:[
+      ...Array.from({length:8},(_,i)=>({complete:true,feeds:i<4?6:7,bottleOz:i<4?16:18,wetTotal:i<4?5:6,diapers:i<4?6:7,sleepMin:600,logged:true})),
+      {complete:false,feeds:1,bottleOz:2,wetTotal:1,diapers:1,sleepMin:60,logged:true}
+    ],
+    ageDays:70,feedingPreference:'mostly_breastfed'
+  });
+  const partialBottle=partialDay.observations.find(x=>x.label==='Bottle volume');
+  if(partialBottle?.value!=='Higher')throw new Error('An incomplete current day must not depress completed-day bottle-volume comparisons.');
+  if(!/completed days/i.test(partialDay.summary||''))throw new Error('Baby insight copy must explain that full-day comparisons exclude the incomplete current day.');
   for(const model of [mom,baby]){
     if(!/educational guidance only/i.test(model.disclaimer||''))throw new Error('Interpretation model is missing the clinician disclaimer.');
     if(model.education?.some(x=>!x.source?.reviewed||!/^https:\/\//.test(x.source?.url||'')))throw new Error('Education source is missing URL/review metadata.');
