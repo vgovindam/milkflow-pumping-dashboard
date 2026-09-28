@@ -1183,8 +1183,9 @@ function revRow(e){
     <span class="rev-go">${icon('chevron')}</span>
   </button>`;
 }
-function dailyBabyRows(n){ return dateList(n).map(d=>({d,...babyStats(d)})); }
-function avgFromActive(rows,key){ const active=rows.filter(r=>r.diapers||r.feeds||r.bottleOz); return active.length ? (sum(active.map(r=>r[key]))/active.length).toFixed(1) : '0.0'; }
+function dailyBabyRows(n){ const current=today(); return dateList(n).map(d=>({d,complete:d<current,...babyStats(d)})); }
+function completedBabyRows(rows){ return rows.filter(r=>r.complete!==false); }
+function avgFromActive(rows,key){ const active=completedBabyRows(rows).filter(r=>r.diapers||r.feeds||r.bottleOz); return active.length ? (sum(active.map(r=>r[key]))/active.length).toFixed(1) : '0.0'; }
 function babyDailyTable(rows){
   const body=rows.slice().reverse().map(r=>`<div class="daily-row"><div class="daily-date"><strong>${fdl(r.d)}</strong><small>${r.diapers} diapers · ${r.feeds} feeds</small></div><div class="daily-cell wet"><span>Wet only</span><b>${r.wetOnly}</b></div><div class="daily-cell poop"><span>Poopy only</span><b>${r.poopOnly}</b></div><div class="daily-cell mixed"><span>Mixed</span><b>${r.mixed}</b></div><div class="daily-cell feeds"><span>Feeds</span><b>${r.feeds}</b></div><div class="daily-cell milk"><span>Bottle milk</span><b>${r.bottleOz.toFixed(1)} <small>oz</small></b></div></div>`).join('');
   return `<div class="daily-table"><div class="daily-row daily-head"><div>Date</div><div>Wet only</div><div>Poopy only</div><div>Mixed</div><div>Feeds</div><div>Bottle milk</div></div>${body}</div>`;
@@ -1202,11 +1203,14 @@ function babyTrends(){
   const totalFormula = sum(rows.map(r => r.formulaBottles));
   const totalSleep = sum(rows.map(r => r.sleepMin));
 
-  const half = Math.floor(rows.length/2);
-  const recentFeeds = avg(rows.slice(half).filter(r => r.feeds).map(r => r.feeds));
-  const priorFeeds = avg(rows.slice(0,half).filter(r => r.feeds).map(r => r.feeds));
-  const recentOz = avg(rows.slice(half).filter(r => r.bottleOz).map(r => r.bottleOz));
-  const priorOz = avg(rows.slice(0,half).filter(r => r.bottleOz).map(r => r.bottleOz));
+  // Daily totals are only comparable once a calendar day is complete. Keep today's live row
+  // visible in charts/logs, but never let a partial day depress completed-day averages or trends.
+  const comparisonRows = completedBabyRows(rows);
+  const half = Math.floor(comparisonRows.length/2);
+  const recentFeeds = avg(comparisonRows.slice(half).filter(r => r.feeds).map(r => r.feeds));
+  const priorFeeds = avg(comparisonRows.slice(0,half).filter(r => r.feeds).map(r => r.feeds));
+  const recentOz = avg(comparisonRows.slice(half).filter(r => r.bottleOz).map(r => r.bottleOz));
+  const priorOz = avg(comparisonRows.slice(0,half).filter(r => r.bottleOz).map(r => r.bottleOz));
   const insightModel=window.MilkFlowInsights?.baby?.({
     rows,ageDays:ageDays(),ageMonths:ageMonths(),
     feedingPreference:feedingPreference(),name:S.baby.name||'Baby'
