@@ -114,7 +114,7 @@ function mom(input={}){
 }
 
 function baby(input={}){
-  const rows=Array.isArray(input.rows)?input.rows:[],cov=coverage(rows);
+  const allRows=Array.isArray(input.rows)?input.rows:[],rows=allRows.filter(r=>r?.complete!==false),cov=coverage(allRows);
   const feedCmp=compare(rows.map(r=>num(r.feeds)),{noun:'feeding frequency'}),bottleCmp=compare(rows.map(r=>num(r.bottleOz)),{noun:'bottle volume'}),wetCmp=compare(rows.map(r=>num(r.wetTotal)),{noun:'wet-diaper pattern'}),sleepCmp=compare(rows.map(r=>num(r.sleepMin)/60),{noun:'logged sleep'});
   const observations=[
     obs('Data coverage',cov.active+' of '+(cov.total||0)+' days',cov.total?cov.pct+'% of days in this range contain tracked care data.':'No days in this range.'),
@@ -133,7 +133,7 @@ function baby(input={}){
   return{
     kind:'baby',
     headline:cov.active<3?'MilkFlow is learning this baby’s routine':'Here is what changed in the logged routine',
-    summary:'MilkFlow compares recent logged care with earlier data in the selected range and keeps observations separate from medical guidance.',
+    summary:'MilkFlow compares completed days of logged care with earlier completed days in the selected range. Today stays visible as live progress but is excluded from full-day comparisons.',
     observations,
     education:education.slice(0,3),
     disclaimer:DISCLAIMER,sourceVersion:REVIEWED
