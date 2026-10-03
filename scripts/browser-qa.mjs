@@ -146,8 +146,7 @@ try{
            solid surface now, so a plate reappearing there is a regression. */
         if(route==='baby-home'&&art&&m.babyHeroBg.includes('themes-v2/'))failures.push(`${theme}/${mode}/${route}: Baby hero is duplicating the page artwork layer`);
         if(route==='mom-home'&&art&&m.momHeroBg.includes('themes-v2/'))failures.push(`${theme}/${mode}/${route}: Mom hero is duplicating the page artwork layer`);
-        if(art&&babyRoutes.has(route)&&route!=='baby-home'&&!m.pageHeadArt.includes(art))failures.push(`${theme}/${mode}/${route}: Baby page header is missing selected artwork`);
-        if(art&&momRoutes.has(route)&&route!=='mom-home'&&!m.pageHeadArt.includes(art))failures.push(`${theme}/${mode}/${route}: Mom page header is missing selected artwork`);
+        if(route!=='baby-home'&&route!=='mom-home'&&m.pageHeadArt.includes('themes-v2/'))failures.push(`${theme}/${mode}/${route}: data screen header is competing with content using full theme artwork`);
         if(route==='mom-home'&&art&&![m.momHeroBefore,m.momHeroAfter].every(x=>!x||x==='none'||x==='normal'||x==='""'))failures.push(`${theme}/${mode}/${route}: Mom hero is rendering decorative/theme-name pseudo content`);
         if(route==='baby-home'&&art&&![m.babyHeroBefore,m.babyHeroAfter].every(x=>!x||x==='none'||x==='normal'||x==='""'))failures.push(`${theme}/${mode}/${route}: Baby hero is rendering decorative/theme-name pseudo content`);
         /* Every care box carries the selected world's own generated icon for that action. */
