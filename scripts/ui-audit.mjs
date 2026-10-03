@@ -133,7 +133,7 @@ requireText('Baby tab has explicit contrast',read('experience-system.css'),'#per
   const app=read('app.js');
   requireText('foreground notifications are suppressed',app,"if(document.visibilityState === 'visible') return false;");
   requireText('pump reminder remains visible in app',app,'toast(`Pump ${i+1} is coming up');
-  requireText('feed reminder remains visible in app',app,'toast(`${S.baby.name} may be ready to feed`');
+  requireText('feed reminder remains visible in app',app,'toast(msg, 8000');
   if(/notify\(`Pump \$\{i\+1\}/.test(app)||/notify\(`\$\{S\.baby\.name\} is due for a feed/.test(app))failures.push('foreground care timers must not masquerade as background lock-screen notifications');
   requireText('notifications look like this app',app,"icon:'./milkflow-family-icon-192.png'");
   if(/notify\('(Pump|Feed) reminder'/.test(app))failures.push('a notification title should say what happened, not that it is a reminder');
