@@ -313,4 +313,16 @@ if(!swTemplate.includes("icon:'./milkflow-family-v3-192.png'"))throw new Error('
     throw new Error('Update action did not navigate to the new build while preserving the route.');
 }
 
+/* Stability release regression guards. */
+{
+  const appSource=fs.readFileSync(path.join(ROOT,'app.js'),'utf8');
+  if(!appSource.includes("if(document.visibilityState === 'visible') return false;"))throw new Error('Foreground system notifications must be suppressed.');
+  if(appSource.includes('initCloud(); tickReminders(); setInterval(tickReminders,60000);'))throw new Error('Reminder engine must not fire immediately on app open.');
+  if(/setTimeout\\(tickReminders,0\\)/.test(appSource))throw new Error('Saving a care record must not immediately replay the reminder engine.');
+  const themeSource=fs.readFileSync(path.join(ROOT,'experience-theme.js'),'utf8');
+  if(!themeSource.includes("?value.mode:'off'"))throw new Error('Automatic theme rotation must default to off.');
+  const experienceCss=fs.readFileSync(path.join(ROOT,'experience-system.css'),'utf8');
+  if(!experienceCss.includes('data-first stability release'))throw new Error('Data-first visual contract is missing.');
+}
+
 console.log('MilkFlow test suite passed: syntax, data and notification contracts, nine selectable theme worlds, canonical v3 app icon wiring, dark-mode number/button readability, Settings experience, and single-layer ownership.');
