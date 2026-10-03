@@ -116,7 +116,7 @@ const ROTATION_HOURS=[1,2,3,4,6,8,12,24,48];
 const rotationPeriod=hours=>Math.max(0.5,Math.min(72,Number(hours)||3))*3600000;
 function rotationState(){
   let value;try{value=JSON.parse(localStorage.getItem(ROTATION_KEY)||'null');}catch{}
-  return {mode:['on','paused','off'].includes(value?.mode)?value.mode:'on',
+  return {mode:['on','paused','off'].includes(value?.mode)?value.mode:'off',
     hours:Math.max(0.5,Math.min(72,Number(value?.hours)||3)),
     nextAt:Number.isFinite(value?.nextAt)?value.nextAt:Date.now()+rotationPeriod(value?.hours||3),
     remainingMs:Number.isFinite(value?.remainingMs)?value.remainingMs:null};
