@@ -2442,6 +2442,10 @@ async function toggleReminders(){
  * fallback. Permission still has to be asked from a real tap, which the Settings toggle does.
  */
 async function notify(title, options){
+  // Scheduled care reminders must not erupt as OS notifications when the user opens or
+  // returns to MilkFlow. True background/lock-screen delivery is handled by push through
+  // the service worker; foreground care timing stays inside the app as a quiet toast.
+  if(document.visibilityState === 'visible') return false;
   if(!('Notification' in window) || Notification.permission !== 'granted') return false;
   /* The phone adds its own line with the app's name, above or below whatever we send, and
      nothing an app does removes it. So the one line we DO own has to earn its place: not the
@@ -2465,7 +2469,7 @@ function sleepReminderTick(){
   const elapsed=a.elapsedMin<60?`${a.elapsedMin} min`:`${Math.floor(a.elapsedMin/60)}h ${a.elapsedMin%60}m`;
   const basis=a.expectedMin?`around the recent ${a.expectedMin}-min pattern`:'after 90 minutes';
   toast(`${S.baby.name} has been marked asleep for ${elapsed}. Still sleeping?`,9000,{label:'End sleep',run:()=>sleepEnd()});
-  notify(`Is ${S.baby.name} still sleeping?`,{body:`Timer has run ${elapsed} - reminder ${basis}`,tag:'milkflow-sleep'});
+  // No foreground system notification here: the in-app action above is sufficient.
 }
 function tickReminders(){
   sleepReminderTick();
@@ -2482,7 +2486,8 @@ function tickReminders(){
     // schedule slot suppresses the reminder even if it was logged off-schedule.
     if(Math.abs(m-target)>1 || S.reminders.lastSentKey===key) return;
     toast(`Pump ${i+1} is coming up · ${to12(t)}`,7000);
-    notify(`Pump ${i+1} at ${to12(t)}`,{body:`${dayLogged(dt)} mL logged so far today`,tag:'milkflow-pump'});
+    // Foreground reminder is intentionally in-app only. Background lock-screen reminders
+    // require a push scheduled outside this page; opening the app must never replay one.
     S.reminders.lastSentKey=key; save();
   });
 }
@@ -2500,7 +2505,7 @@ function feedReminderTick(){
   const msg = `${S.baby.name} is due for a feed`;
   const since = sinceLabel(last.date, last.time) || '';
   toast(msg, 8000, {label:'Log', run:()=>feedSheet()});
-  notify(`${S.baby.name} is due for a feed`,{body:since?`Last feed ${since} · ${to12(last.time)}`:'Tap to log it',tag:'milkflow-feed'});
+  // Keep foreground feed nudges in-app. System notifications are reserved for background push.
 }
 
 // Keep reminder state aligned with the record that was just saved/edited. This prevents an
@@ -2512,9 +2517,10 @@ function reconcileReminderState(kind){
     S.reminders.lastSentKey=null;
   }
   save();
-  // Re-evaluate after the new record is in state; matched/due checks decide whether anything
-  // should actually be shown. Running immediately avoids stale one-minute notification lag.
-  setTimeout(tickReminders,0);
+  // Do not run the reminder engine immediately after a save. That was the source of
+  // "I just logged it and a notification popped up" behavior. The normal cadence will
+  // evaluate the new canonical record on its next tick.
+
 }
 async function toggleFeedReminders(){
   const on = !S.reminders.feedEnabled;
@@ -2599,5 +2605,8 @@ history.replaceState({view},'',`#${view}`);
 render(); window.scrollTo(0,0);
 // a late font/layout pass can nudge the offset, so settle it once more after paint
 requestAnimationFrame(() => window.scrollTo(0,0));
-initCloud(); tickReminders(); setInterval(tickReminders,60000);
+initCloud();
+// Opening/resuming the app is not a reminder event. Start the cadence after one minute so
+// stale due state never turns into a surprise notification at launch.
+setTimeout(()=>{ tickReminders(); setInterval(tickReminders,60000); },60000);
 })();
