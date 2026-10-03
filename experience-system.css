@@ -836,14 +836,6 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 /* ------------------------------------------------ data-first stability release */
 /* Illustration is atmosphere, never the information layer. Keep one restrained glimpse at
    the top of Home and use a calm tinted canvas everywhere else. */
-:root:not([data-experience-theme="clean"]) body[data-realm]{
-  background-image:none;
-  background-color:var(--mf-world-base);
-}
-:root:not([data-experience-theme="clean"]) body[data-realm] .main{
-  background-image:none;
-  background-color:var(--mf-world-base);
-}
 :root:not([data-experience-theme="clean"]) body:is([data-screen="baby-home"],[data-screen="mom-home"]) .main{
   background-image:linear-gradient(180deg,color-mix(in srgb,var(--mf-world-base) 70%,transparent),var(--mf-world-base) 360px),var(--mf-theme-baby-scene);
   background-size:100% 420px,100% 420px;
@@ -872,15 +864,9 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{
   box-shadow:0 8px 24px color-mix(in srgb,var(--mf-world-shadow) 70%,transparent);
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-zone,.mf-diaper-cluster){
-  padding:0;background:none;border:0;box-shadow:none;
-}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){
   background:var(--mf-world-surface-strong);border:1px solid var(--mf-world-line);
   box-shadow:0 5px 14px color-mix(in srgb,var(--mf-world-shadow) 52%,transparent);
-}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-tile-picture{
-  transform:scale(.82);transform-origin:center;
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label{margin-top:5px}
 :root:not([data-experience-theme="clean"]) body[data-realm] :is(.panel,.grp,.metric,.timeline-card,.daily-row,.act-row,.mf-core-plan,.mf-dream-journey){
