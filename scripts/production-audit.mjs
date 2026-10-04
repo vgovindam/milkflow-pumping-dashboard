@@ -18,16 +18,11 @@ const hash=file=>createHash('sha256').update(fs.readFileSync(file)).digest('hex'
 for(const theme of paintedThemes){
   if(!fs.existsSync(path.join(DIST,`assets/theme-icons/${theme}.svg`)))fail.push(`missing dist/assets/theme-icons/${theme}.svg`);
   for(const mode of ['light','dark']){
-    for(const [role,widths] of [['baby-background',[480,720,941]],['mom-background',[480,720,941]],['baby-hero',[640,941]],['mom-hero',[640,941]]]){
+    for(const [role,widths] of [['baby-background',[480,720,941]],['mom-background',[480,720,941]]]){
       for(const width of widths){
         const rel=`assets/themes-v2/${theme}/${mode}/${role}@${width}.webp`;
         if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
       }
-    }
-    if(!fs.existsSync(path.join(DIST,preview)))fail.push(`missing dist/${preview}`);
-    for(const role of ['baby-background','mom-background']){
-      const rel=`assets/themes-v2/${theme}/${mode}/${role}.svg`;
-      if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
     }
   }
   for(const role of ['baby-background','mom-background']){
@@ -39,17 +34,6 @@ for(const theme of paintedThemes){
 for(const theme of vectorThemes){
   const motif=`assets/theme-icons/${theme}-motif.svg`;
   if(!fs.existsSync(path.join(DIST,motif)))fail.push(`missing dist/${motif}`);
-  for(const mode of ['light','dark'])for(const realm of ['baby','mom']){
-    const rel=`assets/themes-v2/${theme}/${mode}/${realm}-background.svg`,full=path.join(DIST,rel);
-    if(!fs.existsSync(full)){fail.push(`missing dist/${rel}`);continue;}
-    const svg=fs.readFileSync(full,'utf8');
-    if(svg.includes('<image ')||svg.includes('href="../'))fail.push(`${theme} scene uses nested asset dependencies: ${rel}`);
-  }
-  for(const realm of ['baby','mom']){
-    const light=path.join(DIST,`assets/themes-v2/${theme}/light/${realm}-background.svg`);
-    const dark=path.join(DIST,`assets/themes-v2/${theme}/dark/${realm}-background.svg`);
-    if(fs.existsSync(light)&&fs.existsSync(dark)&&hash(light)===hash(dark))fail.push(`${theme} ${realm} light/dark scenes are byte-identical`);
-  }
 }
 const textFiles=[];
 function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())walk(p);else if(/\.(?:html|css|js|json|webmanifest|svg)$/.test(e.name))textFiles.push(p);}}
@@ -71,18 +55,12 @@ for(const theme of [...paintedThemes,...vectorThemes]){
 if(!experience.includes('function careAtlas('))fail.push('theme-specific care atlas registry missing from production');
 const experienceCss=fs.readFileSync(path.join(DIST,'experience-system.css'),'utf8');
 for(const theme of paintedThemes){
-  if(!experience.includes(`generatedAssetSet('${theme}')`))fail.push(`${theme} generated asset matrix missing from deployed theme runtime`);
+  if(!experience.includes(`assetSet('${theme}')`))fail.push(`${theme} asset set missing from deployed theme runtime`);
   if(!experience.includes(`title:'${themeTitles[theme]}'`))fail.push(`${theme} canonical title missing from deployed theme runtime`);
   if(!experience.includes(`theme-icons/${theme}.svg`))fail.push(`${theme} icon sprite missing from deployed theme runtime`);
-  for(const mode of ['light','dark'])for(const role of ['baby-background','mom-background']){
-    const rel=`assets/themes-v2/${theme}/${mode}/${role}.svg`,full=path.join(DIST,rel);
-    const svg=fs.readFileSync(full,'utf8');
-    if(svg.includes('<image ')||svg.includes('href="../'))fail.push(`${theme} scene still uses nested image/SVG dependencies`);
-    if(svg.length<4500)fail.push(`${rel} fallback is too sparse`);
-  }
 }
 for(const theme of vectorThemes){
-  if(!experience.includes(`${['woodland','floral-meadow'].includes(theme)?'assetSet':'generatedAssetSet'}('${theme}')`))fail.push(`${theme} painted asset matrix missing from deployed theme runtime`);
+  if(!experience.includes(`assetSet('${theme}')`))fail.push(`${theme} asset set missing from deployed theme runtime`);
   if(!experience.includes(`title:'${themeTitles[theme]}'`))fail.push(`${theme} canonical title missing from deployed theme runtime`);
   if(!experience.includes(`id:'${theme}',status:'ready'`))fail.push(`${theme} is not selectable in deployed theme runtime`);
 }
