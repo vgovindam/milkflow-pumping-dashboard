@@ -24,9 +24,8 @@ for(const theme of paintedThemes){
         if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
       }
     }
-    const preview=`assets/themes-v2/${theme}/${mode}/settings-preview.webp`;
     if(!fs.existsSync(path.join(DIST,preview)))fail.push(`missing dist/${preview}`);
-    for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
+    for(const role of ['baby-background','mom-background']){
       const rel=`assets/themes-v2/${theme}/${mode}/${role}.svg`;
       if(!fs.existsSync(path.join(DIST,rel)))fail.push(`missing dist/${rel}`);
     }
@@ -75,7 +74,7 @@ for(const theme of paintedThemes){
   if(!experience.includes(`generatedAssetSet('${theme}')`))fail.push(`${theme} generated asset matrix missing from deployed theme runtime`);
   if(!experience.includes(`title:'${themeTitles[theme]}'`))fail.push(`${theme} canonical title missing from deployed theme runtime`);
   if(!experience.includes(`theme-icons/${theme}.svg`))fail.push(`${theme} icon sprite missing from deployed theme runtime`);
-  for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
+  for(const mode of ['light','dark'])for(const role of ['baby-background','mom-background']){
     const rel=`assets/themes-v2/${theme}/${mode}/${role}.svg`,full=path.join(DIST,rel);
     const svg=fs.readFileSync(full,'utf8');
     if(svg.includes('<image ')||svg.includes('href="../'))fail.push(`${theme} scene still uses nested image/SVG dependencies`);

@@ -146,60 +146,30 @@ const familyChatServer=fs.readFileSync(path.join(ROOT,'functions/family-chat.js'
 for(const token of ["PENDING_KEY='milkflow-family-chat-pending-v1'",'recoverCloudRequest','recoverLegacyHistory','resumePending','retryRequest',"mode:'status'",'requestId'])if(!familyChat.includes(token))throw new Error(`Family chat recovery contract missing: ${token}`);
 for(const token of ["collection('familyChatRequests')", "mode==='status'", "status:'processing'", "status:'completed'", "${requestId}-user", "${requestId}-assistant"] )if(!familyChatServer.includes(token))throw new Error(`Family chat server recovery contract missing: ${token}`);
 
-/* Three original themes use painted responsive plates; the six new worlds use authored,
-   self-contained SVG scenes until a later art pass adds raster plates. Both are real runtime
-   packages and both must provide separate Baby/Mom and light/dark scenes. */
-const paintedThemes=['safari','butterfly','princess'];
-const vectorThemes=['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'];
-for(const theme of paintedThemes){
-  const icons=`assets/theme-icons/${theme}.svg`;
-  if(!fs.existsSync(path.join(ROOT,icons)))throw new Error(`Theme asset contract missing: ${icons}`);
-  for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
-    const scene=`assets/themes-v2/${theme}/${mode}/${role}.svg`;
-    if(!fs.existsSync(path.join(ROOT,scene)))throw new Error(`Theme asset contract missing: ${scene}`);
-    const svg=fs.readFileSync(path.join(ROOT,scene),'utf8');
-    if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be fully self-contained.`);
-    if(svg.length<4500)throw new Error(`${scene} fallback is too sparse to stand in for the plate.`);
+/* Every world is one painted plate per realm per mode, at three widths, and every role is a
+   crop of it.
+   There used to be two packages here - painted themes with hero and preview files of their
+   own, and vector themes with SVG scenes - plus three asset-set functions in the controller to
+   match. Seven of the nine worlds ended up on the one with no responsive widths, so a phone
+   pulled the full-resolution painting, and the hero was a second file holding the top of the
+   same picture, which the browser cached twice and which could drift from the page behind it. */
+const WORLDS=['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds'];
+for(const theme of WORLDS){
+  for(const mode of ['light','dark'])for(const realm of ['baby','mom'])for(const w of [480,720,941]){
+    const plate=`assets/themes-v2/${theme}/${mode}/${realm}-background@${w}.webp`;
+    const full=path.join(ROOT,plate);
+    if(!fs.existsSync(full))throw new Error(`Theme plate missing: ${plate}`);
+    if(fs.statSync(full).size<4000)throw new Error(`${plate} is too small to be a painted plate`);
   }
-  for(const [role,widths] of [['baby-background',[480,720,941]],['baby-hero',[640,941]],['mom-background',[480,720,941]],['mom-hero',[640,941]]])
-    for(const mode of ['light','dark'])for(const w of widths){
-      const plate=`assets/themes-v2/${theme}/${mode}/${role}@${w}.webp`;
-      const full=path.join(ROOT,plate);
-      if(!fs.existsSync(full))throw new Error(`Painted plate missing: ${plate}`);
-      if(fs.statSync(full).size<4000)throw new Error(`${plate} is too small to be a painted plate`);
-    }
-  for(const [role,w] of [['baby-background',941],['mom-background',941]]){
-    const light=fs.readFileSync(path.join(ROOT,`assets/themes-v2/${theme}/light/${role}@${w}.webp`));
-    const dark=fs.readFileSync(path.join(ROOT,`assets/themes-v2/${theme}/dark/${role}@${w}.webp`));
-    if(light.equals(dark))throw new Error(`${theme}/${role} ships the same file for light and dark`);
-  }
-  if(!experience.includes(`generatedAssetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} generated art matrix.`);
-  if(!experience.includes(`theme-icons/${theme}.svg`))throw new Error(`Theme manifest is not using independent ${theme} icon sprite.`);
-}
-for(const theme of vectorThemes){
-  const motif=`assets/theme-icons/${theme}-motif.svg`;
-  if(!fs.existsSync(path.join(ROOT,motif)))throw new Error(`Vector theme motif missing: ${motif}`);
+  /* Baby and Mom are separate worlds within one theme, and light is not dark with the lamps
+     turned down. Four distinct files, or one of those distinctions is not real. */
+  const seen=new Map();
   for(const mode of ['light','dark'])for(const realm of ['baby','mom']){
-    const scene=`assets/themes-v2/${theme}/${mode}/${realm}-background.svg`;
-    const full=path.join(ROOT,scene);
-    if(!fs.existsSync(full))throw new Error(`Vector theme scene missing: ${scene}`);
-    const svg=fs.readFileSync(full,'utf8');
-    if(svg.includes('<image ')||svg.includes('href="../'))throw new Error(`${scene} must be self-contained.`);
-    if(svg.length<1600||!svg.includes('<linearGradient')||(!svg.includes('<path')&&!svg.includes('<ellipse')))throw new Error(`${scene} does not contain enough authored scene structure.`);
+    const key=fs.readFileSync(path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${realm}-background@941.webp`)).toString('base64').slice(0,64);
+    if(seen.has(key))throw new Error(`${theme}: ${mode}/${realm} ships the same plate as ${seen.get(key)}`);
+    seen.set(key,`${mode}/${realm}`);
   }
-  if(!experience.includes(`${['woodland','floral-meadow'].includes(theme)?'assetSet':'generatedAssetSet'}('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} asset matrix.`);
-  if(!experience.includes(`id:'${theme}',status:'ready'`))throw new Error(`${theme} is not promoted to a ready theme.`);
-}
-/* Each newly illustrated world has separate generated art for both family roles and
-   both appearances, rather than reusing one generic background or a night filter. */
-for(const theme of ['safari','butterfly','princess','cozy-clouds','celestial','ocean','safari-sunset']){
-  const pictures=[];
-  for(const mode of ['light','dark'])for(const realm of ['baby','mom']){
-    const art=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${realm}-source-art.webp`);
-    if(!fs.existsSync(art)||fs.statSync(art).size<4000)throw new Error(`Generated theme art missing: ${art}`);
-    pictures.push(fs.readFileSync(art).toString('base64'));
-  }
-  if(new Set(pictures).size!==4)throw new Error(`${theme} repeats artwork across roles or appearances`);
+  if(!experience.includes(`assetSet('${theme}')`))throw new Error(`Theme manifest is not using the ${theme} asset set.`);
 }
 for(const token of ['--mf-icon-sprite','.mf-feed-card::after','.mf-diaper-blob::after','.mf-dream-actions .quick-tile','.mf-settings-theme-panel','.mf-settings-shortcuts'])if(!themedComponents.includes(token))throw new Error(`Independent theme component contract missing: ${token}`);
 /* Appearance is ONE screen: the world picker, light/dark and sounds together. Settings keeps

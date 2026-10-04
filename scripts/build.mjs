@@ -80,22 +80,12 @@ for(const theme of ['safari','butterfly','princess','ocean','celestial','woodlan
   const atlas=path.join(DIST,`assets/care-atlas/${theme}.webp`);
   if(!fs.existsSync(atlas)||fs.statSync(atlas).size<100000)throw new Error(`Missing generated ${theme} care atlas`);
 }
-for(const theme of ['safari','butterfly','princess']){
-  for(const mode of ['light','dark'])for(const role of ['baby-background','baby-hero','mom-background','mom-hero','settings-preview']){
-    const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${role}.svg`);
-    if(!fs.existsSync(scene))throw new Error(`Missing canonical self-contained ${theme}/${mode}/${role} scene`);
-  }
-}
 for(const theme of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
   const motif=path.join(ROOT,`assets/theme-icons/${theme}-motif.svg`);
   if(!fs.existsSync(motif))throw new Error(`Missing ${theme} theme motif`);
   for(const action of ['milk','nurse','formula','wet','poop','mixed','pump','motif'])
     if(!fs.existsSync(path.join(ROOT,`assets/care-icons/${theme}/${action}.svg`)))throw new Error(`Missing ${theme}/${action} care SVG`);
-  for(const mode of ['light','dark'])for(const realm of ['baby','mom']){
-    const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${realm}-background.svg`);
-    if(!fs.existsSync(scene))throw new Error(`Missing selectable ${theme}/${mode}/${realm} scene`);
-  }
-  for(const mode of ['light','dark'])for(const role of ['baby-background@941','mom-background@941','baby-hero@941','mom-hero@941','settings-preview']){
+  for(const mode of ['light','dark'])for(const role of ['baby-background@941','mom-background@941']){
     const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${role}.webp`);
     if(!fs.existsSync(scene)||fs.statSync(scene).size<1000)throw new Error(`Missing painted ${theme}/${mode}/${role} scene`);
   }

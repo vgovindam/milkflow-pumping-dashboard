@@ -28,10 +28,7 @@ const THEMES = {
   butterfly: {shadow: [13, 11, 26],  mid: [33, 27, 52],  high: [124, 110, 158], moon: [252, 214, 236], moonAt: [0.30, 0.12], exposure: 0.37, gamma: 1.60, grade: 0.64, chroma: 1.36, floor: 0.32},
   princess:  {shadow: [16, 11, 23],  mid: [40, 26, 47],  high: [140, 110, 144], moon: [255, 218, 232], moonAt: [0.50, 0.10], exposure: 0.37, gamma: 1.60, grade: 0.62, chroma: 1.34, floor: 0.32}
 };
-const ROLES = [
-  ['baby-background', [480, 720, 941]], ['baby-hero', [640, 941]],
-  ['mom-background', [480, 720, 941]], ['mom-hero', [640, 941]], ['settings-preview', [null]]
-];
+const ROLES = [['baby-background', [480, 720, 941]], ['mom-background', [480, 720, 941]]];
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const onPath = ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser'];

@@ -35,47 +35,35 @@ const root=document.documentElement;
    WebP rather than AVIF on purpose: these are consumed as CSS background-image through custom
    properties, and url() cannot negotiate formats the way <picture> can, so the format has to
    be one every browser running this app already decodes. */
-const BG_WIDTHS=[480,720,941],HERO_WIDTHS=[640,941];
+const PLATE_WIDTHS=[480,720,941];
 /* Resolved once per load. The plates top out at their native 941px, so anything denser than
    that is served the widest file rather than an upscale that adds bytes but no detail. */
-const pickWidth=widths=>{
+const pickWidth=()=>{
   const want=(window.innerWidth||360)*(window.devicePixelRatio||1);
-  return widths.find(w=>w>=want)||widths[widths.length-1];
+  return PLATE_WIDTHS.find(w=>w>=want)||PLATE_WIDTHS[PLATE_WIDTHS.length-1];
 };
-const plate=(theme,mode,role,widths)=>`./assets/themes-v2/${theme}/${mode}/${role}@${pickWidth(widths)}.webp`;
-const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
-  babyPage:plate(theme,mode,'baby-background',BG_WIDTHS),
-  babyHero:plate(theme,mode,'baby-hero',HERO_WIDTHS),
-  momPage:plate(theme,mode,'mom-background',BG_WIDTHS),
-  momHero:plate(theme,mode,'mom-hero',HERO_WIDTHS),
-  preview:`./assets/themes-v2/${theme}/${mode}/settings-preview.webp`
-}]));
-/* The family's generated portraits are the source for each role and mode. The short
-   hero gets its own scene crop; the full portrait also powers its picker preview. */
-const generatedAssetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
-  babyPage:`./assets/themes-v2/${theme}/${mode}/baby-source-art.webp`,
-  babyHero:`./assets/themes-v2/${theme}/${mode}/baby-generated-hero@640.webp`,
-  momPage:`./assets/themes-v2/${theme}/${mode}/mom-source-art.webp`,
-  momHero:`./assets/themes-v2/${theme}/${mode}/mom-generated-hero@640.webp`,
-  preview:`./assets/themes-v2/${theme}/${mode}/baby-source-art.webp`
-}]));
-const vectorAssetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>[mode,{
-  babyPage:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`,
-  babyHero:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`,
-  momPage:`./assets/themes-v2/${theme}/${mode}/mom-background.svg`,
-  momHero:`./assets/themes-v2/${theme}/${mode}/mom-background.svg`,
-  preview:`./assets/themes-v2/${theme}/${mode}/baby-background.svg`
-}]));
+/* One plate per realm per mode, and every role is a crop of it.
+   There used to be three of these functions - one per generation of artwork - and seven of
+   the nine worlds were on the one with no responsive widths, so a phone pulled the full
+   painting. Worse, the hero was a SEPARATE file containing the top of the same picture, which
+   meant the hero and the page behind it could drift apart and the browser cached the same
+   image twice. The hero is a background-position now, which is what --mf-baby-focus and
+   --mf-mom-focus were always for. */
+const plate=(theme,mode,realm)=>`./assets/themes-v2/${theme}/${mode}/${realm}-background@${pickWidth()}.webp`;
+const assetSet=theme=>Object.fromEntries(['light','dark'].map(mode=>{
+  const baby=plate(theme,mode,'baby'),mom=plate(theme,mode,'mom');
+  return [mode,{babyPage:baby,babyHero:baby,momPage:mom,momHero:mom,preview:baby}];
+}));
 const THEME_MANIFEST={
-  safari:{...THEME_LIBRARY.safari,assets:generatedAssetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
-  butterfly:{...THEME_LIBRARY.butterfly,assets:generatedAssetSet('butterfly'),iconSprite:'./assets/theme-icons/butterfly.svg'},
-  princess:{...THEME_LIBRARY.princess,assets:generatedAssetSet('princess'),iconSprite:'./assets/theme-icons/princess.svg'},
-  ocean:{...THEME_LIBRARY.ocean,assets:generatedAssetSet('ocean'),iconSprite:''},
-  celestial:{...THEME_LIBRARY.celestial,assets:generatedAssetSet('celestial'),iconSprite:''},
+  safari:{...THEME_LIBRARY.safari,assets:assetSet('safari'),iconSprite:'./assets/theme-icons/safari.svg'},
+  butterfly:{...THEME_LIBRARY.butterfly,assets:assetSet('butterfly'),iconSprite:'./assets/theme-icons/butterfly.svg'},
+  princess:{...THEME_LIBRARY.princess,assets:assetSet('princess'),iconSprite:'./assets/theme-icons/princess.svg'},
+  ocean:{...THEME_LIBRARY.ocean,assets:assetSet('ocean'),iconSprite:''},
+  celestial:{...THEME_LIBRARY.celestial,assets:assetSet('celestial'),iconSprite:''},
   woodland:{...THEME_LIBRARY.woodland,assets:assetSet('woodland'),iconSprite:''},
-  'safari-sunset':{...THEME_LIBRARY['safari-sunset'],assets:generatedAssetSet('safari-sunset'),iconSprite:''},
+  'safari-sunset':{...THEME_LIBRARY['safari-sunset'],assets:assetSet('safari-sunset'),iconSprite:''},
   'floral-meadow':{...THEME_LIBRARY['floral-meadow'],assets:assetSet('floral-meadow'),iconSprite:''},
-  'cozy-clouds':{...THEME_LIBRARY['cozy-clouds'],assets:generatedAssetSet('cozy-clouds'),iconSprite:''},
+  'cozy-clouds':{...THEME_LIBRARY['cozy-clouds'],assets:assetSet('cozy-clouds'),iconSprite:''},
   clean:{id:'clean',status:'ready',title:'Clean',subtitle:'Quiet MilkFlow canvas',assets:{light:{},dark:{}},iconSprite:''}
 };
 
