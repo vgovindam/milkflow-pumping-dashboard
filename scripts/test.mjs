@@ -302,7 +302,7 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
    clock helpers rather than grepping for them - a reminder that fires at the wrong hour is
    worse than one that does not fire at all. */
 {
-  const {localNow,toMinutes}=await import('../functions/scheduled-reminders.js');
+  const {localNow,toMinutes}=await import('../functions/reminder-clock.js');
   if(toMinutes('05:40')!==340)throw new Error(`toMinutes('05:40') should be 340, got ${toMinutes('05:40')}`);
   if(toMinutes('23:35')!==1415)throw new Error(`toMinutes('23:35') should be 1415, got ${toMinutes('23:35')}`);
   if(toMinutes('')!==null||toMinutes('nonsense')!==null)throw new Error('toMinutes must reject a non-time');

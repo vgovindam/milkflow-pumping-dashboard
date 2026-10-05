@@ -22,20 +22,7 @@ const INVALID_TOKEN_CODES=new Set([
   'messaging/invalid-registration-token'
 ]);
 
-/* Wall-clock minutes-since-midnight and the calendar date, in the family's own timezone. */
-function localNow(timeZone){
-  const tz=timeZone||'UTC';
-  let parts;
-  try{
-    parts=new Intl.DateTimeFormat('en-CA',{timeZone:tz,hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})
-      .formatToParts(new Date()).reduce((o,p)=>(o[p.type]=p.value,o),{});
-  }catch{ return null; }
-  const hour=Number(parts.hour==='24'?'0':parts.hour), minute=Number(parts.minute);
-  return {date:`${parts.year}-${parts.month}-${parts.day}`, minutes:hour*60+minute};
-}
-const toMinutes=t=>{const [h,m]=String(t||'').split(':').map(Number);return Number.isFinite(h)&&Number.isFinite(m)?h*60+m:null;};
-const to12=t=>{const [h,m]=String(t||'').split(':').map(Number);
-  return Number.isFinite(h)&&Number.isFinite(m)?`${((h+11)%12)+1}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`:String(t||'');};
+const {localNow,toMinutes,to12}=require('./reminder-clock');
 
 function createScheduledReminders({admin,db}){
   async function devicesFor(userRoot){
@@ -144,4 +131,4 @@ function createScheduledReminders({admin,db}){
   };
 }
 
-module.exports={createScheduledReminders,localNow,toMinutes};
+module.exports={createScheduledReminders};
