@@ -43,5 +43,10 @@ const importantCounts=Object.fromEntries(importantFiles.map(f=>[f,(read(f).match
 const debt=Object.values(importantCounts).reduce((a,b)=>a+b,0);
 const IMPORTANT_BASELINE=537;
 if(debt>IMPORTANT_BASELINE)problems.push(`Runtime !important debt increased above baseline ${IMPORTANT_BASELINE}: ${debt}. Reduce or justify existing debt; do not add new override debt.`);
+/* A ratchet. 515 came down to 68 by putting the theme layer last and deleting the
+   declarations that were only ever shouting over the layer order; the ceiling stops the next
+   change quietly putting them back. Lower it when you remove more, never raise it. */
+const CEILING=70;
+if(debt>CEILING){console.error(`CSS architecture audit failed: !important debt ${debt} exceeds the ceiling of ${CEILING}. Fix the cascade, do not out-shout it.`);process.exit(1);}
 console.log(`CSS architecture audit: ${localStyles.length} production stylesheet entries; runtime !important debt=${debt}; by file=${JSON.stringify(importantCounts)}. New patch stylesheets are blocked.`);
 if(problems.length){console.error(problems.map(x=>`- ${x}`).join('\n'));process.exit(1);}

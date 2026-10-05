@@ -187,7 +187,7 @@ requireText('dark journey details',files.ui,'.mf-dream-journey>p,:root[data-them
  * These checks exist because the alternative - a new rule added at the bottom with
  * !important - is exactly how this stylesheet got to ~930 forced declarations. */
 const layers=read('styles.css');
-requireText('layer order declared once',layers,'@layer milkflow-base, milkflow-core, milkflow-components, milkflow-screens, milkflow-dark, milkflow-experience, milkflow-controls, milkflow-selection;');
+requireText('layer order declared once',layers,'@layer milkflow-base, milkflow-core, milkflow-components, milkflow-screens, milkflow-dark, milkflow-controls, milkflow-selection, milkflow-experience;');
 requireText('dark corrections are a layer',read('component-theme-core.css'),'@layer milkflow-dark {');
 requireText('base sheet is a layer',layers,'@layer milkflow-base {');
 requireText('component css is a layer',files.ui,'@layer milkflow-components {');

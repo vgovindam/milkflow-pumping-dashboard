@@ -28,7 +28,13 @@
    the rule is in the wrong layer.
    ========================================================================== */
 
-@layer milkflow-base, milkflow-core, milkflow-components, milkflow-screens, milkflow-dark, milkflow-experience, milkflow-controls, milkflow-selection;
+/* The theme is the LAST word on appearance, so its layer is last.
+   It used to sit before controls and selection, which meant component-theme.css outranked it
+   and the theme had to shout to be heard - 300 !important declarations in one file, all
+   saying the same thing this one line now says properly. Controls and selection own narrow
+   component concerns (nav and icon sizing, choice rows); a world owns colour and surface, and
+   that is a later concern by definition. */
+@layer milkflow-base, milkflow-core, milkflow-components, milkflow-screens, milkflow-dark, milkflow-controls, milkflow-selection, milkflow-experience;
 
 @layer milkflow-base {
 

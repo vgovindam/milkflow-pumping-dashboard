@@ -96,18 +96,18 @@
 :root:not([data-experience-theme="clean"]) body[data-realm="baby"] .main,
 :root:not([data-experience-theme="clean"]) body[data-screen="settings"] .main,
 :root:not([data-experience-theme="clean"]) body[data-screen="set-appearance"] .main{
-  position:relative;isolation:isolate;background-color:var(--mf-world-base)!important;
-  background-image:var(--mf-theme-baby-scene)!important;background-size:cover!important;
-  background-position:var(--mf-page-focus)!important;background-repeat:no-repeat!important;background-attachment:fixed!important
+  position:relative;isolation:isolate;background-color:var(--mf-world-base);
+  background-image:var(--mf-theme-baby-scene);background-size:cover;
+  background-position:var(--mf-page-focus);background-repeat:no-repeat;background-attachment:fixed
 }
 :root:not([data-experience-theme="clean"]) body[data-realm="mom"] .main{
-  position:relative;isolation:isolate;background-color:var(--mf-world-base)!important;
-  background-image:var(--mf-theme-mom-scene)!important;background-size:cover!important;
-  background-position:var(--mf-page-focus)!important;background-repeat:no-repeat!important;background-attachment:fixed!important
+  position:relative;isolation:isolate;background-color:var(--mf-world-base);
+  background-image:var(--mf-theme-mom-scene);background-size:cover;
+  background-position:var(--mf-page-focus);background-repeat:no-repeat;background-attachment:fixed
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="more"] .main{
-  background-color:var(--mf-world-base)!important;background-image:var(--mf-theme-baby-scene)!important;
-  background-size:cover!important;background-position:var(--mf-page-focus)!important;background-attachment:fixed!important
+  background-color:var(--mf-world-base);background-image:var(--mf-theme-baby-scene);
+  background-size:cover;background-position:var(--mf-page-focus);background-attachment:fixed
 }
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"],[data-screen="settings"],[data-screen="set-appearance"],[data-screen="more"]) .shell{
   background:color-mix(in srgb,var(--mf-world-base) 83%,var(--mf-world-accent) 17%)
@@ -126,30 +126,30 @@
   background:linear-gradient(180deg,
     color-mix(in srgb,var(--mf-world-surface-strong) 16%,transparent) 0%,
     color-mix(in srgb,var(--mf-world-surface-strong) 6%,transparent) 58%,
-    transparent 100%)!important;
-  border-bottom-color:transparent!important;
-  padding-top:calc(8px + env(safe-area-inset-top))!important;
-  padding-bottom:5px!important;
+    transparent 100%);
+  border-bottom-color:transparent;
+  padding-top:calc(8px + env(safe-area-inset-top));
+  padding-bottom:5px;
   backdrop-filter:none;-webkit-backdrop-filter:none
 }
 /* The bar already spends the notch inset plus a 44px tab row before any content. Reclaim the
    gap under it so the hero starts higher on a tall phone. */
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .view{
-  padding-top:9px!important;
+  padding-top:9px;
 }
 /* The scene is painted on .main, which starts below nothing — so it already reaches y=0.
    The view just needs to stop adding its own gap under a now-transparent bar. */
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .main,
 :root:not([data-experience-theme="clean"]) body:is([data-screen="settings"],[data-screen="set-appearance"]) .main{
-  background-position-y:calc(-1 * env(safe-area-inset-top))!important
+  background-position-y:calc(-1 * env(safe-area-inset-top))
 }
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .bottom-nav,
 :root:not([data-experience-theme="clean"]) body:is([data-screen="settings"],[data-screen="set-appearance"]) .bottom-nav{
-  background:color-mix(in srgb,var(--mf-world-surface-strong) 91%,transparent)!important;
-  border-color:var(--mf-world-line)!important;box-shadow:0 16px 40px var(--mf-world-shadow)!important;
+  background:color-mix(in srgb,var(--mf-world-surface-strong) 91%,transparent);
+  border-color:var(--mf-world-line);box-shadow:0 16px 40px var(--mf-world-shadow);
   backdrop-filter:blur(22px) saturate(1.08);-webkit-backdrop-filter:blur(22px) saturate(1.08)
 }
-:root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .bottom-nav button.on{color:var(--mf-world-deep)!important}
+:root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .bottom-nav button.on{color:var(--mf-world-deep)}
 
 /* Functional surfaces are solid; scenery stays outside content.
 
@@ -158,24 +158,24 @@
    meaning-color lives. This rule alone was repainting every summary tile on Trends, Growth
    and the Mom screens the same near-white. */
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.panel,.grp,.metric,.row,.stash-hero,.data-status){
-  background-color:color-mix(in srgb,var(--mf-world-surface) 85%,var(--mf-world-accent) 15%)!important;border-color:var(--mf-world-line)!important;
-  box-shadow:0 12px 30px var(--mf-world-shadow)!important;color:var(--mf-world-text)!important;
+  background-color:color-mix(in srgb,var(--mf-world-surface) 85%,var(--mf-world-accent) 15%);border-color:var(--mf-world-line);
+  box-shadow:0 12px 30px var(--mf-world-shadow);color:var(--mf-world-text);
   backdrop-filter:none;-webkit-backdrop-filter:none
 }
 
 /* Secondary page headers reuse the exact selected scene. */
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]):not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head{
-  position:relative!important;isolation:isolate;overflow:hidden!important;min-height:148px;
-  border-color:var(--mf-world-line)!important;box-shadow:0 17px 36px var(--mf-world-shadow)!important
+  position:relative;isolation:isolate;overflow:hidden;min-height:148px;
+  border-color:var(--mf-world-line);box-shadow:0 17px 36px var(--mf-world-shadow)
 }
 :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]):not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head>*{position:relative;z-index:2}
 /* A data screen's header used to carry the full hero painting behind its title, with a scrim
    over it so white text could survive. The product decision since then is that artwork belongs
    to the two home screens and a data screen gets a calm header - and the rule that says so
    lives further down this file.
-   It was never taking effect. It says display:none; this block said display:block!important,
+   It was never taking effect. It says display:none; this block said display:block,
    so the artwork won on every data screen in every world, and the paired scrim and white title
-   came with it. Deleted rather than out-shouted: raising the new rule to !important would have
+   came with it. Deleted rather than out-shouted: raising the new rule to would have
    made the next person fight both. */
 :root:not([data-experience-theme="clean"]) body[data-screen="more"] .page-head{
   position:relative;isolation:isolate;overflow:hidden;min-height:116px;border-radius:27px;
@@ -185,7 +185,7 @@
 :root:not([data-experience-theme="clean"]) body[data-screen="more"] .page-head>div{position:relative;z-index:1}
 :root:not([data-experience-theme="clean"]) body[data-screen="more"] .page-head :is(h2,.eyebrow){color:var(--mf-world-text);text-shadow:none}
 :root:not([data-experience-theme="clean"]) body[data-screen="more"] #view>.grp{
-  background-color:color-mix(in srgb,var(--mf-world-surface) 78%,var(--mf-world-accent) 22%)!important;
+  background-color:color-mix(in srgb,var(--mf-world-surface) 78%,var(--mf-world-accent) 22%);
   border:1px solid var(--mf-world-line);box-shadow:0 10px 26px var(--mf-world-shadow)
 }
 body[data-screen="baby-growth"] .growth-tracks,
@@ -217,11 +217,11 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 /* Mom hero: same world, calmer editorial treatment. No theme-name badge or legacy pseudo art. */
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{
   position:relative;min-height:244px;overflow:hidden;
-  background-image:var(--mf-theme-mom-hero)!important;
-  background-size:cover!important;background-position:var(--mf-mom-focus)!important;background-repeat:no-repeat!important;
-  border:1px solid rgba(255,255,255,.68)!important;box-shadow:0 22px 48px var(--mf-world-shadow)!important
+  background-image:var(--mf-theme-mom-hero);
+  background-size:cover;background-position:var(--mf-mom-focus);background-repeat:no-repeat;
+  border:1px solid rgba(255,255,255,.68);box-shadow:0 22px 48px var(--mf-world-shadow)
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero::after{content:none!important;display:none!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero::after{content:none;display:none}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-main,.mf-dream-side){position:relative;z-index:2}
 /* The painted worlds already clear contrast here unaided, so their scrim stays light and the
    art keeps reading. A theme with no painted plate falls back to a pale generated SVG whose
@@ -232,29 +232,29 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
     color-mix(in srgb,var(--mf-world-surface-strong) 93%,transparent) 0%,
     color-mix(in srgb,var(--mf-world-surface-strong) 84%,transparent) 44%,
     color-mix(in srgb,var(--mf-world-surface-strong) 76%,transparent) 68%,
-    transparent 92%)!important;
+    transparent 92%);
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-cloud,.mf-sky-orb,.mf-sparkles){display:none!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-main h2,.mf-dream-main p,.mf-dream-welcome,.mf-dream-kicker){color:var(--mf-world-text)!important;text-shadow:none!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-cloud,.mf-sky-orb,.mf-sparkles){display:none}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-main h2,.mf-dream-main p,.mf-dream-welcome,.mf-dream-kicker){color:var(--mf-world-text);text-shadow:none}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress>div,
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-side-note{
-  background:rgba(255,255,255,.79)!important;border-color:rgba(255,255,255,.68)!important;color:var(--mf-world-text)!important;
-  box-shadow:0 8px 22px rgba(54,53,75,.10)!important;backdrop-filter:blur(11px)
+  background:rgba(255,255,255,.79);border-color:rgba(255,255,255,.68);color:var(--mf-world-text);
+  box-shadow:0 8px 22px rgba(54,53,75,.10);backdrop-filter:blur(11px)
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-progress>div,.mf-dream-side-note) :is(strong,span,small){color:var(--mf-world-text)!important;opacity:1!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-progress>div,.mf-dream-side-note) :is(strong,span,small){color:var(--mf-world-text);opacity:1}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next{
-  background:rgba(255,255,255,.87)!important;border-color:var(--mf-world-line)!important;color:var(--mf-world-text)!important;backdrop-filter:blur(12px)
+  background:rgba(255,255,255,.87);border-color:var(--mf-world-line);color:var(--mf-world-text);backdrop-filter:blur(12px)
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next :is(strong,small,span,p){color:var(--mf-world-text)!important;opacity:1!important;text-shadow:none!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-journey,.mf-dream-metrics .metric){background:var(--mf-world-surface)!important;border-color:var(--mf-world-line)!important;box-shadow:0 12px 28px var(--mf-world-shadow)!important;color:var(--mf-world-text)!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey :is(h2,h3,strong){color:var(--mf-world-text)!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey :is(p,small,span){color:var(--mf-world-muted)!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile{position:relative;overflow:visible;background:transparent!important;border:0!important;box-shadow:none!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{color:#174d67!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{color:#7a294c!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next :is(strong,small,span,p){color:var(--mf-world-text);opacity:1;text-shadow:none}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-journey,.mf-dream-metrics .metric){background:var(--mf-world-surface);border-color:var(--mf-world-line);box-shadow:0 12px 28px var(--mf-world-shadow);color:var(--mf-world-text)}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey :is(h2,h3,strong){color:var(--mf-world-text)}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey :is(p,small,span){color:var(--mf-world-muted)}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile{position:relative;overflow:visible;background:transparent;border:0;box-shadow:none}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{color:#174d67}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{color:#7a294c}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"] .tile-art{background:linear-gradient(145deg,#dff0fb,#cfe4f4)}
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"] .tile-art{background:linear-gradient(145deg,#ffe7f0,#f8d5e3)}
-:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile :is(strong,small,span){color:inherit!important;opacity:1!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile :is(strong,small,span){color:inherit;opacity:1}
 
 /* Baby hero is the most immersive front layer. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-core-baby{gap:13px}
@@ -262,15 +262,15 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
    a theme widening the gutter pushed the stats column past the card's right edge on a phone.
    A theme owns the picture, the tint and the corner - not the box model. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero{
-  position:relative;border-radius:31px!important;overflow:hidden;
-  background-image:var(--mf-theme-baby-hero)!important;
-  background-size:cover!important;background-position:var(--mf-baby-focus)!important;background-repeat:no-repeat!important;
-  border:1px solid rgba(255,255,255,.52)!important;box-shadow:0 20px 44px var(--mf-world-shadow)!important;color:#fff!important
+  position:relative;border-radius:31px;overflow:hidden;
+  background-image:var(--mf-theme-baby-hero);
+  background-size:cover;background-position:var(--mf-baby-focus);background-repeat:no-repeat;
+  border:1px solid rgba(255,255,255,.52);box-shadow:0 20px 44px var(--mf-world-shadow);color:#fff
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero::before,
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero::after{content:none!important;display:none!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero::after{content:none;display:none}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero>.mf-animal-sticker,
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-star{display:none!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-star{display:none}
 
 /* The greeting was a dark glass pill from the days when it sat straight on the artwork. It
    sits on the hero card now, where the Baby home composition wants it as plain text across
@@ -279,32 +279,32 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy .welcome{
   color:var(--mf-world-deep);
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy h2{margin-top:5px;color:#fff!important;font-family:var(--display);font-size:34px;font-weight:850;line-height:1;letter-spacing:-.04em;text-shadow:0 2px 13px rgba(14,17,23,.42)!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{margin-top:6px;color:rgba(255,255,255,.95)!important;font-size:10.5px;font-weight:750;opacity:1;text-shadow:0 2px 10px rgba(14,17,23,.36)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy h2{margin-top:5px;color:#fff;font-family:var(--display);font-size:34px;font-weight:850;line-height:1;letter-spacing:-.04em;text-shadow:0 2px 13px rgba(14,17,23,.42)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{margin-top:6px;color:rgba(255,255,255,.95);font-size:10.5px;font-weight:750;opacity:1;text-shadow:0 2px 10px rgba(14,17,23,.36)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-facts{z-index:4}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact{min-width:96px;padding:9px 11px;border:1px solid rgba(255,255,255,.34)!important;border-radius:17px;background:rgba(18,23,30,.46)!important;color:#fff!important;text-align:left;backdrop-filter:blur(9px);box-shadow:0 5px 16px rgba(20,24,31,.12)}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact :is(strong,span,small){color:#fff!important;opacity:1!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact{min-width:96px;padding:9px 11px;border:1px solid rgba(255,255,255,.34);border-radius:17px;background:rgba(18,23,30,.46);color:#fff;text-align:left;backdrop-filter:blur(9px);box-shadow:0 5px 16px rgba(20,24,31,.12)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact :is(strong,span,small){color:#fff;opacity:1}
 
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin{grid-template-columns:42px minmax(0,1fr) minmax(108px,auto);gap:10px;padding:12px 14px;border:1px solid var(--mf-world-line);border-radius:23px;background:var(--mf-world-surface)!important;color:var(--mf-world-text)!important;box-shadow:0 10px 24px var(--mf-world-shadow);backdrop-filter:blur(12px)}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin>.mf-animal-sticker{display:none!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin small{color:var(--mf-world-muted)!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label{margin:4px 2px 2px;padding:0 2px;background:none!important;border:0!important;box-shadow:none!important;color:var(--mf-world-text)!important;font:800 20px/1.1 var(--display);letter-spacing:-.025em;text-shadow:0 1px 10px rgba(255,255,255,.74)}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label small{color:var(--mf-world-muted)!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label span:before{content:none!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin{grid-template-columns:42px minmax(0,1fr) minmax(108px,auto);gap:10px;padding:12px 14px;border:1px solid var(--mf-world-line);border-radius:23px;background:var(--mf-world-surface);color:var(--mf-world-text);box-shadow:0 10px 24px var(--mf-world-shadow);backdrop-filter:blur(12px)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin>.mf-animal-sticker{display:none}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-checkin small{color:var(--mf-world-muted)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label{margin:4px 2px 2px;padding:0 2px;background:none;border:0;box-shadow:none;color:var(--mf-world-text);font:800 20px/1.1 var(--display);letter-spacing:-.025em;text-shadow:0 1px 10px rgba(255,255,255,.74)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label small{color:var(--mf-world-muted)}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label span:before{content:none}
 
 /* Feed/diaper sections are solid content zones; page scenery never competes inside them. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-zone,.mf-diaper-cluster){
   position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px;
   border:1px solid var(--mf-world-line);border-radius:28px;overflow:hidden;
-  background:var(--mf-world-surface)!important;box-shadow:0 11px 26px var(--mf-world-shadow);backdrop-filter:none
+  background:var(--mf-world-surface);box-shadow:0 11px 26px var(--mf-world-shadow);backdrop-filter:none
 }
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{overflow:visible;box-shadow:none!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card{overflow:visible;box-shadow:none}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>.mf-animal-sticker,
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>svg{display:none!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card>svg{display:none}
 /* Six colored picture surfaces, with labels on the scene beneath each picture. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob){
-  background:transparent!important;border:0!important;
-  color:var(--mf-world-text)!important}
+  background:transparent;border:0;
+  color:var(--mf-world-text)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) .mf-tile-picture{background:color-mix(in srgb,var(--tile) 61%,var(--mf-world-surface));border-color:color-mix(in srgb,var(--tile) 73%,var(--mf-world-surface));box-shadow:0 6px 16px var(--mf-world-shadow)}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) .mf-tile-picture{background:color-mix(in srgb,var(--tile) 38%,var(--mf-world-surface));border-color:color-mix(in srgb,var(--tile) 58%,var(--mf-world-surface))}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card.milk{--tile:var(--care-milk)}
@@ -313,13 +313,13 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.wet{--tile:var(--care-wet)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.poop{--tile:var(--care-poop)}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob.both{--tile:var(--care-mixed)}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) strong{color:var(--mf-world-text)!important;opacity:1!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) :is(small,span){color:color-mix(in srgb,var(--tile) 76%,var(--mf-world-text))!important;opacity:1!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) strong{color:var(--mf-world-text);opacity:1}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) :is(small,span){color:color-mix(in srgb,var(--tile) 76%,var(--mf-world-text));opacity:1}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-card,.mf-diaper-blob) :is(small,span){
-  color:color-mix(in srgb,var(--tile) 52%,var(--mf-world-text))!important}
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob{overflow:visible;box-shadow:none!important}
+  color:color-mix(in srgb,var(--tile) 52%,var(--mf-world-text))}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob{overflow:visible;box-shadow:none}
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>.mf-animal-sticker,
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>svg{display:none!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-diaper-blob>svg{display:none}
 /* The count badge is the component layer's, in both light and dark. This rule used to restate
    its geometry and hard-code a white pill with no dark variant, which in dark mode painted a
    white circle with white text inside it. A theme does not own a badge. */
@@ -330,26 +330,26 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
    It belongs to the world like everything else: the surface, lifted a little, with a hairline
    of the accent. A real photo covers all of this anyway; it only shows while there is none. */
 :root:not([data-experience-theme="clean"]) :is(.mf-animal-profile .mf-profile-photo,.mf-dream-photo){
-  background:color-mix(in srgb,var(--mf-world-accent) 12%,var(--mf-world-surface))!important;
-  border:1px solid color-mix(in srgb,var(--mf-world-accent) 30%,transparent)!important;
-  color:var(--mf-world-accent)!important;
-  box-shadow:0 10px 26px var(--mf-world-shadow)!important}
+  background:color-mix(in srgb,var(--mf-world-accent) 12%,var(--mf-world-surface));
+  border:1px solid color-mix(in srgb,var(--mf-world-accent) 30%,transparent);
+  color:var(--mf-world-accent);
+  box-shadow:0 10px 26px var(--mf-world-shadow)}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) :is(.mf-animal-profile .mf-profile-photo,.mf-dream-photo){
-  background:color-mix(in srgb,var(--mf-world-accent) 18%,var(--mf-world-surface))!important;
-  border-color:color-mix(in srgb,var(--mf-world-accent) 38%,transparent)!important}
+  background:color-mix(in srgb,var(--mf-world-accent) 18%,var(--mf-world-surface));
+  border-color:color-mix(in srgb,var(--mf-world-accent) 38%,transparent)}
 
-:root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.sheet,.dialog){border-color:color-mix(in srgb,var(--mf-world-accent) 34%,var(--line))!important}
+:root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.sheet,.dialog){border-color:color-mix(in srgb,var(--mf-world-accent) 34%,var(--line))}
 
 /* Appearance previews use the exact self-contained scene that the app renders. */
-.mf-experience-panel{padding:18px!important;overflow:hidden;background:color-mix(in srgb,var(--surface) 88%,transparent)!important;backdrop-filter:blur(16px)}
+.mf-experience-panel{padding:18px;overflow:hidden;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(16px)}
 .mf-experience-intro{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 0 14px}
 .mf-experience-intro h3{margin:0;font:800 25px/1.05 var(--display);letter-spacing:-.035em}.mf-experience-intro p{max-width:620px;margin:6px 0 0;color:var(--muted);font-size:11.5px;font-weight:650;line-height:1.45}.mf-experience-scope{flex:0 0 auto;padding:6px 8px;border-radius:999px;background:var(--mom-soft);color:var(--mom-ink);font-size:9px;font-weight:900;letter-spacing:.04em}
-.mf-experience-panel .mf-experience-options{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
-.mf-experience-panel .mf-experience-option{position:relative;display:flex!important;min-width:0;min-height:0!important;padding:0!important;overflow:hidden;border:1px solid var(--line)!important;border-radius:22px!important;background:var(--surface)!important;color:var(--ink)!important;text-align:left;box-shadow:0 9px 22px rgba(36,41,58,.07)!important;flex-direction:column!important}
-.mf-experience-panel .mf-experience-preview{position:relative;display:block!important;width:100%!important;height:154px!important;min-height:154px!important;overflow:hidden;background:#edf1eb!important;flex:0 0 154px!important}
+.mf-experience-panel .mf-experience-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mf-experience-panel .mf-experience-option{position:relative;display:flex;min-width:0;min-height:0;padding:0;overflow:hidden;border:1px solid var(--line);border-radius:22px;background:var(--surface);color:var(--ink);text-align:left;box-shadow:0 9px 22px rgba(36,41,58,.07);flex-direction:column}
+.mf-experience-panel .mf-experience-preview{position:relative;display:block;width:100%;height:154px;min-height:154px;overflow:hidden;background:#edf1eb;flex:0 0 154px}
 .mf-experience-panel .mf-experience-preview img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center 15%;transform:none}
-.mf-experience-panel .mf-experience-copy{display:block!important;min-height:72px!important;padding:12px 13px 13px!important}.mf-experience-panel .mf-experience-copy strong{display:block;font:800 14px/1.15 var(--display);letter-spacing:-.015em;color:var(--ink)}.mf-experience-panel .mf-experience-copy small{display:block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.32;font-weight:650}
-.mf-experience-panel .mf-experience-option[aria-pressed="true"]{border-color:var(--mf-world-accent,var(--accent,var(--mom)))!important;box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--mf-world-accent,var(--mom)) 35%,transparent),0 10px 25px rgba(42,60,50,.10)!important}.mf-experience-panel .mf-experience-option[aria-pressed="true"]:after{content:"✓";position:absolute;right:10px;top:10px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--mf-world-accent,var(--mom));color:#fff;font-size:14px;font-weight:900;box-shadow:0 5px 14px rgba(31,50,38,.22);z-index:3}
+.mf-experience-panel .mf-experience-copy{display:block;min-height:72px;padding:12px 13px 13px}.mf-experience-panel .mf-experience-copy strong{display:block;font:800 14px/1.15 var(--display);letter-spacing:-.015em;color:var(--ink)}.mf-experience-panel .mf-experience-copy small{display:block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.32;font-weight:650}
+.mf-experience-panel .mf-experience-option[aria-pressed="true"]{border-color:var(--mf-world-accent,var(--accent,var(--mom)));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--mf-world-accent,var(--mom)) 35%,transparent),0 10px 25px rgba(42,60,50,.10)}.mf-experience-panel .mf-experience-option[aria-pressed="true"]:after{content:"✓";position:absolute;right:10px;top:10px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--mf-world-accent,var(--mom));color:#fff;font-size:14px;font-weight:900;box-shadow:0 5px 14px rgba(31,50,38,.22);z-index:3}
 .mf-experience-clean{width:100%;margin-top:12px;padding:13px 14px;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--ink);display:grid;grid-template-columns:auto 1fr;gap:10px;text-align:left;align-items:center;font:inherit}.mf-experience-clean span{font-weight:850}.mf-experience-clean small{color:var(--muted);font-size:10.5px;font-weight:650}.mf-experience-clean[aria-pressed="true"]{border-color:var(--accent,var(--mom));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 28%,transparent)}
 .mf-experience-panel .mf-experience-option:active{transform:scale(.985)}.mf-experience-panel .mf-experience-option:focus-visible,.mf-experience-clean:focus-visible{outline:3px solid color-mix(in srgb,var(--mf-world-accent,var(--accent)) 60%,#fff);outline-offset:3px}
 
@@ -399,84 +399,84 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
   --mf-world-surface:#182330;--mf-world-surface-strong:#0d151e;--mf-world-line:rgba(172,196,213,.16);
   --mf-world-shadow:rgba(0,0,0,.44);--mf-world-text:#f3f9fc;--mf-world-muted:#c2d0da
 }
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.panel,.grp,.metric,.row,.stash-hero,.data-status){color:var(--mf-world-text)!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head :is(h2,.eyebrow){color:#fff!important;text-shadow:0 2px 12px rgba(0,0,0,.30)!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{background-image:var(--mf-theme-mom-hero)!important;border-color:rgba(255,255,255,.16)!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-main h2,.mf-dream-main p,.mf-dream-welcome,.mf-dream-kicker){color:#fff!important;text-shadow:0 2px 12px rgba(0,0,0,.30)!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) :is(.panel,.grp,.metric,.row,.stash-hero,.data-status){color:var(--mf-world-text)}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm="mom"]:not([data-screen="mom-home"]) .page-head :is(h2,.eyebrow){color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.30)}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{background-image:var(--mf-theme-mom-hero);border-color:rgba(255,255,255,.16)}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] :is(.mf-dream-main h2,.mf-dream-main p,.mf-dream-welcome,.mf-dream-kicker){color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.30)}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress>div,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-side-note,
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next{background:#171d29!important;border-color:rgba(255,255,255,.16)!important;color:#fff!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next :is(strong,small,span,p){color:#fff!important;opacity:1!important;text-shadow:none!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{color:#bcecff!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{color:#ffc2d8!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next{background:#171d29;border-color:rgba(255,255,255,.16);color:#fff}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next :is(strong,small,span,p){color:#fff;opacity:1;text-shadow:none}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"]{color:#bcecff}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"]{color:#ffc2d8}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"] .tile-art{background:linear-gradient(145deg,#173849,#1d4355)}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"] .tile-art{background:linear-gradient(145deg,#442238,#552843)}
 /* Mom dark-mode hierarchy: important totals, progress, schedule and actions stay bright
    without flattening the selected illustrated world. */
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress{
-  background:conic-gradient(#f6f0ff var(--dream-p),rgba(255,255,255,.20) 0)!important;
-  box-shadow:0 18px 38px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.12)!important
+  background:conic-gradient(#f6f0ff var(--dream-p),rgba(255,255,255,.20) 0);
+  box-shadow:0 18px 38px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.12)
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress>div{
-  background:linear-gradient(145deg,rgba(35,29,58,.96),rgba(43,34,68,.94))!important
+  background:linear-gradient(145deg,rgba(35,29,58,.96),rgba(43,34,68,.94))
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress strong,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress strong i{
-  color:#fff!important;opacity:1!important
+  color:#fff;opacity:1
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-progress span,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-volume span{
-  color:#d9d4e8!important;opacity:1!important
+  color:#d9d4e8;opacity:1
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-volume{
-  background:#171d29!important;border:1px solid rgba(255,255,255,.14)!important;color:#fff!important
+  background:#171d29;border:1px solid rgba(255,255,255,.14);color:#fff
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-next button{
-  background:#f5f1ff!important;color:#4d2b83!important;-webkit-text-fill-color:#4d2b83!important;
-  border:1px solid rgba(255,255,255,.92)!important;box-shadow:0 10px 24px rgba(0,0,0,.26)!important
+  background:#f5f1ff;color:#4d2b83;-webkit-text-fill-color:#4d2b83;
+  border:1px solid rgba(255,255,255,.92);box-shadow:0 10px 24px rgba(0,0,0,.26)
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile :is(strong,small,span){
-  opacity:1!important
+  opacity:1
 }
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"] :is(strong,small,span){color:#d8f4ff!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"] :is(strong,small,span){color:#ffd7e6!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-metrics .metric strong{color:#fff!important;opacity:1!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-metrics .metric :is(span,small){color:var(--mf-world-muted)!important;opacity:1!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="pump"] :is(strong,small,span){color:#d8f4ff}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-actions .quick-tile[data-mom="nursing"] :is(strong,small,span){color:#ffd7e6}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-metrics .metric strong{color:#fff;opacity:1}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-metrics .metric :is(span,small){color:var(--mf-world-muted);opacity:1}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey .mf-journey-head strong,
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey .mf-journey-stop strong{color:#fff!important;opacity:1!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey :is(.mf-journey-head span,.mf-journey-stop small,p){color:#cbd3e2!important;opacity:1!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey .mf-journey-stop strong{color:#fff;opacity:1}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey :is(.mf-journey-head span,.mf-journey-stop small,p){color:#cbd3e2;opacity:1}
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey .mf-journey-stop i{
-  background:#293043!important;color:#e6ebf5!important;border-color:#3e475c!important
+  background:#293043;color:#e6ebf5;border-color:#3e475c
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey .mf-journey-stop.done i{
-  background:#163d33!important;color:#79dfbc!important;border-color:#2d5b4e!important
+  background:#163d33;color:#79dfbc;border-color:#2d5b4e
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-journey .mf-journey-stop.next i{
   /* the pink end measured 3.38:1 under the white marker; both stops go a step deeper */
-  background:linear-gradient(145deg,#6244b8,#a04a80)!important;color:#fff!important;border-color:#a88be9!important
+  background:linear-gradient(145deg,#6244b8,#a04a80);color:#fff;border-color:#a88be9
 }
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero{background-image:var(--mf-theme-baby-hero)!important}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-care-label,.mf-animal-checkin){color:var(--mf-world-text)!important;text-shadow:none}
-:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-care-label small,.mf-animal-checkin small){color:var(--mf-world-muted)!important}
-:root[data-theme="dark"] .mf-experience-panel{background:rgba(24,27,38,.91)!important;border-color:#3a4050!important}.mf-experience-panel .mf-experience-option{transition:transform .12s ease}
-:root[data-theme="dark"] .mf-experience-panel .mf-experience-option{background:#202432!important;border-color:#3b4152!important;color:#f5f7fb!important}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero{background-image:var(--mf-theme-baby-hero)}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-care-label,.mf-animal-checkin){color:var(--mf-world-text);text-shadow:none}
+:root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-care-label small,.mf-animal-checkin small){color:var(--mf-world-muted)}
+:root[data-theme="dark"] .mf-experience-panel{background:rgba(24,27,38,.91);border-color:#3a4050}.mf-experience-panel .mf-experience-option{transition:transform .12s ease}
+:root[data-theme="dark"] .mf-experience-panel .mf-experience-option{background:#202432;border-color:#3b4152;color:#f5f7fb}
 :root[data-theme="dark"] .mf-experience-panel .mf-experience-copy strong{color:#f5f7fb}:root[data-theme="dark"] .mf-experience-panel .mf-experience-copy small{color:#cbd1dd}
 :root[data-theme="dark"] .mf-experience-clean{background:#202432;color:#f4f6fb;border-color:#3b4152}:root[data-theme="dark"] .mf-experience-clean small{color:#cbd1dd}
 
 @media(max-width:760px){
-  :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .view{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+  :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .view{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
   :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]) .main,
   :root:not([data-experience-theme="clean"]) body[data-screen="settings"] .main,
-  :root:not([data-experience-theme="clean"]) body[data-screen="set-appearance"] .main{background-size:cover!important;background-position:var(--mf-page-focus)!important}
-  :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{min-height:244px;background-size:cover!important;background-position:var(--mf-mom-focus)!important}
-  :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero{background-size:cover!important;background-position:var(--mf-baby-focus)!important}
-  :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]):not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head{min-height:122px!important}
-  .mf-experience-panel .mf-experience-options{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.mf-experience-panel .mf-experience-preview{height:140px!important;min-height:140px!important;flex-basis:140px!important}
+  :root:not([data-experience-theme="clean"]) body[data-screen="set-appearance"] .main{background-size:cover;background-position:var(--mf-page-focus)}
+  :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{min-height:244px;background-size:cover;background-position:var(--mf-mom-focus)}
+  :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero{background-size:cover;background-position:var(--mf-baby-focus)}
+  :root:not([data-experience-theme="clean"]) body:is([data-realm="mom"],[data-realm="baby"]):not([data-screen="mom-home"]):not([data-screen="baby-home"]) .page-head{min-height:122px}
+  .mf-experience-panel .mf-experience-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.mf-experience-panel .mf-experience-preview{height:140px;min-height:140px;flex-basis:140px}
 }
 @media(max-width:410px){
 
   :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] :is(.mf-feed-zone,.mf-diaper-cluster){gap:7px;padding:8px}
-  .mf-experience-panel .mf-experience-preview{height:128px!important;min-height:128px!important;flex-basis:128px!important}
+  .mf-experience-panel .mf-experience-preview{height:128px;min-height:128px;flex-basis:128px}
 }
 
 /* Contrast floor for text sitting over a painted plate.
@@ -485,7 +485,7 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
    pixels: the care section label fell to 1.5:1, the hero greeting to 2.5:1 and the stat
    pills to ~3.2:1. The theme package's own measurement puts the minimum surface alpha for
    body text over a plate at 0.62, so every carrier here clears that.
-   These live in this file, and last, on purpose: for !important declarations the cascade
+   These live in this file, and last, on purpose: for declarations the cascade
    inverts layer order, so a layered rule beats an unlayered one and the only reliable way
    to override the rules above is to sit in the same layer, later. */
 /* A near-black pill clears contrast but fights every pastel world, and two identical white
@@ -493,68 +493,68 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
    pill; the experience layer was flattening both to one slab, so restore that pairing at an
    opacity that survives sitting on artwork. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact:first-child{
-  background:linear-gradient(145deg,rgba(223,246,255,.96),rgba(184,228,250,.94))!important;
-  border-color:rgba(255,255,255,.82)!important;color:#0f4d6b!important;
+  background:linear-gradient(145deg,rgba(223,246,255,.96),rgba(184,228,250,.94));
+  border-color:rgba(255,255,255,.82);color:#0f4d6b;
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact:last-child{
-  background:linear-gradient(145deg,rgba(255,241,207,.97),rgba(255,219,170,.95))!important;
-  border-color:rgba(255,255,255,.82)!important;color:#6d4013!important;
+  background:linear-gradient(145deg,rgba(255,241,207,.97),rgba(255,219,170,.95));
+  border-color:rgba(255,255,255,.82);color:#6d4013;
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact :is(strong,span,small){
-  color:inherit!important;
+  color:inherit;
 }
 /* Mom's two boxes had no tint at all: translucent white on a pale card, which read as one
    flat slab with some text on it. They get the same treatment Baby's already had - a pair of
    deliberate hues so "what just happened" and "where today stands" are told apart at a
    glance. Violet for the session that just ended, rose for the day so far. */
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-hero-fact:first-child{
-  background:linear-gradient(145deg,rgba(235,229,255,.97),rgba(214,204,250,.95))!important;
-  border-color:rgba(255,255,255,.85)!important;color:#3b2a74!important;
+  background:linear-gradient(145deg,rgba(235,229,255,.97),rgba(214,204,250,.95));
+  border-color:rgba(255,255,255,.85);color:#3b2a74;
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-hero-fact:last-child{
-  background:linear-gradient(145deg,rgba(255,232,243,.97),rgba(250,207,228,.95))!important;
-  border-color:rgba(255,255,255,.85)!important;color:#6f2a4e!important;
+  background:linear-gradient(145deg,rgba(255,232,243,.97),rgba(250,207,228,.95));
+  border-color:rgba(255,255,255,.85);color:#6f2a4e;
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-hero-fact :is(strong,span,small,em){
-  color:inherit!important;opacity:1!important;
+  color:inherit;opacity:1;
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-hero-fact:first-child{
-  background:linear-gradient(145deg,rgba(38,30,68,.92),rgba(48,38,84,.9))!important;
-  border-color:rgba(190,175,246,.26)!important;color:#d9cffb!important;
+  background:linear-gradient(145deg,rgba(38,30,68,.92),rgba(48,38,84,.9));
+  border-color:rgba(190,175,246,.26);color:#d9cffb;
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-hero-fact:last-child{
-  background:linear-gradient(145deg,rgba(62,28,48,.92),rgba(78,36,60,.9))!important;
-  border-color:rgba(246,190,218,.26)!important;color:#fbcfe4!important;
+  background:linear-gradient(145deg,rgba(62,28,48,.92),rgba(78,36,60,.9));
+  border-color:rgba(246,190,218,.26);color:#fbcfe4;
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact:first-child{
-  background:linear-gradient(145deg,rgba(14,42,60,.9),rgba(17,52,74,.88))!important;
-  border-color:rgba(160,214,240,.26)!important;color:#bfe7fb!important;
+  background:linear-gradient(145deg,rgba(14,42,60,.9),rgba(17,52,74,.88));
+  border-color:rgba(160,214,240,.26);color:#bfe7fb;
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact:last-child{
-  background:linear-gradient(145deg,rgba(58,40,12,.9),rgba(74,50,14,.88))!important;
-  border-color:rgba(245,214,160,.26)!important;color:#ffdca6!important;
+  background:linear-gradient(145deg,rgba(58,40,12,.9),rgba(74,50,14,.88));
+  border-color:rgba(245,214,160,.26);color:#ffdca6;
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label>:is(span,small){
-  background:rgba(255,255,255,.96)!important;
-  border-radius:999px!important;
-  padding:3px 11px!important;
-  text-shadow:none!important;
+  background:rgba(255,255,255,.96);
+  border-radius:999px;
+  padding:3px 11px;
+  text-shadow:none;
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-care-label>:is(span,small){
-  background:rgba(12,16,24,.86)!important;
+  background:rgba(12,16,24,.86);
 }
 /* "Add a photo" sits straight on the plate under the name. Its color is owned by the
-   milkflow-core layer, which wins !important here, but nothing sets a background there —
+   milkflow-core layer, which wins here, but nothing sets a background there —
    so a carrier is the one lever available, and it is what the floor needs anyway. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{
-  background:rgba(255,255,255,.9)!important;
-  border-radius:999px!important;
-  padding:2px 9px!important;
-  justify-self:start!important;
-  text-shadow:none!important;
+  background:rgba(255,255,255,.9);
+  border-radius:999px;
+  padding:2px 9px;
+  justify-self:start;
+  text-shadow:none;
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-copy>small{
-  background:rgba(12,16,24,.86)!important;
+  background:rgba(12,16,24,.86);
 }
 
 
@@ -568,27 +568,27 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
    One plate per screen is the page background. Everything above it is a real surface. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero,
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{
-  background-image:none!important;
-  background-color:var(--mf-world-surface-strong)!important;
+  background-image:none;
+  background-color:var(--mf-world-surface-strong);
   background:linear-gradient(152deg,
     var(--mf-world-surface-strong) 0%,
-    color-mix(in srgb,var(--mf-world-accent) 18%,var(--mf-world-surface-strong)) 100%)!important;
-  border:1px solid var(--mf-world-line)!important;
-  box-shadow:0 18px 40px var(--mf-world-shadow)!important;
-  color:var(--mf-world-text)!important;
+    color-mix(in srgb,var(--mf-world-accent) 18%,var(--mf-world-surface-strong)) 100%);
+  border:1px solid var(--mf-world-line);
+  box-shadow:0 18px 40px var(--mf-world-shadow);
+  color:var(--mf-world-text);
 }
 /* The hero's own copy inherits the surface's ink rather than the #fff it carried when it
    was a saturated gradient. That mismatch is what made the summary numbers invisible. */
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero :is(h2,b,strong,small,span,p,i):not(.mf-hero-fact):not(.mf-hero-fact *),
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero :is(h2,b,strong,small,span,p,i):not(.mf-hero-fact):not(.mf-hero-fact *){
-  color:inherit!important;text-shadow:none!important;
+  color:inherit;text-shadow:none;
 }
 /* The stat chips keep their own deliberate pairing. */
-:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact :is(strong,span,small){color:inherit!important}
+:root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-hero-fact :is(strong,span,small){color:inherit}
 /* The ambient blurred blobs sit above the plate and wash it out. */
 :root:not([data-experience-theme="clean"]) body:is([data-screen="baby-home"],[data-screen="mom-home"]) .main::before,
 :root:not([data-experience-theme="clean"]) body:is([data-screen="baby-home"],[data-screen="mom-home"]) .main::after{
-  display:none!important;
+  display:none;
 }
 
 /* Dark mode re-applies the hero plate through a higher-specificity rule earlier in this
@@ -596,11 +596,11 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
    only won in light. Same intent, matched specificity, later in the cascade. */
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-animal-hero,
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .mf-dream-hero{
-  background-image:none!important;
+  background-image:none;
   background:linear-gradient(152deg,
     var(--mf-world-surface-strong) 0%,
-    color-mix(in srgb,var(--mf-world-accent) 16%,var(--mf-world-surface-strong)) 100%)!important;
-  border:1px solid var(--mf-world-line)!important;
+    color-mix(in srgb,var(--mf-world-accent) 16%,var(--mf-world-surface-strong)) 100%);
+  border:1px solid var(--mf-world-line);
 }
 
 /* ------------------------------------------ one surface contract, on every themed screen */
@@ -632,9 +632,9 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
      same near-white, which is the "no color anywhere but the landing page" problem. Setting
      only the color gives the opaque floor the contrast needs and lets the component's own
      tint sit on top of it. */
-  background-color:color-mix(in srgb,var(--mf-world-surface-strong) 86%,var(--mf-world-accent) 14%)!important;
-  border:1px solid var(--mf-world-line)!important;
-  box-shadow:0 10px 26px var(--mf-world-shadow)!important;
+  background-color:color-mix(in srgb,var(--mf-world-surface-strong) 86%,var(--mf-world-accent) 14%);
+  border:1px solid var(--mf-world-line);
+  box-shadow:0 10px 26px var(--mf-world-shadow);
 }
 /* Section headings and helper copy sit on the page, not on a card. Give them the world's own
    ink so they stay legible over whatever the plate is doing underneath.
@@ -644,7 +644,7 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
    here painted a dark title straight onto the illustration. */
 :root:not([data-experience-theme="clean"]) body[data-realm]
   #view > :is(.grp-title,.chart-note,.page-intro) :is(h2,h3,span,small,p,b,strong){
-  color:var(--mf-world-text)!important;text-shadow:none!important;
+  color:var(--mf-world-text);text-shadow:none;
 }
 
 /* ------------------------------------------------------------- chrome legibility */
@@ -652,10 +652,10 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
    Back label and the Mom/Baby tabs are navigation: they have to stay readable over whatever
    the plate is doing there, not merely usually readable. Both get a real surface. */
 :root:not([data-experience-theme="clean"]) body[data-realm] .back-btn{
-  background:var(--mf-world-surface-strong)!important;
-  border:1px solid var(--mf-world-line)!important;
-  border-radius:999px!important;padding:0 13px 0 8px!important;
-  color:var(--mf-world-text)!important;
+  background:var(--mf-world-surface-strong);
+  border:1px solid var(--mf-world-line);
+  border-radius:999px;padding:0 13px 0 8px;
+  color:var(--mf-world-text);
 }
 :root:not([data-experience-theme="clean"]) body[data-realm] #personaTabs{
   background:var(--mf-world-surface-strong);border:1px solid color-mix(in srgb,var(--mf-world-deep) 24%,transparent);
@@ -678,13 +678,13 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
    lands between 3.0 and 4.4:1 - use the deep variant of the same hue instead of inventing a
    new color, so the pill still reads as the world's accent. */
 :root:not([data-experience-theme="clean"]) body[data-realm] .pills button:is(.on,.active){
-  background:var(--mf-world-deep)!important;color:#fff!important;border-color:transparent!important;
+  background:var(--mf-world-deep);color:#fff;border-color:transparent;
 }
 /* In dark mode the world's deep tone IS the light one - it is the tone that has to read
    against a dark page - so the selected pill takes the world's base color as its ink
    instead of white on pale green. */
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .pills button:is(.on,.active){
-  color:var(--mf-world-base)!important;
+  color:var(--mf-world-base);
 }
 
 /* The dock and the day-review stat lines were the last surfaces letting the plate through
@@ -694,14 +694,14 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
   /* The home-indicator inset is part of the dock, not a blank white footer. */
   background:linear-gradient(180deg,
     color-mix(in srgb,var(--mf-world-surface-strong) 75%,var(--mf-world-accent) 25%),
-    color-mix(in srgb,var(--mf-world-base) 68%,var(--mf-world-accent) 32%))!important;
+    color-mix(in srgb,var(--mf-world-base) 68%,var(--mf-world-accent) 32%));
 }
 /* :not(.sel) matters: the selected day chip is inverted ink-on-surface, and repainting its
    background left white text on a near-white plate. Selection state is owned elsewhere; a
    surface rule has no business touching it. */
 :root:not([data-experience-theme="clean"]) body[data-realm] :is(.review-stats,.stat-line,.day-strip .day-chip:not(.sel)){
-  background:var(--mf-world-surface-strong)!important;
-  border-color:var(--mf-world-line)!important;
+  background:var(--mf-world-surface-strong);
+  border-color:var(--mf-world-line);
 }
 
 /* ---------------------------------------------------------------- edge to edge */
@@ -792,18 +792,18 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 /* The page-head action is a pale glass pill. On a dark page its white label had 1.63:1, so
    the pill goes dark and keeps the white. */
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .page-head .round-action{
-  background:rgba(16,20,30,.74)!important;
-  border-color:rgba(255,255,255,.26)!important;
-  color:#fff!important;
+  background:rgba(16,20,30,.74);
+  border-color:rgba(255,255,255,.26);
+  color:#fff;
 }
 /* Same reasoning as the selected range pill: in dark the world's deep tone is the light one,
    so the selected day takes it as its surface and the world's base as its ink. */
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .day-strip .day-chip.sel{
-  background:var(--mf-world-deep)!important;
-  border-color:transparent!important;
+  background:var(--mf-world-deep);
+  border-color:transparent;
 }
 :root[data-theme="dark"]:not([data-experience-theme="clean"]) body[data-realm] .day-strip .day-chip.sel :is(b,span){
-  color:var(--mf-world-base)!important;opacity:1!important;
+  color:var(--mf-world-base);opacity:1;
 }
 
 /* Theme rotation stays beside the world picker and uses the same surface in every realm. */

@@ -2,7 +2,7 @@
    The established component system lives in component-theme-core.css. This file defines
    named cascade layers so focused component contracts have an explicit priority instead
    of relying on accidental source order or one-off patch stylesheets. */
-@layer milkflow-core, milkflow-experience, milkflow-controls, milkflow-selection;
+@layer milkflow-core, milkflow-controls, milkflow-selection, milkflow-experience;
 /* No layer() here: component-theme-core.css declares its own layers, because most of it is
    milkflow-core but the Baby home composition belongs in milkflow-screens. */
 @import url("./component-theme-core.css?build=stable45-human8");
@@ -13,173 +13,173 @@
      mobile dock back into a document-flow footer. */
   @media(max-width:760px){
     .bottom-nav{
-      display:grid!important;position:fixed!important;z-index:70!important;
-      left:0!important;right:0!important;bottom:0!important;
-      border-radius:26px 26px 0 0!important;
-      padding:5px 8px max(5px,calc(env(safe-area-inset-bottom) - 8px))!important;
-      grid-template-columns:repeat(5,minmax(0,1fr))!important;
-      visibility:visible!important;opacity:1!important
+      display:grid;position:fixed;z-index:70;
+      left:0;right:0;bottom:0;
+      border-radius:26px 26px 0 0;
+      padding:5px 8px max(5px,calc(env(safe-area-inset-bottom) - 8px));
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      visibility:visible;opacity:1
     }
-    .view{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+    .view{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
   }
   .bottom-nav .ico,.bottom-nav .gly,
   .topbar .ico,.back-btn .ico,.round-action .ico,
   .row-icon .ico,.grp-icon .ico,.sheet .ico,.dialog .ico{
-    visibility:visible!important;opacity:1!important
+    visibility:visible;opacity:1
   }
-  .bottom-nav svg.ico,.bottom-nav svg.gly,.topbar svg.ico,.back-btn svg.ico{display:block!important}
+  .bottom-nav svg.ico,.bottom-nav svg.gly,.topbar svg.ico,.back-btn svg.ico{display:block}
 
   /* Entry sheets and dialogs must remain legible in both themes. The care picker uses
      the same semantic colors as the cards it creates, which also makes the choices
      easier to scan than six identical gray boxes. */
   :root[data-theme="dark"] .sheet {
-    background:linear-gradient(180deg,#171a27 0%,#111521 100%)!important;
-    border-top:1px solid #353b4c!important;
-    color:#f6f8fc!important;
-    box-shadow:0 -24px 54px rgba(0,0,0,.52)!important;
+    background:linear-gradient(180deg,#171a27 0%,#111521 100%);
+    border-top:1px solid #353b4c;
+    color:#f6f8fc;
+    box-shadow:0 -24px 54px rgba(0,0,0,.52);
   }
-  :root[data-theme="dark"] .sheet-handle{background:#43495b!important}
-  :root[data-theme="dark"] .sheet-head strong{color:#f7f9fd!important}
+  :root[data-theme="dark"] .sheet-handle{background:#43495b}
+  :root[data-theme="dark"] .sheet-head strong{color:#f7f9fd}
   :root[data-theme="dark"] .sheet-head button[data-close]{
-    width:48px!important;height:44px!important;min-width:48px!important;border-radius:15px!important;
-    border:1px solid #454c5f!important;background:#292e3c!important;color:#f5f7fb!important;
-    display:grid!important;place-items:center!important;box-shadow:none!important
+    width:48px;height:44px;min-width:48px;border-radius:15px;
+    border:1px solid #454c5f;background:#292e3c;color:#f5f7fb;
+    display:grid;place-items:center;box-shadow:none
   }
-  :root[data-theme="dark"] .sheet-head button[data-close] .ico{color:#f5f7fb!important}
+  :root[data-theme="dark"] .sheet-head button[data-close] .ico{color:#f5f7fb}
 
   :root[data-theme="dark"] .sheet-actions button{
-    background:#232836!important;border-color:#3b4355!important;color:#f7f9fd!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 8px 20px rgba(0,0,0,.18)!important
+    background:#232836;border-color:#3b4355;color:#f7f9fd;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 8px 20px rgba(0,0,0,.18)
   }
-  :root[data-theme="dark"] .sheet-actions button strong{color:#f7f9fd!important}
-  :root[data-theme="dark"] .sheet-actions button span{color:#c0c8d8!important;opacity:1!important}
+  :root[data-theme="dark"] .sheet-actions button strong{color:#f7f9fd}
+  :root[data-theme="dark"] .sheet-actions button span{color:#c0c8d8;opacity:1}
   :root[data-theme="dark"] .sheet-actions button .ico,
-  :root[data-theme="dark"] .sheet-actions button .gly{color:#dce5f4!important;opacity:1!important}
+  :root[data-theme="dark"] .sheet-actions button .gly{color:#dce5f4;opacity:1}
 
   :root[data-theme="dark"] .sheet-actions button[data-feed],
   :root[data-theme="dark"] .sheet-actions button[data-feed-type="expressed_milk"]{
-    background:linear-gradient(145deg,#173129,#1f3a31)!important;border-color:#315445!important
+    background:linear-gradient(145deg,#173129,#1f3a31);border-color:#315445
   }
   :root[data-theme="dark"] .sheet-actions button[data-feed] .ico,
   :root[data-theme="dark"] .sheet-actions button[data-feed] .gly,
   :root[data-theme="dark"] .sheet-actions button[data-feed-type="expressed_milk"] .ico,
-  :root[data-theme="dark"] .sheet-actions button[data-feed-type="expressed_milk"] .gly{color:#7ad9b5!important}
+  :root[data-theme="dark"] .sheet-actions button[data-feed-type="expressed_milk"] .gly{color:#7ad9b5}
 
   :root[data-theme="dark"] .sheet-actions button[data-diaper="wet"]{
-    background:linear-gradient(145deg,#173044,#1e3b50)!important;border-color:#31566f!important
+    background:linear-gradient(145deg,#173044,#1e3b50);border-color:#31566f
   }
   :root[data-theme="dark"] .sheet-actions button[data-diaper="wet"] .ico,
-  :root[data-theme="dark"] .sheet-actions button[data-diaper="wet"] .gly{color:#82cff3!important}
+  :root[data-theme="dark"] .sheet-actions button[data-diaper="wet"] .gly{color:#82cff3}
 
   :root[data-theme="dark"] .sheet-actions button[data-diaper="poop"]{
-    background:linear-gradient(145deg,#392b16,#47361e)!important;border-color:#604b2b!important
+    background:linear-gradient(145deg,#392b16,#47361e);border-color:#604b2b
   }
   :root[data-theme="dark"] .sheet-actions button[data-diaper="poop"] .ico,
-  :root[data-theme="dark"] .sheet-actions button[data-diaper="poop"] .gly{color:#efbf76!important}
+  :root[data-theme="dark"] .sheet-actions button[data-diaper="poop"] .gly{color:#efbf76}
 
   :root[data-theme="dark"] .sheet-actions button[data-diaper="both"]{
-    background:linear-gradient(145deg,#302744,#3c3055)!important;border-color:#57466f!important
+    background:linear-gradient(145deg,#302744,#3c3055);border-color:#57466f
   }
   :root[data-theme="dark"] .sheet-actions button[data-diaper="both"] .ico,
-  :root[data-theme="dark"] .sheet-actions button[data-diaper="both"] .gly{color:#c3acf4!important}
+  :root[data-theme="dark"] .sheet-actions button[data-diaper="both"] .gly{color:#c3acf4}
 
   :root[data-theme="dark"] .sheet-actions button[data-sleep]{
-    background:linear-gradient(145deg,#242942,#2d3350)!important;border-color:#434b68!important
+    background:linear-gradient(145deg,#242942,#2d3350);border-color:#434b68
   }
   :root[data-theme="dark"] .sheet-actions button[data-sleep] .ico,
-  :root[data-theme="dark"] .sheet-actions button[data-sleep] .gly{color:#aeb6ff!important}
+  :root[data-theme="dark"] .sheet-actions button[data-sleep] .gly{color:#aeb6ff}
 
   :root[data-theme="dark"] .sheet-actions button[data-growth]{
-    background:linear-gradient(145deg,#36202c,#432836)!important;border-color:#5c3948!important
+    background:linear-gradient(145deg,#36202c,#432836);border-color:#5c3948
   }
   :root[data-theme="dark"] .sheet-actions button[data-growth] .ico,
-  :root[data-theme="dark"] .sheet-actions button[data-growth] .gly{color:#f0a2bd!important}
+  :root[data-theme="dark"] .sheet-actions button[data-growth] .gly{color:#f0a2bd}
 
   :root[data-theme="dark"] .sheet-actions button[data-mom="pump"]{
-    background:linear-gradient(145deg,#2f2548,#3a2d58)!important;border-color:#55436e!important
+    background:linear-gradient(145deg,#2f2548,#3a2d58);border-color:#55436e
   }
   :root[data-theme="dark"] .sheet-actions button[data-mom="pump"] .ico,
-  :root[data-theme="dark"] .sheet-actions button[data-mom="pump"] .gly{color:#c8b2ff!important}
+  :root[data-theme="dark"] .sheet-actions button[data-mom="pump"] .gly{color:#c8b2ff}
   :root[data-theme="dark"] .sheet-actions button[data-mom="nursing"],
   :root[data-theme="dark"] .sheet-actions button[data-feed-type="nursing"]{
-    background:linear-gradient(145deg,#3a2030,#48273a)!important;border-color:#63374d!important
+    background:linear-gradient(145deg,#3a2030,#48273a);border-color:#63374d
   }
   :root[data-theme="dark"] .sheet-actions button[data-mom="nursing"] .ico,
   :root[data-theme="dark"] .sheet-actions button[data-mom="nursing"] .gly,
   :root[data-theme="dark"] .sheet-actions button[data-feed-type="nursing"] .ico,
-  :root[data-theme="dark"] .sheet-actions button[data-feed-type="nursing"] .gly{color:#f1a2c1!important}
+  :root[data-theme="dark"] .sheet-actions button[data-feed-type="nursing"] .gly{color:#f1a2c1}
   :root[data-theme="dark"] .sheet-actions button[data-feed-type="formula"]{
-    background:linear-gradient(145deg,#302a46,#3c3256)!important;border-color:#564970!important
+    background:linear-gradient(145deg,#302a46,#3c3256);border-color:#564970
   }
   :root[data-theme="dark"] .sheet-actions button[data-feed-type="formula"] .ico,
-  :root[data-theme="dark"] .sheet-actions button[data-feed-type="formula"] .gly{color:#c6b4f4!important}
-  :root[data-theme="dark"] .sheet-actions button.recommended{box-shadow:inset 0 0 0 2px rgba(111,218,177,.32),0 8px 20px rgba(0,0,0,.18)!important}
+  :root[data-theme="dark"] .sheet-actions button[data-feed-type="formula"] .gly{color:#c6b4f4}
+  :root[data-theme="dark"] .sheet-actions button.recommended{box-shadow:inset 0 0 0 2px rgba(111,218,177,.32),0 8px 20px rgba(0,0,0,.18)}
 
   /* The next step after the picker is a dialog. Give every editable control an explicit
      dark surface so number entry, date/time, presets and choice buttons never disappear. */
-  :root[data-theme="dark"] .dialog{background:#171b27!important;color:#f5f7fb!important}
+  :root[data-theme="dark"] .dialog{background:#171b27;color:#f5f7fb}
   :root[data-theme="dark"] .dialog-head,
-  :root[data-theme="dark"] .form-actions{background:#171b27!important;border-color:#303747!important}
+  :root[data-theme="dark"] .form-actions{background:#171b27;border-color:#303747}
   :root[data-theme="dark"] .dialog-head h2,
   :root[data-theme="dark"] .form-section-title,
-  :root[data-theme="dark"] .field>span{color:#edf1f8!important}
+  :root[data-theme="dark"] .field>span{color:#edf1f8}
   :root[data-theme="dark"] .field input,
   :root[data-theme="dark"] .field select,
   :root[data-theme="dark"] .field textarea{
-    background:#222735!important;border-color:#3a4356!important;color:#f7f9fd!important;
-    -webkit-text-fill-color:#f7f9fd!important
+    background:#222735;border-color:#3a4356;color:#f7f9fd;
+    -webkit-text-fill-color:#f7f9fd
   }
   :root[data-theme="dark"] .field input::placeholder,
-  :root[data-theme="dark"] .field textarea::placeholder{color:#919caf!important;opacity:1!important}
+  :root[data-theme="dark"] .field textarea::placeholder{color:#919caf;opacity:1}
   :root[data-theme="dark"] .step-key,
   :root[data-theme="dark"] .preset-row button,
   :root[data-theme="dark"] .choice-row button,
   :root[data-theme="dark"] .when-quick button,
   :root[data-theme="dark"] .form-actions button:not(.save),
   :root[data-theme="dark"] .auth-actions button:not(.save){
-    background:#232836!important;border-color:#3b4355!important;color:#eef2f8!important
+    background:#232836;border-color:#3b4355;color:#eef2f8
   }
-  :root[data-theme="dark"] .step-value input{color:#f8faff!important;-webkit-text-fill-color:#f8faff!important}
+  :root[data-theme="dark"] .step-value input{color:#f8faff;-webkit-text-fill-color:#f8faff}
   :root[data-theme="dark"] .step-value span,
-  :root[data-theme="dark"] .auth-helper{color:#b8c1d1!important}
+  :root[data-theme="dark"] .auth-helper{color:#b8c1d1}
 
   /* Dark-mode readability contract. Numeric values and tappable controls must never
      inherit a muted foreground from a decorative surface. Selection styling remains
      owned by the higher milkflow-selection layer below. */
   :root[data-theme="dark"] :is(.metric strong,.schedule-card strong,.stat-ring-dial b,.donut-center strong,.daily-cell b,.cbar-v,.qa-grid strong,.stash-hero strong,.hbar b,.stat-line b){
-    color:#f8faff!important;opacity:1!important
+    color:#f8faff;opacity:1
   }
   :root[data-theme="dark"] :is(.metric span,.metric small,.schedule-card small,.stat-ring span,.stat-ring small,.donut-legend small,.hbar small){
-    color:#c6cfde!important;opacity:1!important
+    color:#c6cfde;opacity:1
   }
   :root[data-theme="dark"] :is(.panel-head button,.pills button,.segmented button,.day-chip,.theme-opt){
-    color:#dce3ef!important
+    color:#dce3ef
   }
   :root[data-theme="dark"] .panel-head button{
-    background:#262c3a!important;border:1px solid #3c4558!important;color:#f3f6fc!important
+    background:#262c3a;border:1px solid #3c4558;color:#f3f6fc
   }
-  :root[data-theme="dark"] .panel-head button:hover{background:#303748!important}
+  :root[data-theme="dark"] .panel-head button:hover{background:#303748}
   :root[data-theme="dark"] :is(.pills button,.segmented button,.day-chip,.theme-opt){
-    background:#202532!important;border-color:#384153!important
+    background:#202532;border-color:#384153
   }
   :root[data-theme="dark"] .round-action{
-    color:#fff!important;-webkit-text-fill-color:#fff!important
+    color:#fff;-webkit-text-fill-color:#fff
   }
 }
 
 @layer milkflow-selection {
   /* A direct diaper quick action already answers Wet / Poopy / Mixed. Do not ask the
      same question again. Editing still exposes Kind so an existing record can be corrected. */
-  #diaperDialog:not(.is-edit) .form-section:has([data-choice="diaperKind"]){display:none!important}
+  #diaperDialog:not(.is-edit) .form-section:has([data-choice="diaperKind"]){display:none}
 
   /* Durable selected-state contract. Controls set .on/.active/.sel in JavaScript; this
      layer owns how that state looks so dark-mode base surfaces can never paint over it. */
   .choice-row button{position:relative}
   .choice-row button.on{
-    border-color:var(--accent,var(--mom))!important;
-    background:color-mix(in srgb,var(--accent,var(--mom)) 18%,var(--surface))!important;
-    color:var(--ink)!important;
-    box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 35%,transparent),0 5px 14px rgba(25,28,44,.10)!important
+    border-color:var(--accent,var(--mom));
+    background:color-mix(in srgb,var(--accent,var(--mom)) 18%,var(--surface));
+    color:var(--ink);
+    box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 35%,transparent),0 5px 14px rgba(25,28,44,.10)
   }
   .choice-row button.on::after{
     content:"✓";position:absolute;top:7px;right:8px;width:20px;height:20px;border-radius:50%;
@@ -190,52 +190,52 @@
   .pills button.active,
   .day-chip.sel,
   .theme-opt.on{
-    border-color:var(--accent,var(--mom))!important;
-    box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 28%,transparent)!important
+    border-color:var(--accent,var(--mom));
+    box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 28%,transparent)
   }
-  .when-quick button.on{background:color-mix(in srgb,var(--accent,var(--mom)) 14%,var(--surface))!important;color:var(--ink)!important}
+  .when-quick button.on{background:color-mix(in srgb,var(--accent,var(--mom)) 14%,var(--surface));color:var(--ink)}
 
   /* Diaper correction while editing keeps semantic color, not a generic black tile. */
   #diaperDialog .choice-row button[data-pick="diaperKind:wet"].on{
-    background:#dff3ff!important;border-color:#55acd5!important;color:#155b7a!important
+    background:#dff3ff;border-color:#55acd5;color:#155b7a
   }
   #diaperDialog .choice-row button[data-pick="diaperKind:poop"].on{
-    background:#fff0d2!important;border-color:#d59e46!important;color:#704918!important
+    background:#fff0d2;border-color:#d59e46;color:#704918
   }
   #diaperDialog .choice-row button[data-pick="diaperKind:both"].on{
-    background:#eee6ff!important;border-color:#9073d6!important;color:#513890!important
+    background:#eee6ff;border-color:#9073d6;color:#513890
   }
-  #momDialog .choice-row button.on{background:#eee7ff!important;border-color:#8c6bd7!important;color:#52378f!important}
-  #feedDialog .choice-row button.on{background:#e0f5ed!important;border-color:#52a98d!important;color:#1f6653!important}
+  #momDialog .choice-row button.on{background:#eee7ff;border-color:#8c6bd7;color:#52378f}
+  #feedDialog .choice-row button.on{background:#e0f5ed;border-color:#52a98d;color:#1f6653}
 
   :root[data-theme="dark"] .choice-row button.on{
-    background:linear-gradient(145deg,#33394b,#3b4256)!important;border-color:#8b9ab6!important;
-    color:#fff!important;box-shadow:inset 0 0 0 2px rgba(220,230,248,.18),0 6px 18px rgba(0,0,0,.24)!important
+    background:linear-gradient(145deg,#33394b,#3b4256);border-color:#8b9ab6;
+    color:#fff;box-shadow:inset 0 0 0 2px rgba(220,230,248,.18),0 6px 18px rgba(0,0,0,.24)
   }
-  :root[data-theme="dark"] .choice-row button.on::after{background:#eef4ff!important;color:#18202d!important}
+  :root[data-theme="dark"] .choice-row button.on::after{background:#eef4ff;color:#18202d}
   :root[data-theme="dark"] #diaperDialog .choice-row button[data-pick="diaperKind:wet"].on{
-    background:linear-gradient(145deg,#1d4358,#23536d)!important;border-color:#77c8ed!important;color:#e9f9ff!important
+    background:linear-gradient(145deg,#1d4358,#23536d);border-color:#77c8ed;color:#e9f9ff
   }
   :root[data-theme="dark"] #diaperDialog .choice-row button[data-pick="diaperKind:poop"].on{
-    background:linear-gradient(145deg,#4a351a,#5b4322)!important;border-color:#e1ad60!important;color:#fff3db!important
+    background:linear-gradient(145deg,#4a351a,#5b4322);border-color:#e1ad60;color:#fff3db
   }
   :root[data-theme="dark"] #diaperDialog .choice-row button[data-pick="diaperKind:both"].on{
-    background:linear-gradient(145deg,#3b2e55,#4c3a6e)!important;border-color:#b69ae9!important;color:#f7f1ff!important
+    background:linear-gradient(145deg,#3b2e55,#4c3a6e);border-color:#b69ae9;color:#f7f1ff
   }
   :root[data-theme="dark"] #momDialog .choice-row button.on{
-    background:linear-gradient(145deg,#3b2e55,#4a386b)!important;border-color:#b497ee!important;color:#fbf8ff!important
+    background:linear-gradient(145deg,#3b2e55,#4a386b);border-color:#b497ee;color:#fbf8ff
   }
   :root[data-theme="dark"] #feedDialog .choice-row button.on{
-    background:linear-gradient(145deg,#1d4036,#235044)!important;border-color:#70c9aa!important;color:#effff9!important
+    background:linear-gradient(145deg,#1d4036,#235044);border-color:#70c9aa;color:#effff9
   }
   :root[data-theme="dark"] .when-quick button.on,
   :root[data-theme="dark"] .segmented button.on,
   :root[data-theme="dark"] .pills button.active,
   :root[data-theme="dark"] .day-chip.sel,
   :root[data-theme="dark"] .theme-opt.on{
-    background:color-mix(in srgb,var(--accent,var(--mom)) 22%,#202634)!important;
-    border-color:color-mix(in srgb,var(--accent,var(--mom)) 70%,#697389)!important;
-    color:#f7f9fd!important;
-    box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 35%,transparent)!important
+    background:color-mix(in srgb,var(--accent,var(--mom)) 22%,#202634);
+    border-color:color-mix(in srgb,var(--accent,var(--mom)) 70%,#697389);
+    color:#f7f9fd;
+    box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent,var(--mom)) 35%,transparent)
   }
 }
