@@ -137,9 +137,14 @@ requireText('Baby tab has explicit contrast',read('experience-system.css'),'#per
 {
   const app=read('app.js');
   requireText('foreground notifications are suppressed',app,"if(document.visibilityState === 'visible') return false;");
-  requireText('pump reminder remains visible in app',app,'toast(`Pump ${i+1} is coming up');
-  requireText('feed reminder remains visible in app',app,'toast(msg, 8000');
-  if(/notify\(`Pump \$\{i\+1\}/.test(app)||/notify\(`\$\{S\.baby\.name\} is due for a feed/.test(app))failures.push('foreground care timers must not masquerade as background lock-screen notifications');
+  /* Reminders go to the phone, not into the page. An in-app banner is only visible to
+     somebody already looking at the app - exactly the person who does not need reminding -
+     and it covered the screen they were using. notify() already returns early while the page
+     is visible, so an open app stays quiet and the lock screen does the work. */
+  if(/toast\(`Pump \$\{i\+1\} is coming up/.test(app))failures.push('pump reminder must not be an in-app banner');
+  if(/toast\(msg, 8000/.test(app))failures.push('feed reminder must not be an in-app banner');
+  requireText('pump reminder reaches the phone',app,'notify(`Pump ${i+1} at ${to12(t)}`');
+  requireText('feed reminder reaches the phone',app,'notify(`${S.baby.name} is due for a feed`');
   requireText('notifications look like this app',app,"icon:'./milkflow-family-icon-192.png'");
   if(/notify\('(Pump|Feed) reminder'/.test(app))failures.push('a notification title should say what happened, not that it is a reminder');
   for(const token of ['function sleepPrediction(','function sleepStart(','async function sleepEnd(','function sleepReminderTick(','data-sleep-start','data-sleep-end']) requireText(`sleep workflow ${token}`,app,token);

@@ -72,7 +72,25 @@ function babyWishLine(name,nextFeed,feedCount){
   if(h>=17&&h<21)return 'Wishing you both a cozy evening';
   return 'Wishing you both a restful night';
 }
-function ageLabel(birthDate){if(!birthDate)return'';const b=new Date(`${birthDate}T12:00:00`),n=new Date(`${today()}T12:00:00`),days=Math.floor((n-b)/86400000);if(!Number.isFinite(days)||days<0)return'';if(days<14)return`${days} day${days===1?'':'s'} old`;if(days<70)return`${Math.floor(days/7)} weeks old`;let m=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());if(n.getDate()<b.getDate())m--;return m<24?`${m} months old`:`${Math.floor(m/12)}y ${m%12}m`;}
+/* One owner for the age. app.js computes it; this asks. There were two implementations and
+   they had drifted - this one said "2 months old" where the other said "2 months 3w", and the
+   hero used this one, so the days a parent is actually counting were never shown. */
+function ageLabel(birthDate){
+  const shared=window.MilkFlowAge?.label?.();
+  if(shared) return shared;
+  if(!birthDate) return '';
+  const b=new Date(`${birthDate}T12:00:00`),n=new Date(`${today()}T12:00:00`);
+  const total=Math.floor((n-b)/86400000);
+  if(!Number.isFinite(total)||total<0) return '';
+  if(total<14) return `${total} day${total===1?'':'s'} old`;
+  if(total<70){const w=Math.floor(total/7),d=total%7;return d?`${w}w ${d}d old`:`${w} weeks old`;}
+  let m=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());
+  if(n.getDate()<b.getDate())m--;
+  const anchor=new Date(b);anchor.setMonth(anchor.getMonth()+m);
+  const days=Math.max(0,Math.round((n-anchor)/86400000));
+  if(m<24) return days?`${m}mo ${days}d old`:`${m} months old`;
+  return `${Math.floor(m/12)}y ${m%12}m old`;
+}
 function relativeAgo(date,time){
   if(!date||!time)return'';
   const at=new Date(`${date}T${time}:00`),diff=Math.max(0,Math.floor((Date.now()-at.getTime())/60000));
@@ -352,6 +370,7 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none}
 .mf-hero-facts.three .mf-hero-fact small{font-size:8.5px}
 .mf-hero-facts.three .mf-hero-fact em{font-size:9.5px}
 .mf-hero-fact.due strong{color:var(--mf-world-accent,currentColor)}
+.mf-hero-fact strong{overflow-wrap:normal;word-break:normal;hyphens:none}
 .mf-hero-fact{display:grid;align-content:start;gap:1px;min-width:0;padding:8px 11px;border-radius:17px;
   background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.22);backdrop-filter:blur(14px)}
 .mf-hero-fact small{font-size:9.5px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;opacity:.82}
@@ -714,7 +733,7 @@ function renderBaby(s){
           <p class="mf-baby-todayline">${todayBits.map(esc).join(' · ')}</p>
           <div class="mf-baby-timing" aria-label="Baby feeding timing">
             <span class="mf-last-feed-slot"><small>Last feed</small><strong class="mf-last-feed-value"><b>${esc(lastAge)}</b>${last?`<em>${esc(lf.clock)}</em>`:''}</strong></span>
-            <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'Learning'}</strong></span>
+            <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'—'}</strong></span>
           </div>
         </div>
         <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}${photo?'':'<span class="mf-photo-add">+ Photo</span>'}</button>

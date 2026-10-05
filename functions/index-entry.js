@@ -8,6 +8,7 @@ const {defineSecret}=require('firebase-functions/params');
 const admin=require('firebase-admin');
 const {createFamilyChat}=require('./family-chat');
 const {createCrossDeviceAlertFunctions}=require('./cross-device-alerts');
+const {createScheduledReminders}=require('./scheduled-reminders');
 
 const db=admin.firestore();
 const OPENAI_API_KEY=defineSecret('OPENAI_API_KEY');
@@ -21,3 +22,4 @@ const ALLOWED_ORIGINS=new Set([
 
 exports.familyChat=createFamilyChat({onRequest,admin,db,OPENAI_API_KEY,ALLOWED_ORIGINS});
 Object.assign(exports,createCrossDeviceAlertFunctions({admin,db}));
+Object.assign(exports,createScheduledReminders({admin,db}));

@@ -296,3 +296,25 @@ if(!swTemplate.includes("icon:'./milkflow-family-v3-192.png'"))throw new Error('
 }
 
 console.log('MilkFlow test suite passed: syntax, data and notification contracts, nine selectable theme worlds, canonical v3 app icon wiring, dark-mode number/button readability, Settings experience, and single-layer ownership.');
+
+/* Reminders that reach a closed phone are decided on a server in UTC, so the only thing that
+   makes "the 5:40 pump" meaningful is the family's own timezone. This CALLS the scheduler's
+   clock helpers rather than grepping for them - a reminder that fires at the wrong hour is
+   worse than one that does not fire at all. */
+{
+  const {localNow,toMinutes}=await import('../functions/scheduled-reminders.js');
+  if(toMinutes('05:40')!==340)throw new Error(`toMinutes('05:40') should be 340, got ${toMinutes('05:40')}`);
+  if(toMinutes('23:35')!==1415)throw new Error(`toMinutes('23:35') should be 1415, got ${toMinutes('23:35')}`);
+  if(toMinutes('')!==null||toMinutes('nonsense')!==null)throw new Error('toMinutes must reject a non-time');
+  const chicago=localNow('America/Chicago'), tokyo=localNow('Asia/Tokyo');
+  if(!chicago||!tokyo)throw new Error('localNow must resolve a real timezone');
+  for(const z of [chicago,tokyo]){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(z.date))throw new Error(`localNow returned a malformed date: ${z.date}`);
+    if(!(z.minutes>=0&&z.minutes<1440))throw new Error(`localNow returned minutes out of range: ${z.minutes}`);
+  }
+  /* Two zones that are never the same wall clock. If these ever matched, the function would be
+     reading the server's clock and every family would get somebody else's schedule. */
+  if(chicago.minutes===tokyo.minutes&&chicago.date===tokyo.date)
+    throw new Error('localNow is ignoring the timezone argument');
+  if(localNow('Not/AZone')!==null)throw new Error('localNow must return null for an unusable timezone');
+}

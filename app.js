@@ -553,13 +553,26 @@ function ageMonths(){
   if(nd.getDate() < bd.getDate()) m--;
   return m < 0 ? null : m;
 }
+/* Months alone stops meaning anything to a parent: "2 months old" covers a five-week span and
+   the days are what you are actually counting at this stage. Calendar months plus the real
+   remainder in days, never a 30.44-day approximation of them. */
+function ageParts(){
+  const bd = birthDate(); if(!bd) return null;
+  const b = new Date(`${bd}T12:00:00`), n = new Date(`${today()}T12:00:00`);
+  if(!(b <= n)) return null;
+  let months = (n.getFullYear()-b.getFullYear())*12 + (n.getMonth()-b.getMonth());
+  if(n.getDate() < b.getDate()) months--;
+  const anchor = new Date(b); anchor.setMonth(anchor.getMonth()+months);
+  const days = Math.max(0, Math.round((n-anchor)/86400000));
+  return {months, days, total: Math.floor((n-b)/86400000)};
+}
 function ageLabel(){
-  const d = ageDays(); if(d === null) return null;
-  if(d < 14) return `${d} ${d===1?'day':'days'} old`;
-  if(d < 70) { const w = Math.floor(d/7); return `${w} weeks old`; }
-  const m = ageMonths(), rem = Math.floor((d - m*30.44)/7);
-  if(m < 24) return rem > 0 ? `${m} months ${rem}w` : `${m} months old`;
-  return `${Math.floor(m/12)}y ${m%12}m old`;
+  const a = ageParts(); if(!a) return null;
+  if(a.total < 14) return `${a.total} ${a.total===1?'day':'days'} old`;
+  if(a.total < 70){ const w = Math.floor(a.total/7), d = a.total%7;
+    return d ? `${w}w ${d}d old` : `${w} weeks old`; }
+  if(a.months < 24) return a.days ? `${a.months}mo ${a.days}d old` : `${a.months} months old`;
+  return `${Math.floor(a.months/12)}y ${a.months%12}m old`;
 }
 
 // Four gentle day parts: tints the app and drives the greeting on every load.
@@ -1735,16 +1748,26 @@ function weeklyDevelopmentNudge(){
   const stage = currentStage(); if(!stage) return null;
   const period = nudgePeriod('dev-week');
   if(!nudgeIsOpen('dev-week', period)) return null;
+  /* This asked `marked.has(`${stage.m}-${text}`)` while markedMilestones keys on the real id,
+     `ms-4-social-0`. The lookup never matched, so every item always looked outstanding and the
+     card kept asking about milestones that were already ticked. */
   const marked = markedMilestones();
-  const all = Object.values(stage.groups).flat();
-  const open = all.filter(x => !marked.has(`${stage.m}-${x}`));
-  const pick = (open.length ? open : all).slice(0, 3);
+  const open = [];
+  let total = 0;
+  for(const [group, items] of Object.entries(stage.groups))
+    items.forEach((text, i) => { total++; if(!marked.has(milestoneId(stage.m, group, i))) open.push(text); });
+  /* Nothing left for this stage: the card has no question to ask. The Development screen keeps
+     the record, so the progress is still there to look at - it just stops interrupting. */
+  if(!open.length) return null;
+  const done = total - open.length;
   return {
     id: 'dev-week', period, tone: 'baby',
-    eyebrow: 'This week',
+    eyebrow: done ? `This week · ${done} of ${total} seen` : 'This week',
     title: `${stage.label} · ${stage.tag}`,
-    body: `Around ${stage.label}, most babies are starting these. Have you seen ${S.baby.name} do any of them?`,
-    items: pick,
+    body: done
+      ? `${done} of ${total} noted for ${stage.label}. Have you seen ${S.baby.name} do any of these yet?`
+      : `Around ${stage.label}, most babies are starting these. Have you seen ${S.baby.name} do any of them?`,
+    items: open.slice(0, 3),
     cta: {label: 'Open the checklist', view: 'development'},
     dismiss: 'Not now'
   };
@@ -1771,6 +1794,7 @@ function stashNudge(){
 }
 
 /* Exposed for core-ui.js, which owns both home screens and renders the card. */
+window.MilkFlowAge = {label:ageLabel, parts:ageParts};
 window.MilkFlowNudges = {
   due(realm){
     try{
@@ -2402,7 +2426,10 @@ async function pushBabies(arr){
   for(let i=0;i<arr.length;i+=350){ const part=arr.slice(i,i+350).map(normalizeBabyEvent), batch=cloud.db.batch(); for(const e of part) batch.set(babyRef().doc(e.id),{...e,synced:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); await batch.commit(); part.forEach(e=>e.synced=true); }
   S.cloud.lastSync=new Date().toISOString(); save();
 }
-async function pushProfile(){ if(!cloud||!S.cloud.userId) return; await profileRef().set({profile:S.profile,baby:S.baby,schedule:S.schedule,dailyOverrides:S.dailyOverrides,reminders:S.reminders,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); S.cloud.lastSync=new Date().toISOString(); save(); }
+/* timeZone travels with the profile because the scheduled reminder runs on a server in UTC
+   and "the 5:40 pump" is a wall-clock time in the family's own day. Without it the server
+   cannot tell 5:40 AM in Chicago from 5:40 AM anywhere else. */
+async function pushProfile(){ if(!cloud||!S.cloud.userId) return; await profileRef().set({profile:S.profile,baby:S.baby,schedule:S.schedule,dailyOverrides:S.dailyOverrides,reminders:S.reminders,timeZone:(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'';}catch{return '';}})(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); S.cloud.lastSync=new Date().toISOString(); save(); }
 function startRealtime(){
   stopRealtime(); if(!cloud||!S.cloud.userId) return;
   const mergeSnapshot=(snap,key)=>{
@@ -2485,9 +2512,11 @@ function tickReminders(){
     // Only notify in a narrow window around the upcoming slot. A pump matched to this
     // schedule slot suppresses the reminder even if it was logged off-schedule.
     if(Math.abs(m-target)>1 || S.reminders.lastSentKey===key) return;
-    toast(`Pump ${i+1} is coming up · ${to12(t)}`,7000);
-    // Foreground reminder is intentionally in-app only. Background lock-screen reminders
-    // require a push scheduled outside this page; opening the app must never replay one.
+    /* The phone's notification, not an in-app banner. A reminder you can only see because
+       the app is already open is a label, not a reminder, and it covered the screen you were
+       using. When the app is closed this same reminder arrives from the scheduled push in
+       functions/scheduled-reminders.js; the tag is shared so the two can never stack. */
+    notify(`Pump ${i+1} at ${to12(t)}`,{body:`${dayLogged(dt)} mL logged so far today`,tag:'milkflow-pump'});
     S.reminders.lastSentKey=key; save();
   });
 }
@@ -2502,10 +2531,9 @@ function feedReminderTick(){
   const key = `${last.id}-${S.reminders.feedGapMin}`;
   if(S.reminders.feedLastKey === key) return;
   S.reminders.feedLastKey = key; save();
-  const msg = `${S.baby.name} is due for a feed`;
   const since = sinceLabel(last.date, last.time) || '';
-  toast(msg, 8000, {label:'Log', run:()=>feedSheet()});
-  // Keep foreground feed nudges in-app. System notifications are reserved for background push.
+  /* Same rule as the pump reminder: the phone's notification, never an in-app banner. */
+  notify(`${S.baby.name} is due for a feed`,{body:since?`Last feed ${since} · ${to12(last.time)}`:'Tap to log it',tag:'milkflow-feed'});
 }
 
 // Keep reminder state aligned with the record that was just saved/edited. This prevents an

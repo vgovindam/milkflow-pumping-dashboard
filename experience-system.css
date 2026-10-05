@@ -825,14 +825,18 @@ body[data-screen="baby-growth"] .growth-advice small{display:block;margin-top:8p
 /* Illustration is atmosphere, never the information layer. Keep one restrained glimpse at
    the top of Home and use a calm tinted canvas everywhere else. */
 :root:not([data-experience-theme="clean"]) body:is([data-screen="baby-home"],[data-screen="mom-home"]) .main{
-  background-image:linear-gradient(180deg,color-mix(in srgb,var(--mf-world-base) 70%,transparent),var(--mf-world-base) 360px),var(--mf-theme-baby-scene);
+  /* The scrim reached full opacity by 360px, so below the fold the painting was simply not
+     there - the plate was paying for bandwidth nobody could see. It stops at 72%, which keeps
+     the world visible the whole way down. Text does not sit on this: every card carries its
+     own surface, which is what the contrast gates measure. */
+  background-image:linear-gradient(180deg,color-mix(in srgb,var(--mf-world-base) 34%,transparent),color-mix(in srgb,var(--mf-world-base) 72%,transparent) 420px),var(--mf-theme-baby-scene);
   background-size:100% 420px,100% 420px;
   background-position:top center;
   background-repeat:no-repeat;
   background-attachment:scroll;
 }
 :root:not([data-experience-theme="clean"]) body[data-screen="mom-home"] .main{
-  background-image:linear-gradient(180deg,color-mix(in srgb,var(--mf-world-base) 70%,transparent),var(--mf-world-base) 360px),var(--mf-theme-mom-scene);
+  background-image:linear-gradient(180deg,color-mix(in srgb,var(--mf-world-base) 34%,transparent),color-mix(in srgb,var(--mf-world-base) 72%,transparent) 420px),var(--mf-theme-mom-scene);
 }
 :root:not([data-experience-theme="clean"]) body:not([data-screen="baby-home"]):not([data-screen="mom-home"]) .page-head::after,
 :root:not([data-experience-theme="clean"]) body:not([data-screen="baby-home"]):not([data-screen="mom-home"]) .mf-section-motif,
