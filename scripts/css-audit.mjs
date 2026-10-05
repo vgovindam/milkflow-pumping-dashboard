@@ -20,7 +20,7 @@ for(const forbidden of ['component-theme-v2.css','component-theme-v3.css','exper
   if(html.includes(forbidden)||theme.includes(forbidden))problems.push(`Legacy/patch stylesheet referenced in production: ${forbidden}`);
 }
 if(!theme.includes('component-theme.css')||!theme.includes('experience-system.css')||!theme.includes('experience-components.css')||!theme.includes('layer(milkflow-experience)'))problems.push('theme.css must be the canonical component + experience entrypoint with explicit experience-layer imports.');
-if(!component.includes('@layer milkflow-core, milkflow-experience, milkflow-controls, milkflow-selection'))problems.push('component-theme.css is missing the explicit cascade-layer contract.');
+if(!component.includes('@layer milkflow-core, milkflow-controls, milkflow-selection, milkflow-experience'))problems.push('component-theme.css is missing the explicit cascade-layer contract.');
 const cssFiles=['styles.css','component-theme-core.css',component,'experience-system.css','experience-components.css'].map(x=>typeof x==='string'&&x.endsWith('.css')?read(x):x);
 if(/(?:^|})\s*svg\s*\{[^}]*display\s*:\s*none/ims.test(cssFiles.join('\n')))problems.push('Global svg { display:none } rule is forbidden. Scope decorative artwork hiding to a component.');
 if(/(?:component|experience|theme|layout|contrast|polish|fix)(?:ed|es)?[-_.](?:v\d+|new|final|fixed)\.css/i.test(theme))problems.push('Canonical theme entry cannot depend on version/final/fixed CSS filenames.');
