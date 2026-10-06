@@ -921,6 +921,85 @@ const MILESTONE_GROUPS = {
   cognitive:{label:'Learning & thinking', icon:'spark', color:'var(--mixed-ink)'},
   movement:{label:'Movement', icon:'growth', color:'var(--wet-ink)'}
 };
+/* ----------------------------------------------------------------- guidance --
+ * A checklist tells a parent what other children can do. It does not tell them what to do
+ * with that, which is the part they actually came for - and left on its own it reads as a
+ * test their baby is either passing or failing.
+ *
+ * Four things per stage, kept apart on purpose:
+ *   expect    - what this age is actually like. The part a parent reads first.
+ *   encourage - what helps at this age. Ordinary things, not a program.
+ *   variation - the range. This is the one that stops the checklist feeling like an exam.
+ *   actEarly  - the specific signs the CDC says are worth raising with a clinician.
+ *
+ * Source: CDC "Learn the Signs. Act Early." checklists, 2022 revision (the one that moved to
+ * the 75%-of-children threshold and added the 15-month and 30-month checks). The attribution
+ * and revision live in GUIDANCE_SOURCE so the screen can state them and so a future content
+ * update has an obvious thing to bump. Nothing here is a diagnosis and nothing here is a
+ * threshold this app invented.
+ */
+const GUIDANCE_SOURCE = {
+  name: 'CDC, Learn the Signs. Act Early.',
+  revision: '2022 revision',
+  note: 'Milestones describe what about 75% of children can do by each age.'
+};
+const ALWAYS_ACT_EARLY = 'Loses skills they once had';
+const MILESTONE_GUIDANCE = {
+  2: {
+    expect: 'Sleep is still broken into short stretches and feeds are frequent — most of the day is eating, sleeping and being held. The social smile usually turns up now, and it is the first time your baby answers you back.',
+    encourage: ['Talk, read and sing — your voice is the lesson', 'Short tummy time while they are awake and you are watching', 'Answer their sounds with sounds of your own', 'Hold and comfort freely; you cannot spoil a newborn'],
+    variation: 'Smiling, head control and alertness all arrive on their own schedule in these weeks.',
+    actEarly: ['Does not respond to loud sounds', 'Does not watch things as they move', 'Does not smile at people', 'Does not bring hands to mouth', 'Cannot hold head up when pushing up on tummy']
+  },
+  4: {
+    expect: 'Nights often lengthen a little and feeds space out. Hands become the main tool: everything goes to the mouth. Many babies become distractible at the breast or bottle around now, which is curiosity rather than a feeding problem.',
+    encourage: ['Copy their sounds back and wait for a turn', 'Offer safe things to reach for and grab', 'Play peek-a-boo', 'Keep tummy time going — it builds the neck and shoulders'],
+    variation: 'Rolling, reaching and babbling often appear weeks apart from each other, in any order.',
+    actEarly: ['Does not watch things as they move', 'Does not smile at people', 'Cannot hold head steady', 'Does not coo or make sounds', 'Does not bring things to mouth', 'Does not push down with legs when feet are on a hard surface', 'Has trouble moving one or both eyes in all directions']
+  },
+  6: {
+    expect: 'Solids usually start somewhere around here, alongside — not instead of — milk. Rolling makes diaper changes a wrestle. Babies begin to notice they are a separate person from you, which is where early separation anxiety comes from.',
+    encourage: ['Read together every day, even briefly', 'Name what they are looking at', 'Let them explore safe objects with hands and mouth', 'Use a mirror — faces are fascinating now'],
+    variation: 'Sitting without support can be anywhere from five to eight months and still be ordinary.',
+    actEarly: ['Does not try to get things that are in reach', 'Shows no affection for caregivers', 'Does not respond to sounds around them', 'Has difficulty getting things to the mouth', 'Does not make vowel sounds ("ah", "eh", "oh")', 'Does not roll over in either direction', 'Does not laugh or make squealing sounds', 'Seems very stiff with tight muscles, or very floppy']
+  },
+  9: {
+    expect: 'Moving becomes the whole job: crawling, shuffling, pulling up. Sleep often regresses for a few weeks because the new skill gets practiced at 2am. Stranger wariness peaks and is a sign of healthy attachment.',
+    encourage: ['Repeat their babble back as if it were conversation', 'Describe what you are doing while you do it', 'Give them safe floor space to move', 'Play back-and-forth games — rolling a ball, handing things over'],
+    variation: 'Crawling is not required. Some babies shuffle, roll or go straight to pulling up.',
+    actEarly: ['Does not bear weight on legs with support', 'Does not sit with help', 'Does not babble ("mama", "baba", "dada")', 'Does not play any back-and-forth games', 'Does not respond to their own name', 'Does not seem to recognize familiar people', 'Does not look where you point', 'Does not pass toys from one hand to the other']
+  },
+  12: {
+    expect: 'Milk intake drops as real food takes over, and appetite swings wildly day to day. First words and first steps often arrive months apart. Many toddlers drop to one nap somewhere in the next few months.',
+    encourage: ['Name things as you hand them over', 'Read every day and let them turn the pages', 'Offer simple choices — this cup or that one', 'Let them try feeding themselves, mess included'],
+    variation: 'First steps anywhere from nine to eighteen months is within the usual range.',
+    actEarly: ['Does not crawl', 'Cannot stand when supported', 'Does not search for things they see you hide', 'Does not say single words like "mama" or "dada"', 'Does not learn gestures like waving or head shaking', 'Does not point to things', ALWAYS_ACT_EARLY]
+  },
+  15: {
+    expect: 'Walking frees the hands and opens every cupboard. Words come slowly then in a rush. Frustration shows up now because intentions have outrun both language and coordination.',
+    encourage: ['Narrate the routine — dressing, meals, going out', 'Offer two-step play: fill the cup, tip it out', 'Give safe practice at walking and climbing', 'Point at pictures and name them together'],
+    variation: 'Vocabulary at this age ranges from a couple of words to a dozen, and both are ordinary.',
+    actEarly: ['Does not take a few steps on their own', 'Does not say any single words', 'Does not point to show you something', 'Does not copy you', ALWAYS_ACT_EARLY]
+  },
+  18: {
+    expect: 'Pretend play begins — feeding a doll, answering a toy phone. Big feelings arrive with very few words to carry them, so tantrums are developmental rather than behavioral. Routines are what make the day feel safe.',
+    encourage: ['Encourage pretend play — feeding a doll, a toy phone', 'Let them help with simple chores', 'Name feelings as they happen, theirs and yours', 'Keep routines predictable; it is how they feel safe'],
+    variation: 'Tantrums arriving now is development, not a setback — the feelings are ahead of the words.',
+    actEarly: ['Does not point to show things to others', 'Cannot walk', 'Does not know what familiar things are for', 'Does not copy others', 'Does not gain new words', 'Does not have at least six words', 'Does not notice or mind when a caregiver leaves or returns', ALWAYS_ACT_EARLY]
+  },
+  24: {
+    expect: 'Two-word phrases turn watching into conversation. Independence and the need for reassurance arrive together, which is why the same child insists on doing it alone and then wants carrying. Playing alongside other children comes before playing with them.',
+    encourage: ['Answer in short sentences — a little longer than theirs', 'Let them solve small problems before stepping in', 'Read and ask questions about the pictures', 'Arrange time with other children'],
+    variation: 'Two-word phrases are the marker here; clarity of speech catches up later.',
+    actEarly: ['Does not use two-word phrases', 'Does not know what to do with common things', 'Does not copy actions and words', 'Does not follow simple instructions', 'Does not walk steadily', ALWAYS_ACT_EARLY]
+  }
+};
+/* Babies born early are tracked by corrected age until about two years - using the birthday
+   instead will make an ordinary preterm baby look behind on every single line. */
+function correctedAgeNote(){
+  return 'If your baby was born early, pediatricians use corrected age — age from the due date — until around two years.';
+}
+function guidanceFor(month){ return MILESTONE_GUIDANCE[month] || null; }
 const milestoneId = (m,group,i) => `ms-${m}-${group}-${i}`;
 const milestoneTotal = st => Object.values(st.groups).reduce((a,g) => a+g.length, 0);
 // Marked milestones are ordinary baby events, so they land in History, sync and export.
@@ -1374,7 +1453,31 @@ function developmentView(){
 
   ${groups}
 
-  <div class="clinical-note">Milestones are from the CDC “Learn the Signs. Act Early.” checklists and describe what about 75% of children can do by each age. Babies develop at their own pace, so this is a conversation starter, not a test or a diagnosis. Share concerns with your pediatrician — acting early makes a real difference.</div>`;
+  ${guidanceBlock(shown)}`;
+}
+
+/* The checklist says what other children can do. On its own that reads as a test, so the
+   three things a parent actually needs sit underneath it - and they are kept apart, because
+   "here is what helps" and "here is when to call someone" are different kinds of statement
+   and running them together is how an app frightens people. Both are closed by default: the
+   concerns are there when wanted, not spread across the screen as warnings. */
+function guidanceBlock(stage){
+  const g = guidanceFor(stage.m);
+  if(!g) return '';
+  const list = items => items.map(x => `<li>${esc(x)}</li>`).join('');
+  return `<section class="guidance">
+    <div class="guidance-head"><span class="eyebrow">WHAT ${esc(String(stage.label).toUpperCase())} LOOKS LIKE</span></div>
+    ${g.expect?`<p class="guidance-expect">${esc(g.expect)}</p>`:''}
+    <div class="guidance-head"><span class="eyebrow">WHAT HELPS</span></div>
+    <ul class="guidance-do">${list(g.encourage)}</ul>
+    <p class="guidance-range">${esc(g.variation)} ${esc(correctedAgeNote())}</p>
+    <details class="guidance-more">
+      <summary>When to talk to your pediatrician</summary>
+      <p>These are the signs the CDC suggests raising at a visit. They are a prompt for a conversation, not a diagnosis — and one of them on its own is common.</p>
+      <ul class="guidance-watch">${list(g.actEarly)}</ul>
+    </details>
+    <div class="clinical-note">${esc(GUIDANCE_SOURCE.name)} · ${esc(GUIDANCE_SOURCE.revision)}. ${esc(GUIDANCE_SOURCE.note)} Babies develop at their own pace; this is general information, not advice about your child. Anything that worries you is worth a call to your pediatrician.</div>
+  </section>`;
 }
 
 function doctorView(){
@@ -1774,9 +1877,13 @@ function weeklyDevelopmentNudge(){
        with what the band is about and label the band as a band. */
     eyebrow: done ? `Milestones for ${stage.label} · ${done} of ${total} seen` : `Milestones for ${stage.label}`,
     title: stage.tag,
-    body: done
-      ? `${done} of ${total} noted for ${stage.label}. Have you seen ${S.baby.name} do any of these yet?`
-      : `Around ${stage.label}, most babies are starting these. Have you seen ${S.baby.name} do any of them?`,
+    /* Lead with what this age is actually like, then ask. A card that opens with a question
+       about a checklist is a test; one that opens with "here is what is happening right now"
+       is the update a parent came for. */
+    body: (guidanceFor(stage.m)?.expect ? `${guidanceFor(stage.m).expect} ` : '')
+      + (done
+        ? `${done} of ${total} noted so far — seen any of these yet?`
+        : `Have you seen ${S.baby.name} do any of these yet?`),
     items: open.slice(0, 3),
     cta: {label: 'Open the checklist', view: 'development'},
     dismiss: 'Not now'
