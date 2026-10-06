@@ -1911,7 +1911,17 @@ function stashNudge(){
 }
 
 /* Exposed for core-ui.js, which owns both home screens and renders the card. */
-window.MilkFlowAge = {label:ageLabel, parts:ageParts};
+/* The hero wants the headline, not the arithmetic. "2 months 12d · 74 days" is the right
+   answer on the Development and profile screens, where there is room to read it; on a card
+   that already carries a greeting, a name and three figures it is one clause too many. */
+function shortAgeLabel(){
+  const a = ageParts(); if(!a) return null;
+  if(a.total < 14) return `${a.total} ${a.total===1?'day':'days'}`;
+  if(a.total < 70) return `${Math.floor(a.total/7)} weeks`;
+  if(a.months < 24) return `${a.months} month${a.months===1?'':'s'}`;
+  return `${Math.floor(a.months/12)}y ${a.months%12}m`;
+}
+window.MilkFlowAge = {label:ageLabel, parts:ageParts, short:shortAgeLabel};
 window.MilkFlowNudges = {
   due(realm){
     try{

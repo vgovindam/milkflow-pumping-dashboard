@@ -14,7 +14,13 @@ requireText('last feed includes clock time',files.ui,'mf-last-feed-value');
 requireText('last feed uses compact elapsed value',files.ui,"replace(/ ago$/,'')");
 requireText('last feed separates elapsed time and clock',files.ui,'mf-last-feed-value{display:grid;grid-template-columns:minmax(0,1fr) max-content');
 requireText('compact Baby timing',files.ui,'mf-baby-timing');
-requireText('compact Baby today line',files.ui,'mf-baby-todayline');
+/* The hero was five text rows before any data: greeting, name, age with days, a wish
+   sentence and a today line, then the facts. Today is a fact, so it joined the facts row and
+   the wish sentence went - it was warmth the greeting was already carrying. */
+requireText('today is a hero fact, not its own line',files.ui,"<span><small>Today</small>");
+if(/mf-baby-(wish|todayline)/.test(files.ui))failures.push('the Baby hero should not carry a wish or today line of its own');
+requireText('facts row spans the card',files.ui,'.mf-baby-timing{min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))');
+requireText('hero age is the short form',read('app.js'),'function shortAgeLabel()');
 /* Development kept the component layer's pale card in dark mode and printed light ink on it -
    96 failures at 1.01-1.31:1 - because .journey/.stage-card/.ms-group were never added to the
    surface contract. Any screen-level surface has to be in that list. */
@@ -183,7 +189,7 @@ requireText('editorial accent face',files.ui,'.mf-dream-hero .mf-dream-main h2,.
 requireText('mobile hero title scale',files.ui,'.mf-dream-main h2{grid-area:title;max-width:none;font-size:28px');
 requireText('readable row copy',files.css,'.row-main strong{font-size:15px');
 requireText('dark baby name',files.ui,':root[data-theme="dark"] .mf-animal-copy h2{color:#f7f3ff}');
-requireText('dark baby wish',read('component-theme-core.css'),'.mf-baby-wish,');
+
 requireText('dark baby timing',read('component-theme-core.css'),'.mf-baby-timing strong{color:#f0fbfc}');
 requireText('dark journey details',files.ui,'.mf-dream-journey>p,:root[data-theme="dark"] .mf-journey-stop small{color:#c0c7d8}');
 

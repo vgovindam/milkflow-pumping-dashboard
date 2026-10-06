@@ -117,14 +117,17 @@ try{
           const diaperCount=await evalJs(`(()=>{const p=document.querySelector('.mf-diaper-blob.wet .mf-tile-picture'),a=p?.querySelector('.mf-care-mark'),b=p?.querySelector('.mf-tile-count'),label=document.querySelector('.mf-diaper-blob.wet .mf-tile-copy');if(!p||!a||!b||!label)return null;const pr=p.getBoundingClientRect(),ar=a.getBoundingClientRect(),br=b.getBoundingClientRect(),lr=label.getBoundingClientRect();return{inside:br.top>=pr.top&&br.right<=pr.right+1,clear:ar.right<br.left+1&&ar.bottom>br.top,labelBelow:lr.top>=pr.bottom+4,shape:getComputedStyle(b).borderRadius}})()`);
           if(!diaperCount?.inside||!diaperCount?.clear||!diaperCount?.labelBelow||diaperCount.shape==='0px')
             failures.push(`${theme}/${mode}/${route}: diaper count is not a separate circle inside its picture box ${JSON.stringify(diaperCount)}`);
-          const heroType=await evalJs(`(()=>{const size=s=>{const e=document.querySelector(s);return e?parseFloat(getComputedStyle(e).fontSize):0};return{name:size('.mf-animal-copy h2'),welcome:size('.mf-animal-copy .welcome'),wish:size('.mf-baby-wish'),today:size('.mf-baby-todayline'),timingLabel:size('.mf-baby-timing small'),timingValue:size('.mf-baby-timing strong')}})()`);
-          if(heroType.name<30||heroType.welcome<13||heroType.wish<12||heroType.today<10.5||heroType.timingLabel<9.5||heroType.timingValue<14.5)
+          const heroType=await evalJs(`(()=>{const size=s=>{const e=document.querySelector(s);return e?parseFloat(getComputedStyle(e).fontSize):0};return{name:size('.mf-animal-copy h2'),welcome:size('.mf-animal-copy .welcome'),timingLabel:size('.mf-baby-timing small'),timingValue:size('.mf-baby-timing strong')}})()`);
+          if(heroType.name<30||heroType.welcome<13||heroType.timingLabel<9.5||heroType.timingValue<14.5)
             failures.push(`${theme}/${mode}/${route}: Baby title card typography is too small ${JSON.stringify(heroType)}`);
           if(geometry.tabsRadius<18||geometry.activeRadius<18)
             failures.push(`${theme}/${mode}/${route}: persona switch has square corners ${JSON.stringify(geometry)}`);
           if(m.babyHeroHeight>240)failures.push(`${theme}/${mode}/${route}: Baby hero too tall at ${m.babyHeroHeight.toFixed(1)}px; readable identity card budget is 240px`);
           if(m.babyPhotoWidth<124)failures.push(`${theme}/${mode}/${route}: Baby photo is too small at ${m.babyPhotoWidth.toFixed(1)}px`);
-          if(m.babyTimingCount!==2)failures.push(`${theme}/${mode}/${route}: Baby hero should show exactly Last feed and Next feed timing facts`);
+          /* Three now: Today joined Last feed and Next feed when it stopped being a text line
+             of its own. The count is pinned because the row is a fixed three-column grid -
+             a fourth would silently squeeze all of them. */
+          if(m.babyTimingCount!==3)failures.push(`${theme}/${mode}/${route}: Baby hero should show Today, Last feed and Next feed`);
           if(m.babyFactBoxes!==0)failures.push(`${theme}/${mode}/${route}: old full-width Baby fact boxes returned (${m.babyFactBoxes})`);
           if(!m.fallbackFeedGlyphContained)failures.push(`${theme}/${mode}/${route}: fallback feed glyph escapes its icon carrier`);
           if(m.diaperIconBadgeOverlap)failures.push(`${theme}/${mode}/${route}: diaper care icon overlaps its count badge`);

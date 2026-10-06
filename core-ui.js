@@ -590,7 +590,11 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 .mf-last-feed-value{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:baseline;column-gap:8px;width:100%;white-space:normal;line-height:1.15}
 .mf-last-feed-value b,.mf-last-feed-value em{display:inline-block;white-space:nowrap;font-style:normal}
 .mf-last-feed-value em{text-align:right}
-.mf-baby-timing{min-width:0;gap:10px}
+/* Three facts, full card width. They used to sit in the copy column beside the photo, which
+   left 185px for 284px of content and clipped "Nothing yet" halfway through. Out here each
+   one gets an even third of the card. */
+.mf-baby-timing{min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:13px;padding-top:12px;border-top:1px solid color-mix(in srgb,currentColor 14%,transparent)}
+.mf-baby-timing>span{min-width:0;display:grid;align-content:start;gap:2px}
 /* "Next feed" broke across two lines inside a 72px column, so the label ate the row and the
    value underneath it was pushed out of sight. A label is one line; it shrinks before it
    wraps, and the value is what the space is for. */
@@ -728,7 +732,7 @@ function renderBaby(s){
   const sleepStart=s.baby?.activeSleep?.date&&s.baby?.activeSleep?.time?new Date(`${s.baby.activeSleep.date}T${s.baby.activeSleep.time}:00`):null;
   const sleepElapsed=sleepStart&&Number.isFinite(sleepStart.getTime())?Math.max(0,Math.round((Date.now()-sleepStart.getTime())/60000)):null;
   const sleepLabel=sleepElapsed==null?'Sleep':sleepElapsed<60?`Sleep ${sleepElapsed}m`:`Sleep ${Math.floor(sleepElapsed/60)}h ${sleepElapsed%60}m`;
-  const babyMeta=age;
+  const babyMeta=window.MilkFlowAge?.short?.()||age;
   const todayBits=[
     feedCount?`${feedCount} feed${feedCount===1?'':'s'}`:'No feeds yet',
     snap.todayOz>0?`${snap.todayOz.toFixed(1)} oz logged`:'',
@@ -742,15 +746,14 @@ function renderBaby(s){
         <div class="mf-animal-copy">
           <div class="welcome">${g.mark} ${esc(gl.text)}${(s.profile?.momName||'').trim()?'':'<button type="button" class="mf-name-cta" data-view="set-baby">Add your name</button>'}</div>
           <h2>${esc(babyName)}${babyMeta?`<i>${esc(babyMeta)}</i>`:''}</h2>
-          ${wish?`<p class="mf-baby-wish">${esc(wish)}</p>`:''}
-          <p class="mf-baby-todayline">${todayBits.map(esc).join(' · ')}</p>
-          <div class="mf-baby-timing" aria-label="Baby feeding timing">
-            <span class="mf-last-feed-slot"><small>Last feed</small><strong class="mf-last-feed-value"><b>${esc(lastAge)}</b>${last?`<em>${esc(lf.clock)}</em>`:''}</strong></span>
-            <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'—'}</strong></span>
-          </div>
         </div>
         <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}${photo?'':'<span class="mf-photo-add">+ Photo</span>'}</button>
       </div>
+      <div class="mf-baby-timing" aria-label="Baby feeding timing">
+            <span><small>Today</small><strong>${esc(todayBits[0]||'—')}</strong></span>
+            <span class="mf-last-feed-slot"><small>Last feed</small><strong class="mf-last-feed-value"><b>${esc(lastAge)}</b>${last?`<em>${esc(lf.clock)}</em>`:''}</strong></span>
+            <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'—'}</strong></span>
+          </div>
     </div>
 
     ${nudgeCard('baby')}
