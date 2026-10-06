@@ -570,8 +570,15 @@ function ageLabel(){
   const a = ageParts(); if(!a) return null;
   if(a.total < 14) return `${a.total} ${a.total===1?'day':'days'} old`;
   if(a.total < 70){ const w = Math.floor(a.total/7), d = a.total%7;
-    return d ? `${w}w ${d}d old` : `${w} weeks old`; }
-  if(a.months < 24) return a.days ? `${a.months}mo ${a.days}d old` : `${a.months} months old`;
+    return d ? `${w} weeks ${d}d · ${a.total} days` : `${w} weeks · ${a.total} days`; }
+  /* The days are never dropped. The first version only appended them when the remainder was
+     non-zero, which meant that on the monthly anniversary - the one day the number is round -
+     it fell back to a bare "2 months old", exactly the thing it was meant to replace. The
+     running total is always there, because that is the figure a parent is actually counting
+     and it never has an awkward zero in it. */
+  if(a.months < 24) return a.days
+    ? `${a.months} months ${a.days}d · ${a.total} days`
+    : `${a.months} months · ${a.total} days`;
   return `${Math.floor(a.months/12)}y ${a.months%12}m old`;
 }
 
@@ -1762,8 +1769,11 @@ function weeklyDevelopmentNudge(){
   const done = total - open.length;
   return {
     id: 'dev-week', period, tone: 'baby',
-    eyebrow: done ? `This week · ${done} of ${total} seen` : 'This week',
-    title: `${stage.label} · ${stage.tag}`,
+    /* "2 months · First smiles" sat directly under the baby's actual age and read as a second,
+       contradictory age - the stage is a CDC checklist band, not how old this baby is. Lead
+       with what the band is about and label the band as a band. */
+    eyebrow: done ? `Milestones for ${stage.label} · ${done} of ${total} seen` : `Milestones for ${stage.label}`,
+    title: stage.tag,
     body: done
       ? `${done} of ${total} noted for ${stage.label}. Have you seen ${S.baby.name} do any of these yet?`
       : `Around ${stage.label}, most babies are starting these. Have you seen ${S.baby.name} do any of them?`,

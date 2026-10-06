@@ -83,12 +83,12 @@ function ageLabel(birthDate){
   const total=Math.floor((n-b)/86400000);
   if(!Number.isFinite(total)||total<0) return '';
   if(total<14) return `${total} day${total===1?'':'s'} old`;
-  if(total<70){const w=Math.floor(total/7),d=total%7;return d?`${w}w ${d}d old`:`${w} weeks old`;}
+  if(total<70){const w=Math.floor(total/7),d=total%7;return d?`${w} weeks ${d}d · ${total} days`:`${w} weeks · ${total} days`;}
   let m=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());
   if(n.getDate()<b.getDate())m--;
   const anchor=new Date(b);anchor.setMonth(anchor.getMonth()+m);
   const days=Math.max(0,Math.round((n-anchor)/86400000));
-  if(m<24) return days?`${m}mo ${days}d old`:`${m} months old`;
+  if(m<24) return days?`${m} months ${days}d · ${total} days`:`${m} months · ${total} days`;
   return `${Math.floor(m/12)}y ${m%12}m old`;
 }
 function relativeAgo(date,time){
@@ -371,6 +371,10 @@ body[data-screen="mom-home"] .mom-hero .hero-copy>.eyebrow{display:none}
 .mf-hero-facts.three .mf-hero-fact em{font-size:9.5px}
 .mf-hero-fact.due strong{color:var(--mf-world-accent,currentColor)}
 .mf-hero-fact strong{overflow-wrap:normal;word-break:normal;hyphens:none}
+/* "Next feed" wrapped onto two lines inside its own box at 393px, pushing the value out of
+   sight. The label is a label: one line, and it shrinks before it wraps. */
+.mf-hero-fact small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:400px){.mf-hero-facts .mf-hero-fact small{font-size:8px;letter-spacing:.02em}}
 .mf-hero-fact{display:grid;align-content:start;gap:1px;min-width:0;padding:8px 11px;border-radius:17px;
   background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.22);backdrop-filter:blur(14px)}
 .mf-hero-fact small{font-size:9.5px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;opacity:.82}
@@ -587,6 +591,15 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 .mf-last-feed-value b,.mf-last-feed-value em{display:inline-block;white-space:nowrap;font-style:normal}
 .mf-last-feed-value em{text-align:right}
 .mf-baby-timing{min-width:0;gap:10px}
+/* "Next feed" broke across two lines inside a 72px column, so the label ate the row and the
+   value underneath it was pushed out of sight. A label is one line; it shrinks before it
+   wraps, and the value is what the space is for. */
+.mf-baby-timing small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.mf-baby-timing strong{overflow-wrap:normal;word-break:normal;hyphens:none}
+/* Keep the label at the readable size the QA floor requires (9.5px) and buy the room back
+   from letter-spacing and the gap instead. Shrinking type to make a label fit is solving a
+   layout problem with the one thing a tired parent at 3am cannot afford. */
+@media(max-width:400px){.mf-baby-timing{gap:7px}.mf-baby-timing small{font-size:9.5px;letter-spacing:0}}
 .mf-last-feed-slot{min-width:0}
 /* A short illustrated box sits above each label. The entire picture and caption remain a
    single touch target, but color, border and shadow belong only to the picture box. */
