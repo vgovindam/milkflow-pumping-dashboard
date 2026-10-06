@@ -12,7 +12,12 @@ requireText('smart Baby wish',files.ui,'function babyWishLine(');
 if(files.ui.includes('Keeping tonight calm and simple'))failures.push('Baby hero must not restore the wordy late-night wish line');
 requireText('last feed includes clock time',files.ui,'mf-last-feed-value');
 requireText('last feed uses compact elapsed value',files.ui,"replace(/ ago$/,'')");
-requireText('last feed separates elapsed time and clock',files.ui,'mf-last-feed-value{display:grid;grid-template-columns:minmax(0,1fr) max-content');
+/* Both hero values stack now. Side by side worked when the cell was half the hero and
+   collided at a third of it - "just now" printed straight through "4:20 PM". */
+requireText('hero values stack their detail',files.ui,'.mf-stat-stack{display:grid;gap:1px');
+requireText('last feed still separates elapsed time and clock',files.ui,'<b>${esc(lastAge)}</b>');
+requireText('today shows the day total',files.ui,'<b>${esc(todayTotal)}</b>');
+requireText('age is its own readable line',files.ui,'class="mf-baby-age"');
 requireText('compact Baby timing',files.ui,'mf-baby-timing');
 /* The hero was five text rows before any data: greeting, name, age with days, a wish
    sentence and a today line, then the facts. Today is a fact, so it joined the facts row and

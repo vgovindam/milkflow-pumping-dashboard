@@ -587,9 +587,23 @@ body[data-screen="baby-home"] #view>.baby-stage,body[data-screen="baby-home"] #v
 }
 /* Stable shape before the first app render; avoid a square-to-rounded flash. */
 .mf-animal-hero,.mf-dream-hero{border-radius:31px;overflow:hidden}
-.mf-last-feed-value{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:baseline;column-gap:8px;width:100%;white-space:normal;line-height:1.15}
+/* This put the age and the clock side by side, which worked when the cell was half the hero
+   and collides at a third of it - "just now" printed straight through "4:20 PM". Both cells
+   stack now, so they read the same way and neither depends on how much room is left. */
+.mf-last-feed-value{display:grid;gap:1px;width:100%;line-height:1.15}
 .mf-last-feed-value b,.mf-last-feed-value em{display:inline-block;white-space:nowrap;font-style:normal}
 .mf-last-feed-value em{text-align:right}
+/* Stacked value: the figure, then what produced it. The Last feed cell puts its two parts
+   side by side because a time is short; a day's total needs the width for the number. */
+.mf-stat-stack{display:grid;gap:1px;width:100%;line-height:1.15;white-space:normal}
+.mf-stat-stack b,.mf-stat-stack em{display:block;font-style:normal;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mf-stat-stack em{font-size:10px;font-weight:700;opacity:.76}
+/* The age had been an <i> tucked inside the name, inheriting something that shrank it to the
+   point of being decoration. It is a line of its own now, at a size meant to be read: the
+   days are the figure a parent is counting in these months, so they are not an afterthought
+   beside the name. */
+.mf-baby-age{margin:3px 0 0;font-size:13px;font-weight:800;letter-spacing:-.01em;opacity:.92}
+@media(max-width:400px){.mf-baby-age{font-size:12.5px}}
 /* Three facts, full card width. They used to sit in the copy column beside the photo, which
    left 185px for 284px of content and clipped "Nothing yet" halfway through. Out here each
    one gets an even third of the card. */
@@ -732,7 +746,16 @@ function renderBaby(s){
   const sleepStart=s.baby?.activeSleep?.date&&s.baby?.activeSleep?.time?new Date(`${s.baby.activeSleep.date}T${s.baby.activeSleep.time}:00`):null;
   const sleepElapsed=sleepStart&&Number.isFinite(sleepStart.getTime())?Math.max(0,Math.round((Date.now()-sleepStart.getTime())/60000)):null;
   const sleepLabel=sleepElapsed==null?'Sleep':sleepElapsed<60?`Sleep ${sleepElapsed}m`:`Sleep ${Math.floor(sleepElapsed/60)}h ${sleepElapsed%60}m`;
-  const babyMeta=window.MilkFlowAge?.short?.()||age;
+  const babyMeta=window.MilkFlowAge?.label?.()||age;
+  /* "Today" was showing the feed count, which is not the day's total - the total is the
+     number a parent is actually tracking. Volume leads; the counts that produced it sit
+     underneath, the same shape the Last feed cell uses. */
+  const todayTotal = snap.todayOz > 0 ? `${snap.todayOz.toFixed(1)} oz`
+    : (st.nursingCount ? `${st.nursingCount} nursed` : '\u2014');
+  const todayDetail = [
+    feedCount ? `${feedCount} feed${feedCount===1?'':'s'}` : 'No feeds yet',
+    `${snap.diapers} diaper${snap.diapers===1?'':'s'}`
+  ].join(' \u00b7 ');
   const todayBits=[
     feedCount?`${feedCount} feed${feedCount===1?'':'s'}`:'No feeds yet',
     snap.todayOz>0?`${snap.todayOz.toFixed(1)} oz logged`:'',
@@ -745,13 +768,14 @@ function renderBaby(s){
       <div class="mf-animal-profile">
         <div class="mf-animal-copy">
           <div class="welcome">${g.mark} ${esc(gl.text)}${(s.profile?.momName||'').trim()?'':'<button type="button" class="mf-name-cta" data-view="set-baby">Add your name</button>'}</div>
-          <h2>${esc(babyName)}${babyMeta?`<i>${esc(babyMeta)}</i>`:''}</h2>
+          <h2>${esc(babyName)}</h2>
+          ${babyMeta?`<p class="mf-baby-age">${esc(babyMeta)}</p>`:''}
         </div>
         <button type="button" class="mf-profile-photo addable" data-photo aria-label="${photo?'Change Baby photo':'Add Baby photo'}">${profilePhoto(photo,'baby')}${photo?'':'<span class="mf-photo-add">+ Photo</span>'}</button>
       </div>
       <div class="mf-baby-timing" aria-label="Baby feeding timing">
-            <span><small>Today</small><strong>${esc(todayBits[0]||'—')}</strong></span>
-            <span class="mf-last-feed-slot"><small>Last feed</small><strong class="mf-last-feed-value"><b>${esc(lastAge)}</b>${last?`<em>${esc(lf.clock)}</em>`:''}</strong></span>
+            <span><small>Today</small><strong class="mf-stat-stack"><b>${esc(todayTotal)}</b>${todayDetail?`<em>${esc(todayDetail)}</em>`:''}</strong></span>
+            <span class="mf-last-feed-slot"><small>Last feed</small><strong class="mf-stat-stack"><b>${esc(lastAge)}</b>${last?`<em>${esc(lf.clock)}</em>`:''}</strong></span>
             <span class="${nextFeed&&nextFeed.overdue?'due':''}"><small>${nextFeed&&nextFeed.overdue?'Feed window':'Next feed'}</small><strong>${nextFeed?esc(nextFeed.label):'—'}</strong></span>
           </div>
     </div>
