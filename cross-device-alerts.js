@@ -4,20 +4,16 @@
 /*
  * Cross-device care alerts.
  *
- * This module does not own MilkFlow records. It watches the same authenticated
- * Firestore collections the app already syncs, tags only brand-new local writes with
- * a source device id, and alerts another signed-in device when a new record arrives.
- *
- * Visible app: realtime Firestore -> in-app alert.
- * Background/closed installed PWA: FCM -> service worker notification, when the user
- * has granted notification permission and this device has a registered push token.
+ * Each signed-in device owns its own OS permission, push token and on/off state. The family
+ * records themselves are shared. A remote write is surfaced immediately in-app by Firestore,
+ * and by FCM when the installed PWA is backgrounded/closed.
  */
 const DEVICE_KEY='milkflow-device-id-v1';
 const PREF_KEY='milkflow-cross-device-alerts-v1';
 const STATE_KEY='milkflow-family-v4-state';
 const MESSAGING_SDK='https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js';
 const RECENT_MS=15*60*1000;
-const BUILD='stable45-human13';
+const BUILD='stable46-sync1';
 
 function makeId(){
   try{if(crypto?.randomUUID)return crypto.randomUUID();}catch{}
@@ -39,6 +35,8 @@ function preference(){
 function setPreference(on){try{localStorage.setItem(PREF_KEY,on?'on':'off');}catch{}}
 function readState(){try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{}')||{};}catch{return {};}}
 function currentNames(){const s=readState();return{mom:s.profile?.momName||'Mom',baby:s.baby?.name||'Baby'};}
+function isIOS(){const ua=navigator.userAgent||'';return/iPhone|iPad|iPod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);}
+function isStandalone(){return window.matchMedia?.('(display-mode: standalone)')?.matches===true||navigator.standalone===true;}
 function deviceLabel(){
   const ua=navigator.userAgent||'';
   if(/iPad/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))return'iPad';
@@ -48,12 +46,13 @@ function deviceLabel(){
   if(/Windows/i.test(ua))return'Windows PC';
   return'Other device';
 }
+function sourceStamp(){return{sourceDeviceId:DEVICE_ID,sourceDeviceLabel:deviceLabel(),sourceClientAt:new Date().toISOString()};}
 function to12(t){
   if(!t)return'';const [h,m]=String(t).split(':').map(Number);if(!Number.isFinite(h)||!Number.isFinite(m))return String(t);
   return`${((h+11)%12)+1}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
 }
 function recentRecord(data){
-  const t=Date.parse(data?.createdAt||'');
+  const t=Date.parse(data?.createdAt||data?.sourceClientAt||'');
   return Number.isFinite(t)&&Math.abs(Date.now()-t)<=RECENT_MS;
 }
 function formatAlert(collection,data){
@@ -84,7 +83,7 @@ function formatAlert(collection,data){
   return{title:`${names.baby} care logged`,body:`New ${kind} entry${time?` · ${time}`:''}${suffix}`,route:'baby-history'};
 }
 
-let auth=null,db=null,currentUser=null,messaging=null,pushToken='',sdkPromise=null;
+let auth=null,db=null,currentUser=null,messaging=null,pushToken='',sdkPromise=null,reconciling=null;
 let watchers=[];
 const seen=new Set();
 
@@ -114,13 +113,8 @@ function announceVisible(collection,id,data){
 async function tagLocalWrite(doc){
   const data=doc.data()||{};
   if(data.sourceDeviceId||!recentRecord(data))return;
-  try{
-    await doc.ref.set({
-      sourceDeviceId:DEVICE_ID,
-      sourceDeviceLabel:deviceLabel(),
-      sourceClientAt:new Date().toISOString()
-    },{merge:true});
-  }catch(err){console.warn('MilkFlow device tag skipped',err?.message||err);}
+  try{await doc.ref.set(sourceStamp(),{merge:true});}
+  catch(err){console.warn('MilkFlow device tag skipped',err?.message||err);}
 }
 function watchCollection(name){
   let primed=false;
@@ -129,11 +123,10 @@ function watchCollection(name){
     for(const change of snap.docChanges({includeMetadataChanges:true})){
       if(change.type==='removed')continue;
       const data=change.doc.data()||{};
-      if(change.doc.metadata.hasPendingWrites){
-        tagLocalWrite(change.doc);
-        continue;
-      }
+      if(change.doc.metadata.hasPendingWrites){tagLocalWrite(change.doc);continue;}
       if(!primed)continue;
+      // A remote create may briefly arrive before its source-device merge. The later modified
+      // event will carry the tag and announce it. Server push has its own race-safe fallback.
       if(!data.sourceDeviceId||data.sourceDeviceId===DEVICE_ID)continue;
       if(change.type==='added'||change.type==='modified')announceVisible(name,change.doc.id,data);
     }
@@ -144,6 +137,7 @@ function watchCollection(name){
 function startWatchers(){stopWatchers();if(!db||!currentUser)return;watchCollection('entries');watchCollection('familyEvents');}
 
 function messagingSupported(){return'Notification'in window&&'serviceWorker'in navigator&&location.protocol==='https:';}
+function systemPushEligible(){return messagingSupported()&&(!isIOS()||isStandalone());}
 function loadMessagingSdk(){
   if(window.firebase?.messaging)return Promise.resolve();
   if(sdkPromise)return sdkPromise;
@@ -159,19 +153,14 @@ function loadMessagingSdk(){
 async function writeDeviceRegistration(token,enabled=true){
   if(!db||!currentUser)return;
   await db.collection('users').doc(currentUser.uid).collection('devices').doc(DEVICE_ID).set({
-    deviceId:DEVICE_ID,
-    label:deviceLabel(),
-    token:token||null,
-    entryAlerts:!!enabled,
-    platform:navigator.platform||'',
-    userAgent:(navigator.userAgent||'').slice(0,240),
-    appBuild:BUILD,
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
-    lastSeen:firebase.firestore.FieldValue.serverTimestamp()
+    deviceId:DEVICE_ID,label:deviceLabel(),token:token||null,entryAlerts:!!enabled,
+    notificationPermission:'Notification'in window?Notification.permission:'unsupported',
+    standalone:isStandalone(),platform:navigator.platform||'',userAgent:(navigator.userAgent||'').slice(0,240),appBuild:BUILD,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp(),lastSeen:firebase.firestore.FieldValue.serverTimestamp()
   },{merge:true});
 }
 async function registerPush({ask=false}={}){
-  if(!currentUser||!messagingSupported())return false;
+  if(!currentUser||!systemPushEligible())return false;
   let permission=Notification.permission;
   if(permission!=='granted'&&ask)permission=await Notification.requestPermission();
   if(permission!=='granted')return false;
@@ -180,8 +169,7 @@ async function registerPush({ask=false}={}){
     if(!window.firebase?.messaging)return false;
     const reg=await navigator.serviceWorker.ready;
     messaging=firebase.messaging();
-    const cfg=window.MILKFLOW_CONFIG||{};
-    const options={serviceWorkerRegistration:reg};
+    const cfg=window.MILKFLOW_CONFIG||{},options={serviceWorkerRegistration:reg};
     if(cfg.webPushVapidKey)options.vapidKey=cfg.webPushVapidKey;
     pushToken=await messaging.getToken(options);
     if(!pushToken)throw new Error('No push token returned');
@@ -190,8 +178,7 @@ async function registerPush({ask=false}={}){
       messaging.__milkflowForegroundBound=true;
       messaging.onMessage(payload=>{
         const d=payload?.data||{},key=d.alertId||'';
-        if(key&&seen.has(key))return;
-        if(key)markSeen(key);
+        if(key&&seen.has(key))return;if(key)markSeen(key);
         if(document.visibilityState==='visible'&&preference())showToast(d.title||'MilkFlow update',d.body||'New care was logged on another device.',d.route||'');
       });
     }
@@ -200,61 +187,69 @@ async function registerPush({ask=false}={}){
 }
 async function disableRemote(){
   if(!db||!currentUser)return;
-  try{await db.collection('users').doc(currentUser.uid).collection('devices').doc(DEVICE_ID).set({entryAlerts:false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch{}
+  try{await db.collection('users').doc(currentUser.uid).collection('devices').doc(DEVICE_ID).set({entryAlerts:false,notificationPermission:'Notification'in window?Notification.permission:'unsupported',standalone:isStandalone(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch{}
+}
+async function reconcilePushRegistration(){
+  if(reconciling)return reconciling;
+  reconciling=(async()=>{
+    if(!currentUser)return false;
+    if(!preference()){pushToken='';await disableRemote();return false;}
+    if(!systemPushEligible()){pushToken='';await disableRemote();return false;}
+    if(Notification.permission!=='granted'){pushToken='';await disableRemote();return false;}
+    return registerPush({ask:false});
+  })();
+  try{return await reconciling;}finally{reconciling=null;renderSettingsPanel();}
 }
 async function enableAlerts(){
   setPreference(true);
-  if(currentUser&&messagingSupported())await registerPush({ask:true});
-  renderSettingsPanel();
+  if(isIOS()&&!isStandalone()){
+    await disableRemote();
+    showToast('Home Screen required','On iPhone/iPad, add MilkFlow to the Home Screen, open it from the icon, then enable system alerts here.','');
+    renderSettingsPanel();return false;
+  }
+  if(currentUser&&messagingSupported()){
+    const ok=await registerPush({ask:true});
+    if(!ok&&Notification.permission!=='granted')await disableRemote();
+  }
+  renderSettingsPanel();return!!pushToken;
 }
-async function disableAlerts(){setPreference(false);await disableRemote();renderSettingsPanel();}
+async function disableAlerts(){setPreference(false);pushToken='';await disableRemote();renderSettingsPanel();}
 
 function permissionText(){
-  if(!currentUser)return'Sign in with the same family account on both devices first.';
-  if(!preference())return'Off on this device.';
-  if(!messagingSupported())return'In-app alerts are on while MilkFlow is open. System push is not supported in this browser.';
-  if(Notification.permission==='denied')return'In-app alerts are on. System notifications are blocked in this device’s browser settings.';
-  if(Notification.permission==='granted'&&pushToken)return'On · in-app alerts plus background push notifications on this device.';
-  if(Notification.permission==='granted')return'In-app alerts are on. Background push registration will retry automatically.';
-  return'In-app alerts are on. Enable system alerts to receive them when MilkFlow is in the background.';
+  if(!currentUser)return'Sign in with the same Family account on each device first.';
+  if(!preference())return'Off on this device. Other devices keep their own notification setting.';
+  if(isIOS()&&!isStandalone())return'For iPhone/iPad lock-screen alerts: add MilkFlow to the Home Screen, open it from the Home Screen icon, then enable system alerts.';
+  if(!messagingSupported())return'In-app alerts are available while MilkFlow is open. System push is not supported in this browser.';
+  if(Notification.permission==='denied')return'System notifications are blocked for MilkFlow on this device. Re-enable them in the device settings, then reopen MilkFlow.';
+  if(Notification.permission==='granted'&&pushToken)return'Ready · this device is registered for live in-app alerts and background/lock-screen push.';
+  if(Notification.permission==='granted')return'Permission is allowed. MilkFlow is reconnecting this device to background push.';
+  return'In-app alerts are on. Tap Enable system alerts to also receive background/lock-screen notifications.';
 }
 function renderSettingsPanel(){
   if(document.body.dataset.screen!=='set-reminders')return;
   const view=document.getElementById('view');if(!view)return;
   let panel=document.getElementById('mfCrossDeviceAlerts');
   if(!panel){panel=document.createElement('section');panel.id='mfCrossDeviceAlerts';panel.className='panel';view.appendChild(panel);}
-  const on=preference(), canAsk=currentUser&&messagingSupported()&&Notification.permission==='default';
-  const buttonLabel=!on?'Turn on':canAsk?'Enable system alerts':'Turn off';
-  panel.innerHTML=`<div class="panel-head"><h3>Cross-device alerts</h3><span class="panel-note">Family account</span></div><div class="setting-row"><div><strong>${on?'On':'Off'}</strong><span>When another signed-in device logs Pump, Nursing, Feed, Diaper, Sleep or Growth, this device is alerted. The device that entered it is excluded.</span></div><button type="button" data-cross-device-alert-toggle="${!on||canAsk?'on':'off'}">${buttonLabel}</button></div><p class="chart-note">${permissionText()}</p>`;
+  const on=preference(),iosNeedsInstall=isIOS()&&!isStandalone(),canAsk=currentUser&&systemPushEligible()&&Notification.permission==='default';
+  const buttonLabel=!on?'Turn on':iosNeedsInstall?'Home Screen setup':canAsk?'Enable system alerts':'Turn off';
+  const action=!on||canAsk||iosNeedsInstall?'on':'off';
+  panel.innerHTML=`<div class="panel-head"><h3>Cross-device alerts</h3><span class="panel-note">This device</span></div><div class="setting-row"><div><strong>${on?'On':'Off'}</strong><span>When another device on this Family account logs Pump, Nursing, Feed, Diaper, Sleep, Growth or Milestone, this device is notified. The device that entered the record is excluded whenever its source tag is available.</span></div><button type="button" data-cross-device-alert-toggle="${action}">${buttonLabel}</button></div><p class="chart-note">${permissionText()}</p>`;
 }
 
 async function onUser(user){
   currentUser=user||null;pushToken='';stopWatchers();
   if(!currentUser){renderSettingsPanel();return;}
-  db=firebase.firestore();startWatchers();
-  if(preference()&&messagingSupported()&&Notification.permission==='granted')await registerPush({ask:false});
-  renderSettingsPanel();
+  db=firebase.firestore();startWatchers();await reconcilePushRegistration();renderSettingsPanel();
 }
 let initTries=0;
 function init(){
-  const cfg=window.MILKFLOW_CONFIG||{};
-  if(!cfg.firebaseConfig)return;
-  /* window.firebase existing is NOT the same as firebase.auth existing. The base SDK defines
-     the namespace, and so does the messaging SDK this module loads for itself; neither brings
-     auth or firestore with it. Since those two are loaded on demand, the old guard let this
-     run in the window where the namespace was there and the methods were not, and it threw
-     "firebase.auth is not a function" on every single launch.
-
-     The retry is bounded because a family with cloud sync switched off never loads them at
-     all, and an unbounded timer would poll for the life of the session. */
-  if(!window.firebase?.auth||!window.firebase?.firestore){
-    if(initTries++ < 250) setTimeout(init,120);
-    return;
-  }
+  const cfg=window.MILKFLOW_CONFIG||{};if(!cfg.firebaseConfig)return;
+  if(!window.firebase?.auth||!window.firebase?.firestore){if(initTries++<250)setTimeout(init,120);return;}
   try{if(!firebase.apps.length)firebase.initializeApp(cfg.firebaseConfig);}catch{}
   auth=firebase.auth();db=firebase.firestore();auth.onAuthStateChanged(onUser);
   window.addEventListener('milkflow:base-rendered',renderSettingsPanel);
-  window.addEventListener('pageshow',renderSettingsPanel);
+  window.addEventListener('pageshow',()=>{renderSettingsPanel();reconcilePushRegistration();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reconcilePushRegistration();});
   document.addEventListener('click',e=>{
     const toggle=e.target.closest('[data-cross-device-alert-toggle]');
     if(toggle){e.preventDefault();toggle.dataset.crossDeviceAlertToggle==='on'?enableAlerts():disableAlerts();return;}
@@ -262,6 +257,9 @@ function init(){
   },true);
 }
 
-window.MilkFlowCrossDeviceAlerts={deviceId:DEVICE_ID,enable:enableAlerts,disable:disableAlerts,status:()=>({enabled:preference(),permission:'Notification'in window?Notification.permission:'unsupported',pushReady:!!pushToken,user:currentUser?.uid||null})};
+window.MilkFlowCrossDeviceAlerts={
+  deviceId:DEVICE_ID,deviceLabel,stamp:sourceStamp,enable:enableAlerts,disable:disableAlerts,reconcile:reconcilePushRegistration,
+  status:()=>({enabled:preference(),permission:'Notification'in window?Notification.permission:'unsupported',pushReady:!!pushToken,user:currentUser?.uid||null,standalone:isStandalone(),ios:isIOS()})
+};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
