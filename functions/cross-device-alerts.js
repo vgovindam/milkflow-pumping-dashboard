@@ -10,8 +10,13 @@ const INVALID_TOKEN_CODES=new Set([
 ]);
 
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-function recentRecord(data){
-  const t=Date.parse(data?.createdAt||'');
+function parseWhen(v){
+  if(!v)return NaN;
+  if(typeof v?.toDate==='function')return v.toDate().getTime();
+  const t=Date.parse(v);return Number.isFinite(t)?t:NaN;
+}
+function recentRecord(data,eventTime){
+  const t=parseWhen(data?.createdAt)||parseWhen(data?.sourceClientAt)||parseWhen(eventTime);
   return Number.isFinite(t)&&Math.abs(Date.now()-t)<=RECENT_MS;
 }
 function to12(t){
@@ -50,20 +55,27 @@ function formatAlert(collection,data,names){
   return{title:`${names.baby} care logged`,body:`New ${kind} entry${time?` · ${time}`:''}${suffix}`,route:'baby-history'};
 }
 
+async function readSettledRecord(ref){
+  // The create trigger can beat the browser's source-device merge. The old implementation
+  // waited a single 900ms window and then permanently dropped the alert if the tag was late.
+  // Retry for a few seconds, but never drop the family notification solely because the source
+  // tag never arrived; in that rare fallback all enabled devices receive the push.
+  let snap=await ref.get(),data=snap.exists?(snap.data()||{}):{};
+  for(let i=0;i<6&&snap.exists&&!data.sourceDeviceId;i++){
+    await sleep(500+i*250);
+    snap=await ref.get();data=snap.exists?(snap.data()||{}):{};
+  }
+  return{snap,data};
+}
+
 function createCrossDeviceAlertFunctions({admin,db}){
   async function sendForCreate(event,collection){
     const uid=event.params.userId;
     if(!uid||!event.data)return null;
 
-    // The browser tags a brand-new local write immediately after Firestore sees its
-    // pending write. Waiting briefly lets that tiny merge reach the server before this
-    // trigger decides which device must be excluded.
-    await sleep(900);
-    const current=await event.data.ref.get();
-    if(!current.exists)return null;
-    const data=current.data()||{};
+    const {snap:current,data}=await readSettledRecord(event.data.ref);
+    if(!current.exists||data.voidedAt||!recentRecord(data,event.time))return null;
     const sourceDeviceId=String(data.sourceDeviceId||'');
-    if(!sourceDeviceId||data.voidedAt||!recentRecord(data))return null;
 
     const userRoot=db.collection('users').doc(uid);
     const [deviceSnap,profileDoc]=await Promise.all([
@@ -75,7 +87,8 @@ function createCrossDeviceAlertFunctions({admin,db}){
     const targets=[];
     deviceSnap.forEach(doc=>{
       const d=doc.data()||{};
-      if(doc.id===sourceDeviceId||d.entryAlerts!==true||!d.token)return;
+      if(sourceDeviceId&&doc.id===sourceDeviceId)return;
+      if(d.entryAlerts!==true||!d.token)return;
       targets.push({ref:doc.ref,token:String(d.token)});
     });
     if(!targets.length)return null;
@@ -108,7 +121,7 @@ function createCrossDeviceAlertFunctions({admin,db}){
       if(INVALID_TOKEN_CODES.has(code))cleanup.push(targets[i].ref.set({token:admin.firestore.FieldValue.delete(),entryAlerts:false,tokenErrorAt:admin.firestore.FieldValue.serverTimestamp()},{merge:true}));
     });
     if(cleanup.length)await Promise.allSettled(cleanup);
-    return{sent:result.successCount,failed:result.failureCount};
+    return{sent:result.successCount,failed:result.failureCount,sourceTagged:!!sourceDeviceId};
   }
 
   return{
