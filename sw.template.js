@@ -1,5 +1,6 @@
 // Generated into dist/sw.js by scripts/build.mjs. Do not edit a built sw.js by hand.
 const VERSION='milkflow-v__MILKFLOW_VERSION__';
+const BUILD_COMMIT='__MILKFLOW_COMMIT__';
 const SHELL=__MILKFLOW_SHELL__;
 
 try{
@@ -77,14 +78,4 @@ self.addEventListener('fetch',event=>{
     const res=await fresh;
     return res||Response.error();
   })());
-});
-self.addEventListener('notificationclick',event=>{
-  event.notification.close();
-  const url=event.notification.data?.url||self.registration.scope;
-  event.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(async clients=>{
-    const scope=new URL(self.registration.scope);
-    const existing=clients.find(c=>{try{const u=new URL(c.url);return u.origin===scope.origin&&u.pathname.startsWith(scope.pathname);}catch{return false;}});
-    if(existing){try{await existing.navigate(url);}catch{}return existing.focus();}
-    return self.clients.openWindow?self.clients.openWindow(url):null;
-  }));
 });
