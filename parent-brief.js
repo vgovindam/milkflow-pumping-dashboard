@@ -94,6 +94,13 @@ function markShown(cards){
   const seen={...(p.seen||{}),[signature(cards)]:now};for(const [k,v] of Object.entries(seen))if(now-Number(v)>30*DAY)delete seen[k];
   writePref({...p,shows,seen,lastShownAt:now});
 }
+function canInterrupt(){
+  const screen=document.body?.dataset?.screen||location.hash.replace(/^#/,'');
+  if(screen!=='mom-home'&&screen!=='baby-home')return false;
+  if(document.hidden)return false;
+  if(document.querySelector('dialog[open],.sheet.open,.scrim.open,.mf-chat-panel.open'))return false;
+  return true;
+}
 function injectStyle(){
   if(document.getElementById('mfParentBriefStyle'))return;
   const el=document.createElement('style');el.id='mfParentBriefStyle';el.textContent=`
@@ -106,7 +113,7 @@ function injectStyle(){
 `;document.head.appendChild(el);
 }
 function show(cards){
-  if(!cards.length)return;
+  if(!cards.length||!canInterrupt())return;
   injectStyle();
   const top=cards.slice(0,MAX_CARDS),existing=document.getElementById('mfParentBrief');if(existing)existing.remove();
   const d=document.createElement('dialog');d.id='mfParentBrief';d.className='mf-parent-brief';
@@ -120,9 +127,9 @@ function show(cards){
   markShown(cards);
   try{d.showModal();}catch{d.setAttribute('open','');}
 }
-function maybeShow(){const s=readState(),cards=buildCards(s);if(eligible(cards))show(cards);}
-function schedule(){setTimeout(maybeShow,1600);}
+function maybeShow(){if(!canInterrupt())return;const s=readState(),cards=buildCards(s);if(eligible(cards))show(cards);}
+function schedule(){setTimeout(maybeShow,4200);}
 window.MilkFlowParentBrief={build:()=>buildCards(readState()),showNow:()=>show(buildCards(readState()))};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
-window.addEventListener('pageshow',()=>setTimeout(maybeShow,1200));
+window.addEventListener('pageshow',()=>setTimeout(maybeShow,3000));
 })();
