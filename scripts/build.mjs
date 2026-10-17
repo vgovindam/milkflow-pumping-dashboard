@@ -13,91 +13,32 @@ if(!COMMIT){try{COMMIT=execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encodin
 
 const TEXT_FILES=[
   'index.html','styles.css','theme.css','component-theme.css','component-theme-core.css','experience-system.css','experience-components.css','doctor-summary.css',
-  'config.js','insights-engine.js','app.js','cross-device-alerts.js','app-reliability.js','core-ui.js','experience-theme.js','render-lifecycle.js','plan-reliability.js','pump-target-settings.js','network-reliability.js','ai-coach-client.js','app-update-notice.js','family-chat.js','doctor-summary.js','release-info.js','manifest.webmanifest','icon.svg'
+  'config.js','insights-engine.js','trend-integrity.js','app.js','cross-device-alerts.js','app-reliability.js','core-ui.js','experience-theme.js','render-lifecycle.js','plan-reliability.js','pump-target-settings.js','network-reliability.js','ai-coach-client.js','app-update-notice.js','family-chat.js','parent-brief.js','doctor-summary.js','release-info.js','manifest.webmanifest','icon.svg'
 ];
 const BINARY_FILES=['milkflow-family-v3-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','favicon.ico'];
 
 function ensureDir(file){fs.mkdirSync(path.dirname(file),{recursive:true});}
-function transform(text){
-  return text
-    .replaceAll('__MILKFLOW_VERSION__',VERSION)
-    .replaceAll('__MILKFLOW_COMMIT__',COMMIT)
-    .replace(/\?build=stable45-human\d+/g,`?v=${VERSION}`)
-    .replace(/stable45-human\d+/g,`v${VERSION}`)
-    ;
-}
-function copyText(rel){
-  const src=path.join(ROOT,rel),dest=path.join(DIST,rel);
-  if(!fs.existsSync(src))throw new Error(`Missing production source: ${rel}`);
-  ensureDir(dest);fs.writeFileSync(dest,transform(fs.readFileSync(src,'utf8')));
-}
-function copyBinary(rel){
-  const src=path.join(ROOT,rel);if(!fs.existsSync(src))throw new Error(`Missing production binary: ${rel}`);
-  const dest=path.join(DIST,rel);ensureDir(dest);fs.copyFileSync(src,dest);
-}
-function copyTree(srcDir,destDir){
-  if(!fs.existsSync(srcDir))return;
-  for(const entry of fs.readdirSync(srcDir,{withFileTypes:true})){
-    if(entry.name==='.DS_Store')continue;
-    const src=path.join(srcDir,entry.name),dest=path.join(destDir,entry.name);
-    if(entry.isDirectory())copyTree(src,dest);
-    else{ensureDir(dest);fs.copyFileSync(src,dest);}
-  }
-}
-function listFiles(dir,base=dir){
-  if(!fs.existsSync(dir))return[];
-  const out=[];
-  for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
-    const full=path.join(dir,entry.name);
-    if(entry.isDirectory())out.push(...listFiles(full,base));
-    else out.push(path.relative(base,full).split(path.sep).join('/'));
-  }
-  return out.sort();
-}
-function localPath(ref){
-  const clean=ref.split('#')[0].split('?')[0];
-  if(!clean||/^(?:https?:|data:|blob:|mailto:)/.test(clean))return null;
-  return clean.replace(/^\.\//,'').replace(/^\//,'');
-}
-function verifyIndexRefs(){
-  const html=fs.readFileSync(path.join(DIST,'index.html'),'utf8');
-  for(const m of html.matchAll(/(?:src|href)=["']([^"']+)["']/g)){
-    const rel=localPath(m[1]);if(!rel)continue;
-    if(!fs.existsSync(path.join(DIST,rel)))throw new Error(`index.html references missing asset: ${m[1]}`);
-  }
-  for(const css of ['theme.css','component-theme.css']){
-    const text=fs.readFileSync(path.join(DIST,css),'utf8');
-    for(const m of text.matchAll(/@import\s+(?:url\()?['"]([^'"]+)['"]/g)){
-      const rel=localPath(m[1]);if(rel&&!fs.existsSync(path.join(DIST,rel)))throw new Error(`${css} imports missing asset: ${m[1]}`);
-    }
-  }
-}
+function transform(text){return text.replaceAll('__MILKFLOW_VERSION__',VERSION).replaceAll('__MILKFLOW_COMMIT__',COMMIT).replace(/\?build=stable45-human\d+/g,`?v=${VERSION}`).replace(/stable45-human\d+/g,`v${VERSION}`);}
+function copyText(rel){const src=path.join(ROOT,rel),dest=path.join(DIST,rel);if(!fs.existsSync(src))throw new Error(`Missing production source: ${rel}`);ensureDir(dest);fs.writeFileSync(dest,transform(fs.readFileSync(src,'utf8')));}
+function copyBinary(rel){const src=path.join(ROOT,rel);if(!fs.existsSync(src))throw new Error(`Missing production binary: ${rel}`);const dest=path.join(DIST,rel);ensureDir(dest);fs.copyFileSync(src,dest);}
+function copyTree(srcDir,destDir){if(!fs.existsSync(srcDir))return;for(const entry of fs.readdirSync(srcDir,{withFileTypes:true})){if(entry.name==='.DS_Store')continue;const src=path.join(srcDir,entry.name),dest=path.join(destDir,entry.name);if(entry.isDirectory())copyTree(src,dest);else{ensureDir(dest);fs.copyFileSync(src,dest);}}}
+function listFiles(dir,base=dir){if(!fs.existsSync(dir))return[];const out=[];for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,entry.name);if(entry.isDirectory())out.push(...listFiles(full,base));else out.push(path.relative(base,full).split(path.sep).join('/'));}return out.sort();}
+function localPath(ref){const clean=ref.split('#')[0].split('?')[0];if(!clean||/^(?:https?:|data:|blob:|mailto:)/.test(clean))return null;return clean.replace(/^\.\//,'').replace(/^\//,'');}
+function verifyIndexRefs(){const html=fs.readFileSync(path.join(DIST,'index.html'),'utf8');for(const m of html.matchAll(/(?:src|href)=["']([^"']+)["']/g)){const rel=localPath(m[1]);if(!rel)continue;if(!fs.existsSync(path.join(DIST,rel)))throw new Error(`index.html references missing asset: ${m[1]}`);}for(const css of ['theme.css','component-theme.css']){const text=fs.readFileSync(path.join(DIST,css),'utf8');for(const m of text.matchAll(/@import\s+(?:url\()?['"]([^'"]+)['"]/g)){const rel=localPath(m[1]);if(rel&&!fs.existsSync(path.join(DIST,rel)))throw new Error(`${css} imports missing asset: ${m[1]}`);}}}
 
 fs.rmSync(DIST,{recursive:true,force:true});fs.mkdirSync(DIST,{recursive:true});
 TEXT_FILES.forEach(copyText);BINARY_FILES.forEach(copyBinary);
 copyTree(path.join(ROOT,'assets'),path.join(DIST,'assets'));
-for(const theme of ['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
-  const atlas=path.join(DIST,`assets/care-atlas/${theme}.webp`);
-  if(!fs.existsSync(atlas)||fs.statSync(atlas).size<100000)throw new Error(`Missing generated ${theme} care atlas`);
-}
-for(const theme of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){
-  const motif=path.join(ROOT,`assets/theme-icons/${theme}-motif.svg`);
-  if(!fs.existsSync(motif))throw new Error(`Missing ${theme} theme motif`);
-  for(const action of ['milk','nurse','formula','wet','poop','mixed','pump','motif'])
-    if(!fs.existsSync(path.join(ROOT,`assets/care-icons/${theme}/${action}.svg`)))throw new Error(`Missing ${theme}/${action} care SVG`);
-  for(const mode of ['light','dark'])for(const role of ['baby-background@941','mom-background@941']){
-    const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${role}.webp`);
-    if(!fs.existsSync(scene)||fs.statSync(scene).size<1000)throw new Error(`Missing painted ${theme}/${mode}/${role} scene`);
-  }
-}
+for(const theme of ['safari','butterfly','princess','ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){const atlas=path.join(DIST,`assets/care-atlas/${theme}.webp`);if(!fs.existsSync(atlas)||fs.statSync(atlas).size<100000)throw new Error(`Missing generated ${theme} care atlas`);}
+for(const theme of ['ocean','celestial','woodland','safari-sunset','floral-meadow','cozy-clouds']){const motif=path.join(ROOT,`assets/theme-icons/${theme}-motif.svg`);if(!fs.existsSync(motif))throw new Error(`Missing ${theme} theme motif`);for(const action of ['milk','nurse','formula','wet','poop','mixed','pump','motif'])if(!fs.existsSync(path.join(ROOT,`assets/care-icons/${theme}/${action}.svg`)))throw new Error(`Missing ${theme}/${action} care SVG`);for(const mode of ['light','dark'])for(const role of ['baby-background@941','mom-background@941']){const scene=path.join(ROOT,`assets/themes-v2/${theme}/${mode}/${role}.webp`);if(!fs.existsSync(scene)||fs.statSync(scene).size<1000)throw new Error(`Missing painted ${theme}/${mode}/${role} scene`);}}
 verifyIndexRefs();
 
-/* Theme worlds are fetched and runtime-cached on demand. Shipping all 40 variants in the
-   install shell would make first launch unnecessarily expensive on mobile. */
+/* Theme worlds are fetched and runtime-cached on demand. Shipping all variants in the install
+   shell would make first launch unnecessarily expensive on mobile. */
 const shellFiles=listFiles(DIST).filter(f=>!f.startsWith('visual-audit/')&&!f.startsWith('assets/themes-v2/')&&!['build-manifest.json','sw.js'].includes(f));
 const shell=['./',...shellFiles.map(f=>`./${f}`)];
 let sw=fs.readFileSync(path.join(ROOT,'sw.template.js'),'utf8');
-sw=sw.replaceAll('__MILKFLOW_VERSION__',VERSION).replace('__MILKFLOW_SHELL__',JSON.stringify(shell,null,2));
+sw=sw.replaceAll('__MILKFLOW_VERSION__',VERSION).replaceAll('__MILKFLOW_COMMIT__',COMMIT).replace('__MILKFLOW_SHELL__',JSON.stringify(shell,null,2));
 fs.writeFileSync(path.join(DIST,'sw.js'),sw);
 
 const manifest={version:VERSION,commit:COMMIT,builtAt:new Date().toISOString(),assets:listFiles(DIST)};
