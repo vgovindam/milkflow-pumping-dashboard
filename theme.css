@@ -34,24 +34,23 @@
   background:none!important;
 }
 
-/* The art zone this file used to reserve (136px tall, 78px of top padding) existed for a
-   full-size themed sprite that was painted over the action's own icon. That sprite is gone;
-   the card owns its geometry next to its base styles in core-ui.js, with no !important and
-   nothing here to override. */
+/* The art zone this file used to reserve existed for a full-size themed sprite painted over
+   the action's own icon. That sprite is gone; the card owns its geometry next to its base
+   styles, with no extra visual layer to fight. */
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card strong,
 :root:not([data-experience-theme="clean"]) body[data-screen="baby-home"] .mf-feed-card small{
   position:relative;
   z-index:4;
 }
 
-/* The themed dock uses four distinct category tints. These selectors live in the
-   unlayered theme entry so they can style the core navigation without overrides. */
+/* The dock is one navigation surface, not five little cards. Inactive destinations now sit
+   quietly on that shared surface; the current destination alone gets the themed capsule. */
 :root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view]{
   --nav-tint:var(--mf-world-accent);
   color:var(--mf-world-deep);
-  background:color-mix(in srgb,var(--mf-world-surface) 77%,var(--nav-tint) 23%);
-  border:1px solid color-mix(in srgb,var(--mf-world-line) 62%,var(--nav-tint) 38%);
-  border-radius:17px;
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:16px;
 }
 :root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view$="-history"]{
   --nav-tint:var(--mf-world-accent-2);
@@ -63,7 +62,235 @@
   --nav-tint:color-mix(in srgb,var(--mf-world-accent-2) 64%,var(--mf-world-base) 36%);
 }
 :root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view].active{
-  background:color-mix(in srgb,var(--mf-world-surface) 54%,var(--nav-tint) 46%);
-  border-color:color-mix(in srgb,var(--nav-tint) 67%,var(--mf-world-line) 33%);
-  box-shadow:0 4px 10px var(--mf-world-shadow),inset 0 1px 0 color-mix(in srgb,var(--mf-world-surface-strong) 65%,transparent);
+  background:color-mix(in srgb,var(--mf-world-surface) 73%,var(--nav-tint) 27%);
+  border-color:color-mix(in srgb,var(--nav-tint) 42%,var(--mf-world-line) 58%);
+  box-shadow:0 3px 9px color-mix(in srgb,var(--mf-world-shadow) 72%,transparent),inset 0 1px 0 color-mix(in srgb,var(--mf-world-surface-strong) 70%,transparent);
+}
+
+/* --------------------------------------------------------------------------
+   Information-first refinement
+   Home remains expressive. Analytical and configuration screens deliberately calm the
+   scenery, tighten vertical rhythm and let numbers / decisions carry the hierarchy.
+   These rules live in the named experience layer, not as source-order overrides.
+   -------------------------------------------------------------------------- */
+@layer milkflow-experience {
+  body[data-screen="mom-trends"] .view,
+  body[data-screen="baby-trends"] .view,
+  body[data-screen="settings"] .view{
+    position:relative;
+  }
+
+  body[data-screen="mom-trends"] .view::before,
+  body[data-screen="baby-trends"] .view::before,
+  body[data-screen="settings"] .view::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    border-radius:28px;
+    background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 72%,transparent),color-mix(in srgb,var(--surface) 44%,transparent) 46%,transparent 88%);
+  }
+
+  body[data-screen="mom-trends"] .page-head,
+  body[data-screen="baby-trends"] .page-head{
+    min-height:0;
+    margin-bottom:10px;
+    padding:14px 17px 13px;
+    border-radius:22px;
+    text-align:left;
+    box-shadow:0 6px 18px color-mix(in srgb,var(--hair) 65%,transparent);
+  }
+  body[data-screen="mom-trends"] .page-head h2,
+  body[data-screen="baby-trends"] .page-head h2{
+    margin-top:2px;
+    font-size:clamp(25px,4vw,29px);
+    line-height:1.05;
+  }
+  body[data-screen="mom-trends"] .page-head .eyebrow,
+  body[data-screen="baby-trends"] .page-head .eyebrow{
+    font-size:9px;
+    letter-spacing:.14em;
+  }
+
+  body[data-screen="mom-trends"] .pills,
+  body[data-screen="baby-trends"] .pills{
+    margin-block:8px 11px;
+    gap:6px;
+  }
+  body[data-screen="mom-trends"] .pills button,
+  body[data-screen="baby-trends"] .pills button{
+    min-height:38px;
+    padding-inline:12px;
+    border-radius:13px;
+    font-size:11.5px;
+  }
+
+  body[data-screen="mom-trends"] .metric-grid,
+  body[data-screen="baby-trends"] .metric-grid{
+    gap:8px;
+    margin-bottom:10px;
+  }
+  body[data-screen="mom-trends"] .metric,
+  body[data-screen="baby-trends"] .metric{
+    min-height:82px;
+    padding:11px 12px;
+    gap:9px;
+    border-radius:18px;
+    box-shadow:0 5px 15px color-mix(in srgb,var(--hair) 70%,transparent);
+  }
+  body[data-screen="mom-trends"] .metric-icon,
+  body[data-screen="baby-trends"] .metric-icon{
+    width:34px;
+    height:34px;
+    border-radius:12px;
+  }
+  body[data-screen="mom-trends"] .metric strong,
+  body[data-screen="baby-trends"] .metric strong{
+    font-size:22px;
+    line-height:1;
+    letter-spacing:-.035em;
+  }
+  body[data-screen="mom-trends"] .metric span,
+  body[data-screen="baby-trends"] .metric span{
+    font-size:10px;
+    font-weight:800;
+  }
+  body[data-screen="mom-trends"] .metric small,
+  body[data-screen="baby-trends"] .metric small{
+    margin-top:3px;
+    font-size:9px;
+  }
+
+  body[data-screen="mom-trends"] .panel,
+  body[data-screen="baby-trends"] .panel{
+    margin-top:10px;
+    padding:13px;
+    border-radius:18px;
+    box-shadow:0 6px 18px color-mix(in srgb,var(--hair) 74%,transparent);
+  }
+  body[data-screen="mom-trends"] .panel-head,
+  body[data-screen="baby-trends"] .panel-head{
+    margin-bottom:9px;
+  }
+  body[data-screen="mom-trends"] .panel-head h3,
+  body[data-screen="baby-trends"] .panel-head h3{
+    font-size:15px;
+  }
+  body[data-screen="mom-trends"] .chart-area svg,
+  body[data-screen="baby-trends"] .chart-area svg{
+    height:116px;
+  }
+
+  /* Settings is a control center, not another hero page. Keep the selected world present,
+     but make the title and theme picker use much less of the first viewport. */
+  body[data-screen="settings"] .page-head{
+    min-height:86px;
+    padding:14px 82px 13px 19px;
+    border-radius:22px;
+    box-shadow:0 7px 20px var(--mf-world-shadow,rgba(25,30,42,.08));
+    text-align:left;
+  }
+  body[data-screen="settings"] .page-head h2{
+    margin:0;
+    font-size:29px;
+    line-height:1;
+  }
+  body[data-screen="settings"] .mf-settings-subtitle{
+    margin:5px 0 0;
+    max-width:28rem;
+    font-size:11px;
+    line-height:1.25;
+    text-align:left;
+  }
+  body[data-screen="settings"] .mf-settings-corner-art{
+    width:64px;
+    height:64px;
+    right:8px;
+    top:8px;
+  }
+  body[data-screen="settings"] .mf-settings-theme-panel{
+    padding:14px;
+    border-radius:22px;
+    box-shadow:0 8px 24px var(--mf-world-shadow,rgba(25,30,42,.09));
+  }
+  body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-intro{
+    margin-bottom:10px;
+  }
+  body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-intro h3{
+    font-size:23px;
+    line-height:1.05;
+  }
+  body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-preview{
+    height:104px;
+    min-height:104px;
+    flex-basis:104px;
+  }
+  body[data-screen="settings"] .mf-settings-shortcuts{
+    margin-top:10px;
+    padding:5px 13px;
+    border-radius:21px;
+    box-shadow:0 8px 22px var(--mf-world-shadow,rgba(25,30,42,.08));
+  }
+  body[data-screen="settings"] .mf-settings-row{
+    min-height:62px;
+    grid-template-columns:44px minmax(0,1fr) auto;
+    gap:11px;
+    padding:8px 0;
+  }
+  body[data-screen="settings"] .mf-settings-row-icon{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+  }
+  body[data-screen="settings"] .mf-settings-row strong{font-size:14px}
+  body[data-screen="settings"] .mf-settings-row small{font-size:10px}
+
+  /* Themed care art stays delightful but no longer outranks the actual label/action. */
+  body[data-screen="baby-home"] .mf-care-sprite,
+  body[data-screen="mom-home"] .mf-care-sprite{
+    width:62px;
+    height:62px;
+  }
+
+  @media(max-width:760px){
+    body[data-screen="mom-trends"] .view,
+    body[data-screen="baby-trends"] .view,
+    body[data-screen="settings"] .view{
+      padding-top:10px;
+    }
+    body[data-screen="mom-trends"] .page-head,
+    body[data-screen="baby-trends"] .page-head{
+      padding:12px 14px 11px;
+      margin-bottom:7px;
+      border-radius:19px;
+    }
+    body[data-screen="mom-trends"] .page-head h2,
+    body[data-screen="baby-trends"] .page-head h2{font-size:23px}
+    body[data-screen="mom-trends"] .metric,
+    body[data-screen="baby-trends"] .metric{
+      min-height:78px;
+      padding:10px;
+    }
+    body[data-screen="mom-trends"] .metric strong,
+    body[data-screen="baby-trends"] .metric strong{font-size:20px}
+    body[data-screen="mom-trends"] .panel,
+    body[data-screen="baby-trends"] .panel{padding:12px;border-radius:17px}
+
+    body[data-screen="settings"] .page-head{
+      min-height:78px;
+      padding:12px 67px 11px 15px;
+      border-radius:20px;
+    }
+    body[data-screen="settings"] .page-head h2{font-size:27px}
+    body[data-screen="settings"] .mf-settings-subtitle{font-size:10.5px;margin-top:4px}
+    body[data-screen="settings"] .mf-settings-corner-art{width:54px;height:54px;right:7px;top:8px}
+    body[data-screen="settings"] .mf-settings-theme-panel{padding:12px;border-radius:19px}
+    body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-intro h3{font-size:21px}
+    body[data-screen="settings"] .mf-settings-theme-panel .mf-experience-preview{height:92px;min-height:92px;flex-basis:92px}
+
+    :root:not([data-experience-theme="clean"]) body[data-realm] .bottom-nav button[data-view]{
+      border-radius:14px;
+    }
+  }
 }
