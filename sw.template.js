@@ -1,4 +1,15 @@
 // Generated into dist/sw.js by scripts/build.mjs. Do not edit a built sw.js by hand.
+ // iOS adds "from [installed app name]" itself on a separate line. NotificationOptions
+ // cannot change that system attribution; use the app-controlled body for care details,
+ // not another device/source label that consumes the remaining visible text.
+ function notificationCopy(data){
+   const rawTitle=String(data?.title||'').trim();
+   const rawBody=String(data?.body||'').trim();
+   return{
+     title:rawTitle.replace(/^MilkFlow family update$/i,'Family update')||'Family update',
+     body:rawBody.replace(/\s*[·•]\s*from\s+(?:iPhone|iPad|Android|Mac|Windows PC|Other device)\s*$/i,'').trim()||'New care activity.'
+   };
+ }
 const VERSION='milkflow-v__MILKFLOW_VERSION__';
 const BUILD_COMMIT='__MILKFLOW_COMMIT__';
 const SHELL=__MILKFLOW_SHELL__;
@@ -22,8 +33,9 @@ try{
       const d=payload?.data||{};
       const route=String(d.route||'baby-home').replace(/^#/,'');
       const url=new URL(`#${route}`,self.registration.scope).href;
-      return self.registration.showNotification(d.title||'MilkFlow family update',{
-        body:d.body||'New care was logged on another device.',
+      const copy=notificationCopy(d);
+      return self.registration.showNotification(copy.title,{
+        body:copy.body,
         icon:'./milkflow-family-v3-192.png',badge:'./milkflow-family-v3-192.png',
         tag:d.alertId||`milkflow-${d.recordId||Date.now()}`,renotify:false,
         data:{url,alertId:d.alertId||''}
