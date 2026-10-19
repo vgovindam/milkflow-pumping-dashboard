@@ -56,31 +56,31 @@ function recentRecord(data){
   return Number.isFinite(t)&&Math.abs(Date.now()-t)<=RECENT_MS;
 }
 function formatAlert(collection,data){
-  const names=currentNames(), time=to12(data?.time), suffix=data?.sourceDeviceLabel?` · from ${data.sourceDeviceLabel}`:'';
+  const names=currentNames(), time=to12(data?.time);
   if(collection==='entries'){
-    if(data?.type==='pump')return{title:`${names.mom} logged a pump`,body:`${Number(data.amountMl||0)} mL${time?` · ${time}`:''}${suffix}`,route:'mom-history'};
-    return{title:`${names.mom} logged nursing`,body:`${Number(data?.durationMin||0)} min${time?` · ${time}`:''}${suffix}`,route:'mom-history'};
+    if(data?.type==='pump')return{title:`${names.mom} logged a pump`,body:`${Number(data.amountMl||0)} mL${time?` · ${time}`:''}`,route:'mom-history'};
+    return{title:`${names.mom} logged nursing`,body:`${Number(data?.durationMin||0)} min${time?` · ${time}`:''}`,route:'mom-history'};
   }
   const kind=String(data?.eventType||'care');
   if(kind==='feeding'){
     const what=data?.feedingType==='formula'?'formula':'breast milk';
-    return{title:`${names.baby} was fed`,body:`${Number(data?.amountOz||0).toFixed(1)} oz ${what}${time?` · ${time}`:''}${suffix}`,route:'baby-history'};
+    return{title:`${names.baby} was fed`,body:`${Number(data?.amountOz||0).toFixed(1)} oz ${what}${time?` · ${time}`:''}`,route:'baby-history'};
   }
-  if(kind==='nursing')return{title:`${names.baby} nursed`,body:`${Number(data?.durationMinutes??data?.totalMinutes??0)} min${time?` · ${time}`:''}${suffix}`,route:'baby-history'};
+  if(kind==='nursing')return{title:`${names.baby} nursed`,body:`${Number(data?.durationMinutes??data?.totalMinutes??0)} min${time?` · ${time}`:''}`,route:'baby-history'};
   if(kind==='diaper'){
     const label=data?.subtype==='both'?'Mixed diaper':data?.subtype==='poop'?'Poopy diaper':'Wet diaper';
-    return{title:`${names.baby} care logged`,body:`${label}${time?` · ${time}`:''}${suffix}`,route:'baby-history'};
+    return{title:`${names.baby} care logged`,body:`${label}${time?` · ${time}`:''}`,route:'baby-history'};
   }
   if(kind==='sleep'){
     const min=Number(data?.durationMinutes||0), duration=min>=60?`${Math.floor(min/60)} hr${min%60?` ${min%60} min`:''}`:`${min} min`;
-    return{title:`${names.baby} sleep logged`,body:`${duration}${time?` · ${time}`:''}${suffix}`,route:'baby-history'};
+    return{title:`${names.baby} sleep logged`,body:`${duration}${time?` · ${time}`:''}`,route:'baby-history'};
   }
   if(kind==='growth'){
     const wt=data?.weightLb!=null?`${data.weightLb} lb${data.weightOz!=null?` ${data.weightOz} oz`:''}`:'Growth measurement';
-    return{title:`${names.baby} growth logged`,body:`${wt}${suffix}`,route:'baby-growth'};
+    return{title:`${names.baby} growth logged`,body:`${wt}`,route:'baby-growth'};
   }
-  if(kind==='milestone')return{title:`${names.baby} milestone logged`,body:`${String(data?.milestoneText||'Development milestone')}${suffix}`,route:'development'};
-  return{title:`${names.baby} care logged`,body:`New ${kind} entry${time?` · ${time}`:''}${suffix}`,route:'baby-history'};
+  if(kind==='milestone')return{title:`${names.baby} milestone logged`,body:`${String(data?.milestoneText||'Development milestone')}`,route:'development'};
+  return{title:`${names.baby} care logged`,body:`New ${kind} entry${time?` · ${time}`:''}`,route:'baby-history'};
 }
 
 let auth=null,db=null,currentUser=null,messaging=null,pushToken='',sdkPromise=null,reconciling=null;
