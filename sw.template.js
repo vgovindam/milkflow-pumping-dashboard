@@ -1,15 +1,34 @@
 // Generated into dist/sw.js by scripts/build.mjs. Do not edit a built sw.js by hand.
- // iOS adds "from [installed app name]" itself on a separate line. NotificationOptions
- // cannot change that system attribution; use the app-controlled body for care details,
- // not another device/source label that consumes the remaining visible text.
- function notificationCopy(data){
-   const rawTitle=String(data?.title||'').trim();
-   const rawBody=String(data?.body||'').trim();
-   return{
-     title:rawTitle.replace(/^MilkFlow family update$/i,'Family update')||'Family update',
-     body:rawBody.replace(/\s*[·•]\s*from\s+(?:iPhone|iPad|Android|Mac|Windows PC|Other device)\s*$/i,'').trim()||'New care activity.'
-   };
- }
+// Home Screen web-app notifications receive an iOS-owned "from MilkFlow" subtitle.
+// We cannot remove Apple's subtitle, but routine care events can use one useful
+// title and no body so they don't consume a third line.
+// Reminders and long milestones keep their detail line for clarity.
+function notificationCopy(data){
+  const rawTitle=String(data?.title||'').trim();
+  const rawBody=String(data?.body||'').trim();
+  const body=rawBody.replace(/\s*[·•]\s*from\s+(?:iPhone|iPad|Android|Mac|Windows PC|Other device)\s*$/i,'').trim();
+  const title=rawTitle.replace(/^MilkFlow family update$/i,'Family update')||'Family update';
+  if((data?.collection==='entries'||data?.collection==='familyEvents')&&body){
+    const actions=[
+      [/^(.*) care logged$/i,'$1'],
+      [/^(.*) was fed$/i,'$1 fed'],
+      [/^(.*) logged a pump$/i,'$1 pumped'],
+      [/^(.*) logged nursing$/i,'$1 nursed'],
+      [/^(.*) nursed$/i,'$1 nursed'],
+      [/^(.*) sleep logged$/i,'$1 slept'],
+      [/^(.*) growth logged$/i,'$1 growth']
+    ];
+    for(const [pattern,summary] of actions){
+      if(!pattern.test(title))continue;
+      const compact=title.replace(pattern,summary)+' · '+body;
+      // A long push title wraps on small iPhones. Preserve detail as a body
+      // instead of making an unreadable multi-line title.
+      if(compact.length<=42)return{title:compact,body:''};
+      return{title:title.replace(pattern,summary),body};
+    }
+  }
+  return{title,body:body||'New care activity.'};
+}
 const VERSION='milkflow-v__MILKFLOW_VERSION__';
 const BUILD_COMMIT='__MILKFLOW_COMMIT__';
 const SHELL=__MILKFLOW_SHELL__;
