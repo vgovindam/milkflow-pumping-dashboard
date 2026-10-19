@@ -318,3 +318,26 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
     throw new Error('localNow is ignoring the timezone argument');
   if(localNow('Not/AZone')!==null)throw new Error('localNow must return null for an unusable timezone');
 }
+
+// iOS inserts its own "from MilkFlow" label. Keep routine care details in
+// one title line (no redundant body), but preserve long milestones/reminders.
+{
+  const source=fs.readFileSync(path.join(ROOT,'sw.template.js'),'utf8');
+  const start=source.indexOf('function notificationCopy(');
+  const end=source.indexOf('const VERSION=',start);
+  if(start<0||end<0)throw new Error('Notification formatting contract moved');
+  const context=vm.createContext({});
+  vm.runInContext(source.slice(start,end)+'\nthis.format=notificationCopy;',context);
+  const cases=[
+    [{title:'Saahas care logged',body:'Wet diaper · 1:03 PM',collection:'familyEvents'},'Saahas · Wet diaper · 1:03 PM',''],
+    [{title:'Mom logged a pump',body:'180 mL · 6:42 AM',collection:'entries'},'Mom pumped · 180 mL · 6:42 AM',''],
+    [{title:'Saahas was fed',body:'3.0 oz breast milk · 10:20 AM',collection:'familyEvents'},'Saahas fed · 3.0 oz breast milk · 10:20 AM',''],
+    [{title:'Saahas care logged',body:'Wet diaper · 1:03 PM · from iPhone',collection:'familyEvents'},'Saahas · Wet diaper · 1:03 PM',''],
+    [{title:'Saahas milestone logged',body:'Rolled from back to tummy',collection:'familyEvents'},'Saahas milestone logged','Rolled from back to tummy'],
+    [{title:'Pump 4 at 8:00 PM',body:'Mom, your next session is coming up',route:'mom-home'},'Pump 4 at 8:00 PM','Mom, your next session is coming up']
+  ];
+  for(const [input,title,body] of cases){
+    const actual=context.format(input);
+    if(actual.title!==title||actual.body!==body)throw new Error('Notification copy mismatch: '+JSON.stringify({input,actual,expected:{title,body}}));
+  }
+}
