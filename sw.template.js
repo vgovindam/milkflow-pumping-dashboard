@@ -15,6 +15,11 @@ function notificationCopy(data){
     .replace(/\bsleep logged$/i,'sleep')
     .replace(/\bgrowth logged$/i,'growth')
     ||'Family update';
+  // A diaper can have a clearer label without a long "care logged" title.
+  const diaper=originalTitle.match(/^(.*?) care logged$/i);
+  if(diaper&&/^(Wet|Poopy|Mixed) diaper\b/i.test(body)){
+    return{title:diaper[1]+' diaper',body:body.replace(/^(Wet|Poopy|Mixed) diaper\b/i,'$1')};
+  }
   return{title,body};
 }
 const VERSION='milkflow-v__MILKFLOW_VERSION__';
