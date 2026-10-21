@@ -51,12 +51,51 @@ function clusterDays(rows){
   return count;
 }
 function card({kind,priority,title,observed,meaning,suggestion,route}){return{kind,priority,title,observed,meaning,suggestion,route};}
+// These are stage-based education, not symptoms inferred from absent logs.
+// Rotate the topic with age to avoid repeating generic "babies change" advice.
 function ageCard(s){
-  const days=ageDays(s.baby?.birthDate);if(days==null)return null;
-  const weeks=Math.floor(days/7),name=s.baby?.name||'Baby';
-  if(days<120)return card({kind:'age',priority:20,title:`Around ${weeks} weeks`,observed:`${name} is about ${weeks} weeks old.`,meaning:'Feeding and sleep can still change quickly at this age, so one unusual day rarely tells the whole story.',suggestion:'Follow feeding cues, keep safe-sleep habits, and look for patterns that repeat across several days.',route:'baby-trends'});
-  if(days<180)return card({kind:'age',priority:20,title:`Around ${weeks} weeks`,observed:`${name} is about ${weeks} weeks old.`,meaning:'Daily routines may be becoming more recognizable, while normal variation can still be substantial.',suggestion:'Watch for repeated changes in feeding, sleep, diapers and growth rather than chasing a rigid schedule.',route:'baby-trends'});
-  return card({kind:'age',priority:20,title:`Around ${weeks} weeks`,observed:`${name} is about ${weeks} weeks old.`,meaning:'As routines evolve, trends across several completed days become more useful than individual days.',suggestion:'Use Trends to follow feeding, sleep, diapers, growth and milestones; bring concerns to your pediatrician.',route:'baby-trends'});
+  const days=ageDays(s.baby?.birthDate);if(days==null||days<0)return null;
+  const weeks=Math.floor(days/7),name=s.baby?.name||'Baby',phase=Math.floor(days/14);
+  if(days<56)return card({kind:'age-baby-'+phase,priority:30,title:name+' · early weeks',observed:name+' is around '+weeks+' weeks old.',meaning:'Feeding and sleep can vary substantially in these early weeks.',suggestion:'Follow feeding cues, practice safe sleep, and ask your pediatrician about any concerns with feeding or wet diapers.',route:'development'});
+  if(days<112){
+    const messages=[
+      ['Communication & connection','Around 2 months many babies begin responding to voices, smiling socially, and making more sounds.','Talk face-to-face and respond to coos. The CDC two-month checklist can help frame questions, not diagnose delays.'],
+      ['Tummy-time curiosity','During the 2–4 month stage, supported awake tummy time and reaching for toys offer chances to practice movements.','Try short supervised awake floor-play sessions and watch for growing head control; always place baby on the back for sleep.'],
+      ['Busy feeding periods','Feeding frequency sometimes clusters even when nothing is wrong, and patterns shift over weeks.','Follow cues and compare complete logged days, not a single unusually busy afternoon.'],
+      ['Play & sensory discovery','Your baby may enjoy faces, voices, gentle songs and contrasting objects as their attention changes.','Try talking, singing or reading together and ask the pediatrician about milestones you are unsure of.']
+    ];
+    const pick=messages[phase%messages.length];
+    return card({kind:'age-baby-'+phase,priority:34,title:name+' · '+pick[0],observed:name+' is around '+weeks+' weeks old.',meaning:pick[1],suggestion:pick[2],route:'development'});
+  }
+  if(days<180){
+    const items=[
+      ['Sounds & smiles','By around four months many babies respond to your voice and make cooing sounds back.','Take turns making sounds and check the CDC four-month milestones with your pediatrician if anything worries you.'],
+      ['Movement through play','At around four months, many babies begin steady head holding and push up on forearms during tummy time.','Offer supervised awake tummy-time and floor play; every baby develops at their own pace.'],
+      ['Reading feeding cues','The baby may show interest in a breast or bottle before crying, and feed patterns may shift.','Watch cues and use the completed-day feed/diaper trend as context, not a rigid target.'],
+      ['Sleep safety remains key','Sleep stretches may change as development progresses. A longer stretch is not a guarantee of uninterrupted sleep.','Back to sleep on a firm flat separate sleep surface, without loose bedding.']
+    ];
+    const p=items[phase%items.length];
+    return card({kind:'age-baby-'+phase,priority:34,title:name+' · '+p[0],observed:name+' is around '+weeks+' weeks old.',meaning:p[1],suggestion:p[2],route:'development'});
+  }
+  return card({kind:'age-baby-'+phase,priority:26,title:name+' · growing routines',observed:name+' is around '+weeks+' weeks old.',meaning:'Development, play, feeds and sleep keep changing. Milestones describe broad patterns, not a fixed timetable.',suggestion:'Use age-based milestone guidance and bring questions or missed skills to the pediatrician.',route:'development'});
+}
+function momStageCard(s){
+  const days=ageDays(s.baby?.birthDate);if(days==null||days>365)return null;
+  const weeks=Math.floor(days/7),phase=Math.floor(days/21);
+  const themes=days<84?[
+    ['Recovery is still ongoing','Postpartum recovery and energy can vary while feeding or pumping routines settle.','Try to build rest and hydration into the day. Discuss persistent pain, low mood or worrying symptoms with your clinician.'],
+    ['Pumping comfort check','A routine should be comfortable, not something to push through significant pain.','If soreness repeats, check flange fit and suction. Fever with breast pain deserves prompt medical advice.'],
+    ['Supply patterns take time','One small or large session rarely explains your overall pumping trend.','Look across multiple completed logging days and consider your session count and timing.']
+  ]:days<180?[
+    ['Routine and recovery','As postpartum weeks progress, changing sleep and family needs can affect how manageable pumping feels.','Review your usual pump schedule and ask for practical help or clinical advice when pain, exhaustion or low mood persists.'],
+    ['Breast symptoms matter','Tenderness, fever or chills should not be ignored simply because you pump regularly.','Use cold compresses for tenderness and seek same-day clinician guidance for fever, chills or spreading redness.'],
+    ['Body and feeding changes','Returning activity, sleep changes and milk expression all vary between people.','Judge trends over complete days. Talk to your clinician about new or worsening symptoms.']
+  ]:[
+    ['A routine that fits you','As family rhythms change, feeding and pumping goals can evolve too.','Consider whether the saved permanent pump target still matches your needs; changes are your choice.'],
+    ['Comfort still counts','New breast pain or fever still deserves attention beyond the newborn period.','Choose comfortable pumping settings and contact a clinician for fever with breast tenderness.']
+  ];
+  const p=themes[phase%themes.length];
+  return card({kind:'age-mom-'+phase,priority:32,title:'For Mom · '+p[0],observed:'About '+weeks+' weeks postpartum, based on the baby birth date saved in MilkFlow.',meaning:p[1],suggestion:p[2],route:'mom-trends'});
 }
 function buildCards(s){
   const cards=[],baby=babyRows(s),pumps=pumpRows(s),name=s.baby?.name||'Baby';
@@ -75,6 +114,7 @@ function buildCards(s){
   const count=compareRecent(pumps,'count',20);
   if(count&&Math.abs(count.recent-count.prior)>=0.75)cards.push(card({kind:'pump-count',priority:68,title:'Pumping rhythm changed',observed:`You averaged ${count.recent.toFixed(1)} pumps/day over the last 3 completed days vs ${count.prior.toFixed(1)} previously.`,meaning:'That change can explain part of an output shift and is separate from any one-day target override.',suggestion:'Check whether this matches your intended normal pump target and adjust the permanent setting if your routine has changed.',route:'mom-trends'}));
   const age=ageCard(s);if(age)cards.push(age);
+  const momStage=momStageCard(s);if(momStage)cards.push(momStage);
   return cards.sort((a,b)=>b.priority-a.priority);
 }
 function signature(cards){return cards.slice(0,MAX_CARDS).map(c=>c.kind).join('|');}
@@ -117,7 +157,7 @@ function show(cards){
   injectStyle();
   const top=cards.slice(0,MAX_CARDS),existing=document.getElementById('mfParentBrief');if(existing)existing.remove();
   const d=document.createElement('dialog');d.id='mfParentBrief';d.className='mf-parent-brief';
-  d.innerHTML=`<div class="mf-parent-brief-card"><div class="mf-parent-brief-head"><div><div class="mf-parent-brief-kicker">✦ Parent brief</div><h2>A couple of things worth noticing</h2><p class="mf-parent-brief-sub">Completed-day signals only. Short, suggestive and meant to help you know what to watch next.</p></div><button class="mf-parent-brief-close" type="button" aria-label="Close">×</button></div><div class="mf-parent-brief-items">${top.map(c=>`<article class="mf-parent-brief-item"><h3>${esc(c.title)}</h3><div class="mf-parent-brief-line"><b>Observed</b><span>${esc(c.observed)}</span></div><div class="mf-parent-brief-line"><b>Why</b><span>${esc(c.meaning)}</span></div><div class="mf-parent-brief-line next"><b>Watch / try</b><span>${esc(c.suggestion)}</span></div></article>`).join('')}</div><div class="mf-parent-brief-actions"><button type="button" class="mf-parent-brief-later">Got it</button><button type="button" class="mf-parent-brief-view">See trends</button></div></div>`;
+  d.innerHTML=`<div class="mf-parent-brief-card"><div class="mf-parent-brief-head"><div><div class="mf-parent-brief-kicker">✦ Parent brief</div><h2>A couple of things worth noticing</h2><p class="mf-parent-brief-sub">Short, supportive insights from your logs and your family's current stage. Not a diagnosis.</p></div><button class="mf-parent-brief-close" type="button" aria-label="Close">×</button></div><div class="mf-parent-brief-items">${top.map(c=>`<article class="mf-parent-brief-item"><h3>${esc(c.title)}</h3><div class="mf-parent-brief-line"><b>Observed</b><span>${esc(c.observed)}</span></div><div class="mf-parent-brief-line"><b>Why</b><span>${esc(c.meaning)}</span></div><div class="mf-parent-brief-line next"><b>Watch / try</b><span>${esc(c.suggestion)}</span></div></article>`).join('')}</div><div class="mf-parent-brief-actions"><button type="button" class="mf-parent-brief-later">Got it</button><button type="button" class="mf-parent-brief-view">See trends</button></div></div>`;
   document.body.appendChild(d);
   const close=()=>{try{d.close();}catch{}d.remove();};
   d.querySelector('.mf-parent-brief-close').addEventListener('click',close);
