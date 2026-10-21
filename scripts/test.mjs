@@ -343,3 +343,53 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
     if(!actual.body.trim())throw new Error('Notification details must not be erased');
   }
 }
+
+
+// Every new care entry must carry the sender's identity in the *first* cloud
+// document create, not in a later snapshot merge that delays notifications.
+{
+  const app=fs.readFileSync(path.join(ROOT,'app.js'),'utf8');
+  const from=app.indexOf('function stampEntrySource(');
+  const to=app.indexOf('async function pushProfile(',from);
+  if(from<0||to<0)throw new Error('Initial-write notification source contract missing');
+  const writes=[];
+  const origin={sourceDeviceId:'iphone-original',sourceDeviceLabel:'iPhone',sourceClientAt:'2026-10-20T18:00:00.000Z'};
+  const stub={
+    window:{MilkFlowCrossDeviceAlerts:{stamp:()=>({...origin})}},
+    S:{cloud:{userId:'family-test',lastSync:null}},
+    cloud:{db:{batch:()=>({set:(ref,data)=>writes.push({ref,data}),commit:async()=>{}})}},
+    momRef:()=>({doc:id=>({set:async data=>writes.push({ref:id,data})})}),
+    babyRef:()=>({doc:id=>({id})}),
+    firebase:{firestore:{FieldValue:{serverTimestamp:()=> 'server-timestamp'}}},
+    normalizeBabyEvent:e=>({...e}),
+    save:()=>{}
+  };
+  const ctx=vm.createContext(stub);
+  vm.runInContext(app.slice(from,to)+'\nthis.pushMom=pushMom;this.pushBabies=pushBabies;',ctx);
+  const pump={id:'mom-one',type:'pump',date:'2026-10-20',time:'11:32',amountMl:150,createdAt:'2026-10-20T16:32:00.000Z'};
+  await ctx.pushMom(pump);
+  const diaper={id:'baby-one',babyId:'baby',eventType:'diaper',subtype:'wet',date:'2026-10-20',time:'11:33',createdAt:'2026-10-20T16:33:00.000Z'};
+  await ctx.pushBabies([diaper]);
+  for(const w of writes){
+    if(w.data.sourceDeviceId!=='iphone-original'||w.data.sourceDeviceLabel!=='iPhone')
+      throw new Error('Care alert source missing from first Firestore write');
+  }
+  if(writes[0]?.data?.sourceClientAt!==pump.createdAt||writes[1]?.data?.sourceClientAt!==diaper.createdAt)
+    throw new Error('Origin timestamp is not preserved');
+  origin.sourceDeviceId='different-phone';
+  await ctx.pushMom(pump);
+  if(writes.at(-1).data.sourceDeviceId!=='iphone-original')
+    throw new Error('Resync or edit re-tagged an entry as another device');
+  const chat=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+  const cStart=chat.indexOf('function stampChatEntry('),cEnd=chat.indexOf('async function syncMom(',cStart);
+  if(cStart<0||cEnd<0)throw new Error('Chat initial-write tag contract missing');
+  const chatCtx=vm.createContext({window:{MilkFlowCrossDeviceAlerts:{stamp:()=>({...origin})}}});
+  vm.runInContext(chat.slice(cStart,cEnd)+'\nthis.tag=stampChatEntry;',chatCtx);
+  const entry={id:'chat-one',createdAt:'2026-10-20T16:40:00.000Z'};
+  chatCtx.tag(entry);
+  if(entry.sourceDeviceId!=='different-phone'||entry.sourceClientAt!==entry.createdAt)
+    throw new Error('Chat care entry missing original device tag');
+  const server=fs.readFileSync(path.join(ROOT,'functions/cross-device-alerts.js'),'utf8');
+  if(!server.includes('snap.exists&&!data.sourceDeviceId')||!server.includes('if(sourceDeviceId&&doc.id===sourceDeviceId)return;'))
+    throw new Error('Cloud push must skip its own device when origin is supplied');
+}
