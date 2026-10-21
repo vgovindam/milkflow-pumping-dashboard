@@ -33,7 +33,7 @@ function createFamilyChat({onRequest,admin,db,OPENAI_API_KEY,ALLOWED_ORIGINS}){
       d.sessions.sort((a,b)=>String(a.time).localeCompare(String(b.time)));
       const o=Number(overrides?.[d.date]);if(Number.isFinite(o)&&o>d.totalMl)d.totalMl=o;
     }
-    return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date)).slice(-16);
+    return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date)).slice(-35);
   }
   function babyDays(events){
     const map={};
@@ -48,17 +48,27 @@ function createFamilyChat({onRequest,admin,db,OPENAI_API_KEY,ALLOWED_ORIGINS}){
         if(s==='wet')d.wet++;else if(s==='poop'||s==='dirty')d.poop++;else if(s==='both'||s==='mixed')d.both++;
       }else if(e.eventType==='sleep')d.sleepMinutes+=Number(e.durationMinutes)||0;
     }
-    return Object.values(map).sort((a,b)=>`${a.date}${a.babyId||''}`.localeCompare(`${b.date}${b.babyId||''}`)).slice(-16);
+    return Object.values(map).sort((a,b)=>`${a.date}${a.babyId||''}`.localeCompare(`${b.date}${b.babyId||''}`)).slice(-35);
   }
-  function buildMetrics(pDays,mom,bDays){
-    const completed=pDays.slice(0,-1),recent=completed.slice(-7),prior=completed.slice(-14,-7);
-    const morning=mom.filter(e=>e.type==='pump'&&e.time&&Number(String(e.time).slice(0,2))<10).slice(-20);
-    const sessions=mom.filter(e=>e.type==='pump');
-    const high=sessions.reduce((best,e)=>(Number(e.amountMl)||0)>(Number(best?.amountMl)||0)?e:best,null);
-    const babyComplete=bDays.slice(0,-1).slice(-7);
-    return{pumping:{recentCompletedDays:recent.length,avgDailyMl7:average(recent,'totalMl'),avgPumpCount7:average(recent,'count'),previousAvgDailyMl7:average(prior,'totalMl'),morningSessionAvgMl:average(morning,'amountMl'),highestRecentSession:high?{date:high.date,time:high.time,amountMl:Number(high.amountMl)||0}:null},baby:{days:babyComplete.length,avgBottleOz:average(babyComplete,'feedOz'),avgBottleFeeds:average(babyComplete,'feeds'),avgWet:average(babyComplete,'wet'),avgPoop:average(babyComplete,'poop'),avgSleepMinutes:average(babyComplete,'sleepMinutes')}};
+  function buildMetrics(pDays,mom,bDays,todayKey){
+    // Calendar dates, not array positions, define completed days. Yesterday
+    // remains complete even if there have been no pump entries today.
+    const completed=pDays.filter(x=>x.date<todayKey),recent=completed.slice(-7),prior=completed.slice(-14,-7);
+    const babyComplete=bDays.filter(x=>x.date<todayKey).slice(-7);
+    const sessions=mom.filter(e=>e.type==='pump'),recentSessions=sessions.filter(e=>e.date>=cutoff(14)&&e.date<todayKey);
+    const morning=recentSessions.filter(e=>Number(String(e.time||'99').slice(0,2))<10);
+    const high=recentSessions.reduce((best,e)=>(Number(e.amountMl)||0)>(Number(best?.amountMl)||0)?e:best,null);
+    const avg=(rows,key,places=1)=>{const nums=rows.map(x=>Number(x[key])).filter(Number.isFinite);return nums.length?Number((nums.reduce((sum,n)=>sum+n,0)/nums.length).toFixed(places)):null;};
+    const todayPump=pDays.find(x=>x.date===todayKey)||{totalMl:0,count:0};
+    const todayBaby=bDays.find(x=>x.date===todayKey)||null;
+    const a=avg(recent,'totalMl'),b=avg(prior,'totalMl');
+    const diff=recent.length>=3&&prior.length>=3&&b>0?Number(((a-b)/b*100).toFixed(1)):null;
+    return {
+      pumping:{todaySoFar:{totalMl:todayPump.totalMl,count:todayPump.count,partial:true},recentCompletedDays:recent.length,avgDailyMl7:avg(recent,'totalMl',0),avgPumpCount7:avg(recent,'count'),previousCompletedDays:prior.length,previousAvgDailyMl7:avg(prior,'totalMl',0),changePct7:diff,morningSessionAvgMl:avg(morning,'amountMl',0),highestRecentSession:high?{date:high.date,time:high.time,amountMl:Number(high.amountMl)||0}:null},
+      baby:{todaySoFar:todayBaby?{...todayBaby,partial:true}:null,completedDays:babyComplete.length,avgBottleOz:avg(babyComplete,'feedOz'),avgBottleFeeds:avg(babyComplete,'feeds'),avgNursingSessions:avg(babyComplete,'nursing'),avgWetIncludingMixed:avg(babyComplete.map(x=>({...x,wetTotal:x.wet+x.both})),'wetTotal'),avgPoopIncludingMixed:avg(babyComplete.map(x=>({...x,poopTotal:x.poop+x.both})),'poopTotal'),avgSleepMinutes:avg(babyComplete.filter(x=>x.sleepMinutes>0),'sleepMinutes')}
+    };
   }
-  async function load(uid){
+  async function load(uid,todayKey){
     const root=db.collection('users').doc(uid);
     const [momSnap,babySnap,profileDoc,chatSnap]=await Promise.all([
       root.collection('entries').where('date','>=',cutoff(30)).get(),
@@ -69,9 +79,10 @@ function createFamilyChat({onRequest,admin,db,OPENAI_API_KEY,ALLOWED_ORIGINS}){
     const raw=profileDoc.exists?(profileDoc.data()||{}):{};
     const mom=momSnap.docs.map(d=>cleanMom({id:d.id,...d.data()})).filter(e=>!e.voidedAt).sort((a,b)=>`${a.date||''}${a.time||''}`.localeCompare(`${b.date||''}${b.time||''}`));
     const baby=babySnap.docs.map(d=>cleanBaby({id:d.id,...d.data()})).filter(e=>!e.voidedAt).sort((a,b)=>`${a.date||''}${a.time||''}`.localeCompare(`${b.date||''}${b.time||''}`));
-    const pDays=pumpDays(mom,raw.dailyOverrides||{}),bDays=babyDays(baby);
+    const babyActive=raw.baby?.id?baby.filter(e=>!e.babyId||e.babyId===raw.baby.id):baby;
+    const pDays=pumpDays(mom,raw.dailyOverrides||{}),bDays=babyDays(babyActive);
     const history=chatSnap?chatSnap.docs.map(d=>d.data()).reverse().map(x=>({role:x.role==='assistant'?'assistant':'user',text:String(x.text||'').slice(0,700)})).slice(-10):[];
-    return{profile:{dailyGoalMl:raw.profile?.dailyGoalMl??raw.dailyGoalMl??null,dailyPumpTarget:raw.profile?.dailyPumpTarget??null,schedule:Array.isArray(raw.schedule)?raw.schedule:[],baby:raw.baby||null},pumpDays:pDays.slice(-14),recentMom:mom.slice(-24),babyDays:bDays.slice(-14),recentBaby:baby.slice(-36),history,metrics:buildMetrics(pDays,mom,bDays)};
+    return{profile:{dailyGoalMl:raw.profile?.dailyGoalMl??raw.dailyGoalMl??null,dailyPumpTarget:raw.profile?.dailyPumpTarget??null,schedule:Array.isArray(raw.schedule)?raw.schedule:[],baby:raw.baby||null},pumpDays:pDays.slice(-14),recentMom:mom.slice(-30),babyDays:bDays.slice(-14),recentBaby:babyActive.slice(-36),history,metrics:buildMetrics(pDays,mom,bDays,todayKey)};
   }
 
   function outOfScope(text){return /\b(resume|cover letter|stock|crypto|bitcoin|election|president|politic|python|javascript|programming|recipe|restaurant|movie|celebrity|sports score|fantasy football|travel itinerary|hotel|flight|tattoo|makeup|haircut|astrology|horoscope|ghost story|poem|essay)\b/i.test(text);}
@@ -158,7 +169,7 @@ Keep normal replies under 180 words.`;
       if(gate.state==='processing')return res.status(202).json({ok:false,status:'processing',requestId});
 
       let cloud={profile:{},pumpDays:[],recentMom:[],babyDays:[],recentBaby:[],history:[],metrics:{}};
-      try{cloud=await load(uid);}catch(err){console.warn('Family chat cloud context unavailable',err?.message||err);}
+      try{cloud=await load(uid,String(req.body?.context?.localDay||new Date().toISOString().slice(0,10)));}catch(err){console.warn('Family chat cloud context unavailable',err?.message||err);}
       if(!inScope(message,cloud.history)){
         const out={reply:'I’m MilkFlow’s Mom + Baby tracker assistant, so I stay focused on pumping, feeding, diapers, sleep, baby/tracker patterns, and your MilkFlow plan. I can’t help with unrelated topics here.',topic:'other',needs_attention:false,source:'scope'};
         await Promise.all([requestRef.set({status:'completed',result:out,completedAt:admin.firestore.FieldValue.serverTimestamp()},{merge:true}),saveMessage(root,`${requestId}-user`,{role:'user',text:message}),saveMessage(root,`${requestId}-assistant`,{role:'assistant',text:out.reply})]);
