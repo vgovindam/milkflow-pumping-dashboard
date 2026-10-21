@@ -89,7 +89,7 @@ function createFamilyChat({onRequest,admin,db,OPENAI_API_KEY,ALLOWED_ORIGINS}){
   // says "MilkFlow" or "pump"; reject clearly unrelated subjects instead.
   function outOfScope(message){
     const text=String(message||'').toLowerCase();
-    return /\b(write (?:me )?code|programming|javascript|python script|sql query|debug code|grow (?:a )?plant|gardening|fertilizer|lawn|stock market|bitcoin|crypto trading|election results|sports scores|football lineup|hotel booking|makeup tutorial|celebrity gossip|tattoo design)\b/.test(text);
+    return /\b(write (?:me )?code|code (?:for|in)|coding|programming|javascript|python|sql query|debug (?:code|app)|(?:grow|growing) (?:a |my |some )?(?:plant|herb|tomato|rose)|plant care|gardening|houseplant|fertilizer|lawn|stock market|stocks|bitcoin|crypto trading|election results|sports scores|football lineup|hotel booking|makeup tutorial|celebrity gossip|tattoo design)\b/.test(text);
   }
   function inScope(message,history=[]){
     const text=String(message||'').toLowerCase().trim();
