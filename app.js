@@ -2547,10 +2547,24 @@ async function reconcile(){
   await pushBabies(S.babyEvents.filter(e=>!remoteBaby.has(e.id)));
   await pushProfile(); S.cloud.lastSync=new Date().toISOString(); save();
 }
-async function pushMom(e){ if(!cloud||!S.cloud.userId) return; await momRef().doc(e.id).set({type:e.type,date:e.date,time:e.time||'',amountMl:e.amountMl??null,durationMin:e.durationMin??null,side:e.side||null,quality:e.quality||null,note:e.note||'',source:e.source||'MilkFlow',createdAt:e.createdAt||null,editedAt:e.editedAt||null,voidedAt:e.voidedAt||null,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); e.synced=true; S.cloud.lastSync=new Date().toISOString(); save(); }
+// Stamp origin BEFORE the initial Firestore create. Previously another snapshot
+// listener merged this tag after the write, forcing the notification Function to
+// poll for up to ~6.75 seconds to avoid sending a push back to the source phone.
+// Preserve the originating device when the same entry is edited or resynchronized.
+function stampEntrySource(e){
+  if(!e||e.sourceDeviceId)return e;
+  const stamp=window.MilkFlowCrossDeviceAlerts?.stamp?.();
+  if(stamp?.sourceDeviceId){
+    e.sourceDeviceId=stamp.sourceDeviceId;
+    e.sourceDeviceLabel=stamp.sourceDeviceLabel||'';
+    e.sourceClientAt=e.createdAt||stamp.sourceClientAt;
+  }
+  return e;
+}
+async function pushMom(e){ if(!cloud||!S.cloud.userId) return; stampEntrySource(e); await momRef().doc(e.id).set({type:e.type,date:e.date,time:e.time||'',amountMl:e.amountMl??null,durationMin:e.durationMin??null,side:e.side||null,quality:e.quality||null,note:e.note||'',source:e.source||'MilkFlow',createdAt:e.createdAt||null,editedAt:e.editedAt||null,voidedAt:e.voidedAt||null,...(e.sourceDeviceId?{sourceDeviceId:e.sourceDeviceId,sourceDeviceLabel:e.sourceDeviceLabel||'',sourceClientAt:e.sourceClientAt||e.createdAt||null}:{}),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); e.synced=true; S.cloud.lastSync=new Date().toISOString(); save(); }
 async function pushBabies(arr){
   if(!cloud||!S.cloud.userId||!arr.length) return;
-  for(let i=0;i<arr.length;i+=350){ const part=arr.slice(i,i+350).map(normalizeBabyEvent), batch=cloud.db.batch(); for(const e of part) batch.set(babyRef().doc(e.id),{...e,synced:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); await batch.commit(); part.forEach(e=>e.synced=true); }
+  for(let i=0;i<arr.length;i+=350){ const part=arr.slice(i,i+350).map(e=>normalizeBabyEvent(stampEntrySource(e))), batch=cloud.db.batch(); for(const e of part) batch.set(babyRef().doc(e.id),{...e,synced:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); await batch.commit(); part.forEach(e=>e.synced=true); }
   S.cloud.lastSync=new Date().toISOString(); save();
 }
 /* timeZone travels with the profile because the scheduled reminder runs on a server in UTC
