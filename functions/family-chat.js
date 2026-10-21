@@ -131,13 +131,27 @@ Keep most replies about 90–200 words, but adapt to urgency and complexity. Lea
     throw last||new Error('Family chat unavailable');
   }
   function rulesReply(p){
-    const q=String(p.userMessage||'').toLowerCase(),plan=p.dynamicPlan||{},normal=Number(p.profile?.dailyPumpTarget),m=p.metrics?.pumping||{};
-    if(/(normal|usual|default|permanent).*(pump|session)|(pump|session).*(normal|usual|default|permanent)/.test(q)&&Number.isFinite(normal))return{reply:`Your normal synced target is ${normal} pump${normal===1?'':'s'} per day. Today can still have its own one-day override.`,topic:'mom',needs_attention:false,source:'rules'};
-    if(/next.*pump|when.*pump|pump.*next/.test(q)&&plan.future?.length){const n=Number(plan.future[0]),h=Math.floor(n/60)%24,mm=n%60;return{reply:`Your live plan puts the next pump around ${((h+11)%12)+1}:${String(mm).padStart(2,'0')} ${h>=12?'PM':'AM'}. Today’s target is ${plan.target||normal||'your current plan'}${Number.isFinite(normal)?`, while your normal target is ${normal}/day`:''}.`,topic:'mom',needs_attention:false,source:'rules'};}
-    if(/7.?day|rolling|compare|trend/.test(q)&&m.avgDailyMl7!=null){const prior=m.previousAvgDailyMl7==null?'':` versus ${m.previousAvgDailyMl7} mL/day in the previous completed week`;return{reply:`Your last ${m.recentCompletedDays||7} completed pumping days averaged about ${m.avgDailyMl7} mL/day${prior}. Average pump count was ${m.avgPumpCount7??'—'}/day${m.morningSessionAvgMl?`, and recent morning sessions averaged ${m.morningSessionAvgMl} mL`:''}.`,topic:'mom',needs_attention:false,source:'rules'};}
-    const d=Array.isArray(p.babyDays)?p.babyDays.at(-1):null;
-    if(/baby|feed|nurs|diaper|wet|poop|sleep/.test(q)&&d)return{reply:`${d.date}: ${d.feeds} bottle feed${d.feeds===1?'':'s'} (${d.feedOz} oz), ${d.nursing} nursing session${d.nursing===1?'':'s'}, ${d.wet} wet, ${d.poop} poopy, ${d.both} mixed diapers${d.sleepMinutes?`, and ${d.sleepMinutes} minutes of logged sleep`:''}.`,topic:'baby',needs_attention:false,source:'rules'};
-    return{reply:'I can help with your MilkFlow pumping, feeding, baby-care, sleep, and tracker patterns. Ask me about what you logged, trends, or what the live plan says next.',topic:'family',needs_attention:false,source:'rules'};
+    const q=String(p.userMessage||'').toLowerCase(),normal=Number(p.profile?.dailyPumpTarget),plan=p.dynamicPlan||{},m=p.metrics?.pumping||{},b=p.metrics?.baby||{};
+    const aboutBaby=/baby|infant|newborn|saahas|my son|my daughter/.test(q);
+    if(aboutBaby&&/fever|temperature|breathing|unresponsive/.test(q))
+      return{reply:'For a baby under three months, a measured temperature of 100.4°F (38°C) or above needs urgent medical evaluation. Breathing difficulty or unresponsiveness needs emergency care. How old is baby and what temperature was measured?',topic:'baby',needs_attention:true,source:'rules'};
+    if(/mastitis|breast.*(tender|pain|lump|red|hot)|clog|plugged duct|engorg|nipple pain|tenderness|sore breast|fever|chills/.test(q)){
+      const concern=/fever|chill|red|hot|mastitis/.test(q);
+      return{reply:concern?'Breast pain with fever, chills or spreading redness merits same-day advice from your clinician or OB/midwife. Mastitis is one possible cause. Use a cold compress, continue your usual comfortable pumping/feeding rhythm, rest and hydrate; avoid hard massage or additional pumping to empty. What temperature did you measure, and is there redness?':'For breast tenderness, cold compresses, checking flange fit and comfortable pump settings may help. Keep your usual rhythm; avoid deep massage or extra emptying sessions. Get clinician advice promptly for fever, chills, spreading redness, a worsening lump or severe pain. Which breast hurts?',topic:'mom',needs_attention:concern,source:'rules'};
+    }
+    if(/normal|usual|default|permanent/.test(q)&&/pump|session|target/.test(q)&&Number.isFinite(normal))
+      return{reply:'Your normal target is '+normal+' pumps per day; today may have a one-day override.',topic:'mom',needs_attention:false,source:'rules'};
+    if(/next.*pump|when.*pump|pump.*next/.test(q)&&plan.future?.length){
+      const n=Number(plan.future[0]),h=Math.floor(n/60)%24,mm=n%60;
+      return{reply:'Your next planned pump is about '+(((h+11)%12)+1)+':'+String(mm).padStart(2,'0')+' '+(h>=12?'PM':'AM')+'. Your normal target is '+(normal||'the saved setting')+'/day.',topic:'mom',needs_attention:false,source:'rules'};
+    }
+    if(/avg|average|7.?day|weekly|compare|trend|how much|output|better|worse/.test(q)&&m.avgDailyMl7!=null)
+      return{reply:'Your last '+m.recentCompletedDays+' completed logged pumping days averaged '+m.avgDailyMl7+' mL/day and '+m.avgPumpCount7+' pumps/day.'+(m.previousAvgDailyMl7==null?'':' The previous '+m.previousCompletedDays+' days averaged '+m.previousAvgDailyMl7+' mL/day'+(m.changePct7==null?'':' ('+Math.abs(m.changePct7)+'% '+(m.changePct7>=0?'higher':'lower')+')')+'.')+' Today so far: '+(m.todaySoFar?.totalMl||0)+' mL in '+(m.todaySoFar?.count||0)+' pumps (excluded from the comparison).',topic:'mom',needs_attention:false,source:'rules'};
+    if(/baby|feed|nurs|diaper|wet|poop|sleep/.test(q)){
+      const d=b.todaySoFar;
+      if(d)return{reply:'Baby today so far: '+d.feeds+' logged bottle feeds ('+d.feedOz+' oz), '+d.nursing+' nursing sessions and '+(d.wet+d.poop+d.both)+' diapers ('+(d.wet+d.both)+' wet/mixed). Bottle totals exclude nursing milk. Logged activity cannot alone establish adequate intake.',topic:'baby',needs_attention:false,source:'rules'};
+    }
+    return{reply:'I can help with pumping patterns, milk supply, breast tenderness or fever, breastfeeding, baby feeding, sleep, growth, parenting care and app records. I can also answer follow-up questions about your completed-day averages.',topic:'family',needs_attention:false,source:'rules'};
   }
   async function saveMessage(root,id,data){try{await root.collection('familyChatMessages').doc(id).set({...data,createdAt:admin.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(err){console.warn('Family chat history write failed',err?.message||err);}}
 
@@ -187,7 +201,7 @@ Keep most replies about 90–200 words, but adapt to urgency and complexity. Lea
       }
       const local=req.body?.context&&typeof req.body.context==='object'?req.body.context:{};
       const deviceConversation=Array.isArray(local.localConversation)?local.localConversation.slice(-6).map(x=>({role:x.role==='assistant'?'assistant':'user',text:String(x.text||'').slice(0,700)})):[];
-      const payload={currentLocalTime:local.currentLocalTime||null,timeZone:local.timeZone||null,currentWorkspace:local.currentWorkspace||null,activeBaby:local.activeBaby||null,dynamicPlan:local.dynamicPlan||null,pumpChoices:local.pumpChoices||null,profile:cloud.profile,metrics:cloud.metrics,pumpDays:cloud.pumpDays.slice(-14),babyDays:cloud.babyDays.slice(-14),recentMom:cloud.recentMom.slice(-18),recentBaby:cloud.recentBaby.slice(-24),conversation:cloud.history.slice(-8),deviceConversation,userMessage:message};
+      const payload={currentLocalTime:local.currentLocalTime||null,localDay:local.localDay||null,timeZone:local.timeZone||null,currentWorkspace:local.currentWorkspace||null,activeBaby:local.activeBaby||null,dynamicPlan:local.dynamicPlan||null,pumpChoices:local.pumpChoices||null,profile:cloud.profile,metrics:cloud.metrics,pumpDays:cloud.pumpDays.slice(-14),babyDays:cloud.babyDays.slice(-14),recentMom:cloud.recentMom.slice(-18),recentBaby:cloud.recentBaby.slice(-24),conversation:cloud.history.slice(-8),deviceConversation,userMessage:message};
       let out;try{out=await callModel(payload);}catch(err){console.warn('Using family chat tracker fallback',err?.message||err);out=rulesReply(payload);}
       const result={reply:out.reply,topic:out.topic||'family',needs_attention:!!out.needs_attention,source:out.source||'ai'};
       await Promise.all([requestRef.set({status:'completed',result,completedAt:admin.firestore.FieldValue.serverTimestamp()},{merge:true}),saveMessage(root,`${requestId}-user`,{role:'user',text:message}),saveMessage(root,`${requestId}-assistant`,{role:'assistant',text:result.reply})]);
