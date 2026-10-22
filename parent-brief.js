@@ -113,9 +113,14 @@ function buildCards(s){
   if(output&&Math.max(output.recent,output.prior)>=100)cards.push(card({kind:'pump-output',priority:78,title:'Pumping output shifted',observed:`The last 3 completed pumping days averaged ${Math.round(output.recent)} mL/day vs ${Math.round(output.prior)} mL/day before (${Math.abs(output.change).toFixed(0)}% ${output.change>0?'higher':'lower'}).`,meaning:'Today is excluded until it is complete, so this is not an artificial mid-day drop.',suggestion:'Watch whether the pattern continues and consider session timing, duration and pump count when reviewing Trends.',route:'mom-trends'}));
   const count=compareRecent(pumps,'count',20);
   if(count&&Math.abs(count.recent-count.prior)>=0.75)cards.push(card({kind:'pump-count',priority:68,title:'Pumping rhythm changed',observed:`You averaged ${count.recent.toFixed(1)} pumps/day over the last 3 completed days vs ${count.prior.toFixed(1)} previously.`,meaning:'That change can explain part of an output shift and is separate from any one-day target override.',suggestion:'Check whether this matches your intended normal pump target and adjust the permanent setting if your routine has changed.',route:'mom-trends'}));
-  const age=ageCard(s);if(age)cards.push(age);
-  const momStage=momStageCard(s);if(momStage)cards.push(momStage);
-  return cards.sort((a,b)=>b.priority-a.priority);
+  const age=ageCard(s),momStage=momStageCard(s);
+  // Every eligible brief should carry actual life-stage guidance, not just
+  // a stream of numeric changes. Alternate Mom/Baby guidance by stage week.
+  const week=Math.floor(Date.now()/(7*DAY));
+  const guidance=week%2===0?(age||momStage):(momStage||age);
+  const ranked=cards.sort((a,b)=>b.priority-a.priority);
+  if(guidance)return[...ranked.slice(0,1),guidance,...ranked.slice(1),...(guidance===age?[momStage]:[age]).filter(Boolean)];
+  return ranked;
 }
 function signature(cards){return cards.slice(0,MAX_CARDS).map(c=>c.kind).join('|');}
 function eligible(cards){
