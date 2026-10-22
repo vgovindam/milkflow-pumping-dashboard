@@ -123,7 +123,7 @@ Keep most replies about 90–200 words, but adapt to urgency and complexity. Lea
     let last;
     for(const model of models){
       try{
-        const r=await client.responses.create({model,reasoning:{effort:'medium'},max_output_tokens:700,input:[{role:'system',content:[{type:'input_text',text:SYSTEM}]},{role:'user',content:[{type:'input_text',text:JSON.stringify(payload)}]}],text:{format:{type:'json_schema',name:'milkflow_family_chat',strict:true,schema}}});
+        const r=await client.responses.create({model,reasoning:{effort:'medium'},max_output_tokens:1200,input:[{role:'system',content:[{type:'input_text',text:SYSTEM}]},{role:'user',content:[{type:'input_text',text:JSON.stringify(payload)}]}],text:{format:{type:'json_schema',name:'milkflow_family_chat',strict:true,schema}}});
         const parsed=JSON.parse(String(r.output_text||'{}'));if(!parsed.reply)throw new Error('Empty reply');
         return{reply:String(parsed.reply).slice(0,3200),topic:parsed.topic||'family',needs_attention:!!parsed.needs_attention,source:'ai'};
       }catch(err){last=err;console.warn(`Family chat attempt failed on ${model}`,err?.message||err);}
