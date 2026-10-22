@@ -188,7 +188,9 @@ Keep most replies about 90–200 words, but adapt to urgency and complexity. Lea
 
       let cloud={profile:{},pumpDays:[],recentMom:[],babyDays:[],recentBaby:[],history:[],metrics:{}};
       try{cloud=await load(uid,String(req.body?.context?.localDay||new Date().toISOString().slice(0,10)));}catch(err){console.warn('Family chat cloud context unavailable',err?.message||err);}
-      if(!inScope(message,cloud.history)){
+      const followupContext=req.body?.context&&typeof req.body.context==='object'?req.body.context:{};
+      const recentLocal=Array.isArray(followupContext.localConversation)?followupContext.localConversation.slice(-5):[];
+      if(!inScope(message,[...cloud.history,...recentLocal])){
         const out={reply:'I’m MilkFlow’s Mom + Baby tracker assistant, so I stay focused on pumping, feeding, diapers, sleep, baby/tracker patterns, and your MilkFlow plan. I can’t help with unrelated topics here.',topic:'other',needs_attention:false,source:'scope'};
         await Promise.all([requestRef.set({status:'completed',result:out,completedAt:admin.firestore.FieldValue.serverTimestamp()},{merge:true}),saveMessage(root,`${requestId}-user`,{role:'user',text:message}),saveMessage(root,`${requestId}-assistant`,{role:'assistant',text:out.reply})]);
         return res.status(200).json({ok:true,status:'completed',requestId,...out});
