@@ -70,13 +70,26 @@ async function finishPendingLog(choice){
 function milkflowCareAdvice(q){
   const t=String(q||'').toLowerCase(),baby=/baby|infant|newborn|saahas|child|my son|my daughter/.test(t);
   if(baby&&/fever|temperature|difficulty breathing|letharg|unresponsive/.test(t))
-    return 'For a baby under 3 months, a measured fever of 100.4°F (38°C) or higher needs urgent medical evaluation. Breathing difficulty, unresponsiveness or severe dehydration needs emergency care. How old is the baby and what temperature did you measure?';
-  if(/mastitis|breast|tender|lump|clog|plugged|engorge|sore nipple|milk bleb|pain while pump/.test(t)||(!baby&&/fever|chills/.test(t))){
+    return 'For a baby under 3 months, a measured temperature of 100.4°F (38°C) or higher needs urgent medical evaluation. Breathing difficulty, unresponsiveness or severe dehydration needs emergency care. How old is the baby, and what temperature did you measure?';
+  if(!baby&&/\bfever\b|chills|shivering/.test(t)&&!/breast|mastitis|lump|tender/.test(t))
+    return 'If you have a postpartum fever, measure your temperature and contact your OB/midwife or clinician promptly (especially with 100.4°F/38°C or higher), because breast infection is only one possible cause. If you also have breast pain, redness or chills, let them know; if severely ill, confused, faint or rapidly worsening, seek urgent care. Do you also have breast tenderness, and what is your temperature?';
+  if(/mastitis|breast|tender|lump|clog|plugged|engorge|sore nipple|milk bleb|pain while pump/.test(t)){
     if(/fever|chills|flu.like|red|hot|mastitis|shiver/.test(t))
-      return 'Breast pain with fever or chills can be mastitis. Please contact your OB/midwife or clinician today. Keep your usual comfortable pumping or feeding rhythm, try a cold compress, rest and hydrate. Avoid deep massage, very high suction and extra pumping just to empty. Seek urgent care if you feel severely ill or rapidly worsen. What is your measured temperature, and is there redness or warmth?';
-    return 'For breast tenderness, a cold compress, comfortable bra and your usual pumping rhythm may help. Check flange fit; avoid deep massage, high suction and extra emptying sessions. Seek prompt clinician advice for a painful growing lump, spreading redness, fever or chills. Which breast hurts, and do you have fever or redness?';
+      return 'Breast pain with fever or chills can indicate mastitis. Contact your OB/midwife or clinician today. While arranging care, keep your usual comfortable pumping or feeding rhythm, try a cold compress, rest and hydrate. Avoid deep massage, very high suction and extra pumping just to empty. Seek urgent care if you feel severely ill or rapidly worsen. What temperature did you measure, and is there redness or warmth?';
+    return 'For breast tenderness, a cold compress, comfortable supportive bra and your usual pumping rhythm may help. Check flange fit; avoid deep massage, high suction and extra emptying sessions. Contact a clinician promptly for a painful growing lump, spreading redness, fever or chills. Which breast hurts, and do you have redness?';
   }
   return null;
+}
+function milkflowStageAdvice(q){
+  if(!/expect|this age|old|month|week|development|milestone|postpartum|baby care|caring for|growth|what next/i.test(q))return null;
+  const s=readState(),birth=s.baby?.birthDate,days=birth?Math.max(0,Math.floor((Date.now()-new Date(birth+'T12:00:00').getTime())/86400000)):null;
+  if(days==null||!Number.isFinite(days))return 'Add your baby’s birth date in Settings to get age-specific baby and postpartum guidance. I can still explain feeding cues, safe sleep and general lactation care.';
+  const weeks=Math.floor(days/7);
+  if(/postpartum|mom|mother|recovery/.test(q))
+    return 'Around '+weeks+' weeks postpartum, recovery, breast comfort, sleep and emotions can still fluctuate. Your pumping schedule should be sustainable, and fever with breast tenderness merits same-day clinical advice. Rest and support matter. Tell me which recovery or feeding concern you want help with.';
+  if(days<90)return 'Your baby is around '+weeks+' weeks old. Around two months, some babies begin smiling back, making sounds other than crying, watching faces and lifting their head briefly during supervised awake tummy time. Feeding and sleep rhythms can vary. Talk, sing and follow feeding cues; use the CDC 2-month milestone checklist for discussion, not a diagnosis.';
+  if(days<180)return 'Your baby is around '+weeks+' weeks old. By about four months, many babies coo back, chuckle, look at their hands and hold their head steadier. Supervised awake floor play and talking together can help. Continue safe back-to-sleep routines. If you’re worried about a milestone, ask your pediatrician.';
+  return 'Your baby is around '+weeks+' weeks old. Growth, feeding and play skills evolve at different rates. Track trends and discuss missing or lost skills with your pediatrician rather than drawing conclusions from the absence of a MilkFlow log.';
 }
 function chatPumpMetrics(){
   const all=livePumps(readState()),by={};
@@ -95,6 +108,7 @@ function chatBabyToday(){
 }
 function trackerFallback(q){
   const health=milkflowCareAdvice(q);if(health)return health;
+  const stage=milkflowStageAdvice(q);if(stage)return stage;
   if(/avg|average|trend|compare|weekly|last week|pumping output|daily total|supply changes|doing better|doing worse/i.test(q))return chatPumpMetrics();
   if(/baby|saahas|feed|nursing|diaper|bottle/i.test(q))return chatBabyToday();
   return 'I can help with pumping trends and schedules, lactation questions, breast symptoms, feeding, diapers and baby-care questions. Deeper coaching requires the cloud chat service, which is currently unavailable; your logged data remains safe.';
