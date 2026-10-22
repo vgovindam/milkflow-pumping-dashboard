@@ -503,7 +503,7 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   if(!ctx.next('When should I pump next?')?.includes('refresh your schedule'))
     throw new Error('Next pump question must never give an expired time');
   for(const required of [
-    'id=\\'mfChatBackdrop\\'','body.mf-chat-open #mfChatBackdrop{display:block}',
+    "backdrop.id='mfChatBackdrop'",'body.mf-chat-open #mfChatBackdrop{display:block}',
     ':root[data-theme="dark"] .mf-chat-panel{background:#1d1c2e',
     'height:auto;max-height:none;border-radius:22px'
   ])if(!chat.includes(required))throw new Error('Accessible opaque mobile chat is missing: '+required);
