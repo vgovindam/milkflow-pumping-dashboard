@@ -470,3 +470,41 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   if(ctx.care('Log wet diaper now')?.kind!=='diaper')throw new Error('Explicit diaper intent not recognized');
   if(ctx.care('I pumped 160 ml at 2:30 PM')?.amountMl!==160)throw new Error('Natural pump statement not recognized for confirmation');
 }
+
+
+// Screenshot regression: "4th pump avg" must compute from the 4th session
+// of completed days, rather than generic fallback or today's incomplete data.
+{
+  const chat=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+  const first=chat.indexOf('function ordinalPumpAnswer('),last=chat.indexOf('function chatBabyToday(',first);
+  if(first<0||last<0)throw new Error('Nth-session analytics contract missing');
+  const logged=[];
+  for(const [day,v] of [['2026-10-18',100],['2026-10-19',140],['2026-10-20',180],['2026-10-21',700]]){
+    for(let i=0;i<4;i++)logged.push({date:day,time:String(5+i*4).padStart(2,'0')+':30',type:'pump',amountMl:i===3?v:80});
+  }
+  const ctx=vm.createContext({
+    livePumps:()=>logged,
+    readState:()=>({entries:logged}),
+    today:()=> '2026-10-21',
+    currentPlan:()=>({target:5,future:[]}),
+    permanentTarget:()=>5,
+    pumpSummary:()=>({count:1,total:140}),
+    to12m:()=> '3:00 PM',
+    Date,Math,Number,String
+  });
+  vm.runInContext(chat.slice(first,last)+'\nthis.nth=ordinalPumpAnswer;this.next=nextPumpAnswer;',ctx);
+  const answer=ctx.nth('What is my 4th pump avg?');
+  if(!answer||!answer.includes('140 mL')||!answer.includes('3 completed logged days'))
+    throw new Error('Fourth pump answer did not compute using completed day fourth sessions');
+  if(!ctx.nth('What was my fourth session average?')?.includes('140 mL'))
+    throw new Error('Natural-language session ordinal was not recognized');
+  if(ctx.nth('What is my total pumping average?')!==null)
+    throw new Error('Ordinal analytics must not intercept general averages');
+  if(!ctx.next('When should I pump next?')?.includes('refresh your schedule'))
+    throw new Error('Next pump question must never give an expired time');
+  for(const required of [
+    'id=\\'mfChatBackdrop\\'','body.mf-chat-open #mfChatBackdrop{display:block}',
+    ':root[data-theme="dark"] .mf-chat-panel{background:#1d1c2e',
+    'height:auto;max-height:none;border-radius:22px'
+  ])if(!chat.includes(required))throw new Error('Accessible opaque mobile chat is missing: '+required);
+}
