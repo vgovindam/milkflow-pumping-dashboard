@@ -119,7 +119,7 @@ Medical: provide general breast-care/parenting guidance, never diagnose, prescri
 Keep most replies about 90–200 words, but adapt to urgency and complexity. Lead with what matters.`;
   const schema={type:'object',additionalProperties:false,properties:{reply:{type:'string'},topic:{type:'string',enum:['mom','baby','family','other']},needs_attention:{type:'boolean'}},required:['reply','topic','needs_attention']};
   async function callModel(payload){
-    const client=new OpenAI({apiKey:OPENAI_API_KEY.value()}),models=[...new Set([process.env.OPENAI_MODEL||'gpt-5.6-sol','gpt-5.6-terra'])];
+    const client=new OpenAI({apiKey:OPENAI_API_KEY.value()}),models=[...new Set([process.env.OPENAI_MODEL||'gpt-6.1-sol','gpt-5-mini'])];
     let last;
     for(const model of models){
       try{
