@@ -393,3 +393,64 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   if(!server.includes('snap.exists&&!data.sourceDeviceId')||!server.includes('if(sourceDeviceId&&doc.id===sourceDeviceId)return;'))
     throw new Error('Cloud push must skip its own device when origin is supplied');
 }
+
+
+// Care Assistant regression: free-text entry confirmations, evidence-backed
+// completed-day metrics, Mom + Baby symptom scope, and proactive stage guidance.
+{
+  const browser=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+  const server=fs.readFileSync(path.join(ROOT,'functions/family-chat.js'),'utf8');
+  const brief=fs.readFileSync(path.join(ROOT,'parent-brief.js'),'utf8');
+  const clientStart=browser.indexOf("const CONFIRM_KEY="),clientEnd=browser.indexOf('function add(role,text,extra={})',clientStart);
+  if(clientStart<0||clientEnd<0)throw new Error('Care confirmation contract missing');
+  const store=new Map(),rows=[{id:'pump-existing',type:'pump',date:'2026-10-20',time:'08:30',amountMl:120}];
+  const today='2026-10-20';
+  const ctx=vm.createContext({
+    localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
+    readJSON:(k,defaultValue)=>JSON.parse(store.get(k)||JSON.stringify(defaultValue)),
+    today:()=>today,clock:()=> '09:35',to12:()=> '9:35 AM',
+    livePumps:()=>rows,readState:()=>({entries:rows}),
+    writeState:()=>{},syncMom:async()=>{},performAction:async()=>({reply:'Saved'}),
+    Date,Number,String,RegExp,Math
+  });
+  vm.runInContext(browser.slice(clientStart,clientEnd)+'\nthis.ask=askToLog;this.finish=finishPendingLog;',ctx);
+  const offer=ctx.ask('160ml');
+  if(!offer?.actions?.some(a=>a.id==='care-edit')||!offer.actions.some(a=>a.id==='care-confirm'))
+    throw new Error('160ml must offer new vs edit, without auto-saving');
+  if(rows[0].amountMl!==120)throw new Error('Unconfirmed amount modified logged data');
+  const changed=await ctx.finish('edit');
+  if(rows.length!==1||rows[0].id!=='pump-existing'||rows[0].amountMl!==160||!/Updated/.test(changed.reply))
+    throw new Error('Confirmed correction created a duplicate or lost record identity');
+  for(const snippet of ["storePendingLog({kind:action.kind,action})","if(action){add('user',message);storePendingLog(","parentBriefAnswer()"])
+    if(!browser.includes(snippet))throw new Error('Care assistant confirmation or brief access is missing: '+snippet);
+  const s0=server.indexOf('  function pumpDays('),s1=server.indexOf('  async function load(',s0);
+  if(s0<0||s1<0)throw new Error('Authenticated care metrics block missing');
+  const pCtx=vm.createContext({
+    average:(items,k)=>items.reduce((a,x)=>a+(Number(x[k])||0),0)/Math.max(1,items.length),
+    cutoff:()=> '2026-10-01'
+  });
+  vm.runInContext(server.slice(s0,s1)+'\nthis.pumpDays=pumpDays;this.babyDays=babyDays;this.metrics=buildMetrics;',pCtx);
+  const entries=[
+    {type:'pump',date:'2026-10-19',time:'06:30',amountMl:150},
+    {type:'pump',date:'2026-10-20',time:'06:30',amountMl:170},
+    {type:'pump',date:'2026-10-21',time:'06:30',amountMl:90}
+  ];
+  const pumpDays=pCtx.pumpDays(entries),metrics=pCtx.metrics(pumpDays,entries,[],'2026-10-21');
+  if(metrics.pumping.recentCompletedDays!==2||metrics.pumping.avgDailyMl7!==160)
+    throw new Error('Care assistant average must use complete dates including yesterday');
+  if(metrics.pumping.todaySoFar.totalMl!==90||metrics.pumping.todaySoFar.partial!==true)
+    throw new Error('Care assistant must label unfinished today separately');
+  const scopeStart=server.indexOf('  function outOfScope('),scopeEnd=server.indexOf('  async function consumeQuota(',scopeStart);
+  if(scopeStart<0||scopeEnd<0)throw new Error('Care scope missing');
+  const guard=vm.createContext({});
+  vm.runInContext(server.slice(scopeStart,scopeEnd)+'\nthis.allowed=inScope;',guard);
+  for(const text of ['My left breast is tender','I have a fever','What should I expect at two months postpartum?','How is baby sleeping this week?']){
+    if(!guard.allowed(text))throw new Error('Care domain question unexpectedly blocked: '+text);
+  }
+  for(const text of ['How do I grow a tomato plant?','Write JavaScript code for me','What stocks should I buy?']){
+    if(guard.allowed(text))throw new Error('Out-of-domain message accepted: '+text);
+  }
+  for(const t of ['function momStageCard(s){','function ageCard(s){','age-mom-','age-baby-','MAX_SHOWS_PER_WINDOW=2','MAX_CARDS=2'])
+    if(!brief.includes(t))throw new Error('Predictable Mom + Baby brief contract missing: '+t);
+}
+
