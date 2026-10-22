@@ -101,6 +101,41 @@ function chatPumpMetrics(){
   const td=all.filter(e=>e.date===today()),soFar=td.reduce((sum,e)=>sum+(Number(e.amountMl)||0),0);
   return 'Your last '+last.length+' completed logged days averaged '+Math.round(avg)+' mL/day across '+pumps.toFixed(1)+' pumps/day.'+(before==null?'':' The previous '+prev.length+' completed days averaged '+Math.round(before)+' mL/day ('+Math.abs(100*(avg-before)/before).toFixed(1)+'% '+(avg>=before?'higher':'lower')+').')+' Today so far is '+soFar+' mL from '+td.length+' pumps; today is excluded from trend comparisons. Missing logs and nursing volume are not counted.';
 }
+// Position in each calendar day's ordered pumping sessions is different from
+// overall daily average. Never include an unfinished current day in the average.
+function ordinalPumpAnswer(query){
+  const q=String(query||'').toLowerCase();
+  const ordinal=/\b(1st|2nd|3rd|[4-8]th|first|second|third|fourth|fifth|sixth|seventh|eighth)\b/.exec(q);
+  if(!ordinal||!/\b(pump|pumping|session)\b/.test(q)||!/\b(avg|average|mean|typical|usually|amount|how much)\b/.test(q))return null;
+  const index={first:1,second:2,third:3,fourth:4,fifth:5,sixth:6,seventh:7,eighth:8};
+  const nth=index[ordinal[1]]||Number(ordinal[1][0]);if(!nth||nth>8)return null;
+  const days=new Map();
+  for(const entry of livePumps(readState())){
+    if(entry.date>=today())continue;
+    if(!days.has(entry.date))days.set(entry.date,[]);
+    days.get(entry.date).push(entry);
+  }
+  const ordered=[...days.entries()].sort(([a],[b])=>a.localeCompare(b)).slice(-14);
+  const valid=ordered.map(([date,entries])=>({date,entries:entries.sort((a,b)=>String(a.time).localeCompare(String(b.time)))})).filter(day=>day.entries.length>=nth);
+  const latest=valid.slice(-7).map(day=>({date:day.date,ml:Number(day.entries[nth-1].amountMl)||0})).filter(e=>e.ml>0);
+  const suffix=nth===1?'st':nth===2?'nd':nth===3?'rd':'th';
+  if(!latest.length)return 'I could not find a '+nth+suffix+' pump on any completed logged day in the last 14 days. I will not guess from today’s partial data. Check that all pumping sessions are synced.';
+  const avg=Math.round(latest.reduce((sum,e)=>sum+e.ml,0)/latest.length);
+  const low=Math.min(...latest.map(e=>e.ml)),high=Math.max(...latest.map(e=>e.ml));
+  return 'Your '+nth+suffix+' pump averaged '+avg+' mL across '+latest.length+' completed logged day'+(latest.length===1?'':'s')+' (range '+low+'–'+high+' mL). I ordered each day’s sessions by time and selected session #'+nth+'. Today is excluded because it is incomplete.';
+}
+function nextPumpAnswer(query){
+  const q=String(query||'').toLowerCase();
+  if(!/\b(next|when|upcoming)\b/.test(q)||!/\b(pump|pumping|session)\b/.test(q)||!/\b(when|what time|next|should|upcoming)\b/.test(q))return null;
+  const p=currentPlan();
+  const now=new Date(),minutes=now.getHours()*60+now.getMinutes();
+  const times=(Array.isArray(p?.future)?p.future:[]).map(Number).filter(n=>Number.isFinite(n)&&n>=0&&n<1440);
+  const upcoming=times.find(t=>t>=minutes-2);
+  const total=pumpSummary(readState(),today()),goal=p?.target||permanentTarget();
+  if(upcoming!=null)return 'Your next planned pump is around '+to12m(upcoming)+'. You have logged '+total.count+' of '+goal+' planned sessions today ('+total.total+' mL so far). This is a planning suggestion; pump sooner if you are uncomfortable or need to feed.';
+  if(times.length)return 'Your current schedule has no remaining future pump time today. You have logged '+total.count+' of '+goal+' sessions. Open Mom Home to refresh the plan; I will not suggest a time that has already passed.';
+  return 'I cannot see a reliable upcoming pump time in the live planner. Open Mom Home to refresh your schedule. Your normal target is '+permanentTarget()+' pumps/day.';
+}
 function chatBabyToday(){
   const events=liveBaby(readState()).filter(e=>e.date===today()),feeds=events.filter(e=>e.eventType==='feeding'),nursing=events.filter(e=>e.eventType==='nursing'),diapers=events.filter(e=>e.eventType==='diaper');
   const oz=feeds.reduce((n,e)=>n+(Number(e.amountOz)||0),0),wet=diapers.filter(e=>['wet','both','mixed'].includes(e.subtype)).length;
@@ -112,6 +147,8 @@ function parentBriefAnswer(){
   return cards.slice(0,2).map(c=>c.title+'\nWhat changed: '+c.observed+'\nWhy it matters: '+c.meaning+'\nHelpful next step: '+c.suggestion).join('\n\n')+'\n\nThese are supportive observations and general education, not a diagnosis.';
 }
 function trackerFallback(q){
+  const ordinal=ordinalPumpAnswer(q);if(ordinal)return ordinal;
+  const next=nextPumpAnswer(q);if(next)return next;
   const health=milkflowCareAdvice(q);if(health)return health;
   const stage=milkflowStageAdvice(q);if(stage)return stage;
   if(/avg|average|trend|compare|weekly|last week|pumping output|daily total|supply changes|doing better|doing worse/i.test(q))return chatPumpMetrics();
@@ -175,6 +212,8 @@ async function sendMessage(text){
   }
   const offer=askToLog(message);if(offer){add('user',message);add('assistant',offer.reply,{actions:offer.actions});return;}
   if(/^(?:show |give |read )?(?:my |the )?(?:parent brief|care brief|weekly guidance)$/i.test(message)){add('user',message);add('assistant',parentBriefAnswer());return;}
+  const ordinal=ordinalPumpAnswer(message),next=nextPumpAnswer(message);
+  if(ordinal||next){add('user',message);add('assistant',ordinal||next);return;}
   const cmd=parsePlanCommand(message);if(cmd){add('user',message);try{const out=await performPlanCommand(cmd);add('assistant',out.reply,{actions:out.actions});}catch{add('assistant','I could not update the plan. Try the Mom Home controls.');}return;}
   const action=parseNaturalAction(message);if(action){add('user',message);storePendingLog({kind:action.kind,action});add('assistant','I understood this as '+(action.kind==='pump'?action.amountMl+' mL pumping':action.kind==='feeding'?action.amountOz+' oz bottle':action.kind==='diaper'?action.subtype+' diaper':action.kind==='nursing'?action.durationMinutes+' min nursing':'a care entry')+' at '+to12(action.time)+'. Save it?',{actions:[{id:'care-confirm',label:'Save entry'},{id:'care-cancel',label:'Cancel'}]});return;}
   const user=window.firebase?.auth?.().currentUser;
