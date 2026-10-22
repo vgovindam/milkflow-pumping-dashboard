@@ -454,3 +454,19 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
     if(!brief.includes(t))throw new Error('Predictable Mom + Baby brief contract missing: '+t);
 }
 
+
+// Questions about care must never be silently reinterpreted as write operations.
+{
+  const chat=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+  const start=chat.indexOf('function parseExplicitTime('),end=chat.indexOf('function writeState(',start);
+  if(start<0||end<0)throw new Error('Care command parser contract missing');
+  const ctx=vm.createContext({today:()=> '2026-10-21',dateShift:()=> '2026-10-20',clock:()=> '18:15',pad:n=>String(n).padStart(2,'0')});
+  vm.runInContext(chat.slice(start,end)+'\nthis.command=parsePlanCommand;this.care=parseNaturalAction;',ctx);
+  for(const question of ['How many wet diapers today?','Why was baby fed 3 oz?','My breast feels tender and painful','What is my average pumping output?']){
+    if(ctx.care(question))throw new Error('Care question was treated as an entry: '+question);
+  }
+  if(ctx.command('Should I change to four pumps today?'))throw new Error('Plan advice question changed the pump plan');
+  if(ctx.command('Change today to four pumps')?.target!==4)throw new Error('Explicit pump target control no longer works');
+  if(ctx.care('Log wet diaper now')?.kind!=='diaper')throw new Error('Explicit diaper intent not recognized');
+  if(ctx.care('I pumped 160 ml at 2:30 PM')?.amountMl!==160)throw new Error('Natural pump statement not recognized for confirmation');
+}
