@@ -90,6 +90,10 @@ const seen=new Set();
 function stopWatchers(){watchers.forEach(fn=>{try{fn();}catch{}});watchers=[];}
 function seenKey(collection,id){return`${collection}:${id}`;}
 function markSeen(key){seen.add(key);if(seen.size>120){const first=seen.values().next().value;seen.delete(first);}}
+function routineAlertWindowOpen(at=new Date()){
+  const minute=at.getHours()*60+at.getMinutes();
+  return minute>=600&&minute<1320;
+}
 function showToast(title,body,route){
   const toast=document.getElementById('toast');if(!toast)return;
   toast.replaceChildren();
@@ -105,7 +109,7 @@ function showToast(title,body,route){
   toast.classList.add('show');clearTimeout(toast._mfAlertTimer);toast._mfAlertTimer=setTimeout(()=>toast.classList.remove('show'),5200);
 }
 function announceVisible(collection,id,data){
-  if(!preference()||document.visibilityState!=='visible'||!recentRecord(data))return;
+  if(!preference()||!routineAlertWindowOpen()||document.visibilityState!=='visible'||!recentRecord(data))return;
   const key=seenKey(collection,id);if(seen.has(key))return;markSeen(key);
   const a=formatAlert(collection,data);showToast(a.title,a.body,a.route);
 }
@@ -179,7 +183,7 @@ async function registerPush({ask=false}={}){
       messaging.onMessage(payload=>{
         const d=payload?.data||{},key=d.alertId||'';
         if(key&&seen.has(key))return;if(key)markSeen(key);
-        if(document.visibilityState==='visible'&&preference())showToast(d.title||'MilkFlow update',d.body||'New care was logged on another device.',d.route||'');
+        if(document.visibilityState==='visible'&&preference()&&routineAlertWindowOpen())showToast(d.title||'MilkFlow update',d.body||'New care was logged on another device.',d.route||'');
       });
     }
     return true;
@@ -233,7 +237,7 @@ function renderSettingsPanel(){
   const on=preference(),iosNeedsInstall=isIOS()&&!isStandalone(),canAsk=currentUser&&systemPushEligible()&&Notification.permission==='default';
   const buttonLabel=!on?'Turn on':iosNeedsInstall?'Home Screen setup':canAsk?'Enable system alerts':'Turn off';
   const action=!on||canAsk||iosNeedsInstall?'on':'off';
-  panel.innerHTML=`<div class="panel-head"><h3>Cross-device alerts</h3><span class="panel-note">This device</span></div><div class="setting-row"><div><strong>${on?'On':'Off'}</strong><span>When another device on this Family account logs Pump, Nursing, Feed, Diaper, Sleep, Growth or Milestone, this device is notified. The device that entered the record is excluded whenever its source tag is available.</span></div><button type="button" data-cross-device-alert-toggle="${action}">${buttonLabel}</button></div><p class="chart-note">${permissionText()}</p>`;
+  panel.innerHTML=`<div class="panel-head"><h3>Cross-device alerts</h3><span class="panel-note">This device</span></div><div class="setting-row"><div><strong>${on?'On':'Off'}</strong><span>Routine alerts are shown 10 AM–10 PM in this device’s local time. Overnight entries still sync, but no stale alerts are queued for morning. When another device logs Pump, Nursing, Feed, Diaper, Sleep, Growth or Milestone during that window, this device is notified. The device that entered the record is excluded whenever its source tag is available.</span></div><button type="button" data-cross-device-alert-toggle="${action}">${buttonLabel}</button></div><p class="chart-note">${permissionText()}</p>`;
 }
 
 async function onUser(user){
