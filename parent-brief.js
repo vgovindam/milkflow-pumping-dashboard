@@ -139,7 +139,12 @@ function markShown(cards){
   const seen={...(p.seen||{}),[signature(cards)]:now};for(const [k,v] of Object.entries(seen))if(now-Number(v)>30*DAY)delete seen[k];
   writePref({...p,shows,seen,lastShownAt:now});
 }
+function briefWindowOpen(at=new Date()){
+  const minute=at.getHours()*60+at.getMinutes();
+  return minute>=600&&minute<1320;
+}
 function canInterrupt(){
+  if(!briefWindowOpen())return false;
   const screen=document.body?.dataset?.screen||location.hash.replace(/^#/,'');
   if(screen!=='mom-home'&&screen!=='baby-home')return false;
   if(document.hidden)return false;
@@ -173,8 +178,17 @@ function show(cards){
   try{d.showModal();}catch{d.setAttribute('open','');}
 }
 function maybeShow(){if(!canInterrupt())return;const s=readState(),cards=buildCards(s);if(eligible(cards))show(cards);}
-function schedule(){setTimeout(maybeShow,4200);}
+// Re-evaluate after 10 AM if MilkFlow was opened during quiet hours; never
+// cache an overnight brief or consume the twice-weekly allowance overnight.
+function schedule(){
+  setTimeout(maybeShow,4200);
+  const now=new Date(),open=new Date(now);
+  open.setHours(10,0,0,0);
+  if(now>=open)open.setDate(open.getDate()+1);
+  setTimeout(maybeShow,Math.max(0,open.getTime()-now.getTime())+3000);
+}
 window.MilkFlowParentBrief={build:()=>buildCards(readState()),showNow:()=>show(buildCards(readState()))};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
 window.addEventListener('pageshow',()=>setTimeout(maybeShow,3000));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(maybeShow,3000);});
 })();
