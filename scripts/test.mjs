@@ -508,3 +508,57 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
     'height:auto;max-height:none;border-radius:22px'
   ])if(!chat.includes(required))throw new Error('Accessible opaque mobile chat is missing: '+required);
 }
+
+
+/* Daytime, per-device parent celebrations. Open-after-10 checks, NOT a 10 AM alarm.
+ * Verify 100 days, calendar month birthdays, the 3-second non-modal banner,
+ * and suppression of overnight push without replaying old events at 10 AM. */
+{
+  const source=fs.readFileSync(path.join(ROOT,'parent-brief.js'),'utf8');
+  const start=source.indexOf("const MILESTONE_KEY=");
+  const end=source.indexOf("let milestoneActive=false;",start);
+  if(start<0||end<0)throw new Error('Milestone calendar code missing');
+  const ctx=vm.createContext({DAY:86400000,Date,Math,Number,String});
+  vm.runInContext(source.slice(start,end)+'\nthis.due=dueMilestones;this.celebration=celebrationFor;',ctx);
+  const at=(y,m,d)=>new Date(y,m-1,d,12);
+  const hundred=ctx.due('2026-07-15',at(2026,10,23));
+  if(!hundred.some(m=>m.id==='100-days'))throw new Error('100-day celebration date is wrong');
+  if(ctx.due('2026-07-15',at(2026,10,22)).some(m=>m.id==='100-days'))
+    throw new Error('100-day banner appeared before the milestone');
+  if(!ctx.due('2026-07-15',at(2026,10,15)).some(m=>m.id==='month-3'))
+    throw new Error('3-month baby celebration missing');
+  if(!ctx.due('2026-07-15',at(2026,11,15)).some(m=>m.id==='month-4'))
+    throw new Error('4-month baby celebration missing');
+  if(!ctx.due('2025-10-25',at(2026,10,25)).some(m=>m.id==='birthday-1'))
+    throw new Error('First birthday celebration missing');
+  if(!ctx.due('2026-01-31',at(2026,2,28)).some(m=>m.id==='month-1'))
+    throw new Error('Month-end anniversary did not clamp to February');
+  if(ctx.due('2026-07-15',at(2026,11,2)).some(m=>m.id==='100-days'))
+    throw new Error('Stale 100-day celebration was replayed');
+  const baby={baby:{id:'child-1',name:'Saahas',birthDate:'2026-07-15'}};
+  const first=ctx.celebration(baby,at(2026,10,23),{});
+  if(first?.id!=='100-days')throw new Error('100-day baby banner absent');
+  if(ctx.celebration(baby,at(2026,10,23),{[first.key]:Date.now()})!==null)
+    throw new Error('Milestone repeated on one device');
+  if(!ctx.celebration(baby,at(2026,10,23),{})?.key)
+    throw new Error('Other device did not have its own celebration');
+  const windowStart=source.indexOf('function briefWindowOpen('),windowEnd=source.indexOf('function canInterrupt(',windowStart);
+  const c2=vm.createContext({Date});
+  vm.runInContext(source.slice(windowStart,windowEnd)+'\nthis.open=briefWindowOpen;',c2);
+  if(c2.open(at(2026,10,23))!==true || c2.open(new Date(2026,9,23,9,59))!==false ||
+     c2.open(new Date(2026,9,23,21,59))!==true || c2.open(new Date(2026,9,23,22,0))!==false)
+     throw new Error('Parent guidance quiet hours must be 10 AM–10 PM local time');
+  if(source.includes('open.setHours(10,0,0,0)'))
+    throw new Error('Milestone/brief must not schedule a popup for 10:00 AM');
+  for(const token of ['setTimeout(()=>banner.classList.add(\'leaving\'),2600)',
+                      'setTimeout(()=>{banner.remove();milestoneActive=false;},3200)',
+                      "MILESTONE_KEY='milkflow-celebrations-v1'"])
+    if(!source.includes(token))throw new Error('Short, device-local milestone banner contract missing: '+token);
+  const sw=fs.readFileSync(path.join(ROOT,'sw.template.js'),'utf8');
+  if(!sw.includes('if(!deliveryWindowOpen())return Promise.resolve();'))
+    throw new Error('Overnight pushes must be silently dropped, not queued');
+  const n=vm.createContext({Date});
+  vm.runInContext(sw.slice(sw.indexOf('function deliveryWindowOpen('),sw.indexOf('function notificationCopy('))+'\nthis.open=deliveryWindowOpen;',n);
+  if(n.open(new Date(2026,9,23,3,15))!==false||n.open(new Date(2026,9,23,10,15))!==true)
+    throw new Error('iOS service-worker quiet-hour check was removed');
+}
