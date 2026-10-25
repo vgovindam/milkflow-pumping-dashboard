@@ -186,8 +186,13 @@ function celebrationFor(s,at=new Date(),saved={}){
   return{...milestone,name,key:(baby.id||name)+'|'+birth+'|'+milestone.id};
 }
 let milestoneActive=false;
+function canCelebrate(){
+  if(milestoneActive||!briefWindowOpen()||document.hidden)return false;
+  if(document.querySelector('dialog[open],.sheet.open,.scrim.open,.mf-chat-panel.open'))return false;
+  return true;
+}
 function showMilestone(){
-  if(milestoneActive||!canInterrupt())return false;
+  if(!canCelebrate())return false;
   const s=readState(),seen=readJSONMilestones(),m=celebrationFor(s,new Date(),seen);
   if(!m)return false;
   injectStyle();
@@ -257,7 +262,6 @@ let pendingCheck=null,lastInteractionCheck=0;
 function schedule(delay=3000){
   clearTimeout(pendingCheck);
   pendingCheck=setTimeout(()=>{
-    if(!canInterrupt())return;
     if(showMilestone())return; // Celebration is the gentle notice for this visit.
     maybeShow();
   },delay);
