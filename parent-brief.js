@@ -55,7 +55,7 @@ function card({kind,priority,title,observed,meaning,suggestion,route}){return{ki
 // Rotate the topic with age to avoid repeating generic "babies change" advice.
 function ageCard(s){
   const days=ageDays(s.baby?.birthDate);if(days==null||days<0)return null;
-  const weeks=Math.floor(days/7),name=s.baby?.name||'Baby',phase=Math.floor(days/14);
+  const weeks=Math.floor(days/7),name=s.baby?.name||'Baby',phase=Math.floor(days/7);
   if(days<56)return card({kind:'age-baby-'+phase,priority:30,title:name+' · early weeks',observed:name+' is around '+weeks+' weeks old.',meaning:'Feeding and sleep can vary substantially in these early weeks.',suggestion:'Follow feeding cues, practice safe sleep, and ask your pediatrician about any concerns with feeding or wet diapers.',route:'development'});
   if(days<112){
     const messages=[
@@ -81,7 +81,7 @@ function ageCard(s){
 }
 function momStageCard(s){
   const days=ageDays(s.baby?.birthDate);if(days==null||days>365)return null;
-  const weeks=Math.floor(days/7),phase=Math.floor(days/21);
+  const weeks=Math.floor(days/7),phase=Math.floor(days/7);
   const themes=days<84?[
     ['Recovery is still ongoing','Postpartum recovery and energy can vary while feeding or pumping routines settle.','Try to build rest and hydration into the day. Discuss persistent pain, low mood or worrying symptoms with your clinician.'],
     ['Pumping comfort check','A routine should be comfortable, not something to push through significant pain.','If soreness repeats, check flange fit and suction. Fever with breast pain deserves prompt medical advice.'],
@@ -131,7 +131,7 @@ function eligible(cards){
   const sig=signature(cards),seen=p.seen||{};
   if(seen[sig]&&now-Number(seen[sig])<REPEAT_SUPPRESS)return false;
   const meaningful=cards.some(c=>c.priority>=60);
-  if(!meaningful&&shows.length)return false;
+  if(!meaningful&&shows.length&&now-shows.at(-1)<6*DAY)return false;
   return true;
 }
 function markShown(cards){
@@ -210,7 +210,7 @@ function readJSONMilestones(){
   try{return JSON.parse(localStorage.getItem(MILESTONE_KEY)||'{}')||{};}catch{return{};}
 }
 function canInterrupt(){
-  if(!briefWindowOpen())return false;
+  if(milestoneActive||!briefWindowOpen())return false;
   const screen=document.body?.dataset?.screen||location.hash.replace(/^#/,'');
   if(screen!=='mom-home'&&screen!=='baby-home')return false;
   if(document.hidden)return false;
