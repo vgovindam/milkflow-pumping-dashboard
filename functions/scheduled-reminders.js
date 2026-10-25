@@ -63,6 +63,9 @@ function createScheduledReminders({admin,db}){
 
     const now=localNow(p.timeZone);
     if(!now) return;
+    // Treat 10 AM as a daytime boundary, never a catch-up delivery slot.
+    // Reminders outside 10 AM–10 PM family-local time are skipped entirely.
+    if(now.minutes<600||now.minutes>=1320)return;
     const stateRef=userRoot.collection('private').doc('reminderState');
     const state=(await stateRef.get()).data()||{};
     const names={mom:p.profile?.momName||'Mom',baby:p.baby?.name||'Baby'};
