@@ -199,7 +199,7 @@ function showMilestone(){
     '<span class="mf-milestone-icon" aria-hidden="true">🎉</span>'+
     '<span class="mf-milestone-copy"><strong>'+esc(m.title.replace('!',', '+m.name+'!'))+'</strong><small>'+esc(m.subtitle)+'</small></span>';
   const confetti=banner.querySelector('.mf-milestone-sparkles');
-  for(let i=0;i<12;i++){const piece=document.createElement('i');piece.style.setProperty('--piece',i);confetti.appendChild(piece);}
+  for(let i=0;i<12;i++){const piece=document.createElement('i');piece.style.left=(7+i*7)+'%';piece.style.background=['#ffb24a','#bc82ff','#60c7a4','#ff7eae','#6c99f9'][i%5];piece.style.animationDelay=(i*47)+'ms';confetti.appendChild(piece);}
   document.body.appendChild(banner);
   try{localStorage.setItem(MILESTONE_KEY,JSON.stringify({...seen,[m.key]:Date.now()}));}catch{}
   setTimeout(()=>banner.classList.add('leaving'),2600);
@@ -229,7 +229,7 @@ function injectStyle(){
 /* A small non-modal celebration that never steals focus or blocks care logging. */
 .mf-milestone-toast{position:fixed;z-index:1100;top:calc(16px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-10px);opacity:0;display:flex;align-items:center;gap:12px;width:min(93vw,420px);padding:14px 17px;border:1px solid rgba(255,255,255,.8);border-radius:20px;background:linear-gradient(125deg,#fff4d9 0%,#fff 49%,#f2e8ff 100%);color:#37274b;box-shadow:0 12px 34px rgba(26,16,49,.20);pointer-events:none;animation:mf-milestone-in .38s ease-out forwards}
 .mf-milestone-icon{font-size:1.9rem;flex:none}.mf-milestone-copy{position:relative;z-index:1;display:grid;gap:3px;min-width:0}.mf-milestone-copy strong{font-size:.95rem;line-height:1.25}.mf-milestone-copy small{font-size:.72rem;line-height:1.32;color:#625570}
-.mf-milestone-toast.leaving{animation:mf-milestone-out .35s ease-in forwards}.mf-milestone-sparkles{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none}.mf-milestone-sparkles i{position:absolute;left:calc(7% + var(--piece)*7%);top:-9px;width:6px;height:12px;border-radius:2px;background:hsl(calc(var(--piece)*41) 85% 63%);opacity:.9;transform:rotate(calc(var(--piece)*39deg));animation:mf-confetti 1.55s ease-in calc(var(--piece)*47ms) both}
+.mf-milestone-toast.leaving{animation:mf-milestone-out .35s ease-in forwards}.mf-milestone-sparkles{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none}.mf-milestone-sparkles i{position:absolute;left:7%;top:-9px;width:6px;height:12px;border-radius:2px;background:#ffb24a;opacity:.9;animation:mf-confetti 1.55s ease-in both}
 @keyframes mf-milestone-in{to{opacity:1;transform:translate(-50%,0)}}@keyframes mf-milestone-out{to{opacity:0;transform:translate(-50%,-12px)}}@keyframes mf-confetti{to{transform:translateY(115px) rotate(460deg);opacity:0}}
 @media(prefers-reduced-motion:reduce){.mf-milestone-toast,.mf-milestone-toast.leaving{animation:none;opacity:1;transform:translate(-50%,0)}.mf-milestone-sparkles i{animation:none;display:none}}
 @media(max-width:700px){.mf-parent-brief-card{width:calc(100vw - 22px);border-radius:23px;padding:16px}.mf-parent-brief-line{grid-template-columns:66px minmax(0,1fr)}.mf-parent-brief-actions{grid-template-columns:1fr 1.35fr}.mf-parent-brief-actions button{min-height:44px}}
