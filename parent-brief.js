@@ -143,6 +143,72 @@ function briefWindowOpen(at=new Date()){
   const minute=at.getHours()*60+at.getMinutes();
   return minute>=600&&minute<1320;
 }
+// Date-only milestones avoid DST and time-of-day drift. This is intentionally
+// device-local, so Mom and Dad can each see a celebration on their own phone.
+const MILESTONE_KEY='milkflow-celebrations-v1';
+function calendarDaysBetween(a,b){
+  return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/DAY);
+}
+function monthAnniversary(birth,months){
+  const first=new Date(birth.getFullYear(),birth.getMonth()+months,1,12);
+  const last=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();
+  return new Date(first.getFullYear(),first.getMonth(),Math.min(birth.getDate(),last),12);
+}
+function dueMilestones(birthDate,at=new Date()){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(birthDate||'')))return[];
+  const [year,month,day]=birthDate.split('-').map(Number);
+  const birth=new Date(year,month-1,day,12);
+  if(birth.getFullYear()!==year||birth.getMonth()!==month-1||birth.getDate()!==day)return[];
+  const elapsed=calendarDaysBetween(birth,at);
+  if(elapsed<0)return[];
+  const candidates=[];
+  const hundred=new Date(year,month-1,day+100,12);
+  candidates.push({id:'100-days',at:hundred,title:'Happy 100 days!',subtitle:'One hundred days of little moments worth celebrating.'});
+  for(let months=1;months<=12;months++){
+    const date=monthAnniversary(birth,months);
+    if(months===12)candidates.push({id:'birthday-1',at:date,title:'Happy 1st birthday!',subtitle:'A whole year of growing, discovering and being loved.'});
+    else candidates.push({id:'month-'+months,at:date,title:'Happy '+months+' month'+(months===1?'':'s')+'!',subtitle:'Another lovely milestone for your family.'});
+  }
+  const years=Math.floor(elapsed/365.2425)+1;
+  for(let y=2;y<=Math.min(years,25);y++){
+    const date=monthAnniversary(birth,y*12);
+    candidates.push({id:'birthday-'+y,at:date,title:'Happy '+y+(y%10===1&&y%100!==11?'st':y%10===2&&y%100!==12?'nd':y%10===3&&y%100!==13?'rd':'th')+' birthday!',subtitle:'Celebrating another year of growing together.'});
+  }
+  // Open-and-use delivery, with a small grace period for missed milestone days.
+  // Do not replay months-old celebrations on a newly installed device.
+  return candidates.filter(c=>{const gap=calendarDaysBetween(c.at,at);return gap>=0&&gap<=2;})
+    .sort((a,b)=>b.at-a.at);
+}
+function celebrationFor(s,at=new Date(),saved={}){
+  const baby=s?.baby||{},name=String(baby.name||'Baby').trim().slice(0,35),birth=String(baby.birthDate||'');
+  const milestone=dueMilestones(birth,at).find(c=>!saved[(baby.id||name)+'|'+birth+'|'+c.id]);
+  if(!milestone)return null;
+  return{...milestone,name,key:(baby.id||name)+'|'+birth+'|'+milestone.id};
+}
+let milestoneActive=false;
+function showMilestone(){
+  if(milestoneActive||!canInterrupt())return false;
+  const s=readState(),seen=readJSONMilestones(),m=celebrationFor(s,new Date(),seen);
+  if(!m)return false;
+  injectStyle();
+  milestoneActive=true;
+  const banner=document.createElement('div');
+  banner.id='mfMilestoneToast';banner.className='mf-milestone-toast';
+  banner.setAttribute('role','status');banner.setAttribute('aria-live','polite');
+  banner.innerHTML='<span class="mf-milestone-sparkles" aria-hidden="true"></span>'+
+    '<span class="mf-milestone-icon" aria-hidden="true">🎉</span>'+
+    '<span class="mf-milestone-copy"><strong>'+esc(m.title.replace('!',', '+m.name+'!'))+'</strong><small>'+esc(m.subtitle)+'</small></span>';
+  const confetti=banner.querySelector('.mf-milestone-sparkles');
+  for(let i=0;i<12;i++){const piece=document.createElement('i');piece.style.setProperty('--piece',i);confetti.appendChild(piece);}
+  document.body.appendChild(banner);
+  try{localStorage.setItem(MILESTONE_KEY,JSON.stringify({...seen,[m.key]:Date.now()}));}catch{}
+  setTimeout(()=>banner.classList.add('leaving'),2600);
+  setTimeout(()=>{banner.remove();milestoneActive=false;},3200);
+  return true;
+}
+function readJSONMilestones(){
+  try{return JSON.parse(localStorage.getItem(MILESTONE_KEY)||'{}')||{};}catch{return{};}
+}
 function canInterrupt(){
   if(!briefWindowOpen())return false;
   const screen=document.body?.dataset?.screen||location.hash.replace(/^#/,'');
@@ -159,6 +225,13 @@ function injectStyle(){
 .mf-parent-brief-head{display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:12px;align-items:start}.mf-parent-brief-kicker{display:inline-flex;align-items:center;gap:6px;width:max-content;padding:5px 9px;border-radius:999px;background:color-mix(in srgb,var(--mom,#7653c6) 11%,transparent);color:var(--mom-ink,var(--mom,#7653c6));font-size:.63rem;font-weight:950;letter-spacing:.075em;text-transform:uppercase}.mf-parent-brief h2{margin:9px 0 4px;font-size:1.22rem;line-height:1.12;letter-spacing:-.025em}.mf-parent-brief-sub{margin:0;color:var(--muted,#6f6d78);font-size:.72rem;line-height:1.42;max-width:44ch}.mf-parent-brief-close{border:1px solid var(--line-soft,#e8e4ed);background:var(--surface-2,#f4f2f7);color:var(--ink-2,#444);width:36px;height:36px;border-radius:50%;font-size:1.12rem;line-height:1}
 .mf-parent-brief-items{display:grid;gap:9px;margin:15px 0}.mf-parent-brief-item{position:relative;padding:13px 14px 13px 16px;border-radius:18px;background:color-mix(in srgb,var(--surface-2,#f7f5fa) 90%,transparent);border:1px solid var(--line-soft,#e8e4ed)}.mf-parent-brief-item::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:99px;background:var(--mom,#7653c6)}.mf-parent-brief-item h3{margin:0 0 9px;padding-left:2px;font-size:.9rem;line-height:1.2;letter-spacing:-.01em}.mf-parent-brief-line{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px;align-items:start;margin-top:6px}.mf-parent-brief-line b{font-size:.62rem;letter-spacing:.045em;text-transform:uppercase;color:var(--ink-2,#505466)}.mf-parent-brief-line span{color:var(--muted,#66636f);font-size:.71rem;line-height:1.42}.mf-parent-brief-line.next span{color:var(--ink-2,#505466);font-weight:700}
 .mf-parent-brief-actions{display:grid;grid-template-columns:auto minmax(132px,1fr);gap:8px;align-items:center}.mf-parent-brief-actions button{border:0;border-radius:13px;min-height:42px;padding:9px 13px;font:inherit;font-size:.74rem;font-weight:900}.mf-parent-brief-later{background:transparent;color:var(--muted,#666);padding-inline:10px}.mf-parent-brief-view{background:var(--ink,#20202a);color:var(--on-ink,#fff);box-shadow:0 8px 18px rgba(20,24,36,.14)}
+
+/* A small non-modal celebration that never steals focus or blocks care logging. */
+.mf-milestone-toast{position:fixed;z-index:1100;top:calc(16px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-10px);opacity:0;display:flex;align-items:center;gap:12px;width:min(93vw,420px);padding:14px 17px;border:1px solid rgba(255,255,255,.8);border-radius:20px;background:linear-gradient(125deg,#fff4d9 0%,#fff 49%,#f2e8ff 100%);color:#37274b;box-shadow:0 12px 34px rgba(26,16,49,.20);pointer-events:none;animation:mf-milestone-in .38s ease-out forwards}
+.mf-milestone-icon{font-size:1.9rem;flex:none}.mf-milestone-copy{position:relative;z-index:1;display:grid;gap:3px;min-width:0}.mf-milestone-copy strong{font-size:.95rem;line-height:1.25}.mf-milestone-copy small{font-size:.72rem;line-height:1.32;color:#625570}
+.mf-milestone-toast.leaving{animation:mf-milestone-out .35s ease-in forwards}.mf-milestone-sparkles{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none}.mf-milestone-sparkles i{position:absolute;left:calc(7% + var(--piece)*7%);top:-9px;width:6px;height:12px;border-radius:2px;background:hsl(calc(var(--piece)*41) 85% 63%);opacity:.9;transform:rotate(calc(var(--piece)*39deg));animation:mf-confetti 1.55s ease-in calc(var(--piece)*47ms) both}
+@keyframes mf-milestone-in{to{opacity:1;transform:translate(-50%,0)}}@keyframes mf-milestone-out{to{opacity:0;transform:translate(-50%,-12px)}}@keyframes mf-confetti{to{transform:translateY(115px) rotate(460deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){.mf-milestone-toast,.mf-milestone-toast.leaving{animation:none;opacity:1;transform:translate(-50%,0)}.mf-milestone-sparkles i{animation:none;display:none}}
 @media(max-width:700px){.mf-parent-brief-card{width:calc(100vw - 22px);border-radius:23px;padding:16px}.mf-parent-brief-line{grid-template-columns:66px minmax(0,1fr)}.mf-parent-brief-actions{grid-template-columns:1fr 1.35fr}.mf-parent-brief-actions button{min-height:44px}}
 `;document.head.appendChild(el);
 }
@@ -178,17 +251,27 @@ function show(cards){
   try{d.showModal();}catch{d.setAttribute('open','');}
 }
 function maybeShow(){if(!canInterrupt())return;const s=readState(),cards=buildCards(s);if(eligible(cards))show(cards);}
-// Re-evaluate after 10 AM if MilkFlow was opened during quiet hours; never
-// cache an overnight brief or consume the twice-weekly allowance overnight.
-function schedule(){
-  setTimeout(maybeShow,4200);
-  const now=new Date(),open=new Date(now);
-  open.setHours(10,0,0,0);
-  if(now>=open)open.setDate(open.getDate()+1);
-  setTimeout(maybeShow,Math.max(0,open.getTime()-now.getTime())+3000);
+// No 10 AM alarm: check only after the family opens/uses MilkFlow in daytime.
+// Device-local seen histories let every signed-in family's device see the brief.
+let pendingCheck=null,lastInteractionCheck=0;
+function schedule(delay=3000){
+  clearTimeout(pendingCheck);
+  pendingCheck=setTimeout(()=>{
+    if(!canInterrupt())return;
+    if(showMilestone())return; // Celebration is the gentle notice for this visit.
+    maybeShow();
+  },delay);
 }
 window.MilkFlowParentBrief={build:()=>buildCards(readState()),showNow:()=>show(buildCards(readState()))};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
-window.addEventListener('pageshow',()=>setTimeout(maybeShow,3000));
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(maybeShow,3000);});
+window.MilkFlowMilestones={dueMilestones,celebrationFor};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>schedule(4200),{once:true});else schedule(4200);
+window.addEventListener('pageshow',()=>schedule(3000));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule(3000);});
+window.addEventListener('milkflow:base-rendered',()=>{if(briefWindowOpen())schedule(3200);});
+document.addEventListener('pointerdown',()=>{
+  const now=Date.now();
+  if(!briefWindowOpen()||now-lastInteractionCheck<45000)return;
+  lastInteractionCheck=now;
+  schedule(2400);
+},{passive:true});
 })();
