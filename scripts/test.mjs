@@ -562,3 +562,22 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   if(n.open(new Date(2026,9,23,3,15))!==false||n.open(new Date(2026,9,23,10,15))!==true)
     throw new Error('iOS service-worker quiet-hour check was removed');
 }
+
+{
+  const app=fs.readFileSync(path.join(ROOT,'app.js'),'utf8');
+  const server=fs.readFileSync(path.join(ROOT,'functions/scheduled-reminders.js'),'utf8');
+  const alerts=fs.readFileSync(path.join(ROOT,'cross-device-alerts.js'),'utf8');
+  const start=app.indexOf('function routineReminderWindowOpen('),end=app.indexOf('async function notify(',start);
+  if(start<0||end<0)throw new Error('Client reminder quiet hours missing');
+  const cx=vm.createContext({Date});
+  vm.runInContext(app.slice(start,end)+'\nthis.open=routineReminderWindowOpen;',cx);
+  if(cx.open(new Date(2026,9,25,9,59))!==false||cx.open(new Date(2026,9,25,10,1))!==true||
+     cx.open(new Date(2026,9,25,22,0))!==false)
+    throw new Error('Client reminders must respect local daytime delivery');
+  if(!app.includes('Date.now()-due.due.getTime()>15*60000'))
+    throw new Error('Old feed reminders must not replay after morning quiet hours');
+  if(!server.includes('if(now.minutes<600||now.minutes>=1320)return;'))
+    throw new Error('Scheduled Firebase reminders must skip quiet hours, without queuing a 10 AM backlog');
+  if(!alerts.includes('!routineAlertWindowOpen()')||!alerts.includes('routineAlertWindowOpen())showToast('))
+    throw new Error('Cross-device foreground alerts ignore quiet hours');
+}
