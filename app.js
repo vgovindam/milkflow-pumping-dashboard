@@ -2609,7 +2609,12 @@ async function toggleReminders(){
  * Go through the service worker when there is one and keep the constructor as the desktop
  * fallback. Permission still has to be asked from a real tap, which the Settings toggle does.
  */
+function routineReminderWindowOpen(at=new Date()){
+  const minutes=at.getHours()*60+at.getMinutes();
+  return minutes>=600&&minutes<1320;
+}
 async function notify(title, options){
+  if(!routineReminderWindowOpen())return false;
   // Scheduled care reminders must not erupt as OS notifications when the user opens or
   // returns to MilkFlow. True background/lock-screen delivery is handled by push through
   // the service worker; foreground care timing stays inside the app as a quiet toast.
@@ -2630,6 +2635,7 @@ async function notify(title, options){
 }
 
 function sleepReminderTick(){
+  if(!routineReminderWindowOpen())return;
   const a=activeSleep(); if(!a)return;
   const threshold=Math.max(30,+a.reminderAfterMin||90);
   if(a.elapsedMin<threshold||S.baby.activeSleep?.remindedAt)return;
@@ -2640,6 +2646,7 @@ function sleepReminderTick(){
   // No foreground system notification here: the in-app action above is sufficient.
 }
 function tickReminders(){
+  if(!routineReminderWindowOpen())return;
   sleepReminderTick();
   feedReminderTick();
   if(!S.reminders.enabled) return;
@@ -2668,7 +2675,9 @@ function feedReminderTick(){
   if(!S.reminders.feedEnabled) return;
   const last = babyEvents().filter(e => !e.exactSourceDuplicate && (e.eventType==='feeding'||e.eventType==='nursing')).sort(byWhenDesc)[0];
   const due = nextFeedDue(last);
-  if(!due || !due.overdue) return;
+  // A missed overnight feed reminder is stale after its due window; never
+  // turn app opening after 10 AM into a backlog of ancient notifications.
+  if(!due || !due.overdue || Date.now()-due.due.getTime()>15*60000) return;
   const key = `${last.id}-${S.reminders.feedGapMin}`;
   if(S.reminders.feedLastKey === key) return;
   S.reminders.feedLastKey = key; save();
