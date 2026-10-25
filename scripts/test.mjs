@@ -581,3 +581,26 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   if(!alerts.includes('!routineAlertWindowOpen()')||!alerts.includes('routineAlertWindowOpen())showToast('))
     throw new Error('Cross-device foreground alerts ignore quiet hours');
 }
+
+
+// Chat chips must fit the iPhone panel instead of horizontally scrolling past
+// the right edge. Both quick prompts and assistant confirmation actions are
+// constrained inside the panel's own responsive layout.
+{
+  const chat=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+  const start=chat.indexOf('function styles(){');
+  const end=chat.indexOf('function renderMessages()',start);
+  if(start<0||end<0)throw new Error('Canonical chat styles could not be located');
+  const css=chat.slice(start,end);
+  const required=[
+    '.mf-chat-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))',
+    '.mf-chat-actions{display:flex;flex-wrap:wrap;align-self:stretch',
+    '.mf-chat-actions button,.mf-chat-quick button,.mf-chat-retry{box-sizing:border-box;min-width:0;max-width:100%',
+    'white-space:normal;overflow-wrap:break-word',
+    '.mf-chat-quick button{width:100%;min-height:38px}',
+    '.mf-chat-panel{position:fixed;top:calc(env(safe-area-inset-top) + 8px)'
+  ];
+  for(const selector of required)if(!css.includes(selector))throw new Error('Chat button overflow contract missing: '+selector);
+  if(css.includes('.mf-chat-quick{padding:0 14px 9px;flex-wrap:nowrap}'))
+    throw new Error('Old offscreen horizontal quick-action strip returned');
+}
