@@ -2,6 +2,12 @@
 // iOS owns the "from MilkFlow" attribution line for installed web-app pushes.
 // Do not collapse event details into the title: iOS truncates long titles before
 // the user sees the amount/time. Keep an action-first title and a readable body.
+// Quiet hours apply in the RECEIVING DEVICE'S local timezone, even with the
+// app closed. Overnight routine events are dropped, never queued to 10 AM.
+function deliveryWindowOpen(at=new Date()){
+  const minute=at.getHours()*60+at.getMinutes();
+  return minute>=10*60&&minute<22*60;
+}
 function notificationCopy(data){
   const originalTitle=String(data?.title||'').trim();
   const rawBody=String(data?.body||'').trim();
@@ -43,6 +49,7 @@ try{
     const messaging=firebase.messaging();
     messaging.onBackgroundMessage(payload=>{
       const d=payload?.data||{};
+      if(!deliveryWindowOpen())return Promise.resolve();
       const route=String(d.route||'baby-home').replace(/^#/,'');
       const url=new URL(`#${route}`,self.registration.scope).href;
       const copy=notificationCopy(d);
