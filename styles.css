@@ -867,6 +867,19 @@ body[data-screen="more"],body[data-screen="settings"],body[data-screen^="set-"]{
 .form-section:last-of-type{border-bottom:0}
 .form-section-title{font:800 13.5px var(--font);margin-bottom:11px;color:var(--ink-2)}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+/* Measured pump-side data is optional, compact, and readable in both themes. */
+.pump-side-fields{margin-top:14px;padding:13px;border:1px solid var(--line);border-radius:16px;background:var(--surface-2)}
+.pump-side-head{display:flex;justify-content:space-between;align-items:baseline;gap:9px;margin-bottom:10px}
+.pump-side-head strong{font-size:13px;color:var(--ink);font-weight:850}
+.pump-side-head span,.pump-side-hint{font-size:11.5px;color:var(--ink-2);line-height:1.45}
+.pump-side-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.pump-side-grid label{min-width:0;display:grid;gap:6px;font-size:12px;font-weight:800;color:var(--ink-2)}
+.pump-side-grid input{box-sizing:border-box;width:100%;min-width:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:750 18px var(--font);font-variant-numeric:tabular-nums}
+.pump-side-grid input:focus-visible,.pump-comfort-label select:focus-visible{outline:3px solid var(--mom-soft);outline-offset:1px}
+.pump-side-hint{margin:9px 0 0;min-height:15px}
+.pump-comfort-label{display:grid;gap:8px;margin-top:16px;font-size:12.5px;font-weight:800;color:var(--ink-2)}
+.pump-comfort-label select{box-sizing:border-box;width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:var(--surface-2);color:var(--ink);font:700 15px var(--font)}
+
 .optional{margin-top:12px}
 .optional summary{font-size:11.5px;font-weight:900;color:var(--muted);cursor:pointer;padding:6px 0}
 .optional textarea{width:100%;margin-top:8px;border:1px solid var(--line);border-radius:13px;padding:11px;font-size:16px;background:var(--surface-2)}
