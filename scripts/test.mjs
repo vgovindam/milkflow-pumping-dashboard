@@ -851,7 +851,7 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   const totals=[690,675,710,680,670,725,624],entries=[];
   for(let n=0;n<7;n++){
     const day='2026-11-'+String(n+3).padStart(2,'0'),amounts=[220,180,totals[n]-530,130];
-    amounts.forEach((ml,i)=>entries.push({id:day+'-'+i,type:'pump',date:day,time:['06:16','11:25','15:35','19:30'][i],amountMl:ml,durationMinutes:[36,39,38,37][i],leftMl:null,rightMl:null}));
+    amounts.forEach((ml,i)=>entries.push({id:day+'-'+i,type:'pump',date:day,time:['06:16','11:25','15:35','19:30'][i],amountMl:ml,durationMinutes:[36,39,38,37][i],leftMl:n>=5?Math.floor(ml/2):null,rightMl:n>=5?ml-Math.floor(ml/2):null}));
   }
   const day='2026-11-10',values=[220,189,140,110],left=[120,97,70,60],right=[100,92,70,50],dur=[36,39,38,37];
   values.forEach((ml,i)=>entries.push({id:'today-'+i,type:'pump',date:day,time:['06:16','11:25','15:35','19:30'][i],amountMl:ml,leftMl:left[i],rightMl:right[i],durationMinutes:dur[i],comfort:i===3?'tender_left':null}));
@@ -866,6 +866,13 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
     throw new Error('Same ordinal pump comparison incorrect');
   if(evidence.reportedComfort.at(-1).comfort!=='tender_left')
     throw new Error('Self-reported breast comfort not available for guidance');
+  if(evidence.checkpointAverages[4].sideSampleDays!==2||
+     evidence.checkpointAverages[4].averageLeftMl!==65||
+     evidence.checkpointAverages[4].averageRightMl!==65||
+     evidence.checkpointAverages[4].averageDurationMin!==37)
+    throw new Error('Session-matched side and duration averages were invented or incorrect');
+  if(evidence.recentFullyMeasuredSideTotals?.completeMeasuredDays!==2)
+    throw new Error('Side-day history must report measured coverage');
   const legacy=entries.map(e=>({...e}));
   const firstToday=legacy.find(e=>e.id==='today-0');firstToday.leftMl=null;firstToday.rightMl=null;
   const missing=ctx.evidence(ctx.makeDays(legacy),day);
