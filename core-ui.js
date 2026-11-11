@@ -122,18 +122,36 @@ function learnedGap(s,anchor,target){
 }
 function historicalEdge(s,which){const by={};for(const e of livePumps(s)){if(e.date===today())continue;(by[e.date]??=[]).push(e);}const vals=Object.keys(by).sort().slice(-7).map(d=>{const a=by[d].sort((x,y)=>String(x.time).localeCompare(String(y.time)));return mins(which==='first'?a[0]?.time:a.at(-1)?.time);}).filter(Number.isFinite);return median(vals);}
 function plan(s=read(),p=prefs()){
-  const actual=dayPumps(s),target=clamp(+p.target||6,4,8),remaining=Math.max(0,target-actual.length),schedule=(Array.isArray(s.schedule)?s.schedule:[]).map(mins).filter(Number.isFinite).sort((a,b)=>a-b),override=Number(p.nextOverrideByDate?.[today()]);
-  let end=Math.max(target===5?1410:1425,historicalEdge(s,'last')||0,schedule.at(-1)||0);end=Math.min(end,target===5?1440:1445);
-  if(!actual.length){
-    const now=new Date(),nowM=now.getHours()*60+now.getMinutes(),raw=schedule.filter(m=>m>=nowM-20).slice(0,remaining),first=schedule[0]??historicalEdge(s,'first')??340;
-    let future=raw.length?raw:Array.from({length:remaining},(_,i)=>first+i*(target===5?240:195)).filter(m=>m>=nowM-20).slice(0,remaining);
-    if(Number.isFinite(override)&&override>=nowM-10&&remaining){const gap=target===5?240:195;future=[override,...Array.from({length:remaining-1},(_,i)=>round5(override+gap*(i+1)))].slice(0,remaining);}
-    return{target,actual,remaining,future,source:Number.isFinite(override)?'override':'baseline'};
+  // The same planner drives every visible pump time. Baseline times are hints, never promises.
+  const actual=dayPumps(s),normal=Number(s.profile?.dailyPumpTarget)||6;
+  const target=clamp(Math.round(Number(p.target)||normal),1,8);
+  const remaining=Math.max(0,target-actual.length);
+  const configured=mins(s.profile?.pumpFinishTime||'23:00');
+  const deadline=Number.isFinite(configured)?clamp(configured,0,1439):1380;
+  const now=new Date(),nowM=now.getHours()*60+now.getMinutes();
+  const last=actual.at(-1)||null,lastM=mins(last?.time);
+  const override=Number(p.nextOverrideByDate?.[today()]);
+  if(!remaining)return {target,actual,remaining,future:[],source:'actual',last,deadline,feasible:true};
+  // A minimum comfortable interval is used for feasibility. The learned interval is preferred.
+  const minGap=target<=3?180:150,preferredGap=last?learnedGap(s,lastM,target):target===5?240:195;
+  const earliest=Math.max(nowM+5,Number.isFinite(lastM)?lastM+minGap:0);
+  const slotsPossible=earliest>deadline?0:1+Math.floor((deadline-earliest)/minGap);
+  const count=Math.min(remaining,slotsPossible);
+  const feasible=count===remaining;
+  if(!count)return {target,actual,remaining,future:[],source:'constraint',last,deadline,feasible:false};
+  const schedule=(Array.isArray(s.schedule)?s.schedule:[]).map(mins).filter(Number.isFinite).sort((x,y)=>x-y);
+  const baseline=schedule.find(m=>m>=earliest);
+  const wished=Number.isFinite(override)&&override>=earliest?override:
+    Number.isFinite(lastM)?lastM+preferredGap:
+    (baseline??historicalEdge(s,'first')??earliest);
+  // Preserve the desired next interval when possible, then spread the rest to the finish goal.
+  const first=round5(clamp(wished,earliest,deadline-minGap*(count-1)));
+  const future=[Math.min(deadline,Math.max(earliest,first))];
+  for(let i=1;i<count;i++){
+    const time=round5(future[0]+(deadline-future[0])*i/(count-1));
+    future.push(Math.min(deadline,Math.max(future[i-1]+minGap,time)));
   }
-  const last=actual.at(-1),lastM=mins(last.time);let gap=learnedGap(s,lastM,target);if(p.mode==='tired')gap+=15;if(p.mode==='travel')gap+=10;if(!remaining)return{target,actual,remaining,future:[],source:'actual',last};
-  const minGap=target===5?180:150;let first=lastM+gap;if(Number.isFinite(override)&&override>lastM)first=override;if(remaining>1)first=Math.min(first,end-minGap*(remaining-1));else first=Math.min(first,end);first=round5(Math.max(first,lastM+minGap));
-  const future=[first];if(remaining>1){const step=clamp(Math.round(Math.max(minGap*(remaining-1),end-first)/(remaining-1)),minGap,gap);for(let i=1;i<remaining;i++)future.push(round5(first+step*i));}
-  return{target,actual,remaining,future,source:Number.isFinite(override)&&override>lastM?'override':'actual',last};
+  return {target,actual,remaining,future,source:!feasible?'constraint':Number.isFinite(override)&&override>=earliest?'override':last?'actual':'baseline',last,deadline,feasible};
 }
 function setTodayTarget(n){n=clamp(Math.round(Number(n)||6),4,8);savePrefs(p=>{p.dayTargets[today()]=n;return p;});return plan(read(),prefs());}
 function setDayTarget(day,n){n=clamp(Math.round(Number(n)||6),4,8);savePrefs(p=>{p.dayTargets[day]=n;delete p.target;return p;});return n;}
@@ -685,7 +703,7 @@ function nudgeCard(realm){
 
 function renderMom(s){
   const view=document.getElementById('view'),hero=view?.querySelector('.mom-hero');if(!view||!hero)return;
-  const g=positiveGreeting(),name=s.profile?.momName||'Mom',gl=greetingLine(name),photo=s.profile?.momPhoto||'',x=plan(s,prefs()),snap=momSnapshot(s,x),next=x.remaining&&x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:'All done for today',progress=x.target?Math.min(100,Math.round(x.actual.length/x.target*100)):0;
+  const g=positiveGreeting(),name=s.profile?.momName||'Mom',gl=greetingLine(name),photo=s.profile?.momPhoto||'',x=window.MilkFlowDynamicPump?.getPlan?.()||plan(s,prefs()),snap=momSnapshot(s,x),next=x.future.length?`${to12(x.future[0]-10)}–${to12(x.future[0]+10)}`:x.remaining?'Needs replanning':'All done for today',progress=x.target?Math.min(100,Math.round(x.actual.length/x.target*100)):0;
   hero.classList.add('mf-dream-hero');
   hero.innerHTML=`
     <div class="mf-dream-main">
@@ -706,7 +724,7 @@ function renderMom(s){
   if(!card){card=document.createElement('section');card.id='mfCorePlan';card.className='mf-core-plan';hero.insertAdjacentElement('afterend',card);}
   card.className='mf-core-plan mf-dream-journey';
   const stops=[...(x.actual||[]).map(e=>({kind:'done',time:mins(e.time),amount:Number(e.amountMl)||0})),...(x.future||[]).map((m,i)=>({kind:i===0?'next':'future',time:m}))];
-  card.innerHTML=`<div class="mf-journey-head"><div><span>Today’s journey</span><strong>${x.remaining?'One gentle session at a time':'Today’s rhythm is complete'}</strong></div><em>${x.actual.length} of ${x.target}</em></div><div class="mf-journey-track">${stops.map((stop,i)=>`<div class="mf-journey-stop ${stop.kind}"><i>${stop.kind==='done'?'✓':stop.kind==='next'?'●':'○'}</i><strong>${to12(stop.time)}</strong><small>${stop.kind==='done'?`${stop.amount} mL`:stop.kind==='next'?'Next up':'Later'}</small></div>`).join('')}</div><p>${x.source==='override'?'Today’s times were adjusted for you.':x.source==='actual'&&x.last?`Spaced out from your ${to12(mins(x.last.time))} pump so the gaps stay comfortable.`:'Starts from your usual schedule and adjusts each time you log a pump.'}</p>`;
+  card.innerHTML=`<div class="mf-journey-head"><div><span>Today’s journey</span><strong>${x.remaining?'One gentle session at a time':'Today’s rhythm is complete'}</strong></div><em>${x.actual.length} of ${x.target}</em></div><div class="mf-journey-track">${stops.map((stop,i)=>`<div class="mf-journey-stop ${stop.kind}"><i>${stop.kind==='done'?'✓':stop.kind==='next'?'●':'○'}</i><strong>${to12(stop.time)}</strong><small>${stop.kind==='done'?`${stop.amount} mL`:stop.kind==='next'?'Next up':'Later'}</small></div>`).join('')}</div><p>${x.feasible===false?`Only ${x.future.length} of ${x.remaining} remaining pumps fit before ${to12(x.deadline)} at the minimum spacing. Consider changing today’s target or finish time.`:x.source==='override'?'Your next time was adjusted; the remaining pumps were rebalanced.':x.last?`Rebalanced after your ${to12(mins(x.last.time))} pump to finish by ${to12(x.deadline)}.`:`Your remaining pumps are paced to finish by ${to12(x.deadline)}.`}</p>`;
   /* Insert ONLY when it is not already in place. render-lifecycle.js watches #view's childList
      and re-runs this pass on every change, so re-inserting the card unconditionally made each
      render trigger the next one - an infinite loop that pegged the main thread and hung the
