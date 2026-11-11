@@ -604,3 +604,75 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   if(css.includes('.mf-chat-quick{padding:0 14px 9px;flex-wrap:nowrap}'))
     throw new Error('Old offscreen horizontal quick-action strip returned');
 }
+
+
+// A friendly pumping update must contain real history-based comparisons,
+// session-matched progress, optional side trends, and no premature "daily drop".
+{
+  const source=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+  const begin=source.indexOf('function pumpSessionCoach(');
+  const finish=source.indexOf('async function performAction(',begin);
+  if(begin<0||finish<0)throw new Error('Session coach was not found');
+  const entries=[];
+  for(let day=1;day<=7;day++){
+    const date='2026-11-'+String(day).padStart(2,'0');
+    for(let i=1;i<=4;i++)entries.push({id:date+'-'+i,type:'pump',date,time:String(5+i*3).padStart(2,'0')+':00',amountMl:i===4?140:100,leftMl:i===4?75:null,rightMl:i===4?65:null});
+  }
+  const date='2026-11-10';
+  for(let i=1;i<=3;i++)entries.push({id:'today-'+i,type:'pump',date,time:String(5+i*3).padStart(2,'0')+':00',amountMl:100});
+  const e={id:'today-4',type:'pump',date,time:'17:00',amountMl:160,leftMl:80,rightMl:80};
+  entries.push(e);
+  const ctx=vm.createContext({
+    livePumps:s=>s.entries,
+    today:()=>date,
+    currentPlan:()=>({target:5,future:[]}),
+    permanentTarget:()=>5,
+    to12:t=>t,
+    to12m:n=>String(n),
+    Date,Math,Number,Map
+  });
+  vm.runInContext(source.slice(begin,finish)+'\nthis.reply=pumpSessionCoach;',ctx);
+  const output=ctx.reply(e,{entries}),text=output.reply;
+  for(const part of ['Logged','160 mL','pump #4','460 mL','7 comparable completed days','Nice improvement','cumulative amount','left 80 mL','right 80 mL','last seven completed days']){
+    if(!text.includes(part))throw new Error('Session response missing personal context: '+part);
+  }
+  if(text.includes('today fell')||text.includes('daily drop'))throw new Error('Incomplete day called a decline');
+  if(!output.actions?.some(x=>x.id==='ask:pump-week'))throw new Error('No follow-up trend action');
+  const parserStart=source.indexOf('function parseNaturalAction('),parserEnd=source.indexOf('function writeState(',parserStart);
+  const parsed=vm.createContext({
+    today:()=>date,dateShift:()=> '2026-11-09',clock:()=> '17:00',
+    parseExplicitTime:t=>/\b(2:30\s*PM|6:05\s*AM)\b/i.test(t)?(/6:05/i.test(t)?'06:05':'14:30'):null
+  });
+  vm.runInContext(source.slice(parserStart,parserEnd)+'\nthis.parse=parseNaturalAction;',parsed);
+  const update=parsed.parse('I pumped 160ml at 2:30 PM L80 R80');
+  if(update?.amountMl!==160||update.leftMl!==80||update.rightMl!==80||update.time!=='14:30')
+    throw new Error('Timestamped 160 mL side-split update was not parsed for confirmation');
+  const simple=parsed.parse('6:05 AM 195ml left 102 right 93');
+  if(simple?.amountMl!==195||simple.leftMl!==102||simple.rightMl!==93)
+    throw new Error('Plain pumping journal-style update was not recognized');
+  if(parsed.parse('How much did I pump at 6:05 AM?'))
+    throw new Error('Pumping question was mistaken for a record write');
+}
+{
+  const source=fs.readFileSync(path.join(ROOT,'parent-brief.js'),'utf8');
+  const begin=source.indexOf('function weekKey('),finish=source.indexOf('function briefWindowOpen(',begin);
+  if(begin<0||finish<0)throw new Error('Weekly care brief cadence missing');
+  let pref={};
+  const ctx=vm.createContext({
+    DAY:86400000,MIN_GAP:3*86400000,ROLLING_WINDOW:7*86400000,
+    MAX_SHOWS_PER_WINDOW:2,MAX_CARDS:2,REPEAT_SUPPRESS:12*86400000,
+    Date,Number,Array,Object,
+    dateKey:d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'),
+    readPref:()=>pref,writePref:x=>{pref=x;}
+  });
+  vm.runInContext(source.slice(begin,finish)+'\nthis.week=weekKey;this.eligible=eligible;this.markShown=markShown;',ctx);
+  if(ctx.week(new Date(2026,10,10,12))!=='2026-11-09')throw new Error('Weekly date not aligned to Monday');
+  const stage=[{kind:'age-baby-16',priority:34}],signal=[{kind:'pump-output',priority:78},{kind:'age-mom-16',priority:32}];
+  if(!ctx.eligible(stage))throw new Error('Weekly stage guidance did not become due');
+  ctx.markShown(stage);
+  if(ctx.eligible(stage))throw new Error('Stage notification repeated within the same week');
+  pref={...pref,shows:[Date.now()-4*86400000]};
+  if(!ctx.eligible(signal))throw new Error('Meaningful new signal could not use second weekly slot');
+  ctx.markShown(signal);
+  if(ctx.eligible(signal))throw new Error('Same signal repeated in same week');
+}
