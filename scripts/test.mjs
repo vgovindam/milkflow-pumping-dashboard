@@ -929,3 +929,24 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   if(!app.includes('$'+'{momSideBalance()}'))
     throw new Error('Side trends not actually rendered in Mom Trends');
 }
+
+
+// The last active day's partial total belongs in the chart, not the completed
+// daily supply average or direction comparisons.
+{
+  const app=fs.readFileSync(path.join(ROOT,'app.js'),'utf8');
+  const begin=app.indexOf('function momTrends(){'),end=app.indexOf('/* One number, one Save.',begin);
+  if(begin<0||end<0)throw new Error('Mom trend owner not found');
+  const block=app.slice(begin,end);
+  for(const snippet of [
+    'const completedDays=days.filter(d=>d<today())',
+    'const activeDays = completedDays.filter(d => dayTotal(d) > 0)',
+    'const sessionsPerDay = activeDays.length ? (completedSessions.length/activeDays.length)',
+    'const recentAvg = avg(completedDays.slice(half)',
+    'days:completedDays.map(d=>({date:d,totalMl:dayTotal(d)}))',
+    'const rollingBy = new Map(days.map(d => { const w = completedDays.filter(x=>x<=d)',
+    'Today is still in progress and is excluded from completed-day trend averages.'
+  ])if(!block.includes(snippet))throw new Error('Partial current day polluted a trend comparison: '+snippet);
+  if(block.includes('const recentAvg = avg(days.slice(half)'))
+    throw new Error('Old incomplete-day comparison was reintroduced');
+}
