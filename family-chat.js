@@ -303,7 +303,11 @@ async function sendMessage(text){
   if(pendingLog()&&/^(no|nope|cancel|not now|never mind)$/i.test(message)){add('user',message);const out=await finishPendingLog('cancel');add('assistant',out.reply);return;}
   if(pendingLog()&&/^(at|time|change time)/i.test(message)){
     const time=parseExplicitTime(message);
-    if(time){const p=pendingLog();storePendingLog(Object.assign({},p,{time}));add('user',message);add('assistant','Log '+p.amount+' '+(p.kind==='pump'?'mL':'oz')+' at '+to12(time)+'?',{actions:[{id:'care-confirm',label:'Yes, log it'},{id:'care-cancel',label:'Cancel'}]});return;}
+    if(time){const p=pendingLog(),updated={...p,time,...(p.action?{action:{...p.action,time}}:{})};
+      storePendingLog(updated);add('user',message);
+      const amount=p.kind==='pump'?(p.action?.amountMl??p.amount):p.kind==='feeding'?(p.action?.amountOz??p.amount):p.action?.durationMinutes;
+      const detail=p.kind==='pump'?amount+' mL pump':p.kind==='feeding'?amount+' oz bottle':p.kind==='diaper'?(p.action?.subtype||'care')+' diaper':amount+' min nursing';
+      add('assistant','Got it. Save '+detail+' at '+to12(time)+'?',{actions:[{id:'care-confirm',label:'Save entry'},{id:'care-cancel',label:'Cancel'}]});return;}
   }
   const offer=askToLog(message);if(offer){add('user',message);add('assistant',offer.reply,{actions:offer.actions});return;}
   if(/^(?:show |give |read )?(?:my |the )?(?:parent brief|care brief|weekly guidance)$/i.test(message)){add('user',message);add('assistant',parentBriefAnswer());return;}
