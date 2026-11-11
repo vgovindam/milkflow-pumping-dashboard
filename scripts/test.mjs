@@ -798,3 +798,93 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   if(!app.includes("new CustomEvent('milkflow:auth-changed'"))
     throw new Error('Firebase sign-in ready signal is missing');
 }
+
+
+// Measured pumping data contract: form, edit, sync and AI all distinguish
+// missing side values from genuine zero and cannot invent side distribution.
+{
+  const app=fs.readFileSync(path.join(ROOT,'app.js'),'utf8');
+  const begin=app.indexOf('function readMomSideAmounts(){'),end=app.indexOf('function openMomDialog(',begin);
+  if(begin<0||end<0)throw new Error('Measured side input handler missing');
+  const inputs={
+    momLeftMl:{value:'60'},momRightMl:{value:'50'},momAmount:{value:'110'},
+    momSplitHint:{textContent:''}
+  };
+  const form=vm.createContext({$:id=>inputs[id]||null,Number,String});
+  vm.runInContext(app.slice(begin,end)+'\nthis.read=readMomSideAmounts;this.update=updateMomSideTotal;',form);
+  let result=form.read();
+  if(result.leftMl!==60||result.rightMl!==50)throw new Error('Measured left/right values not captured');
+  inputs.momRightMl.value='';result=form.read();
+  if(!result.error)throw new Error('Partial side split must not be saved');
+  inputs.momRightMl.value='55';form.update('momRightMl');
+  if(inputs.momAmount.value!=='115')throw new Error('Total must equal measured left plus right');
+  inputs.momAmount.value='120';form.update('momAmount');
+  if(inputs.momLeftMl.value!==''||inputs.momRightMl.value!=='')
+    throw new Error('Manual total edit retained a stale side distribution');
+  inputs.momLeftMl.value='0';inputs.momRightMl.value='50';
+  if(form.read().leftMl!==0||form.read().rightMl!==50)
+    throw new Error('Genuine zero-side measurement cannot be distinguished from missing');
+  inputs.momLeftMl.value='';inputs.momRightMl.value='';
+  if(form.read().leftMl!==null||form.read().rightMl!==null)
+    throw new Error('Missing side amounts were fabricated');
+  for(const required of [
+    "stepper('momAmount',{unit:'mL',step:10,inputStep:1",
+    "leftMl:e.leftMl??null,rightMl:e.rightMl??null,comfort:e.comfort||null",
+    "leftMl:sides.leftMl,rightMl:sides.rightMl",
+    "if($('momLeftMl')) $('momLeftMl').value=e.leftMl??''",
+    "if($('momRightMl')) $('momRightMl').value=e.rightMl??''",
+    "if($('momComfort')) $('momComfort').value=e.comfort||''",
+    'function pumpExtra(e){'
+  ])if(!app.includes(required))throw new Error('Measured pump data pipeline incomplete: '+required);
+  const css=fs.readFileSync(path.join(ROOT,'styles.css'),'utf8');
+  for(const c of ['.pump-side-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))','.pump-comfort-label select{'])
+    if(!css.includes(c))throw new Error('Responsive side/comfort form styling missing: '+c);
+}
+// Synthetic sample regression only: reproduces a realistic four-session day.
+// All comparison numbers must be computed, not hardcoded in coaching prose.
+{
+  const server=fs.readFileSync(path.join(ROOT,'functions/family-chat.js'),'utf8');
+  const first=server.indexOf('  function pumpDays('),last=server.indexOf('  async function load(',first);
+  if(first<0||last<0)throw new Error('Authenticated evidence builder missing');
+  const ctx=vm.createContext({Date,Map,Math,Number,String,Array,Object});
+  vm.runInContext(server.slice(first,last)+'\nthis.makeDays=pumpDays;this.evidence=buildPumpEvidence;',ctx);
+  const totals=[690,675,710,680,670,725,624],entries=[];
+  for(let n=0;n<7;n++){
+    const day='2026-11-'+String(n+3).padStart(2,'0'),amounts=[220,180,totals[n]-530,130];
+    amounts.forEach((ml,i)=>entries.push({id:day+'-'+i,type:'pump',date:day,time:['06:16','11:25','15:35','19:30'][i],amountMl:ml,durationMinutes:[36,39,38,37][i],leftMl:null,rightMl:null}));
+  }
+  const day='2026-11-10',values=[220,189,140,110],left=[120,97,70,60],right=[100,92,70,50],dur=[36,39,38,37];
+  values.forEach((ml,i)=>entries.push({id:'today-'+i,type:'pump',date:day,time:['06:16','11:25','15:35','19:30'][i],amountMl:ml,leftMl:left[i],rightMl:right[i],durationMinutes:dur[i],comfort:i===3?'tender_left':null}));
+  const evidence=ctx.evidence(ctx.makeDays(entries),day),current=evidence.currentDay;
+  if(current.totalMl!==659||current.sessionCount!==4||current.totalDurationMin!==150)
+    throw new Error('Daily total, session count or duration was invented or incorrect');
+  if(current.leftTotalMl!==347||current.rightTotalMl!==312||current.sideCoverage!=='4 of 4 sessions')
+    throw new Error('Measured left/right daily totals or coverage incorrect');
+  if(evidence.averageCompletedDailyMl!==682||evidence.todayLatestCheckpoint.differenceVsYesterdaySameCheckpointMl!==35)
+    throw new Error('Rolling completed-day baseline or same-session checkpoint incorrect');
+  if(evidence.todayLatestCheckpoint.sessionMl!==110||evidence.lastCompletedDay.sessions[3].amountMl!==130)
+    throw new Error('Same ordinal pump comparison incorrect');
+  if(evidence.reportedComfort.at(-1).comfort!=='tender_left')
+    throw new Error('Self-reported breast comfort not available for guidance');
+  const legacy=entries.map(e=>({...e}));
+  const firstToday=legacy.find(e=>e.id==='today-0');firstToday.leftMl=null;firstToday.rightMl=null;
+  const missing=ctx.evidence(ctx.makeDays(legacy),day);
+  if(missing.currentDay.sideCoverage!=='3 of 4 sessions'||missing.currentDay.sessions[0].leftMl!==null||missing.sideTotalsArePartial!==true)
+    throw new Error('Missing side data treated as zero or falsely complete');
+  if(!server.includes('comfort:e.comfort||null,note:e.note||null'))
+    throw new Error('Comfort and notes missing from authenticated model context');
+}
+// AI responses may use formatted text but user-controlled HTML must stay inert.
+{
+  const chat=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+  const begin=chat.indexOf('function careInline('),end=chat.indexOf('function renderMessages()',begin);
+  if(begin<0||end<0)throw new Error('Safe formatted-response renderer missing');
+  const ctx=vm.createContext({esc:input=>String(input??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))});
+  vm.runInContext(chat.slice(begin,end)+'\nthis.render=renderCareMarkdown;',ctx);
+  const html=ctx.render('## Four pumps today\n\n**659 mL** from four sessions\n\n| Pump | Total |\n| --- | --- |\n| 4 | 110 mL |\n\n<img src=x onerror=alert(1)>');
+  if(!html.includes('<h4>')||!html.includes('<strong>659 mL</strong>')||!html.includes('<table>'))
+    throw new Error('Rich pumping report is not formatted correctly');
+  if(html.includes('<img')||!html.includes('&lt;img'))
+    throw new Error('User or model supplied HTML was not escaped');
+}
+
