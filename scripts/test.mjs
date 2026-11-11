@@ -682,3 +682,27 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   ctx.markShown(signal);
   if(ctx.eligible(signal))throw new Error('Same signal repeated in same week');
 }
+
+
+// Follow-up times must update the actual pending record, not just the prompt.
+{
+  const source=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+  const start=source.indexOf('async function sendMessage('),end=source.indexOf('function mount(){',start);
+  if(start<0||end<0)throw new Error('Chat send handler missing');
+  let pending={kind:'pump',action:{kind:'pump',amountMl:160,date:'2026-11-10',time:'11:00'}};
+  const replies=[];
+  const ctx=vm.createContext({
+    busy:false,document:{getElementById:()=>null},
+    pendingLog:()=>pending,
+    storePendingLog:p=>{pending=p;},
+    parseExplicitTime:()=> '15:30',
+    to12:s=>s,
+    add:(role,text)=>replies.push({role,text}),
+    Number,Date
+  });
+  vm.runInContext(source.slice(start,end)+'\nthis.send=sendMessage;',ctx);
+  await ctx.send('at 3:30 PM');
+  if(pending.time!=='15:30'||pending.action.time!=='15:30')throw new Error('Pending log time change did not update saved action');
+  if(!replies.some(r=>r.role==='assistant'&&r.text.includes('160 mL pump')&&!r.text.includes('undefined')))
+    throw new Error('Chat correction prompt lost the pending amount');
+}
