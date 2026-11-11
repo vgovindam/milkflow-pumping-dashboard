@@ -2072,14 +2072,14 @@ function showDialog(id,isEdit){
 // --------------------------------------------------------- number entry ----
 // A big readable value, chunky +/- keys and presets taken from what this family has
 // actually logged. Typing still works - the value itself is the input.
-function stepper(id,{value='',unit,step,min=0,max=9999,decimals=0,presets=[],tone='mom'}){
+function stepper(id,{value='',unit,step,inputStep=step,min=0,max=9999,decimals=0,presets=[],tone='mom'}){
   const chips = presets.length
     ? `<div class="preset-row">${presets.map(p => `<button type="button" data-preset="${id}:${p}">${p}${unit?`<em>${esc(unit)}</em>`:''}</button>`).join('')}</div>`
     : '';
   return `<div class="stepper ${tone}" data-stepper="${id}" data-step="${step}" data-min="${min}" data-max="${max}" data-dec="${decimals}">
     <button type="button" class="step-key" data-bump="${id}:-1" aria-label="Less">${icon('minus')}</button>
     <label class="step-value">
-      <input id="${id}" type="number" inputmode="decimal" step="${step}" min="${min}" max="${max}" value="${value}" placeholder="0">
+      <input id="${id}" type="number" inputmode="decimal" step="${inputStep}" min="${min}" max="${max}" value="${value}" placeholder="0">
       ${unit?`<span>${esc(unit)}</span>`:''}
     </label>
     <button type="button" class="step-key" data-bump="${id}:1" aria-label="More">${icon('plus')}</button>
@@ -2218,7 +2218,7 @@ function openMomDialog(type,isEdit=false){
     dialogHead((isEdit?'Edit ':'')+(pump?'Pump':'Nursing'),'momDialog') +
     `<section class="form-section"><div class="form-section-title">${pump?'How much milk?':'How long?'}</div>
       ${pump
-        ? stepper('momAmount',{unit:'mL',step:10,max:2000,presets:commonValues(recentPumpMl,10),tone:'mom'})
+        ? stepper('momAmount',{unit:'mL',step:10,inputStep:1,max:2000,presets:commonValues(recentPumpMl,10),tone:'mom'})
         : stepper('momDuration',{unit:'min',step:1,max:240,presets:commonValues(recentNursingMin,1),tone:'mom'})}
       ${pump?'<div class="pump-side-fields" role="group" aria-label="Optional measured milk per side"><div class="pump-side-head"><strong>Measured per side</strong><span>Optional · mL</span></div><div class="pump-side-grid"><label>Left<input id="momLeftMl" type="number" min="0" max="2000" step="1" inputmode="numeric" placeholder="—"></label><label>Right<input id="momRightMl" type="number" min="0" max="2000" step="1" inputmode="numeric" placeholder="—"></label></div><p id="momSplitHint" class="pump-side-hint" aria-live="polite">Enter both to calculate total automatically. Leave blank to record total only.</p></div>':''}
     </section>
