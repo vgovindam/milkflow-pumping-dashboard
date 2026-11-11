@@ -246,10 +246,10 @@ function pumpSessionCoach(entry,s,{edited=false}={}){
     if(!days.has(e.date))days.set(e.date,[]);
     days.get(e.date).push(e);
   }
-  const similar=[...days.entries()].sort(([a],[b])=>a.localeCompare(b)).slice(-28)
+  const comparisonDays=[...days.entries()].sort(([a],[b])=>a.localeCompare(b)).slice(-28)
     .map(([day,list])=>({day,list:list.sort((a,b)=>String(a.time).localeCompare(String(b.time)))}))
-    .filter(d=>d.list.length>=order)
-    .slice(-7).map(d=>Number(d.list[order-1].amountMl)).filter(v=>v>0);
+    .filter(d=>d.list.length>=order).slice(-7);
+  const similar=comparisonDays.map(d=>Number(d.list[order-1].amountMl)).filter(v=>v>0);
   if(similar.length>=3){
     const avg=Math.round(similar.reduce((a,b)=>a+b,0)/similar.length);
     const difference=ml-avg,pct=avg?Math.round(100*difference/avg):0;
@@ -257,12 +257,23 @@ function pumpSessionCoach(entry,s,{edited=false}={}){
     else if(difference<=-15&&pct<=-10)lines.push('Your usual '+order+suffix+' pump averaged '+avg+' mL across '+similar.length+' completed days. This session was '+Math.abs(difference)+' mL lower; one session alone does not establish a supply drop.');
     else lines.push('Your usual '+order+suffix+' pump averaged about '+avg+' mL across '+similar.length+' completed days. This session is close to that pattern.');
   }else lines.push('I will build a '+order+suffix+'-session comparison as more completed days are logged.');
+  if(comparisonDays.length>=3){
+    const checkpoint=comparisonDays.map(d=>d.list.slice(0,order).reduce((n,e)=>n+(Number(e.amountMl)||0),0));
+    const usual=Math.round(checkpoint.reduce((a,b)=>a+b,0)/checkpoint.length);
+    const through=sameDay.slice(0,order).reduce((n,e)=>n+(Number(e.amountMl)||0),0);
+    lines.push('At pump #'+order+', your usual cumulative amount was about '+usual+' mL across '+checkpoint.length+' completed days. Your matching checkpoint is '+through+' mL — a like-for-like comparison, not a full-day verdict.');
+  }
   const left=Number(entry.leftMl),right=Number(entry.rightMl);
   if(Number.isFinite(left)&&Number.isFinite(right)&&left>=0&&right>=0&&Math.abs(left+right-ml)<=2){
-    lines.push('Sides: left '+left+' mL · right '+right+' mL. Different output by side can be normal; look for a persistent change rather than one reading.');
+    lines.push('Sides: left '+left+' mL · right '+right+' mL. Different output by side can be normal.');
+    const priorSides=comparisonDays.map(d=>d.list[order-1]).filter(e=>Number.isFinite(e.leftMl)&&Number.isFinite(e.rightMl));
+    if(priorSides.length>=3){
+      const l=Math.round(priorSides.reduce((sum,e)=>sum+e.leftMl,0)/priorSides.length),r=Math.round(priorSides.reduce((sum,e)=>sum+e.rightMl,0)/priorSides.length);
+      lines.push('Your usual '+order+suffix+' pump side split (from '+priorSides.length+' logged days) was about left '+l+' mL / right '+r+' mL.');
+    }else lines.push('I will compare left and right trends after more sessions include a side split.');
   }
   if(date===today()){
-    const future=(Array.isArray(currentPlan()?.future)?currentPlan().future:[]).map(Number).filter(Number.isFinite);
+    const plan=currentPlan(),future=(Array.isArray(plan?.future)?plan.future:[]).map(Number).filter(Number.isFinite);
     const now=new Date(),minutes=now.getHours()*60+now.getMinutes(),next=future.find(v=>v>=minutes-2);
     if(next!=null)lines.push('Next planned pump: around '+to12m(next)+'.');
     lines.push('Want to compare the last seven completed days or review your next pump?');
