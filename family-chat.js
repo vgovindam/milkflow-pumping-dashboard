@@ -71,7 +71,10 @@ async function finishPendingLog(choice){
     if(p.kind!=='pump')return{reply:'An update is only available for a pumping entry.'};
     const s=readState(),last=livePumps(s).filter(e=>e.date===p.date).sort((a,b)=>String(a.time).localeCompare(String(b.time))).at(-1);
     if(!last)return{reply:'I cannot find a pump from today to update. No entry was changed.'};
-    last.amountMl=p.amount;last.editedAt=new Date().toISOString();last.synced=false;
+    last.amountMl=p.amount;
+    // An edited total cannot retain a different old measured side split.
+    if(last.leftMl!=null||last.rightMl!=null){last.leftMl=null;last.rightMl=null;}
+    last.editedAt=new Date().toISOString();last.synced=false;
     writeState(s);
     try{await syncMom(last);}catch{ /* local edit remains queued for cloud reconciliation */ }
     storePendingLog(null);
@@ -349,7 +352,7 @@ function pumpSessionCoach(entry,s,{edited=false}={}){
   const total=sameDay.reduce((n,e)=>n+(Number(e.amountMl)||0),0);
   const target=Number(currentPlan()?.target)||permanentTarget();
   const lines=[];
-  lines.push((edited?'Updated 💛 ':'Logged 💛 ')+ml+' mL at '+to12(time)+'. That is pump #'+order+' for '+(date===today()?'today':'the day')+'.');
+  lines.push((edited?'Updated 💛 ':'Logged 💛 ')+ml+' mL at '+to12(time)+(Number(entry.durationMin)>0?' in '+entry.durationMin+' minutes':'')+'. That is pump #'+order+' for '+(date===today()?'today':'the day')+'.');
   lines.push((date===today()?'Today so far':'That day')+': '+total+' mL from '+sameDay.length+' pump'+(sameDay.length===1?'':'s')+(date===today()?' (ongoing; goal '+target+' sessions)':'')+'.');
   const days=new Map();
   for(const e of history){
@@ -390,6 +393,12 @@ function pumpSessionCoach(entry,s,{edited=false}={}){
       const l=Math.round(priorSides.reduce((sum,e)=>sum+e.leftMl,0)/priorSides.length),r=Math.round(priorSides.reduce((sum,e)=>sum+e.rightMl,0)/priorSides.length);
       lines.push('Your usual '+order+suffix+' pump side split (from '+priorSides.length+' logged days) was about left '+l+' mL / right '+r+' mL.');
     }else lines.push('I will compare left and right trends after more sessions include a side split.');
+  }
+  const feeling=entry.comfort;
+  if(feeling==='comfortable')lines.push('You marked this pump as comfortable — useful to track alongside output and duration.');
+  else if(['tender_left','tender_right','tender_both','nipple_soreness'].includes(feeling)){
+    const label={tender_left:'left breast',tender_right:'right breast',tender_both:'both breasts',nipple_soreness:'nipples'}[feeling];
+    lines.push('You noted tenderness or soreness affecting '+label+'. It is worth watching how you feel across sessions. Fever, chills, rapidly worsening pain, or spreading redness warrants prompt advice from your clinician.');
   }
   if(date===today()){
     const plan=currentPlan(),future=(Array.isArray(plan?.future)?plan.future:[]).map(Number).filter(Number.isFinite);
