@@ -180,7 +180,38 @@ function renderMessages(){const body=document.getElementById('mfChatBody');if(!b
 function parseExplicitTime(text){let m=String(text).match(/\b(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(a\.?m\.?|p\.?m\.?)\b/i);if(m){let h=+m[1],min=+(m[2]||0);const pm=/p/i.test(m[3]);if(h===12)h=0;if(pm)h+=12;return`${pad(h)}:${pad(min)}`;}m=String(text).match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);if(m)return`${pad(+m[1])}:${pad(+m[2])}`;if(/\b(now|just now|just pumped|just nursed|just fed|just changed)\b/i.test(text))return clock(new Date());return null;}
 function targetNumber(text){const words={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8};const m=String(text).toLowerCase().match(/\b([1-8]|one|two|three|four|five|six|seven|eight)\b/);return m?(words[m[1]]||Number(m[1])):null;}
 function parsePlanCommand(text){const q=String(text||'').toLowerCase();if(/^(what|why|how|should|could|would|can|is|do)\b/.test(q))return null;const n=targetNumber(q),time=parseExplicitTime(q);if(n&&/\b(pump|pumps|session|sessions|target|schedule|plan)\b/.test(q)){if(/\b(normal|usual|default|permanent|daily|every day)\b/.test(q))return{kind:'permanentTarget',target:n};if(/\btomorrow\b/.test(q))return{kind:'tomorrowTarget',target:n};if(/\b(today|tonight|switch|make|use|target|plan)\b/.test(q))return{kind:'todayTarget',target:n};}if(time&&/\b(next\s+pump|move\s+(?:my\s+)?next|set\s+(?:my\s+)?next|next\s+session)\b/.test(q))return{kind:'nextTime',time};if(/\b(recalculate|recalc|refresh|adjust|shift|update)\b.*\b(plan|schedule|times?)\b/.test(q)||/\bplan\s+(?:for\s+)?today\b/.test(q))return{kind:'replan'};return null;}
-function parseNaturalAction(text){const q=String(text||'');if(/\b(avg|average|compare|trend|why|what|how|should|could|would|can i|is it|analyse|analyze|fever|tender|pain|help|recommend)\b/i.test(q)||!/(?:^|\b)(?:log|record|add|save|tracked|just changed|just fed|just nursed|pumped|changed|nursed|fed)\b/i.test(q))return null;const date=/\byesterday\b/i.test(q)?dateShift(-1):today(),time=parseExplicitTime(q),ml=+(q.match(/\b(\d{1,4}(?:\.\d+)?)\s*(?:ml|millilit(?:er|re)s?)\b/i)?.[1]||0),oz=+(q.match(/\b(\d{1,2}(?:\.\d+)?)\s*(?:oz|ounce|ounces)\b/i)?.[1]||0),mins=+(q.match(/\b(\d{1,3})\s*(?:min|mins|minute|minutes)\b/i)?.[1]||0),nursing=/\b(nurs(?:e|ed|ing)?|breast\s*feed|breastfed|breastfeeding)\b/i.test(q),bottle=/\b(formula|breast\s*milk|expressed|bottle)\b/i.test(q);if(ml&&time&&!bottle&&!nursing)return{kind:'pump',date,time,amountMl:ml};if(nursing&&mins)return{kind:'nursing',date,time:time||clock(new Date()),durationMinutes:mins,side:/\bright\b/i.test(q)?'right':/\bleft\b/i.test(q)?'left':/\bboth\b/i.test(q)?'both':null};if(/\b(diaper|nappy|wet|poopy|poop|dirty|mixed)\b/i.test(q)&&/\b(wet|poopy|poop|dirty|mixed|both)\b/i.test(q))return{kind:'diaper',date,time:time||clock(new Date()),subtype:/\b(mixed|both)\b/i.test(q)?'both':/\b(poopy|poop|dirty)\b/i.test(q)?'poop':'wet'};if(oz&&bottle)return{kind:'feeding',date,time:time||clock(new Date()),amountOz:oz,feedingType:/\bformula\b/i.test(q)?'formula':'expressed_milk'};return null;}
+function parseNaturalAction(text){
+  const q=String(text||''),question=/\b(avg|average|compare|trend|why|what|how|should|could|would|can i|is it|analyse|analyze|fever|tender|pain|help|recommend)\b/i.test(q);
+  if(question)return null;
+  const date=/\byesterday\b/i.test(q)?dateShift(-1):today(),time=parseExplicitTime(q);
+  const ml=+(q.match(/\b(\d{1,4}(?:\.\d+)?)\s*(?:ml|millilit(?:er|re)s?)\b/i)?.[1]||0),
+    oz=+(q.match(/\b(\d{1,2}(?:\.\d+)?)\s*(?:oz|ounce|ounces)\b/i)?.[1]||0),
+    mins=+(q.match(/\b(\d{1,3})\s*(?:min|mins|minute|minutes)\b/i)?.[1]||0);
+  const nursing=/\b(nurs(?:e|ed|ing)?|breast\s*feed|breastfed|breastfeeding)\b/i.test(q),
+    bottle=/\b(formula|breast\s*milk|expressed milk|bottle)\b/i.test(q);
+  const intent=/(?:^|\b)(?:log|record|add|save|tracked|just changed|just fed|just nursed|pumped|pumping|expressed|changed|nursed|fed|pump #?|session #?)\b/i.test(q);
+  // Accept an explicitly timestamped pump update without the word "log".
+  // It remains a PROPOSAL and still requires Save entry to persist.
+  const update=!!time&&!!ml&&/\b(pump|session|ml|millilit|pumped)\b/i.test(q);
+  if(ml>0&&ml<=900&&!bottle&&!nursing&&(intent||update)&&time){
+    const matchSide=side=>{
+      const key=side==='left'?'(?:left|l)':'(?:right|r)';
+      const a=new RegExp('\\b'+key+'\\s*[:=-]?\\s*(\\d{1,3}(?:\\.\\d+)?)\\s*(?:ml)?\\b','i').exec(q);
+      const b=new RegExp('\\b(\\d{1,3}(?:\\.\\d+)?)\\s*(?:ml)?\\s*'+key+'\\b','i').exec(q);
+      return a?Number(a[1]):b?Number(b[1]):null;
+    };
+    const left=matchSide('left'),right=matchSide('right'),both=left!=null&&right!=null&&left>=0&&right>=0;
+    const total=both&&Math.abs(left+right-ml)>2&&!/\btotal\b/i.test(q)?left+right:ml;
+    return{kind:'pump',date,time,amountMl:total,
+      ...(both&&Math.abs(left+right-total)<=2?{leftMl:left,rightMl:right}:{}),
+      ...(mins>0&&mins<=120?{durationMin:mins}:{})};
+  }
+  if(nursing&&mins>0&&mins<=240)return{kind:'nursing',date,time:time||clock(new Date()),durationMinutes:mins,side:/\bright\b/i.test(q)?'right':/\bleft\b/i.test(q)?'left':/\bboth\b/i.test(q)?'both':null};
+  if(/\b(diaper|nappy|wet|poopy|poop|dirty|mixed)\b/i.test(q)&&/\b(wet|poopy|poop|dirty|mixed|both)\b/i.test(q)&&(intent||/\bdiaper\b/i.test(q)))
+    return{kind:'diaper',date,time:time||clock(new Date()),subtype:/\b(mixed|both)\b/i.test(q)?'both':/\b(poopy|poop|dirty)\b/i.test(q)?'poop':'wet'};
+  if(oz>0&&oz<=16&&bottle)return{kind:'feeding',date,time:time||clock(new Date()),amountOz:oz,feedingType:/\bformula\b/i.test(q)?'formula':'expressed_milk'};
+  return null;
+}
 
 function writeState(s){const oldRaw=localStorage.getItem(STATE_KEY);s.savedAt=Math.max(Date.now(),Number(s.savedAt||0)+1);const raw=JSON.stringify(s);localStorage.setItem(STATE_KEY,raw);try{window.dispatchEvent(new StorageEvent('storage',{key:STATE_KEY,oldValue:oldRaw,newValue:raw,storageArea:localStorage,url:location.href}));}catch{}window.dispatchEvent(new CustomEvent('milkflow:chat-data'));}
 // Chat logs must carry the origin in the FIRST Firestore write, just like forms.
@@ -266,7 +297,7 @@ async function sendMessage(text){
   const ordinal=ordinalPumpAnswer(message),next=nextPumpAnswer(message);
   if(ordinal||next){add('user',message);add('assistant',ordinal||next);return;}
   const cmd=parsePlanCommand(message);if(cmd){add('user',message);try{const out=await performPlanCommand(cmd);add('assistant',out.reply,{actions:out.actions});}catch{add('assistant','I could not update the plan. Try the Mom Home controls.');}return;}
-  const action=parseNaturalAction(message);if(action){add('user',message);storePendingLog({kind:action.kind,action});add('assistant','I understood this as '+(action.kind==='pump'?action.amountMl+' mL pumping':action.kind==='feeding'?action.amountOz+' oz bottle':action.kind==='diaper'?action.subtype+' diaper':action.kind==='nursing'?action.durationMinutes+' min nursing':'a care entry')+' at '+to12(action.time)+'. Save it?',{actions:[{id:'care-confirm',label:'Save entry'},{id:'care-cancel',label:'Cancel'}]});return;}
+  const action=parseNaturalAction(message);if(action){add('user',message);storePendingLog({kind:action.kind,action});add('assistant','I understood this as '+(action.kind==='pump'?action.amountMl+' mL pumping'+(Number.isFinite(action.leftMl)&&Number.isFinite(action.rightMl)?' (left '+action.leftMl+' · right '+action.rightMl+' mL)':''):action.kind==='feeding'?action.amountOz+' oz bottle':action.kind==='diaper'?action.subtype+' diaper':action.kind==='nursing'?action.durationMinutes+' min nursing':'a care entry')+' at '+to12(action.time)+'. Save it?',{actions:[{id:'care-confirm',label:'Save entry'},{id:'care-cancel',label:'Cancel'}]});return;}
   const user=window.firebase?.auth?.().currentUser;
   if(!user||!endpoints().length){add('user',message);add('assistant',trackerFallback(message));return;}
   const requestId=uid('chatreq'),pending={requestId,message,createdAt:Date.now()};
