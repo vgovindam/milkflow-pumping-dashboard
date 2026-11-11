@@ -482,25 +482,20 @@ function rollingAvg(n=7){ const vals=dateList(n).map(dayTotal).filter(v=>v>0); r
 function lastPump(){ return pumps().slice().sort(byWhenDesc)[0] || null; }
 const mins = t => t ? (+String(t).slice(0,2)*60 + +String(t).slice(3,5)) : 0;
 const sortedSchedule = () => [...S.schedule].filter(Boolean).sort((a,b) => mins(a)-mins(b));
-function nextPump(){ const d=new Date(), m=d.getHours()*60+d.getMinutes(), s=sortedSchedule(); return s.find(t => mins(t) > m) || s[0] || '--:--'; }
-// Pair each planned slot with the pump actually logged nearest to it (each pump used once)
-// instead of pairing by array position, which marked the 5:40 slot done when the first
-// pump of the day was really the 11:05 one.
+function nextPump(){
+  const p=window.MilkFlowDynamicPump?.getPlan?.();
+  if(p)return p.future?.length?to24(p.future[0]):'--:--';
+  const d=new Date(),m=d.getHours()*60+d.getMinutes();
+  return sortedSchedule().find(t=>mins(t)>m)||'--:--';
+}
+function to24(m){const n=Math.max(0,Math.min(1439,Math.round(m)));return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;}
 function scheduleSlots(d){
-  const logged = dayP(d).map((e,i) => ({e,i}));
-  const used = new Set();
-  const slots = sortedSchedule().map(t => {
-    let best = null, bestDiff = Infinity;
-    for(const {e,i} of logged){
-      if(used.has(i) || !e.time) continue;
-      const diff = Math.abs(mins(e.time) - mins(t));
-      if(diff < bestDiff){ bestDiff = diff; best = i; }
-    }
-    if(best !== null && bestDiff <= 150){ used.add(best); return {time:t, entry:logged[best].e}; }
-    return {time:t, entry:null};
-  });
-  const extras = logged.filter(({i}) => !used.has(i)).map(({e}) => ({time:e.time, entry:e, extra:true}));
-  return [...slots, ...extras].sort((a,b) => mins(a.entry?.time || a.time) - mins(b.entry?.time || b.time));
+  const p=d===today()?window.MilkFlowDynamicPump?.getPlan?.():null;
+  if(p)return [
+    ...(p.actual||[]).map(e=>({time:e.time,entry:e})),
+    ...(p.future||[]).map(m=>({time:to24(m),entry:null}))
+  ];
+  return dayP(d).map(e=>({time:e.time,entry:e}));
 }
 function babyStats(d){
   const diapers = babyOn(d,'diaper').filter(e => !e.exactSourceDuplicate);
@@ -766,7 +761,7 @@ function momHome(){
       <span class="eyebrow">${greeting(S.profile.momName)}</span>
       <h2>${total?`${total} mL today`:'Ready when you are'}</h2>
       <p>${count?`${count} ${count===1?'pump':'pumps'} logged`:'No pumps logged yet today'}</p>
-      <div class="chips">${chip('clock',`Next ${to12(next)} · ${untilLabel(next)}`)}${since?chip('history',`Last ${since}`):''}</div>
+      <div class="chips">${chip('clock',next==='--:--'?'No remaining time today':`Next ${to12(next)} · ${untilLabel(next)}`)}${since?chip('history',`Last ${since}`):''}</div>
     </div>
   </section>
   <div class="quick-grid mom-grid two">
@@ -779,10 +774,11 @@ function momHome(){
 }
 function scheduleStrip(){
   const slots=scheduleSlots(today());
+  const p=window.MilkFlowDynamicPump?.getPlan?.();
   return `<div class="schedule-strip">${slots.map(({time,entry,extra})=>{
     const done=!!entry;
     return `<div class="schedule-card ${done?'done':''} ${extra?'extra':''}"><div>${done?icon('check'):icon('clock')}</div><strong>${to12(entry?entry.time:time)}</strong><small>${done?`${entry.amountMl||0} mL`:slotNote(time)}</small>${extra?'<em>Extra</em>':''}</div>`;
-  }).join('')}</div>`;
+  }).join('')}</div>${p&&p.remaining&&!p.future?.length?'<p class="chart-note">No more pump times fit before your finish goal. Adjust your target or finish time.</p>':''}`;
 }
 function recentMom(n){ const a=momEntries().slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('history','No Mom history yet','Log a pump or import your private backup.','<button class="primary-link" data-import>Import backup</button>'); return `<div class="rows">${a.map(momRow).join('')}</div>`; }
 const MOM_COMFORT_LABELS={comfortable:'Comfortable',tender_left:'Left tender',tender_right:'Right tender',tender_both:'Both tender',nipple_soreness:'Nipple soreness'};
