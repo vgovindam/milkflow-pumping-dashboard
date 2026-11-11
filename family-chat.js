@@ -444,7 +444,7 @@ function pumpSessionCoach(entry,s,{edited=false}={}){
     lines.push('At pump #'+order+', your usual cumulative amount was about '+usual+' mL across '+checkpoint.length+' completed days. Your matching checkpoint is '+through+' mL — a like-for-like comparison, not a full-day verdict.');
   }
   const left=Number(entry.leftMl),right=Number(entry.rightMl);
-  if(Number.isFinite(left)&&Number.isFinite(right)&&left>=0&&right>=0&&Math.abs(left+right-ml)<=2){
+  if(entry.leftMl!=null&&entry.rightMl!=null&&Number.isFinite(left)&&Number.isFinite(right)&&left>=0&&right>=0&&Math.abs(left+right-ml)<=2){
     lines.push('Sides: left '+left+' mL · right '+right+' mL. Different output by side can be normal.');
     const priorSides=comparisonDays.map(d=>d.list[order-1]).filter(e=>Number.isFinite(e.leftMl)&&Number.isFinite(e.rightMl));
     if(priorSides.length>=3){
