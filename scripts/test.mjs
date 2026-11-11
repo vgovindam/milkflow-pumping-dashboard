@@ -617,7 +617,7 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   const finish=source.indexOf('async function performAction(',begin);
   if(begin<0||finish<0)throw new Error('Session coach was not found');
   const entries=[];
-  for(let day=1;day<=7;day++){
+  for(let day=3;day<=9;day++){
     const date='2026-11-'+String(day).padStart(2,'0');
     for(let i=1;i<=4;i++)entries.push({id:date+'-'+i,type:'pump',date,time:String(5+i*3).padStart(2,'0')+':00',amountMl:i===4?140:100,leftMl:i===4?75:null,rightMl:i===4?65:null});
   }
@@ -632,11 +632,12 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
     permanentTarget:()=>5,
     to12:t=>t,
     to12m:n=>String(n),
+    dateKey:d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'),
     Date,Math,Number,Map
   });
   vm.runInContext(source.slice(begin,finish)+'\nthis.reply=pumpSessionCoach;',ctx);
   const output=ctx.reply(e,{entries}),text=output.reply;
-  for(const part of ['Logged','160 mL','pump #4','460 mL','7 comparable completed days','Nice improvement','cumulative amount','left 80 mL','right 80 mL','last seven completed days']){
+  for(const part of ['Logged','160 mL','pump #4','460 mL','7 comparable completed days','Nice improvement','cumulative amount','left 80 mL','right 80 mL','Last 7 completed days, pump #4','last seven completed days']){
     if(!text.includes(part))throw new Error('Session response missing personal context: '+part);
   }
   if(text.includes('today fell')||text.includes('daily drop'))throw new Error('Incomplete day called a decline');
