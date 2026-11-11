@@ -853,14 +853,17 @@ function momTrends(){
   const sessions = pumps().filter(e => e.date >= days[0]);
   const avgSession = sessions.length ? Math.round(sum(sessions.map(e => +e.amountMl||0))/sessions.length) : 0;
   const best = sessions.reduce((m,e) => (+e.amountMl||0) > (+m?.amountMl||0) ? e : m, null);
-  const activeDays = days.filter(d => dayTotal(d) > 0);
+  // A calendar day is complete only after midnight. Do not compare a live
+  // partial daily total against full days or include it in a supply trend.
+  const completedDays=days.filter(d=>d<today()),completedSessions=sessions.filter(e=>e.date<today());
+  const activeDays = completedDays.filter(d => dayTotal(d) > 0);
   const perDay = activeDays.length ? Math.round(sum(activeDays.map(dayTotal))/activeDays.length) : 0;
-  const sessionsPerDay = activeDays.length ? (sessions.length/activeDays.length).toFixed(1) : '0.0';
+  const sessionsPerDay = activeDays.length ? (completedSessions.length/activeDays.length).toFixed(1) : '0.0';
 
-  // Latest half of the window against the half before it.
-  const half = Math.floor(days.length/2);
-  const recentAvg = avg(days.slice(half).map(dayTotal).filter(v => v > 0));
-  const priorAvg = avg(days.slice(0,half).map(dayTotal).filter(v => v > 0));
+  // Compare two equally scoped groups of completed calendar days only.
+  const half = Math.floor(completedDays.length/2);
+  const recentAvg = avg(completedDays.slice(half).map(dayTotal).filter(v => v > 0));
+  const priorAvg = avg(completedDays.slice(0,half).map(dayTotal).filter(v => v > 0));
 
   const bandTotals = TIME_BANDS.map(b => {
     const inB = sessions.filter(e => e.time && inBand(e.time,b));
@@ -869,20 +872,20 @@ function momTrends(){
   const topBand = bandTotals.slice().sort((a,b) => b.value-a.value)[0];
   const adjustedDays = days.filter(dayAdjusted).length;
   const insightModel=window.MilkFlowInsights?.mom?.({
-    days:days.map(d=>({date:d,totalMl:dayTotal(d)})),
-    sessions:sessions.map(e=>({date:e.date,time:e.time,amountMl:+e.amountMl||0})),
-    bands:bandTotals
+    days:completedDays.map(d=>({date:d,totalMl:dayTotal(d)})),
+    sessions:completedSessions.map(e=>({date:e.date,time:e.time,amountMl:+e.amountMl||0})),
+    bands:TIME_BANDS.map(b=>({...b,value:sum(completedSessions.filter(e=>e.time&&inBand(e.time,b)).map(e=>Number(e.amountMl)||0))}))
   })||null;
 
   // 7-day rolling average, so the supply direction is readable through daily noise.
-  const rollingBy = new Map(days.map((d,i) => { const w = days.slice(Math.max(0,i-6), i+1).map(dayTotal).filter(v => v > 0); return [d, w.length ? Math.round(sum(w)/w.length) : 0]; }));
+  const rollingBy = new Map(days.map(d => { const w = completedDays.filter(x=>x<=d).slice(-7).map(dayTotal).filter(v=>v>0); return [d, w.length?Math.round(sum(w)/w.length):0]; }));
 
   return `<div class="page-head"><div><span class="eyebrow">MOM</span><h2>Milk trends</h2></div></div>
   ${pills(RANGE_PILLS,range,'data-trend-range')}
-  <div class="metric-grid">${metric('Per pumping day',`${perDay} mL`,`${activeDays.length} active days`,'chart')}${metric('Avg pump',`${avgSession} mL`,`${sessions.length} sessions`,'drop')}${metric('Best pump',`${best?.amountMl||0} mL`,best?fd(best.date):'—','spark')}${metric('Pumps / day',sessionsPerDay,'on active days','timer')}</div>
+  <div class="metric-grid">${metric('Per pumping day',`${perDay} mL`,`${activeDays.length} completed days`,'chart')}${metric('Avg pump',`${avgSession} mL`,`${sessions.length} sessions`,'drop')}${metric('Best pump',`${best?.amountMl||0} mL`,best?fd(best.date):'—','spark')}${metric('Pumps / day',sessionsPerDay,'on active days','timer')}</div>
   ${insightsPanel(insightModel,'mom')}
   ${momSideBalance()}
-  ${panel(`Daily output${adjustedDays?' ':''}`,barChart(buckets,{value:b => Math.round(avg(b.days.map(dayTotal))), color:'var(--mom)', emptyLabel:'No pumping logged in this range'}) + (adjustedDays?`<p class="chart-note">${adjustedDays} day${adjustedDays>1?'s':''} use a confirmed daily total that is higher than the sessions logged individually.</p>`:''),
+  ${panel(`Daily output${adjustedDays?' ':''}`,barChart(buckets,{value:b => Math.round(avg(b.days.map(dayTotal))), color:'var(--mom)', emptyLabel:'No pumping logged in this range'}) + (adjustedDays?`<p class="chart-note">${adjustedDays} day${adjustedDays>1?'s':''} use a confirmed daily total that is higher than the sessions logged individually.</p>`:'') + '<p class="chart-note">Today is still in progress and is excluded from completed-day trend averages.</p>',
     `<span class="panel-note">${days.length} days</span>`)}
   ${panel('Supply direction',areaChart(buckets,{value:b => Math.round(avg(b.days.map(d => rollingBy.get(d) || 0))), color:'var(--mom)', unit:' mL', emptyLabel:'Needs a few more days'}),trendBadge(recentAvg,priorAvg,{goodIsUp:true}))}
   ${panel('When you produce most',hBars(bandTotals.map(b => ({...b, sub:`${b.count} ${b.count===1?'pump':'pumps'}`})),{unit:' mL'}) + (topBand&&topBand.value?`<p class="chart-note">Strongest window: <strong>${topBand.label.toLowerCase()}</strong> (${topBand.sub}).</p>`:''))}
