@@ -160,11 +160,100 @@ function upsertAssistant(requestId,text='',extra={}){const list=readChat(),i=lis
 function findUserByRequest(requestId){return readChat().find(m=>m.role==='user'&&m.requestId===requestId)||null;}
 function updateAssistantStatus(requestId,status,text){const list=readChat(),i=list.findIndex(m=>m.role==='assistant'&&m.requestId===requestId);if(i<0)return;list[i]={...list[i],status,...(text!==undefined?{text:String(text)}:{}),at:Date.now()};saveChat(list);renderMessages();}
 
+// Parents choose and edit the care history they want to share. ChatGPT
+// subscriptions and conversation memory are not automatically connected.
+function careNotesRef(){
+  const user=window.firebase?.auth?.().currentUser;
+  if(!user||!window.firebase?.firestore)throw new Error('Sign in to sync family care context.');
+  return window.firebase.firestore().collection('users').doc(user.uid).collection('private').doc('careAssistant');
+}
+async function showCareContext(){
+  document.getElementById('mfCareContextDialog')?.remove();
+  const dlg=document.createElement('dialog');
+  dlg.id='mfCareContextDialog';dlg.className='mf-care-notes-modal';
+  dlg.innerHTML='<div class="mf-care-notes-card"><div class="mf-care-notes-head"><strong>Family care context</strong><button type="button" data-care-close aria-label="Close">×</button></div><p>Choose what MilkFlow remembers about routines, goals, concerns and your preferred style of guidance. You may paste a summary from ChatGPT, but ChatGPT subscriptions and chats do not sync automatically.</p><label for="mfCareNotesText">Care notes</label><textarea id="mfCareNotesText" rows="8" maxlength="2000" placeholder="Our usual pump target is five sessions daily. Compare sessions with the last seven completed days, and use a friendly, calm tone."></textarea><small>Saved to your signed-in family account. Shared with anyone using the same login. Avoid passwords and information you prefer not to store.</small><div class="mf-care-notes-actions"><button type="button" data-care-clear>Clear notes</button><button type="button" data-care-save>Save context</button></div><p id="mfCareNotesStatus" role="status"></p></div>';
+  document.body.appendChild(dlg);
+  const notes=dlg.querySelector('textarea'),status=dlg.querySelector('#mfCareNotesStatus');
+  dlg.querySelector('[data-care-close]').addEventListener('click',()=>dlg.close());
+  dlg.addEventListener('close',()=>dlg.remove());
+  try{dlg.showModal();}catch{dlg.setAttribute('open','');}
+  try{
+    const doc=await careNotesRef().get();
+    notes.value=String(doc.exists?doc.data()?.notes||'':'').slice(0,2000);
+    status.textContent='Nothing changes until you save.';
+  }catch(err){status.textContent=err.message||'Sign in to save family context.';}
+  dlg.querySelector('[data-care-save]').addEventListener('click',async()=>{
+    try{
+      status.textContent='Saving…';
+      await careNotesRef().set({notes:notes.value.trim().slice(0,2000),updatedAt:window.firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      status.textContent='Saved to your family account.';
+    }catch(err){status.textContent='Could not save: '+(err.message||'Try again.');}
+  });
+  dlg.querySelector('[data-care-clear]').addEventListener('click',async()=>{
+    try{
+      status.textContent='Clearing…';
+      await careNotesRef().set({notes:'',updatedAt:window.firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      notes.value='';status.textContent='Saved notes cleared.';
+    }catch(err){status.textContent='Unable to clear notes: '+(err.message||'Try again.');}
+  });
+}
+async function syncFamilyChatHistory(){
+  const user=window.firebase?.auth?.().currentUser;
+  if(!user||!window.firebase?.firestore)return;
+  try{
+    const snap=await window.firebase.firestore().collection('users').doc(user.uid)
+      .collection('familyChatMessages').orderBy('createdAt','desc').limit(50).get();
+    const local=readChat(),keys=new Set(local.filter(m=>m.requestId).map(m=>m.role+'|'+m.requestId));
+    let added=0;
+    for(const doc of snap.docs.slice().reverse()){
+      const message=doc.data()||{};
+      if(message.hidden||!['user','assistant'].includes(message.role))continue;
+      const requestId=doc.id.replace(/-(user|assistant)$/,'');
+      const key=message.role+'|'+requestId;if(keys.has(key))continue;
+      const text=String(message.text||'').slice(0,3200);if(!text)continue;
+      local.push({role:message.role,text,requestId,status:'completed',at:message.createdAt?.toMillis?.()||Date.now(),fromCloud:true});
+      keys.add(key);added++;
+    }
+    if(added){local.sort((a,b)=>a.at-b.at);saveChat(local);renderMessages();}
+  }catch(err){console.warn('Care history sync unavailable',err?.message||err);}
+}
+function startCareHistorySync(){
+  try{
+    const auth=window.firebase?.auth?.();
+    if(auth?.onAuthStateChanged)auth.onAuthStateChanged(user=>{if(user)syncFamilyChatHistory();});
+    else if(auth?.currentUser)syncFamilyChatHistory();
+  }catch{}
+}
+async function showSavedCareReply(out){
+  if(!out)return;
+  const user=window.firebase?.auth?.().currentUser;
+  if(!out.coachQuery||!user||!endpoints().length){
+    add('assistant',out.reply||'Saved.',{actions:out.actions});return;
+  }
+  const requestId=uid('chatreq'),pending={
+    requestId,message:String(out.coachQuery).slice(0,1700),createdAt:Date.now(),
+    careEvent:true,fallbackReply:out.reply,afterActions:out.actions||[]
+  };
+  upsertAssistant(requestId,'Reviewing your recent care history…',{status:'sending'});
+  savePending(pending);
+  try{await resumePending();}catch{}
+}
 function styles(){if(document.getElementById('mfChatStyles'))return;const s=document.createElement('style');s.id='mfChatStyles';s.textContent=`
 .mf-chat-btn{position:fixed;z-index:90;right:16px;bottom:22px;width:52px;height:52px;border:0;border-radius:18px;background:color-mix(in srgb,var(--mom,#7653c6) 90%,#fff 10%);color:#fff;box-shadow:0 9px 24px rgba(36,30,63,.22);display:grid;place-items:center;cursor:pointer}.mf-chat-btn svg{width:23px;height:23px}.mf-chat-btn .dot{position:absolute;right:2px;top:2px;width:10px;height:10px;border-radius:50%;background:#55c38f;border:2px solid var(--surface,#fff)}
 .mf-chat-panel{position:fixed;z-index:201;right:18px;bottom:86px;width:min(410px,calc(100vw - 24px));height:min(650px,74vh);background:#fff;color:var(--ink,#20202a);border:1px solid var(--line-soft,var(--line,#e7e5ed));border-radius:24px;box-shadow:0 24px 70px rgba(27,24,43,.22);overflow:hidden;display:none;grid-template-rows:auto minmax(0,1fr) auto}.mf-chat-panel.open{display:grid}.mf-chat-head{background:inherit;padding:14px 15px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line-soft,var(--line,#eee))}.mf-chat-avatar{width:38px;height:38px;border-radius:14px;background:var(--mom,#7653c6);color:#fff;display:grid;place-items:center;font-weight:900}.mf-chat-head-text{min-width:0;flex:1}.mf-chat-head-text strong,.mf-chat-head-text small{display:block}.mf-chat-head-text small{font-size:.7rem;color:var(--muted,#74717d)}.mf-chat-close{border:0;background:transparent;font-size:1.4rem;color:var(--muted,#777)}
 .mf-chat-body{overflow:auto;min-height:0;overscroll-behavior:contain;padding:14px;display:flex;flex-direction:column;gap:10px}.mf-chat-welcome{padding:12px 13px;border-radius:16px;background:#f1eff7;font-size:.78rem;line-height:1.5;color:var(--muted,#706d78)}.mf-chat-row{display:flex;flex-direction:column}.mf-chat-row.user{align-items:flex-end}.mf-chat-msg{max-width:88%;padding:10px 12px;border-radius:16px;font-size:.82rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.mf-chat-row.user .mf-chat-msg{background:var(--mom,#7653c6);color:#fff}.mf-chat-row.assistant .mf-chat-msg{background:#f1eff7;color:#262334}.mf-chat-status{font-size:.66rem;color:var(--muted,#777);margin:4px 5px}.mf-chat-actions{display:flex;flex-wrap:wrap;align-self:stretch;align-items:flex-start;justify-content:flex-start;gap:7px;max-width:100%;min-width:0;margin:7px 0 0;overflow:visible}.mf-chat-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:7px;min-width:0;max-width:100%;padding:0 12px 10px;overflow:visible}.mf-chat-actions button,.mf-chat-quick button,.mf-chat-retry{box-sizing:border-box;min-width:0;max-width:100%;border:1px solid var(--line-soft,var(--line,#ddd));background:var(--surface,#fff);color:var(--ink,#222);border-radius:13px;padding:9px 10px;font:inherit;font-size:.7rem;font-weight:750;line-height:1.25;white-space:normal;overflow-wrap:break-word;text-align:center}.mf-chat-actions button{flex:0 1 auto;min-height:36px}.mf-chat-quick button{width:100%;min-height:38px}.mf-chat-compose{background:inherit;border-top:1px solid var(--line-soft,var(--line,#eee));padding:10px}.mf-chat-form{display:flex;gap:8px;align-items:flex-end}.mf-chat-input{flex:1;resize:none;min-height:44px;max-height:112px;border:1px solid var(--line-soft,var(--line,#ddd));border-radius:15px;background:#f6f4fa;color:var(--ink,#222);padding:11px 12px;font:inherit}.mf-chat-send{width:44px;height:44px;border:0;border-radius:14px;background:var(--mom,#7653c6);color:#fff}.mf-chat-note{display:block;margin:7px 3px 0;font-size:.62rem;color:var(--muted,#777)}
 @media(max-width:700px){.mf-chat-btn{right:10px;bottom:calc(82px + env(safe-area-inset-bottom));width:46px;height:46px;border-radius:16px;box-shadow:0 7px 20px rgba(36,30,63,.20)}.mf-chat-btn svg{width:21px;height:21px}.mf-chat-btn .dot{width:9px;height:9px}.mf-chat-panel{right:8px;bottom:calc(136px + env(safe-area-inset-bottom));width:calc(100vw - 16px);height:min(610px,70vh);border-radius:22px}}
+
+.mf-care-notes-modal{padding:0;border:0;max-width:none;background:transparent;color:var(--ink,#222)}.mf-care-notes-modal::backdrop{background:rgba(15,16,29,.72);backdrop-filter:blur(4px)}
+.mf-care-notes-card{box-sizing:border-box;display:grid;gap:12px;width:min(calc(100vw - 24px),490px);max-height:85dvh;overflow:auto;padding:20px;border-radius:22px;background:#fff;color:#20212c;box-shadow:0 20px 65px rgba(0,0,0,.3)}
+.mf-care-notes-head{display:flex;justify-content:space-between;align-items:center}.mf-care-notes-card p{margin:0;font-size:.8rem;line-height:1.45}.mf-care-notes-card label{font-weight:800}
+.mf-care-notes-card textarea{box-sizing:border-box;width:100%;min-height:142px;border:1px solid #d5d1de;border-radius:13px;padding:12px;background:#f9f8fc;color:#20212c;font:inherit;font-size:.83rem;line-height:1.4}
+.mf-care-notes-card small{font-size:.7rem;color:#605c71;line-height:1.45}.mf-care-notes-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+.mf-care-notes-actions button{min-height:42px;border-radius:12px;border:1px solid #d7d2e4;background:#f1eef9;color:#252137;font-weight:800;padding:10px 12px}.mf-care-notes-actions button[data-care-save]{background:#6852ad;color:#fff}
+.mf-care-notes-head button{border:0;background:transparent;color:inherit;font-size:1.4rem}#mfCareNotesStatus{min-height:1rem;color:#544886}
+.mf-chat-context{border:1px solid var(--line-soft,#ddd);background:var(--surface-2,#f6f4fa);color:var(--ink,#333);border-radius:12px;padding:7px 9px;white-space:nowrap;font-size:.7rem;font-weight:800}
+:root[data-theme="dark"] .mf-chat-context{background:#302e47;color:#f6f2ff}
+
 #mfChatBackdrop{position:fixed;inset:0;z-index:200;display:none;background:rgba(10,12,28,.66);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px)}
 body.mf-chat-open #mfChatBackdrop{display:block}
 body.mf-chat-open{overflow:hidden}
@@ -330,13 +419,14 @@ async function sendMessage(text){
   try{await resumePending();}catch{}
 }
 
-function mount(){styles();if(document.getElementById('mfChatButton'))return;const btn=document.createElement('button');btn.id='mfChatButton';btn.className='mf-chat-btn';btn.setAttribute('aria-label','Open MilkFlow Chat');btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg><span class="dot"></span>';const panel=document.createElement('section');panel.id='mfChatPanel';panel.className='mf-chat-panel';panel.innerHTML=`<div class="mf-chat-head"><div class="mf-chat-avatar">MF</div><div class="mf-chat-head-text"><strong>MilkFlow Care Assistant</strong><small>Mom + Baby care and your data</small></div><button class="mf-chat-close" aria-label="Close">×</button></div><div id="mfChatBody" class="mf-chat-body"></div><div><div class="mf-chat-quick"><button data-mf-prompt="What is my pumping average from completed days?">Pump average</button><button data-mf-prompt="Compare my last 7 completed pumping days with the previous 7.">7-day trend</button><button data-mf-prompt="How is baby doing today from the tracker?">Baby today</button><button data-mf-prompt="My breast is tender; what should I do?">Breast care</button><button data-mf-prompt="Parent brief">Care brief</button></div><div class="mf-chat-compose"><form id="mfChatForm" class="mf-chat-form"><textarea id="mfChatInput" class="mf-chat-input" maxlength="1800" rows="1" placeholder="Ask MilkFlow or log an entry…"></textarea><button class="mf-chat-send" aria-label="Send">➤</button></form><small class="mf-chat-note">Mom + Baby care and tracker insight · not a medical diagnosis.</small></div></div>`;const backdrop=document.createElement('div');backdrop.id='mfChatBackdrop';document.body.append(backdrop,panel,btn);renderMessages();
+function mount(){styles();if(document.getElementById('mfChatButton'))return;const btn=document.createElement('button');btn.id='mfChatButton';btn.className='mf-chat-btn';btn.setAttribute('aria-label','Open MilkFlow Chat');btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg><span class="dot"></span>';const panel=document.createElement('section');panel.id='mfChatPanel';panel.className='mf-chat-panel';panel.innerHTML=`<div class="mf-chat-head"><div class="mf-chat-avatar">MF</div><div class="mf-chat-head-text"><strong>MilkFlow Care Assistant</strong><small>Mom + Baby care and your data</small></div><button class="mf-chat-context" type="button" aria-label="Edit saved family care context">My context</button><button class="mf-chat-close" aria-label="Close">×</button></div><div id="mfChatBody" class="mf-chat-body"></div><div><div class="mf-chat-quick"><button data-mf-prompt="What is my pumping average from completed days?">Pump average</button><button data-mf-prompt="Compare my last 7 completed pumping days with the previous 7.">7-day trend</button><button data-mf-prompt="How is baby doing today from the tracker?">Baby today</button><button data-mf-prompt="My breast is tender; what should I do?">Breast care</button><button data-mf-prompt="Parent brief">Care brief</button></div><div class="mf-chat-compose"><form id="mfChatForm" class="mf-chat-form"><textarea id="mfChatInput" class="mf-chat-input" maxlength="1800" rows="1" placeholder="Ask MilkFlow or log an entry…"></textarea><button class="mf-chat-send" aria-label="Send">➤</button></form><small class="mf-chat-note">Mom + Baby care and tracker insight · not a medical diagnosis.</small></div></div>`;const backdrop=document.createElement('div');backdrop.id='mfChatBackdrop';document.body.append(backdrop,panel,btn);renderMessages();
 const closeChat=()=>{panel.classList.remove('open');document.body.classList.remove('mf-chat-open');};
 const openChat=()=>{panel.classList.add('open');document.body.classList.add('mf-chat-open');renderMessages();};
 btn.addEventListener('click',()=>panel.classList.contains('open')?closeChat():openChat());
 panel.querySelector('.mf-chat-close')?.addEventListener('click',closeChat);
+panel.querySelector('.mf-chat-context')?.addEventListener('click',showCareContext);
 backdrop.addEventListener('click',closeChat);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))closeChat();});panel.querySelector('#mfChatForm')?.addEventListener('submit',e=>{e.preventDefault();sendMessage(panel.querySelector('#mfChatInput')?.value);});panel.addEventListener('click',async e=>{const prompt=e.target.closest('[data-mf-prompt]')?.dataset.mfPrompt;if(prompt)return sendMessage(prompt);const id=e.target.closest('[data-mf-action]')?.dataset.mfAction;if(id==='ask:pump-week')return sendMessage('Compare my last 7 completed pumping days with the previous 7.');if(id==='ask:pump-next')return sendMessage('When is my next pump?');if(id==='care-confirm'||id==='care-cancel'||id==='care-edit'){const out=await finishPendingLog(id==='care-confirm'?'new':id==='care-edit'?'edit':'cancel');add('assistant',out.reply,{actions:out.actions});return;}if(id){let cmd;if(id==='replan')cmd={kind:'replan'};else{const [kind,n]=id.split(':');cmd={kind:kind==='permanent'?'permanentTarget':'todayTarget',target:Number(n)};}const out=await performPlanCommand(cmd);add('assistant',out.reply,{actions:out.actions});return;}const retry=e.target.closest('[data-mf-retry]')?.dataset.mfRetry;if(retry)retryRequest(retry);});recoverLegacyHistory();setTimeout(()=>resumePending().catch(()=>{}),400);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))closeChat();});panel.querySelector('#mfChatForm')?.addEventListener('submit',e=>{e.preventDefault();sendMessage(panel.querySelector('#mfChatInput')?.value);});panel.addEventListener('click',async e=>{const prompt=e.target.closest('[data-mf-prompt]')?.dataset.mfPrompt;if(prompt)return sendMessage(prompt);const id=e.target.closest('[data-mf-action]')?.dataset.mfAction;if(id==='ask:pump-week')return sendMessage('Compare my last 7 completed pumping days with the previous 7.');if(id==='ask:pump-next')return sendMessage('When is my next pump?');if(id==='care-confirm'||id==='care-cancel'||id==='care-edit'){const out=await finishPendingLog(id==='care-confirm'?'new':id==='care-edit'?'edit':'cancel');add('assistant',out.reply,{actions:out.actions});return;}if(id){let cmd;if(id==='replan')cmd={kind:'replan'};else{const [kind,n]=id.split(':');cmd={kind:kind==='permanent'?'permanentTarget':'todayTarget',target:Number(n)};}const out=await performPlanCommand(cmd);add('assistant',out.reply,{actions:out.actions});return;}const retry=e.target.closest('[data-mf-retry]')?.dataset.mfRetry;if(retry)retryRequest(retry);});recoverLegacyHistory();startCareHistorySync();setTimeout(()=>resumePending().catch(()=>{}),400);}
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 window.addEventListener('pageshow',()=>resumePending().catch(()=>{}));
