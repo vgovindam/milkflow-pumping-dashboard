@@ -2497,6 +2497,7 @@ async function initCloud(){
     try{ await cloud.db.enablePersistence({synchronizeTabs:true}); }catch{}
     cloud.auth.onAuthStateChanged(async user=>{
       stopRealtime(); S.cloud.userId=user?.uid||null; S.cloud.email=user?.email||null; S.cloud.enabled=!!user; save(); syncBadge();
+      window.dispatchEvent(new CustomEvent('milkflow:auth-changed',{detail:{signedIn:!!user}}));
       if(user){ try{ await reconcile(); startRealtime(); await verifyCloud(true); clearCloudError(); }catch(err){ noteCloudError(err,'signin'); toast('Sync needs attention — see Settings.',4500); } }
       render();
     });
