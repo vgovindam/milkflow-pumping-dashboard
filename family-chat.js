@@ -12,8 +12,22 @@ let recoveryPromise=null;
 
 function readJSON(key,fallback){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback));}catch{return fallback;}}
 function readState(){return readJSON(STATE_KEY,{});}
-function readChat(){const v=readJSON(CHAT_KEY,[]);return Array.isArray(v)?v:[];}
-function saveChat(v){try{localStorage.setItem(CHAT_KEY,JSON.stringify(v.slice(-MAX_LOCAL)));}catch{}}
+// Keep local chat caches scoped to the authenticated account. Migrate legacy
+// device history only when it belongs to the same previously signed-in user.
+const LEGACY_CHAT_OWNER=readJSON(STATE_KEY,{}).cloud?.userId||null;
+function chatUserId(){try{return window.firebase?.auth?.().currentUser?.uid||null;}catch{return null;}}
+function activeChatKey(){const uid=chatUserId();return uid?CHAT_KEY+':'+uid:CHAT_KEY+':guest';}
+function readChat(){
+  const key=activeChatKey(),stored=readJSON(key,null);
+  if(Array.isArray(stored))return stored;
+  const uid=chatUserId(),legacy=readJSON(CHAT_KEY,[]);
+  if(Array.isArray(legacy)&&legacy.length&&((uid&&LEGACY_CHAT_OWNER===uid)||(!uid&&!LEGACY_CHAT_OWNER))){
+    try{localStorage.setItem(key,JSON.stringify(legacy.slice(-MAX_LOCAL)));}catch{}
+    return legacy;
+  }
+  return[];
+}
+function saveChat(v){try{localStorage.setItem(activeChatKey(),JSON.stringify(v.slice(-MAX_LOCAL)));}catch{}}
 function readPending(){const v=readJSON(PENDING_KEY,null);return v&&v.requestId&&v.message?v:null;}
 function savePending(v){try{v?localStorage.setItem(PENDING_KEY,JSON.stringify(v)):localStorage.removeItem(PENDING_KEY);}catch{}}
 function pad(n){return String(n).padStart(2,'0');}
@@ -221,6 +235,7 @@ function startCareHistorySync(){
   // App.js loads Firebase asynchronously; this listener must be attached even
   // when the SDK has not loaded at Care Chat mount time.
   window.addEventListener('milkflow:auth-changed',()=>{
+    renderMessages();
     if(window.firebase?.auth?.().currentUser)syncFamilyChatHistory();
   });
   try{
