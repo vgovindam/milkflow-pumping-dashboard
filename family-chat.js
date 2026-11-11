@@ -264,6 +264,21 @@ async function showSavedCareReply(out){
 function styles(){if(document.getElementById('mfChatStyles'))return;const s=document.createElement('style');s.id='mfChatStyles';s.textContent=`
 .mf-chat-btn{position:fixed;z-index:90;right:16px;bottom:22px;width:52px;height:52px;border:0;border-radius:18px;background:color-mix(in srgb,var(--mom,#7653c6) 90%,#fff 10%);color:#fff;box-shadow:0 9px 24px rgba(36,30,63,.22);display:grid;place-items:center;cursor:pointer}.mf-chat-btn svg{width:23px;height:23px}.mf-chat-btn .dot{position:absolute;right:2px;top:2px;width:10px;height:10px;border-radius:50%;background:#55c38f;border:2px solid var(--surface,#fff)}
 .mf-chat-panel{position:fixed;z-index:201;right:18px;bottom:86px;width:min(410px,calc(100vw - 24px));height:min(650px,74vh);background:#fff;color:var(--ink,#20202a);border:1px solid var(--line-soft,var(--line,#e7e5ed));border-radius:24px;box-shadow:0 24px 70px rgba(27,24,43,.22);overflow:hidden;display:none;grid-template-rows:auto minmax(0,1fr) auto}.mf-chat-panel.open{display:grid}.mf-chat-head{background:inherit;padding:14px 15px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line-soft,var(--line,#eee))}.mf-chat-avatar{width:38px;height:38px;border-radius:14px;background:var(--mom,#7653c6);color:#fff;display:grid;place-items:center;font-weight:900}.mf-chat-head-text{min-width:0;flex:1}.mf-chat-head-text strong,.mf-chat-head-text small{display:block}.mf-chat-head-text small{font-size:.7rem;color:var(--muted,#74717d)}.mf-chat-close{border:0;background:transparent;font-size:1.4rem;color:var(--muted,#777)}
+.mf-chat-row.assistant .mf-chat-msg{white-space:normal}
+.mf-chat-row.assistant .mf-chat-msg p{margin:0 0 8px;line-height:1.55}
+.mf-chat-row.assistant .mf-chat-msg p:last-child{margin-bottom:0}
+.mf-chat-row.assistant .mf-chat-msg h4{margin:12px 0 7px;font-size:.86rem;line-height:1.35;letter-spacing:-.01em}
+.mf-chat-row.assistant .mf-chat-msg h4:first-child{margin-top:0}
+.mf-chat-row.assistant .mf-chat-msg ul{margin:5px 0 10px;padding-left:19px}
+.mf-chat-row.assistant .mf-chat-msg li{margin:0 0 5px}
+.mf-chat-row.assistant .mf-chat-msg code{padding:1px 4px;border-radius:4px;background:color-mix(in srgb,var(--mom,#7653c6) 9%,transparent)}
+.mf-chat-break{display:block;height:2px}
+.mf-chat-table-wrap{max-width:100%;overflow-x:auto;margin:8px 0 11px;border:1px solid var(--line-soft,#ddd);border-radius:11px}
+.mf-chat-table-wrap table{width:100%;border-collapse:collapse;font-size:.72rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mf-chat-table-wrap th,.mf-chat-table-wrap td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--line-soft,#ddd)}
+.mf-chat-table-wrap th{font-weight:850;background:color-mix(in srgb,var(--mom,#7653c6) 11%,transparent)}
+.mf-chat-table-wrap tr:last-child td{border-bottom:0}
+
 .mf-chat-body{overflow:auto;min-height:0;overscroll-behavior:contain;padding:14px;display:flex;flex-direction:column;gap:10px}.mf-chat-welcome{padding:12px 13px;border-radius:16px;background:#f1eff7;font-size:.78rem;line-height:1.5;color:var(--muted,#706d78)}.mf-chat-row{display:flex;flex-direction:column}.mf-chat-row.user{align-items:flex-end}.mf-chat-msg{max-width:88%;padding:10px 12px;border-radius:16px;font-size:.82rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.mf-chat-row.user .mf-chat-msg{background:var(--mom,#7653c6);color:#fff}.mf-chat-row.assistant .mf-chat-msg{background:#f1eff7;color:#262334}.mf-chat-status{font-size:.66rem;color:var(--muted,#777);margin:4px 5px}.mf-chat-actions{display:flex;flex-wrap:wrap;align-self:stretch;align-items:flex-start;justify-content:flex-start;gap:7px;max-width:100%;min-width:0;margin:7px 0 0;overflow:visible}.mf-chat-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:7px;min-width:0;max-width:100%;padding:0 12px 10px;overflow:visible}.mf-chat-actions button,.mf-chat-quick button,.mf-chat-retry{box-sizing:border-box;min-width:0;max-width:100%;border:1px solid var(--line-soft,var(--line,#ddd));background:var(--surface,#fff);color:var(--ink,#222);border-radius:13px;padding:9px 10px;font:inherit;font-size:.7rem;font-weight:750;line-height:1.25;white-space:normal;overflow-wrap:break-word;text-align:center}.mf-chat-actions button{flex:0 1 auto;min-height:36px}.mf-chat-quick button{width:100%;min-height:38px}.mf-chat-compose{background:inherit;border-top:1px solid var(--line-soft,var(--line,#eee));padding:10px}.mf-chat-form{display:flex;gap:8px;align-items:flex-end}.mf-chat-input{flex:1;resize:none;min-height:44px;max-height:112px;border:1px solid var(--line-soft,var(--line,#ddd));border-radius:15px;background:#f6f4fa;color:var(--ink,#222);padding:11px 12px;font:inherit}.mf-chat-send{width:44px;height:44px;border:0;border-radius:14px;background:var(--mom,#7653c6);color:#fff}.mf-chat-note{display:block;margin:7px 3px 0;font-size:.62rem;color:var(--muted,#777)}
 @media(max-width:700px){.mf-chat-btn{right:10px;bottom:calc(82px + env(safe-area-inset-bottom));width:46px;height:46px;border-radius:16px;box-shadow:0 7px 20px rgba(36,30,63,.20)}.mf-chat-btn svg{width:21px;height:21px}.mf-chat-btn .dot{width:9px;height:9px}.mf-chat-panel{right:8px;bottom:calc(136px + env(safe-area-inset-bottom));width:calc(100vw - 16px);height:min(610px,70vh);border-radius:22px}}
 
@@ -287,7 +302,50 @@ body.mf-chat-open .mf-chat-btn{visibility:hidden}
 :root[data-theme="dark"] .mf-chat-quick button,:root[data-theme="dark"] .mf-chat-actions button{background:#302e47;color:#f6f2ff}
 @media(max-width:700px){.mf-chat-panel{position:fixed;top:calc(env(safe-area-inset-top) + 8px);left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom) + 10px);width:auto;height:auto;max-height:none;border-radius:22px}.mf-chat-quick{grid-template-columns:repeat(2,minmax(0,1fr));padding:0 12px 10px;gap:6px}.mf-chat-quick button{font-size:.72rem;min-height:40px}.mf-chat-actions{max-width:100%;padding-right:2px}.mf-chat-body{padding:12px}.mf-chat-msg{max-width:92%}}
 `;document.head.appendChild(s);}
-function renderMessages(){const body=document.getElementById('mfChatBody');if(!body)return;body.innerHTML=`<div class="mf-chat-welcome">Ask about pumping trends, breast tenderness, supply, fever, feeding, baby care, and your logs. I'll confirm an unclear amount before saving.</div>`+readChat().map(m=>`<div class="mf-chat-row ${m.role==='user'?'user':'assistant'}"><div class="mf-chat-msg">${esc(m.text)}</div>${m.status&&m.status!=='completed'?`<small class="mf-chat-status">${esc(m.status==='failed'?'Couldn’t finish automatically.':'Working…')}</small>`:''}${m.status==='failed'&&m.requestId?`<button class="mf-chat-retry" data-mf-retry="${esc(m.requestId)}">Retry</button>`:''}${Array.isArray(m.actions)&&m.actions.length?`<div class="mf-chat-actions">${m.actions.map(a=>`<button data-mf-action="${esc(a.id)}">${esc(a.label)}</button>`).join('')}</div>`:''}</div>`).join('');body.scrollTop=body.scrollHeight;}
+// Rich but safe Markdown: escape all source text before authoring our tags.
+// We never interpret raw HTML, embedded scripts or arbitrary external links.
+function careInline(value){
+  return esc(String(value||''))
+    .replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/\x60([^\x60\n]+)\x60/g,'<code>$1</code>')
+    .replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
+}
+function renderCareMarkdown(text){
+  const lines=String(text||'').replace(/\r\n?/g,'\n').split('\n'),html=[];
+  const cells=line=>line.replace(/^\s*\|/,'').replace(/\|\s*$/,'').split('|').map(x=>x.trim());
+  const isDivider=line=>/^\s*\|?[\s:|\-]+\|?\s*$/.test(line)&&line.includes('---');
+  let i=0;
+  while(i<lines.length){
+    const line=lines[i],trim=line.trim();
+    if(!trim){i++;continue;}
+    if(trim.includes('|')&&i+1<lines.length&&isDivider(lines[i+1])){
+      const headings=cells(line),rows=[];i+=2;
+      while(i<lines.length&&lines[i].includes('|')&&lines[i].trim()){
+        rows.push(cells(lines[i]));i++;
+      }
+      html.push('<div class="mf-chat-table-wrap"><table><thead><tr>'+headings.map(x=>'<th>'+careInline(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+headings.map((_,j)=>'<td>'+careInline(r[j]||'')+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>');
+      continue;
+    }
+    const heading=/^#{1,4}\s+(.+)$/.exec(trim);
+    if(heading){html.push('<h4>'+careInline(heading[1])+'</h4>');i++;continue;}
+    if(/^(?:[-*] |\d+\. )/.test(trim)){
+      const items=[];
+      while(i<lines.length&&/^(?:[-*] |\d+\. )/.test(lines[i].trim())){
+        items.push(lines[i].trim().replace(/^(?:[-*] |\d+\. )/,''));
+        i++;
+      }
+      html.push('<ul>'+items.map(x=>'<li>'+careInline(x)+'</li>').join('')+'</ul>');
+      continue;
+    }
+    const para=[trim];i++;
+    while(i<lines.length&&lines[i].trim()&&!lines[i].trim().startsWith('#')&&!/^(?:[-*] |\d+\. )/.test(lines[i].trim())&&!(lines[i].includes('|')&&isDivider(lines[i+1]||''))){
+      para.push(lines[i].trim());i++;
+    }
+    html.push('<p>'+para.map(careInline).join('<span class="mf-chat-break"></span>')+'</p>');
+  }
+  return html.join('');
+}
+function renderMessages(){const body=document.getElementById('mfChatBody');if(!body)return;body.innerHTML=`<div class="mf-chat-welcome">Ask about pumping trends, breast tenderness, supply, fever, feeding, baby care, and your logs. I'll confirm an unclear amount before saving.</div>`+readChat().map(m=>`<div class="mf-chat-row ${m.role==='user'?'user':'assistant'}"><div class="mf-chat-msg">${m.role==='assistant'?renderCareMarkdown(m.text):esc(m.text)}</div>${m.status&&m.status!=='completed'?`<small class="mf-chat-status">${esc(m.status==='failed'?'Couldn’t finish automatically.':'Working…')}</small>`:''}${m.status==='failed'&&m.requestId?`<button class="mf-chat-retry" data-mf-retry="${esc(m.requestId)}">Retry</button>`:''}${Array.isArray(m.actions)&&m.actions.length?`<div class="mf-chat-actions">${m.actions.map(a=>`<button data-mf-action="${esc(a.id)}">${esc(a.label)}</button>`).join('')}</div>`:''}</div>`).join('');body.scrollTop=body.scrollHeight;}
 
 function parseExplicitTime(text){let m=String(text).match(/\b(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(a\.?m\.?|p\.?m\.?)\b/i);if(m){let h=+m[1],min=+(m[2]||0);const pm=/p/i.test(m[3]);if(h===12)h=0;if(pm)h+=12;return`${pad(h)}:${pad(min)}`;}m=String(text).match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);if(m)return`${pad(+m[1])}:${pad(+m[2])}`;if(/\b(now|just now|just pumped|just nursed|just fed|just changed)\b/i.test(text))return clock(new Date());return null;}
 function targetNumber(text){const words={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8};const m=String(text).toLowerCase().match(/\b([1-8]|one|two|three|four|five|six|seven|eight)\b/);return m?(words[m[1]]||Number(m[1])):null;}
