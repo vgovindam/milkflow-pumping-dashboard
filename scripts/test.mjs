@@ -895,3 +895,37 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
     throw new Error('User or model supplied HTML was not escaped');
 }
 
+
+// Left/right trends are based on actual measured sessions; unmeasured splits
+// and unfinished calendar days cannot silently enter the historical averages.
+{
+  const app=fs.readFileSync(path.join(ROOT,'app.js'),'utf8');
+  const begin=app.indexOf('function momSideBalance(){'),end=app.indexOf('function momTrends(){',begin);
+  if(begin<0||end<0)throw new Error('Side balance trends panel missing');
+  const pumps=[
+    {type:'pump',date:'2026-11-09',time:'06:00',amountMl:200,leftMl:110,rightMl:90},
+    {type:'pump',date:'2026-11-09',time:'11:00',amountMl:150,leftMl:80,rightMl:70},
+    {type:'pump',date:'2026-11-09',time:'15:00',amountMl:100},
+    {type:'pump',date:'2026-11-08',time:'06:00',amountMl:220,leftMl:100,rightMl:120},
+    {type:'pump',date:'2026-11-10',time:'06:00',amountMl:210,leftMl:110,rightMl:100}
+  ];
+  const ctx=vm.createContext({
+    today:()=> '2026-11-10',
+    iso:d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'),
+    pumps:()=>pumps,
+    sum:arr=>arr.reduce((n,x)=>n+x,0),
+    hBars:items=>JSON.stringify(items),
+    panel:(title,body)=>title+' :: '+body,
+    Date,Number,Math
+  });
+  vm.runInContext(app.slice(begin,end)+'\nthis.side=momSideBalance;',ctx);
+  const result=ctx.side();
+  if(!result.includes('Today so far:')||!result.includes('left 110 mL · right 100 mL'))
+    throw new Error('Current-day partial side output absent');
+  if(!result.includes('3 of 4 logged sessions'))
+    throw new Error('Side data coverage was fabricated or omitted');
+  if(!result.includes('"value":97')||!result.includes('"value":93'))
+    throw new Error('Only measured side sessions should contribute to baseline');
+  if(!app.includes('$'+'{momSideBalance()}'))
+    throw new Error('Side trends not actually rendered in Mom Trends');
+}
