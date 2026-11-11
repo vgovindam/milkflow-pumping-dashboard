@@ -416,6 +416,8 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   });
   vm.runInContext(browser.slice(clientStart,clientEnd)+'\nthis.ask=askToLog;this.finish=finishPendingLog;',ctx);
   const offer=ctx.ask('160ml');
+  const narrated=ctx.ask('I just pumped 160 ml');
+  if(!narrated?.actions?.some(a=>a.id==='care-confirm'))throw new Error('Natural amount-only updates must ask before logging');
   if(!offer?.actions?.some(a=>a.id==='care-edit')||!offer.actions.some(a=>a.id==='care-confirm'))
     throw new Error('160ml must offer new vs edit, without auto-saving');
   if(rows[0].amountMl!==120)throw new Error('Unconfirmed amount modified logged data');
@@ -651,6 +653,9 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   const simple=parsed.parse('6:05 AM 195ml left 102 right 93');
   if(simple?.amountMl!==195||simple.leftMl!==102||simple.rightMl!==93)
     throw new Error('Plain pumping journal-style update was not recognized');
+  const sideOnly=parsed.parse('6:05 AM left 80ml right 90ml total 170ml');
+  if(sideOnly?.amountMl!==170||sideOnly.leftMl!==80||sideOnly.rightMl!==90)
+    throw new Error('Explicit total must be used instead of the first side value');
   if(parsed.parse('How much did I pump at 6:05 AM?'))
     throw new Error('Pumping question was mistaken for a record write');
 }
