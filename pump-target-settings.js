@@ -149,6 +149,14 @@ function patchPlanner(){
   return true;
 }
 
+async function setFinishTime(value){
+  const m=mins(value);
+  if(!Number.isFinite(m)||m<720||m>1439)return false;
+  const s=readState();s.profile={...(s.profile||{}),pumpFinishTime:toTime(m)};
+  writeState(s);await syncProfile(s);
+  window.dispatchEvent(new CustomEvent('milkflow:pump-target-saved',{detail:{finish:s.profile.pumpFinishTime}}));
+  return true;
+}
 function statusCopy(){
   const n=permanentTarget(),override=explicitTarget();
   return override==null?`${n} pump${n===1?'':'s'} every day`:`${n}/day normally · ${override} today`;
@@ -156,10 +164,12 @@ function statusCopy(){
 function renderSetting(){
   patchPlanner();
   if(document.body.dataset.screen==='set-pumping'){
+    const finishInput=document.getElementById('mfPumpFinishTime');if(finishInput&&document.activeElement!==finishInput)finishInput.value=readState().profile?.pumpFinishTime||'23:00';
     const view=document.getElementById('view');if(view&&!document.getElementById('mfPermanentPumpTarget')){
       const section=document.createElement('section');section.className='panel';section.id='mfPermanentPumpTarget';
-      section.innerHTML=`<div class="panel-head"><h3>Normal daily pump count</h3><span class="panel-note">Permanent</span></div><div class="settings-grid"><label class="field"><span>Pumps per day</span><select id="mfPumpTargetSelect">${Array.from({length:MAX_TARGET},(_,i)=>i+1).map(n=>`<option value="${n}"${n===permanentTarget()?' selected':''}>${n} pump${n===1?'':'s'}</option>`).join('')}</select></label></div><p class="chart-note">This becomes your normal plan for future days and syncs to your Family account. Changing “today” in the coach/chat remains a one-day override. Pump times are redistributed across your existing first-to-last pump window and can still be edited below.</p>`;
+      section.innerHTML=`<div class="panel-head"><h3>Normal daily pump count</h3><span class="panel-note">Permanent</span></div><div class="settings-grid"><label class="field"><span>Pumps per day</span><select id="mfPumpTargetSelect">${Array.from({length:MAX_TARGET},(_,i)=>i+1).map(n=>`<option value="${n}"${n===permanentTarget()?' selected':''}>${n} pump${n===1?'':'s'}</option>`).join('')}</select></label><label class="field"><span>Finish pumping by</span><input type="time" id="mfPumpFinishTime" value="${readState().profile?.pumpFinishTime||'23:00'}" min="12:00" max="23:59"></label></div><p class="chart-note">This becomes your normal plan for future days and syncs to your Family account. Changing “today” in the coach/chat remains a one-day override. The live plan recalculates after every pump, spacing remaining sessions toward your finish time. The stored schedule below is only a starting reference.</p>`;
       const firstPanel=view.querySelector('.panel');firstPanel?firstPanel.before(section):view.appendChild(section);
+      section.querySelector('#mfPumpFinishTime')?.addEventListener('change',async e=>{if(await setFinishTime(e.target.value))renderSetting();});
       section.querySelector('#mfPumpTargetSelect')?.addEventListener('change',async e=>{
         const n=await setPermanentTarget(e.target.value);
         const toast=document.getElementById('toast');if(toast){toast.textContent=`Normal plan saved: ${n} pump${n===1?'':'s'} per day`;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2600);}
@@ -182,7 +192,7 @@ function reconcileFromCloud(){
   renderSetting();
 }
 
-window.MilkFlowPumpTarget={get:permanentTarget,getEffective:effectiveTarget,set:setPermanentTarget,setToday:n=>setDayOverride(today(),n),clearToday:()=>clearDayOverride(today()),resizeSchedule};
+window.MilkFlowPumpTarget={get:permanentTarget,getEffective:effectiveTarget,set:setPermanentTarget,setToday:n=>setDayOverride(today(),n),clearToday:()=>clearDayOverride(today()),resizeSchedule,setFinishTime};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{patchPlanner();renderSetting();},{once:true});else{patchPlanner();renderSetting();}
 window.addEventListener('milkflow:base-rendered',renderSetting);
 window.addEventListener('pageshow',()=>{reconcileFromCloud();});
