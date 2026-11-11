@@ -248,17 +248,25 @@ function pumpSessionCoach(entry,s,{edited=false}={}){
     if(!days.has(e.date))days.set(e.date,[]);
     days.get(e.date).push(e);
   }
-  const comparisonDays=[...days.entries()].sort(([a],[b])=>a.localeCompare(b)).slice(-28)
-    .map(([day,list])=>({day,list:list.sort((a,b)=>String(a.time).localeCompare(String(b.time)))}))
-    .filter(d=>d.list.length>=order).slice(-7);
+  // This is a real rolling 7-CALENDAR-DAY comparison: missing entries
+  // remain missing, never zero, and older data cannot masquerade as last week.
+  const anchor=new Date(date+'T12:00:00');
+  const weekDays=Array.from({length:7},(_,i)=>{
+    const d=new Date(anchor);d.setDate(d.getDate()-(7-i));
+    const key=dateKey(d),list=(days.get(key)||[]).slice().sort((a,b)=>String(a.time).localeCompare(String(b.time)));
+    return{day:key,list};
+  });
+  const comparisonDays=weekDays.filter(d=>d.list.length>=order);
   const similar=comparisonDays.map(d=>Number(d.list[order-1].amountMl)).filter(v=>v>0);
+  const compact=weekDays.map(d=>d.day.slice(5).replace('-','/')+':'+(d.list.length>=order?(Number(d.list[order-1].amountMl)||0)+'mL':'—')).join(' · ');
+  lines.push('Last 7 completed days, pump #'+order+': '+compact+'.');
   if(similar.length>=3){
     const avg=Math.round(similar.reduce((a,b)=>a+b,0)/similar.length);
     const difference=ml-avg,pct=avg?Math.round(100*difference/avg):0;
     if(difference>=15&&pct>=10)lines.push('Nice improvement! Your '+order+suffix+' pump averaged '+avg+' mL on the last '+similar.length+' comparable completed days — this was '+difference+' mL higher.');
     else if(difference<=-15&&pct<=-10)lines.push('Your usual '+order+suffix+' pump averaged '+avg+' mL across '+similar.length+' completed days. This session was '+Math.abs(difference)+' mL lower; one session alone does not establish a supply drop.');
     else lines.push('Your usual '+order+suffix+' pump averaged about '+avg+' mL across '+similar.length+' completed days. This session is close to that pattern.');
-  }else lines.push('I will build a '+order+suffix+'-session comparison as more completed days are logged.');
+  }else lines.push('I need at least 3 matching sessions in the last seven completed days before treating an average as a useful pattern.');
   if(comparisonDays.length>=3){
     const checkpoint=comparisonDays.map(d=>d.list.slice(0,order).reduce((n,e)=>n+(Number(e.amountMl)||0),0));
     const usual=Math.round(checkpoint.reduce((a,b)=>a+b,0)/checkpoint.length);
