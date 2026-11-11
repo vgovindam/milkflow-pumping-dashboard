@@ -785,7 +785,18 @@ function scheduleStrip(){
   }).join('')}</div>`;
 }
 function recentMom(n){ const a=momEntries().slice().sort(byWhenDesc).slice(0,n); if(!a.length) return empty('history','No Mom history yet','Log a pump or import your private backup.','<button class="primary-link" data-import>Import backup</button>'); return `<div class="rows">${a.map(momRow).join('')}</div>`; }
-function momRow(e){ return `<button type="button" class="row" data-care-kind="${e.type==='pump'?'pump':'nursing'}" data-record="mom:${esc(e.id)}"><div class="row-icon mom">${bigIcon(e.type==='pump'?'pump':'nursing')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`; }
+const MOM_COMFORT_LABELS={comfortable:'Comfortable',tender_left:'Left tender',tender_right:'Right tender',tender_both:'Both tender',nipple_soreness:'Nipple soreness'};
+function pumpExtra(e){
+  if(e.type!=='pump')return'';
+  const parts=[];
+  const left=e.leftMl==null?null:Number(e.leftMl),right=e.rightMl==null?null:Number(e.rightMl);
+  if(Number.isFinite(left)&&Number.isFinite(right)&&left>=0&&right>=0&&Math.abs(left+right-Number(e.amountMl))<=2)
+    parts.push('L '+left+' mL · R '+right+' mL');
+  if(Number(e.durationMin)>0)parts.push(e.durationMin+' min');
+  if(MOM_COMFORT_LABELS[e.comfort])parts.push(MOM_COMFORT_LABELS[e.comfort]);
+  return parts.length?' · '+parts.join(' · '):'';
+}
+function momRow(e){ return `<button type="button" class="row" data-care-kind="${e.type==='pump'?'pump':'nursing'}" data-record="mom:${esc(e.id)}"><div class="row-icon mom">${bigIcon(e.type==='pump'?'pump':'nursing')}</div><div class="row-main"><strong>${e.type==='pump'?`${e.amountMl||0} mL`:`${e.durationMin||0} min nursing`}</strong><span>${fd(e.date)} · ${to12(e.time)}${e.side?` · ${cap(e.side)}`:''}${pumpExtra(e)}${e.note?` · ${esc(e.note)}`:''}</span></div><div class="row-go">${icon('chevron')}</div></button>`; }
 function momHistory(){
   const range=S.ui.momRange ?? 30, all=+range>=9999, cutoff=all?'':dateList(rangeDays(range,'mom'))[0];
   const a=momEntries().filter(e=>all||e.date>=cutoff).sort(byWhenDesc);
@@ -1956,7 +1967,7 @@ function openRecordSheet(kind,id){
   const e=findRecord(kind,id); if(!e) return;
   const ic = kind==='mom' ? (e.type==='pump'?'drop':'nursing') : (e.eventType==='feeding'?'bottle':e.eventType==='diaper'?(e.subtype==='wet'?'drop':e.subtype==='poop'?'poop':'mixed'):e.eventType==='nursing'?'nursing':e.eventType==='growth'?'scale':'moon');
   openSheet(`<div class="sheet-head"><strong>Entry</strong><button data-close aria-label="Close">${icon('close')}</button></div>
-  <div class="record-card"><div class="record-icon ${kind}">${bigIcon(ic)}</div><div><strong>${esc(recordTitle(kind,e))}</strong><span>${fdl(e.date)} · ${to12(e.time)}</span>${e.note?`<small>${esc(e.note)}</small>`:''}</div></div>
+  <div class="record-card"><div class="record-icon ${kind}">${bigIcon(ic)}</div><div><strong>${esc(recordTitle(kind,e))}</strong><span>${fdl(e.date)} · ${to12(e.time)}${pumpExtra(e)}</span>${e.note?`<small>${esc(e.note)}</small>`:''}</div></div>
   <div class="record-actions"><button data-edit-record="${kind}:${esc(e.id)}">${icon('edit')}<span>Edit</span></button><button class="danger" data-void-record="${kind}:${esc(e.id)}">${icon('trash')}<span>Remove</span></button></div>
   <p class="record-note">Removing hides the entry from history and totals. It is never erased, and you can undo it.</p>`);
 }
