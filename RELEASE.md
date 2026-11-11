@@ -1,5 +1,16 @@
 # MilkFlow releases
 
+## v2.29.0 — Care Assistant conversation continuity
+
+- Pump and baby-feed logging remains deterministic and requires explicit confirmation, while the signed-in Care Assistant can respond conversationally using actual authenticated tracker history.
+- When AI is unavailable, show the on-device comparison transparently instead of pretending a generic template was AI coaching.
+- Add **My context** to the in-app chat: parents explicitly enter or paste up to 2,000 characters of family-care preferences and history. This is stored under `users/{uid}/private/careAssistant` and can be cleared in the same UI.
+- Cloud chat history is hydrated across devices under the same Firebase account, with hidden system-generated log prompts omitted from the visible chat. Cache keys are scoped by signed-in UID to avoid cross-account chat leakage.
+- The shared context follows the Firebase family account, not the ChatGPT subscription. ChatGPT memory and conversation history are **not** automatically accessible. Parents may copy or summarize relevant conversation details into My context by choice.
+- The API cost and model availability belong to the separate configured OpenAI API project; the personal ChatGPT subscription does not include API usage.
+- The server change in `functions/family-chat.js` must be deployed to Firebase separately from GitHub Pages for the new model response style and saved care notes to become effective. The web release does not prove backend deployment.
+- Server-side model scope, authentication, request idempotency and per-account request quotas remain in place. Medical answers remain educational and do not diagnose.
+
 ## v2.17.1 — Care icon and Last feed layout correction
 
 This patch fixes two visible regressions from the expanded theme release.
