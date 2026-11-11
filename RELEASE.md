@@ -1,5 +1,16 @@
 # MilkFlow releases
 
+## v2.30.0 — Measured side output and grounded care analysis
+
+- Mom pump form now accepts optional **Left mL** and **Right mL**. Both are required for a side split; when both are present, the displayed total equals their sum. Parents can still log total-only pumps. A manual total change clears an old split instead of silently preserving mismatched side data.
+- Optional comfort-after-pump observation: comfortable, left tender, right tender, both tender, or nipple soreness. Existing duration and free-text notes remain available.
+- Edits preserve the entry ID and restore measured values. Firebase writes explicitly include side measurements and comfort (or null when cleared) so stale values do not resurface after syncing.
+- Mom History and entry detail show recorded sides, duration and comfort. Mom Trends shows left/right comparisons only from actual measured sessions, with coverage counts and an explicit warning about missing splits.
+- Firebase familyChat model context now includes seven aligned completed calendar days of session history, duration, left/right measurements, comfort notes, same-number pumping checkpoints, and honest missing-data coverage. Baby daily evidence also distinguishes missing logs from zero and nursing intake from bottle ounces.
+- The chat supports escaped Markdown headings, brief lists and compact tables for genuinely detailed questions; response length is adaptive to the request, not a mandatory report template.
+- All rich comparison examples in unit tests are synthetic. Production insights must compute from authenticated family logs only. App-side and backend AI logs must not invent symptom patterns or unmeasured left/right contributions.
+- Requires a **separate Firebase deployment** of `familyChat` to activate the expanded AI context. GitHub Pages deployment only activates the app UI, data capture, local analysis and presentation. Run dependency/security checks first.
+
 ## v2.29.0 — Care Assistant conversation continuity
 
 - Pump and baby-feed logging remains deterministic and requires explicit confirmation, while the signed-in Care Assistant can respond conversationally using actual authenticated tracker history.
