@@ -825,6 +825,27 @@ function insightsPanel(model,realm='mom',compact=false){
   const education=compact?'':(model.education||[]).map(e=>`<article class="mf-education-card"><div><span>TRUSTED GUIDANCE</span><strong>${esc(e.title)}</strong><p>${esc(e.body)}</p></div>${e.source?.url?`<a href="${esc(e.source.url)}" target="_blank" rel="noopener noreferrer">${esc(e.source.label||'View source')}</a>`:''}</article>`).join('');
   return `<section class="mf-insights ${realm}" aria-label="What your data is showing"><header class="mf-insights-head"><div><span class="eyebrow">YOUR DATA</span><h3>${esc(model.headline)}</h3><p>${esc(model.summary)}</p></div></header><div class="mf-insight-grid">${observations}</div>${education?`<div class="mf-education"><div class="mf-education-title"><strong>Learn from trusted sources</strong><span>Education is kept separate from your logged observations.</span></div>${education}</div>`:''}<p class="mf-insight-disclaimer">${esc(model.disclaimer||'')}</p></section>`;
 }
+// Side comparisons use only sessions with both measured values and a
+// consistent total. No historical split is inferred from total milk alone.
+function momSideBalance(){
+  const nowDay=today(),from=new Date(nowDay+'T12:00:00');from.setDate(from.getDate()-7);
+  const cutoff=iso(from),all=pumps().filter(e=>e.date>=cutoff&&e.date<=nowDay);
+  const complete=all.filter(e=>e.date<nowDay),valid=e=>{
+    const l=e.leftMl==null?null:Number(e.leftMl),r=e.rightMl==null?null:Number(e.rightMl);
+    return l!==null&&r!==null&&Number.isFinite(l)&&Number.isFinite(r)&&l>=0&&r>=0&&Math.abs(l+r-Number(e.amountMl))<=2;
+  };
+  const history=complete.filter(valid),todayMeasured=all.filter(e=>e.date===nowDay&&valid(e));
+  if(!history.length&&!todayMeasured.length)return'';
+  const avg=entries=>entries.length?Math.round(sum(entries)/entries.length):null;
+  const leftAvg=avg(history.map(e=>Number(e.leftMl))),rightAvg=avg(history.map(e=>Number(e.rightMl)));
+  const leftToday=sum(todayMeasured.map(e=>Number(e.leftMl))),rightToday=sum(todayMeasured.map(e=>Number(e.rightMl)));
+  const todayBlock=todayMeasured.length?`<p class="chart-note"><strong>Today so far:</strong> left ${leftToday} mL · right ${rightToday} mL, across ${todayMeasured.length} of ${all.filter(e=>e.date===nowDay).length} logged pumps with both sides measured.</p>`:'';
+  const historicalBlock=history.length>=3?
+    hBars([{label:'Left',value:leftAvg},{label:'Right',value:rightAvg}],{unit:' mL'})+
+    `<p class="chart-note">Average per measured pumping session across ${history.length} of ${complete.length} logged sessions in the last seven <strong>completed</strong> days. Missing side breakdowns are excluded, not treated as 0 mL.</p>`:
+    `<p class="chart-note">${history.length} measured pumping session${history.length===1?'':'s'} in the last seven completed days. After three, MilkFlow can show a meaningful side-by-side baseline.</p>`;
+  return panel('Left / right · measured output',todayBlock+historicalBlock);
+}
 function momTrends(){
   const range = S.ui.trendRange ?? 14, days = dateList(rangeDays(range,'mom'));
   const buckets = bucketDays(days);
@@ -860,6 +881,7 @@ function momTrends(){
   ${pills(RANGE_PILLS,range,'data-trend-range')}
   <div class="metric-grid">${metric('Per pumping day',`${perDay} mL`,`${activeDays.length} active days`,'chart')}${metric('Avg pump',`${avgSession} mL`,`${sessions.length} sessions`,'drop')}${metric('Best pump',`${best?.amountMl||0} mL`,best?fd(best.date):'—','spark')}${metric('Pumps / day',sessionsPerDay,'on active days','timer')}</div>
   ${insightsPanel(insightModel,'mom')}
+  ${momSideBalance()}
   ${panel(`Daily output${adjustedDays?' ':''}`,barChart(buckets,{value:b => Math.round(avg(b.days.map(dayTotal))), color:'var(--mom)', emptyLabel:'No pumping logged in this range'}) + (adjustedDays?`<p class="chart-note">${adjustedDays} day${adjustedDays>1?'s':''} use a confirmed daily total that is higher than the sessions logged individually.</p>`:''),
     `<span class="panel-note">${days.length} days</span>`)}
   ${panel('Supply direction',areaChart(buckets,{value:b => Math.round(avg(b.days.map(d => rollingBy.get(d) || 0))), color:'var(--mom)', unit:' mL', emptyLabel:'Needs a few more days'}),trendBadge(recentAvg,priorAvg,{goodIsUp:true}))}
