@@ -411,6 +411,7 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
     today:()=>today,clock:()=> '09:35',to12:()=> '9:35 AM',
     livePumps:()=>rows,readState:()=>({entries:rows}),
     writeState:()=>{},syncMom:async()=>{},performAction:async()=>({reply:'Saved'}),
+    pumpSessionCoach:e=>({reply:'Updated '+e.amountMl+' mL using session history'}),
     Date,Number,String,RegExp,Math
   });
   vm.runInContext(browser.slice(clientStart,clientEnd)+'\nthis.ask=askToLog;this.finish=finishPendingLog;',ctx);
