@@ -642,6 +642,7 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   }
   if(text.includes('today fell')||text.includes('daily drop'))throw new Error('Incomplete day called a decline');
   if(!output.actions?.some(x=>x.id==='ask:pump-week'))throw new Error('No follow-up trend action');
+  if(!output.coachQuery?.includes('Please respond to ME as a warm, helpful personal pumping companion'))throw new Error('Saved pump does not request real AI coaching');
   const parserStart=source.indexOf('function parseNaturalAction('),parserEnd=source.indexOf('function writeState(',parserStart);
   const parsed=vm.createContext({
     today:()=>date,dateShift:()=> '2026-11-09',clock:()=> '17:00',
@@ -707,3 +708,61 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
   if(!replies.some(r=>r.role==='assistant'&&r.text.includes('160 mL pump')&&!r.text.includes('undefined')))
     throw new Error('Chat correction prompt lost the pending amount');
 }
+
+
+// Family Care Assistant: approved notes, authenticated history, and AI answer
+// recovery. Never pretend ChatGPT memory automatically becomes app history.
+{
+  const client=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+  const backend=fs.readFileSync(path.join(ROOT,'functions/family-chat.js'),'utf8');
+  const begin=client.indexOf('function careNotesRef(){'),end=client.indexOf('function styles(){',begin);
+  if(begin<0||end<0)throw new Error('Family context / history owner missing');
+  const writes=[],render=[],localChat=[];
+  const messages=[
+    {id:'req123456-assistant',d:{role:'assistant',text:'Your 4th pump averaged 140 mL.',createdAt:{toMillis:()=>1000}}},
+    {id:'req123456-user',d:{role:'user',text:'What was my 4th pump average?',createdAt:{toMillis:()=>900}}},
+    {id:'hidden456-user',d:{role:'user',text:'Internal logged event',hidden:true,createdAt:{toMillis:()=>990}}}
+  ];
+  const collection={
+    doc:id=>({id,get:async()=>({exists:true,data:()=>({notes:'Remember my daily pump schedule.'})}),set:async data=>writes.push(data)}),
+    orderBy:()=>({limit:()=>({get:async()=>({docs:messages.map(m=>({id:m.id,data:()=>m.d}))})})})
+  };
+  const ctx=vm.createContext({
+    window:{firebase:{auth:()=>({currentUser:{uid:'family-uid'}}),firestore:()=>({collection:()=>({doc:()=>({collection:()=>collection})})})}},
+    readChat:()=>localChat,
+    saveChat:arr=>{localChat.splice(0,localChat.length,...arr);},
+    renderMessages:()=>render.push(1),
+    endpoints:()=>['https://example.test/ai'],
+    uid:()=> 'chatreq-test-response',
+    upsertAssistant:(id,txt,opts)=>writes.push({id,txt,opts}),
+    savePending:p=>writes.push(p),
+    resumePending:async()=>null,
+    add:()=>{throw new Error('AI-capable logging should not use the simple receipt path')},
+    Date,Number,String,Object,Set
+  });
+  vm.runInContext(client.slice(begin,end)+'\nthis.notes=careNotesRef;this.history=syncFamilyChatHistory;this.coach=showSavedCareReply;',ctx);
+  if(ctx.notes().id!=='careAssistant')throw new Error('Care notes not scoped to user private document');
+  await ctx.history();
+  if(localChat.length!==2||localChat[0].role!=='user'||localChat[1].role!=='assistant')
+    throw new Error('Account history did not hydrate correctly or synthetic prompts leaked');
+  await ctx.history();if(localChat.length!==2)throw new Error('Cloud history was duplicated');
+  await ctx.coach({reply:'Local backup',coachQuery:'I logged my fourth pumping session. Please analyze my day.',actions:[{id:'ask:pump-week'}]});
+  const pending=writes.find(w=>w?.requestId==='chatreq-test-response');
+  if(!pending?.careEvent||pending.fallbackReply!=='Local backup'||pending.afterActions?.[0]?.id!=='ask:pump-week')
+    throw new Error('Saved care event was not handed to AI with a safe backup and follow-ups');
+  for(const snippet of [
+    "collection('private').doc('careAssistant')",
+    "careContextDoc?.exists",
+    'careNotes:cloud.careNotes',
+    "role:'user',text:message,hidden:!!local.careEvent",
+    "process.env.OPENAI_MODEL||'gpt-6.1-sol'",
+    "'gpt-6.1-terra'",
+    'cannot see a user',
+    "conversation:cloud.history.slice(-16)"
+  ])if(!backend.includes(snippet))throw new Error('Account-long care AI context missing: '+snippet);
+  for(const snippet of ['My context','data-care-save','data-care-clear','startCareHistorySync()'])
+    if(!client.includes(snippet))throw new Error('Care context UI missing: '+snippet);
+  if(client.includes('ChatGPT subscriptions and chats sync automatically'))
+    throw new Error('App claims unsupported ChatGPT subscription sync');
+}
+
