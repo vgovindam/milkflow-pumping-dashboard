@@ -122,22 +122,45 @@ function buildCards(s){
   if(guidance)return[...ranked.slice(0,1),guidance,...ranked.slice(1),...(guidance===age?[momStage]:[age]).filter(Boolean)];
   return ranked;
 }
+// Monday-based local care check-in: one helpful stage/insight on the first
+// eligible visit each week; only another if a NEW important pattern appears.
+// Rolling 7-day and spacing caps still prevent back-to-back noisy notices.
+function weekKey(at=new Date()){
+  const d=new Date(at);d.setHours(12,0,0,0);
+  d.setDate(d.getDate()-((d.getDay()+6)%7));
+  return dateKey(d);
+}
+function significantSignal(cards){return cards.find(c=>c.priority>=72)||null;}
 function signature(cards){return cards.slice(0,MAX_CARDS).map(c=>c.kind).join('|');}
 function eligible(cards){
   if(!cards.length)return false;
-  const p=readPref(),now=Date.now(),shows=(Array.isArray(p.shows)?p.shows:[]).filter(t=>now-Number(t)<ROLLING_WINDOW);
+  const p=readPref(),now=Date.now(),week=weekKey(new Date(now));
+  const shows=(Array.isArray(p.shows)?p.shows:[]).filter(t=>now-Number(t)<ROLLING_WINDOW);
   if(shows.length>=MAX_SHOWS_PER_WINDOW)return false;
   if(shows.length&&now-shows.at(-1)<MIN_GAP)return false;
-  const sig=signature(cards),seen=p.seen||{};
-  if(seen[sig]&&now-Number(seen[sig])<REPEAT_SUPPRESS)return false;
-  const meaningful=cards.some(c=>c.priority>=60);
-  if(!meaningful&&shows.length&&now-shows.at(-1)<6*DAY)return false;
-  return true;
+  // A new week means a useful, age-aware check-in is due when opened in
+  // daytime, not a timer waking or notifying a closed app.
+  if(p.weeklySeenKey!==week){
+    const hasStage=cards.some(c=>c.kind.startsWith('age-'));
+    return hasStage||!!significantSignal(cards);
+  }
+  // Another popup in the same week must represent a different substantial
+  // event. A small fluctuating average must not trigger an extra visit.
+  const signal=significantSignal(cards);
+  if(!signal)return false;
+  const key=week+'|'+signal.kind;
+  return !p.signalSeen?.[key];
 }
 function markShown(cards){
-  const p=readPref(),now=Date.now(),shows=(Array.isArray(p.shows)?p.shows:[]).filter(t=>now-Number(t)<ROLLING_WINDOW);shows.push(now);
-  const seen={...(p.seen||{}),[signature(cards)]:now};for(const [k,v] of Object.entries(seen))if(now-Number(v)>30*DAY)delete seen[k];
-  writePref({...p,shows,seen,lastShownAt:now});
+  const p=readPref(),now=Date.now(),week=weekKey(new Date(now));
+  const shows=(Array.isArray(p.shows)?p.shows:[]).filter(t=>now-Number(t)<ROLLING_WINDOW);
+  shows.push(now);
+  const seen={...(p.seen||{}),[signature(cards)]:now};
+  for(const [k,v] of Object.entries(seen))if(now-Number(v)>30*DAY)delete seen[k];
+  const signalSeen={...(p.signalSeen||{})},signal=significantSignal(cards);
+  if(signal)signalSeen[week+'|'+signal.kind]=now;
+  for(const [key,v] of Object.entries(signalSeen))if(now-Number(v)>30*DAY)delete signalSeen[key];
+  writePref({...p,shows,seen,signalSeen,weeklySeenKey:week,lastShownAt:now});
 }
 function briefWindowOpen(at=new Date()){
   const minute=at.getHours()*60+at.getMinutes();
@@ -245,15 +268,15 @@ function show(cards){
   injectStyle();
   const top=cards.slice(0,MAX_CARDS),existing=document.getElementById('mfParentBrief');if(existing)existing.remove();
   const d=document.createElement('dialog');d.id='mfParentBrief';d.className='mf-parent-brief';
-  d.innerHTML=`<div class="mf-parent-brief-card"><div class="mf-parent-brief-head"><div><div class="mf-parent-brief-kicker">✦ Parent brief</div><h2>A couple of things worth noticing</h2><p class="mf-parent-brief-sub">Short, supportive insights from your logs and your family's current stage. Not a diagnosis.</p></div><button class="mf-parent-brief-close" type="button" aria-label="Close">×</button></div><div class="mf-parent-brief-items">${top.map(c=>`<article class="mf-parent-brief-item"><h3>${esc(c.title)}</h3><div class="mf-parent-brief-line"><b>Observed</b><span>${esc(c.observed)}</span></div><div class="mf-parent-brief-line"><b>Why</b><span>${esc(c.meaning)}</span></div><div class="mf-parent-brief-line next"><b>Watch / try</b><span>${esc(c.suggestion)}</span></div></article>`).join('')}</div><div class="mf-parent-brief-actions"><button type="button" class="mf-parent-brief-later">Got it</button><button type="button" class="mf-parent-brief-view">See trends</button></div></div>`;
+  d.innerHTML=`<div class="mf-parent-brief-card"><div class="mf-parent-brief-head"><div><div class="mf-parent-brief-kicker">✦ Parent brief</div><h2>Your Mom + Baby check-in</h2><p class="mf-parent-brief-sub">One pattern to notice, one helpful thing to know this week. Completed-day trends only; not a diagnosis.</p></div><button class="mf-parent-brief-close" type="button" aria-label="Close">×</button></div><div class="mf-parent-brief-items">${top.map(c=>`<article class="mf-parent-brief-item"><h3>${esc(c.title)}</h3><div class="mf-parent-brief-line"><b>Observed</b><span>${esc(c.observed)}</span></div><div class="mf-parent-brief-line"><b>Why</b><span>${esc(c.meaning)}</span></div><div class="mf-parent-brief-line next"><b>Watch / try</b><span>${esc(c.suggestion)}</span></div></article>`).join('')}</div><div class="mf-parent-brief-actions"><button type="button" class="mf-parent-brief-later">Got it</button><button type="button" class="mf-parent-brief-view">See trends</button></div></div>`;
   document.body.appendChild(d);
   const close=()=>{try{d.close();}catch{}d.remove();};
   d.querySelector('.mf-parent-brief-close').addEventListener('click',close);
   d.querySelector('.mf-parent-brief-later').addEventListener('click',close);
   d.querySelector('.mf-parent-brief-view').addEventListener('click',()=>{const route=top[0]?.route||'baby-trends';close();location.hash=`#${route}`;});
   d.addEventListener('cancel',e=>{e.preventDefault();close();});
-  markShown(cards);
   try{d.showModal();}catch{d.setAttribute('open','');}
+  markShown(cards);
 }
 function maybeShow(){if(!canInterrupt())return;const s=readState(),cards=buildCards(s);if(eligible(cards))show(cards);}
 // No 10 AM alarm: check only after the family opens/uses MilkFlow in daytime.
