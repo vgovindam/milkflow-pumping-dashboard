@@ -2004,6 +2004,9 @@ function editRecord(kind,id){
     openMomDialog(e.type,true);
     $('momDate').value=e.date||today(); $('momTime').value=e.time||now();
     if($('momAmount')) $('momAmount').value=e.amountMl??'';
+    if($('momLeftMl')) $('momLeftMl').value=e.leftMl??'';
+    if($('momRightMl')) $('momRightMl').value=e.rightMl??'';
+    if($('momComfort')) $('momComfort').value=e.comfort||'';
     if($('momDuration')) $('momDuration').value=e.durationMin??'';
     $('momNote').value=e.note||''; if(e.side&&$('momSide')) pickChoice('momSide',e.side);
   } else if(e.eventType==='diaper'){
@@ -2170,6 +2173,32 @@ function dialogHead(title,id){ return `<div class="dialog-head"><h2>${esc(title)
 function dialogActions(id,saveLabel='Save',tone=''){
   return `<div class="form-actions"><button type="button" data-dismiss="${id}">Cancel</button><button class="save ${tone}" data-save-label="${esc(saveLabel)}">${esc(saveLabel)}</button></div>`;
 }
+// Left/right measurements are optional; neither side is ever inferred from a total.
+// When both are entered, their sum owns the total and edits remain consistent.
+function readMomSideAmounts(){
+  const l=$('momLeftMl')?.value.trim()??'',r=$('momRightMl')?.value.trim()??'';
+  if(!l&&!r)return{leftMl:null,rightMl:null};
+  if(!l||!r)return{leftMl:null,rightMl:null,error:'Enter both left and right, or leave both blank to record total only.'};
+  const leftMl=Number(l),rightMl=Number(r);
+  if(!Number.isInteger(leftMl)||!Number.isInteger(rightMl)||leftMl<0||rightMl<0||leftMl>2000||rightMl>2000||leftMl+rightMl<=0||leftMl+rightMl>2000)
+    return{leftMl:null,rightMl:null,error:'Use whole mL amounts between 0 and 2,000, with a combined total above zero.'};
+  return{leftMl,rightMl};
+}
+function updateMomSideTotal(changed){
+  const total=$('momAmount'),left=$('momLeftMl'),right=$('momRightMl'),hint=$('momSplitHint');
+  if(!total||!left||!right)return;
+  if(changed==='momAmount'&&left.value.trim()&&right.value.trim()){
+    left.value='';right.value='';
+    if(hint)hint.textContent='Side breakdown cleared because you changed the total. Enter both sides again if measured.';
+    return;
+  }
+  const split=readMomSideAmounts();
+  if(split.error){if(hint)hint.textContent=split.error;return;}
+  if(split.leftMl!==null){
+    total.value=String(split.leftMl+split.rightMl);
+    if(hint)hint.textContent='Total = left + right ('+total.value+' mL). Measured values will be saved for trends.';
+  }else if(hint)hint.textContent='Enter both to calculate total automatically. Leave blank to record total only.';
+}
 function openMomDialog(type,isEdit=false){
   closeOverlays(); if(!isEdit) editing=null;
   const pump = type === 'pump';
@@ -2180,10 +2209,12 @@ function openMomDialog(type,isEdit=false){
       ${pump
         ? stepper('momAmount',{unit:'mL',step:10,max:2000,presets:commonValues(recentPumpMl,10),tone:'mom'})
         : stepper('momDuration',{unit:'min',step:1,max:240,presets:commonValues(recentNursingMin,1),tone:'mom'})}
+      ${pump?'<div class="pump-side-fields" role="group" aria-label="Optional measured milk per side"><div class="pump-side-head"><strong>Measured per side</strong><span>Optional · mL</span></div><div class="pump-side-grid"><label>Left<input id="momLeftMl" type="number" min="0" max="2000" step="1" inputmode="numeric" placeholder="—"></label><label>Right<input id="momRightMl" type="number" min="0" max="2000" step="1" inputmode="numeric" placeholder="—"></label></div><p id="momSplitHint" class="pump-side-hint" aria-live="polite">Enter both to calculate total automatically. Leave blank to record total only.</p></div>':''}
     </section>
     <section class="form-section"><div class="form-section-title">When</div>${whenRow('momDate','momTime')}</section>
     <section class="form-section"><div class="form-section-title">Details</div>
       ${pump ? stepper('momDuration',{unit:'min',step:5,max:240,presets:commonValues(recentPumpMin,5,3),tone:'mom'}) : ''}
+      ${pump ? '<label class="pump-comfort-label" for="momComfort">Comfort after pumping (optional)<select id="momComfort"><option value="">Not recorded</option><option value="comfortable">Comfortable</option><option value="tender_left">Left tender</option><option value="tender_right">Right tender</option><option value="tender_both">Both tender</option><option value="nipple_soreness">Nipple soreness</option></select></label>' : ''}
       ${!pump ? `<div class="choice-row" data-choice="momSide">${['left','both','right'].map(v=>`<button type="button" data-pick="momSide:${v}">${cap(v)}</button>`).join('')}</div><input id="momSide" type="hidden" value="right">` : ''}
       <details class="optional"><summary>Add a note</summary><textarea id="momNote" rows="2" placeholder="Anything worth remembering"></textarea></details>
     </section>` +
@@ -2562,7 +2593,7 @@ function stampEntrySource(e){
   }
   return e;
 }
-async function pushMom(e){ if(!cloud||!S.cloud.userId) return; stampEntrySource(e); await momRef().doc(e.id).set({type:e.type,date:e.date,time:e.time||'',amountMl:e.amountMl??null,durationMin:e.durationMin??null,side:e.side||null,quality:e.quality||null,note:e.note||'',source:e.source||'MilkFlow',createdAt:e.createdAt||null,editedAt:e.editedAt||null,voidedAt:e.voidedAt||null,...(e.sourceDeviceId?{sourceDeviceId:e.sourceDeviceId,sourceDeviceLabel:e.sourceDeviceLabel||'',sourceClientAt:e.sourceClientAt||e.createdAt||null}:{}),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); e.synced=true; S.cloud.lastSync=new Date().toISOString(); save(); }
+async function pushMom(e){ if(!cloud||!S.cloud.userId) return; stampEntrySource(e); await momRef().doc(e.id).set({type:e.type,date:e.date,time:e.time||'',amountMl:e.amountMl??null,durationMin:e.durationMin??null,leftMl:e.leftMl??null,rightMl:e.rightMl??null,comfort:e.comfort||null,side:e.side||null,quality:e.quality||null,note:e.note||'',source:e.source||'MilkFlow',createdAt:e.createdAt||null,editedAt:e.editedAt||null,voidedAt:e.voidedAt||null,...(e.sourceDeviceId?{sourceDeviceId:e.sourceDeviceId,sourceDeviceLabel:e.sourceDeviceLabel||'',sourceClientAt:e.sourceClientAt||e.createdAt||null}:{}),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); e.synced=true; S.cloud.lastSync=new Date().toISOString(); save(); }
 async function pushBabies(arr){
   if(!cloud||!S.cloud.userId||!arr.length) return;
   for(let i=0;i<arr.length;i+=350){ const part=arr.slice(i,i+350).map(e=>normalizeBabyEvent(stampEntrySource(e))), batch=cloud.db.batch(); for(const e of part) batch.set(babyRef().doc(e.id),{...e,synced:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); await batch.commit(); part.forEach(e=>e.synced=true); }
@@ -2762,10 +2793,30 @@ function handleClick(e){
   const st=e.target.closest('[data-stash]'); if(st){ const el=$('stashExact'); if(el){ el.value=Math.max(0,Math.round((+el.value||0)+ +st.dataset.stash)); el.dispatchEvent(new Event('input',{bubbles:true})); } return; }
 }
 document.addEventListener('click',handleClick);
+document.addEventListener('input',e=>{if(['momLeftMl','momRightMl','momAmount'].includes(e.target?.id))updateMomSideTotal(e.target.id);});
 document.addEventListener('change',e=>{if(e.target.matches('[data-review-picker]') && e.target.value){S.ui.reviewDate=e.target.value;save();render();}});
 
-$('momForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('momType').value, wasEdit=!!editing;
-  if(type==='pump'){ S.last.pumpMl=+$('momAmount').value||null; S.last.pumpMin=+$('momDuration').value||null; } else { S.last.nursingMin=+$('momDuration').value||null; S.last.nursingSide=$('momSide')?.value||null; } const x=commitRecord(S.entries,{id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,amountMl:type==='pump'?+$('momAmount').value||0:null,durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false}); if(!x)return; save(); if(type==='pump')reconcileReminderState('pump'); $('momDialog').close(); try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved')); });
+$('momForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const type=$('momType').value,wasEdit=!!editing;
+  const sides=type==='pump'?readMomSideAmounts():{leftMl:null,rightMl:null};
+  if(sides.error){toast(sides.error,4300);$('momLeftMl')?.focus();return;}
+  const amount=type==='pump'?(sides.leftMl!==null?sides.leftMl+sides.rightMl:Number($('momAmount').value)):null;
+  if(type==='pump'&&(!Number.isFinite(amount)||amount<=0||amount>2000)){toast('Enter a milk total from 1 to 2,000 mL.');$('momAmount')?.focus();return;}
+  if(type==='pump'){S.last.pumpMl=amount;S.last.pumpMin=+$('momDuration').value||null;}
+  else{S.last.nursingMin=+$('momDuration').value||null;S.last.nursingSide=$('momSide')?.value||null;}
+  const x=commitRecord(S.entries,{
+    id:uid('mom'),type,date:$('momDate').value,time:$('momTime').value,
+    amountMl:amount,leftMl:sides.leftMl,rightMl:sides.rightMl,
+    comfort:type==='pump'?($('momComfort')?.value||null):null,
+    durationMin:+$('momDuration').value||null,side:type==='nursing'?$('momSide').value:null,
+    note:$('momNote').value.trim(),source:'MilkFlow',createdAt:new Date().toISOString(),synced:false
+  });
+  if(!x)return;
+  save();if(type==='pump')reconcileReminderState('pump');$('momDialog').close();
+  try{await pushMom(x);}catch{toast('Saved on this device. Cloud will retry.');}
+  render();confirmed();toast(wasEdit?'Entry updated':(type==='pump'?'Pump saved':'Nursing saved'));
+});
 $('diaperForm').addEventListener('submit',async e=>{ e.preventDefault(); const wasEdit=!!editing; const x=commitRecord(S.babyEvents,normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'diaper',date:$('diaperDate').value,time:$('diaperTime').value,subtype:$('diaperKind').value,note:$('diaperNote').value.trim(),sourceFile:'MilkFlow',createdAt:new Date().toISOString(),synced:false})); if(!x)return; save(); $('diaperDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Diaper logged'); });
 $('feedForm').addEventListener('submit',async e=>{ e.preventDefault(); const type=$('feedType').value, wasEdit=!!editing, stamp=new Date().toISOString();
   if(type==='nursing'){ S.last.nursingMin=+$('feedDuration').value||null; S.last.nursingSide=$('feedSide')?.value||null; } else { S.last.bottleOz=+$('feedAmount').value||null; } const built=type==='nursing'?normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'nursing',date:$('feedDate').value,time:$('feedTime').value,durationMinutes:+$('feedDuration').value||null,side:$('feedSide').value,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}):normalizeBabyEvent({id:uid('baby'),babyId:S.baby.id,eventType:'feeding',date:$('feedDate').value,time:$('feedTime').value,feedingType:type,amountOz:+$('feedAmount').value||0,note:'',sourceFile:'MilkFlow',createdAt:stamp,synced:false}); const x=commitRecord(S.babyEvents,built); if(!x)return; save(); reconcileReminderState('feed'); $('feedDialog').close(); try{await pushBabies([x]);}catch{toast('Saved on this device. Cloud will retry.');} render(); confirmed(); toast(wasEdit?'Entry updated':'Feed logged'); });
