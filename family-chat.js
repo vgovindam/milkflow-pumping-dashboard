@@ -38,7 +38,7 @@ const CONFIRM_KEY='milkflow-chat-log-confirm-v1';
 function pendingLog(){const p=readJSON(CONFIRM_KEY,null);return p&&Date.now()-Number(p.savedAt||0)<1800000?p:null;}
 function storePendingLog(p){try{if(p)localStorage.setItem(CONFIRM_KEY,JSON.stringify(Object.assign({},p,{savedAt:Date.now()})));else localStorage.removeItem(CONFIRM_KEY);}catch{}}
 function askToLog(q){
-  const m=String(q||'').trim().match(/^(\d{1,4}(?:\.\d+)?)\s*(ml|milliliters?|oz|ounces?)\.?$/i);
+  const m=String(q||'').trim().match(/^(?:(?:i\s+)?(?:just\s+)?(?:pumped|expressed|collected|got)\s+|my\s+(?:pump|output)\s+(?:was|is)\s+)?(\d{1,4}(?:\.\d+)?)\s*(ml|milliliters?|oz|ounces?)\.?$/i);
   if(!m)return null;
   const amount=Number(m[1]),pump=/^ml|millil/i.test(m[2]);
   if(amount<=0||(pump&&amount>900)||(!pump&&amount>16))return null;
@@ -201,7 +201,9 @@ function parseNaturalAction(text){
       return a?Number(a[1]):b?Number(b[1]):null;
     };
     const left=matchSide('left'),right=matchSide('right'),both=left!=null&&right!=null&&left>=0&&right>=0;
-    const total=both&&Math.abs(left+right-ml)>2&&!/\btotal\b/i.test(q)?left+right:ml;
+    const explicit=q.match(/\b(?:total|combined)\s*(?::|=|of)?\s*(\d{1,4}(?:\.\d+)?)\s*(?:ml|millilit(?:er|re)s?)\b/i);
+    const total=explicit?Number(explicit[1]):both&&Math.abs(left+right-ml)>2?left+right:ml;
+    if(total<=0||total>900)return null;
     return{kind:'pump',date,time,amountMl:total,
       ...(both&&Math.abs(left+right-total)<=2?{leftMl:left,rightMl:right}:{}),
       ...(mins>0&&mins<=120?{durationMin:mins}:{})};
