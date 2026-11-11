@@ -192,7 +192,7 @@ function parseNaturalAction(text){
   const intent=/(?:^|\b)(?:log|record|add|save|tracked|just changed|just fed|just nursed|pumped|pumping|expressed|changed|nursed|fed|pump #?|session #?)\b/i.test(q);
   // Accept an explicitly timestamped pump update without the word "log".
   // It remains a PROPOSAL and still requires Save entry to persist.
-  const update=!!time&&!!ml&&/\b(pump|session|ml|millilit|pumped)\b/i.test(q);
+  const update=!!time&&ml>0&&!bottle&&!nursing;
   if(ml>0&&ml<=900&&!bottle&&!nursing&&(intent||update)&&time){
     const matchSide=side=>{
       const key=side==='left'?'(?:left|l)':'(?:right|r)';
