@@ -766,3 +766,35 @@ console.log('MilkFlow test suite passed: syntax, data and notification contracts
     throw new Error('App claims unsupported ChatGPT subscription sync');
 }
 
+
+// A family phone must not show a different Firebase account's cached chat.
+// Cloud history hydration starts after Firebase finishes loading asynchronously.
+{
+  const client=fs.readFileSync(path.join(ROOT,'family-chat.js'),'utf8');
+  const start=client.indexOf('const LEGACY_CHAT_OWNER='),end=client.indexOf('function readPending()',start);
+  if(start<0||end<0)throw new Error('Account-scoped care chat cache contract missing');
+  const map=new Map([
+    ['milkflow-family-v4-state',JSON.stringify({cloud:{userId:'uid-A'}})],
+    ['milkflow-family-chat-v1',JSON.stringify([{role:'user',text:'Private A'}])]
+  ]);
+  let uid='uid-A';
+  const ctx=vm.createContext({
+    STATE_KEY:'milkflow-family-v4-state',CHAT_KEY:'milkflow-family-chat-v1',MAX_LOCAL:50,
+    readJSON:(key,fallback)=>{try{return JSON.parse(map.get(key)||JSON.stringify(fallback));}catch{return fallback;}},
+    localStorage:{setItem:(k,v)=>map.set(k,v)},
+    window:{firebase:{auth:()=>({currentUser:{uid}})}},
+    Array,JSON
+  });
+  vm.runInContext(client.slice(start,end)+'\nthis.read=readChat;this.write=saveChat;',ctx);
+  if(ctx.read()[0]?.text!=='Private A')throw new Error('Matching legacy chat history was lost');
+  uid='uid-B';
+  if(ctx.read().length)throw new Error('Another signed-in account could see private previous chat');
+  ctx.write([{role:'user',text:'Private B'}]);
+  uid='uid-A';
+  if(ctx.read()[0]?.text!=='Private A')throw new Error('Different account overwrote original chat');
+  if(!client.includes("window.addEventListener('milkflow:auth-changed'"))
+    throw new Error('Cloud history does not listen for async Firebase sign-in');
+  const app=fs.readFileSync(path.join(ROOT,'app.js'),'utf8');
+  if(!app.includes("new CustomEvent('milkflow:auth-changed'"))
+    throw new Error('Firebase sign-in ready signal is missing');
+}
