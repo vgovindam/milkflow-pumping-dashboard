@@ -218,6 +218,11 @@ async function syncFamilyChatHistory(){
   }catch(err){console.warn('Care history sync unavailable',err?.message||err);}
 }
 function startCareHistorySync(){
+  // App.js loads Firebase asynchronously; this listener must be attached even
+  // when the SDK has not loaded at Care Chat mount time.
+  window.addEventListener('milkflow:auth-changed',()=>{
+    if(window.firebase?.auth?.().currentUser)syncFamilyChatHistory();
+  });
   try{
     const auth=window.firebase?.auth?.();
     if(auth?.onAuthStateChanged)auth.onAuthStateChanged(user=>{if(user)syncFamilyChatHistory();});
